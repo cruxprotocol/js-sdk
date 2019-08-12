@@ -39,6 +39,22 @@ let wallet =  new OpenPayWallet()
 * activateListener() -> Open the peer connection with Signalling Server
 * request -> Event emitted on new Payment Request as defined
 
+```ts
+
+export interface IAddress {
+    addressHash: string
+    secIdentifier?: string
+}
+
+export interface IPaymentRequest {
+    format: string
+    currency: string
+    fromAddress?: IAddress
+    toAddress: IAddress
+    value: number
+}
+```
+
 
 ##Service specific:
 
