@@ -134,7 +134,7 @@ const iceConfig = {
 
 class OpenPayPeer extends EventEmitter {
     private _payIDClaim: IPayIDClaim
-    private _peerServerCred = {key: "peerjs", host: "157.230.199.143", port: 9090, config: iceConfig}
+    private _peerServerCred = {key: "peerjs", secure: true, host: "157.230.199.143", port: 9090, config: iceConfig}
     private _peer: Peer
 
     /**
