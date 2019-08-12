@@ -22,7 +22,7 @@ let wallet =  new OpenPayPeer()
 * isListening() -> Boolean (any open channels)
 * hasPayIDClaim() -> Boolean (does the client identify locally stored PayIDClaim)
 * getPayIDClaim() -> PayIDClaim currently in use
-* addPayIDClaim() -> Set the new/modified PayIDClaim (name && passcode)
+* addPayIDClaim(virtualAddress: string, passcode: string) -> Set the new/modified PayIDClaim (name && passcode)
 
 
 ##Wallet specific:
@@ -66,4 +66,4 @@ import { OpenPayService } from 'openpay';
 let service = new OpenPayService()
 ```
 
-* sendPaymentRequest() -> Push a new payment Request to the Virtual address specified with their receiving passcode.
+* sendPaymentRequest(receiverVirtualAddress: string, paymentRequest: IPaymentRequest, receiverPasscode: string) -> Push a new payment Request to the Virtual address specified with their receiving passcode.
