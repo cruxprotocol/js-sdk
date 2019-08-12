@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h4>Common Functions</h4>
+    
+    Peer Status: <span id='status'></span><br>
+    
+    <pre id="user"></pre><br>
+    
+    <button onclick="checkStatus()">Check Status</button>
+    
+    <br><br>
+
+    <button onclick="havePayIDClaim()">Have PayIDClaim?</button>
+    <button onclick="getPayIDClaim()">Show PayIDClaim</button>
+    
+    <br><br>
+
+    Virtual Address: <input id="virtualAddress"><br>
+    Passcode: <input id="passcode"><br>
+    <button onclick="addPayIDClaim()">Add PayIDClaim</button>
+    
+    <br><br>
+    
+    <br><br>
+    ========================
+    <br><br>
+    <h4>Demo Wallet</h4>
+    
+    Wallet Address: <span id='address'></span>
+    
+    <br><br>
+
+    <button onclick="wallet.activateListener()">ActivateListener</button>
+    <pre id="requests"></pre>
+
+
+    <br><br>
+    ========================
+    <br><br>
+
+    <h4>Demo Service</h4>
+    <input id='receiver'>
+    <button onclick="sendPaymentRequest()">Request Payment</button>
+
+    <script src="../samples/script.ts"></script>
+</body>
+</html>
