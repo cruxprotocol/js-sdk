@@ -312,13 +312,3 @@ export class OpenPayService extends OpenPayPeer {
         
     }
 }
-
-
-let OpenPay = {
-    OpenPayWallet: OpenPayWallet,
-    OpenPayService: OpenPayService,
-    Storage: Storage,
-    Encryption: Encryption
-}
-
-window.CoinSwitch = {...window.CoinSwitch , ...OpenPay}
