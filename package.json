@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node_modules/.bin/parcel build index.ts -d dist --out-file openpay.min.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "sample": "node_modules/.bin/parcel samples/sdk_test.html --https"
+    "sample": "node_modules/.bin/parcel samples/sdk_test.html --https",
+    "build-dom": "node_modules/.bin/parcel build openpay-dom.ts -d dist --out-file openpay-dom.min.js"
   },
   "keywords": [],
   "author": "",

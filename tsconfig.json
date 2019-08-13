@@ -1,0 +1,12 @@
+{
+    "files": [
+        "index.ts"
+    ],
+    "compilerOptions": {
+        "noImplicitAny": true,
+        "target": "es2015",
+        "module": "commonjs",
+        "sourceMap": true,
+        "outDir": "dist"
+    }
+}
