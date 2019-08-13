@@ -1,13 +1,14 @@
 {
-  "name": "sdk",
-  "version": "1.0.0",
+  "name": "openpay_sdk",
+  "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "node_modules/.bin/parcel build index.ts -d dist --out-file openpay.min.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "sample": "node_modules/.bin/parcel samples/sdk_test.html --https",
-    "build-dom": "node_modules/.bin/parcel build openpay-dom.ts -d dist --out-file openpay-dom.min.js"
+    "build:js": "node_modules/.bin/parcel build index.ts -d dist --out-file openpay.min.js",
+    "build:dom": "node_modules/.bin/parcel build openpay-dom.ts -d dist --out-file openpay-dom.min.js",
+    "build": "npm run build:js && npm run build:dom"
   },
   "keywords": [],
   "author": "",
