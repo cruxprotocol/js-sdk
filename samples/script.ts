@@ -1,11 +1,8 @@
-import { IPayIDClaim, IPaymentRequest, OpenPayWallet, OpenPayService, Storage, Encryption } from "../../sdk";
+import { IPayIDClaim, IPaymentRequest, OpenPayWallet, OpenPayService } from "../../sdk/src/index";
 
 
 window.OpenPayWallet = OpenPayWallet
 window.OpenPayService = OpenPayService
-window.Storage = Storage
-window.Encryption = Encryption
-
 
 
 
@@ -69,9 +66,6 @@ window.addPayIDClaim = addPayIDClaim
 // Service
 
 
-
-document.getElementById('receiver').value = Storage.getItem('peerVirtualAddress')
-
 const dummyPaymentRequest: IPaymentRequest = {
     format: "",
     currency: "btc",
@@ -87,9 +81,12 @@ const openpayService = new OpenPayService()
 window.service = openpayService
 
 window.sendPaymentRequest = () => {
+    let payIDClaim = sessionStorage.getItem('payIDClaim') || localStorage.getItem('payIDClaim')
+    openpayService.addPayIDClaim(payIDClaim.virtualAddress, payIDClaim.passcode)
+    
     let receiverVirtualAddress: string =  document.getElementById('receiver').value
     let receiverPasscode: string = prompt('Receiver passcode')
-    Storage.setItem('peerVirtualAddress', receiverVirtualAddress)
+    // Storage.setItem('peerVirtualAddress', receiverVirtualAddress)
     openpayService.sendPaymentRequest(receiverVirtualAddress, dummyPaymentRequest, receiverPasscode)
 }
 
