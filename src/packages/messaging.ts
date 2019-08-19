@@ -1,6 +1,6 @@
 import Peer from "peerjs";
-import { IPaymentRequest, IPayIDClaim, StorageService } from "..";
-import { Encryption, LocalStorage } from ".";
+import { IPaymentRequest, IPayIDClaim } from "..";
+import { Encryption, LocalStorage, StorageService } from ".";
 import { EventEmitter } from "eventemitter3";
 
 
