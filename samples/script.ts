@@ -53,7 +53,9 @@ const addPayIDClaim = () => {
 window.addPayIDClaim = addPayIDClaim
 
 
-
+const setupIdentity = () => {
+    let vA = document.get
+}
 
 
 
