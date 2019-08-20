@@ -1,12 +1,19 @@
 import { EventEmitter } from "eventemitter3";
+import 'regenerator-runtime/runtime'
 
-import { LocalStorage, Encryption, PeerJSService, StorageService, PubSubService } from "./packages";
+import { 
+    StorageService, LocalStorage, 
+    Encryption, 
+    PubSubService, PeerJSService,
+    NameService, BlockstackService 
+} from "./packages";
 
 
 // TODO: Implement classes enforcing the interfaces
 export interface IPayIDClaim {
     virtualAddress: string
     passcode: string
+    privKey: string
 }
 
 export interface IAddress {
@@ -30,6 +37,7 @@ interface IOpenPayPeerOptions {
     storage?: StorageService
     encryption?: typeof Encryption
     pubsub?: PubSubService
+    nameservice?: NameService
 }
 
 class OpenPayPeer extends EventEmitter {
@@ -38,6 +46,7 @@ class OpenPayPeer extends EventEmitter {
     protected _storage: StorageService
     protected _encryption: typeof Encryption
     protected _pubsub: PubSubService
+    protected _nameservice: NameService
 
     protected _payIDClaim: IPayIDClaim
     
@@ -54,6 +63,7 @@ class OpenPayPeer extends EventEmitter {
             storage: this._storage,
             encryption: this._options.encryption
         })
+        this._nameservice = this._options.nameservice || new BlockstackService()
 
         if (this._hasPayIDClaimStored) {
             let payIDClaim = this._storage.getJSON('payIDClaim')
@@ -90,6 +100,9 @@ class OpenPayPeer extends EventEmitter {
     public isActive = () => this._pubsub.isActive()
 
     public isListening = () => this._pubsub.isListening()
+
+
+    // NameService specific methods
 
 }
 

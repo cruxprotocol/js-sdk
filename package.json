@@ -18,6 +18,7 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
+    "blockstack": "^19.2.5",
     "eventemitter3": "^4.0.0",
     "peerjs": "^1.0.2"
   }
