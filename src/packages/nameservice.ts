@@ -137,7 +137,7 @@ export class BlockstackService extends NameService {
 
         var options = { 
             method: 'POST',
-            baseUrl: 'http://167.71.234.131:3000',
+            baseUrl: 'https://167.71.234.131:3000',
             url: '/register',
             headers: { 
                 'Content-Type': 'application/json'
@@ -184,7 +184,7 @@ export class BlockstackService extends NameService {
             if (!this._subdomain) throw (`No subdomain is registered`)
             var options = { 
                 method: 'GET',
-                baseUrl: 'http://167.71.234.131:3000',
+                baseUrl: 'https://167.71.234.131:3000',
                 url: `/status/${this._subdomain}`,
                 json: true
             };
