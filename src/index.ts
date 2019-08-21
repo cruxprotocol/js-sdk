@@ -13,7 +13,7 @@ import {
 export interface IPayIDClaim {
     virtualAddress: string
     passcode: string
-    privKey: string
+    identitySecret?: string
 }
 
 export interface IAddress {
@@ -79,7 +79,7 @@ class OpenPayPeer extends EventEmitter {
         return this._payIDClaim
     }
 
-    public addPayIDClaim = (virtualAddress: string, passcode: string): void => {
+    public addPayIDClaim = async (virtualAddress: string, passcode: string): Promise<void> => {
         let payIDClaim: IPayIDClaim = {
             virtualAddress: virtualAddress,
             passcode: passcode
@@ -93,7 +93,7 @@ class OpenPayPeer extends EventEmitter {
         return Boolean(this._storage.getJSON('payIDClaim'))
     }
 
-    private _setPayIDClaim = (payIDClaim: IPayIDClaim): void => {
+    protected _setPayIDClaim = (payIDClaim: IPayIDClaim): void => {
         this._payIDClaim = payIDClaim
     }
 
@@ -101,8 +101,9 @@ class OpenPayPeer extends EventEmitter {
 
     public isListening = () => this._pubsub.isListening()
 
-
-    // NameService specific methods
+    public getPublicIdAvailability = (username: string): Promise<boolean> => {
+        return this._nameservice.getNameAvailability(username)
+    }
 
 }
 
@@ -113,7 +114,6 @@ export class OpenPayWallet extends OpenPayPeer {
 
     constructor(_options: IOpenPayPeerOptions) {
         super(_options);
-        
     }
 
     public activateListener = async (dataCallback?: (requestObj: JSON) => void): Promise<void> => {
@@ -123,6 +123,26 @@ export class OpenPayWallet extends OpenPayPeer {
             if (dataCallback) dataCallback(dataObj)
         })
     }
+    
+
+    // NameService specific methods
+
+    public addPayIDClaim = async (virtualAddress: string, passcode: string): Promise<void> => {
+        // Generating the identityClaim
+        let identityClaim = this._nameservice.generateIdentity()
+        let registeredPublicID = await this._nameservice.registerName(virtualAddress)
+        
+        // Setup the payIDClaim locally
+        let payIDClaim: IPayIDClaim = {
+            virtualAddress: registeredPublicID,
+            passcode: passcode,
+            identitySecret: identityClaim.secret
+        }
+        this._storage.setJSON('payIDClaim', payIDClaim)
+        this._setPayIDClaim(payIDClaim)
+        
+    }
+
 }
 
 
@@ -137,6 +157,15 @@ export class OpenPayService extends OpenPayPeer {
     }
 
     public sendPaymentRequest = async (receiverVirtualAddress: string, paymentRequest: IPaymentRequest, passcode?: string): Promise<void> => {
+        // Resolve the public key of the receiver via nameservice
+        try {
+            let receiverPublicKey = await this._nameservice.resolveName(receiverVirtualAddress)
+            console.log(receiverPublicKey)
+        } catch {
+            console.log(`Receiver is probably not a blockstack id owner`)
+        }
+        
+
         // Initialise the DataConnection for sending the request
         let receiverPasscode = passcode || prompt("Receiver passcode")
 

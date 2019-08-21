@@ -43,23 +43,23 @@ const getPayIDClaim = () => {
 window.getPayIDClaim = getPayIDClaim
 
 
-const addPayIDClaim = () => {
+const addPayIDClaim = async () => {
     let vA = document.getElementById('virtualAddress').value
     let pass = document.getElementById('passcode').value
 
-    wallet.addPayIDClaim(vA, pass)
+    await wallet.addPayIDClaim(vA, pass)
 }
 
 window.addPayIDClaim = addPayIDClaim
 
 
-const setupIdentity = () => {
-    let vA = document.get
+const getIdAvailability = async () => {
+    let username = document.getElementById('registrationId').value
+    let availability = await wallet.getPublicIdAvailability(username) 
+    document.getElementById('availability').innerHTML = availability  
 }
 
-
-
-
+window.getIdAvailability = getIdAvailability
 
 
 

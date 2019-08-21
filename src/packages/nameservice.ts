@@ -1,12 +1,11 @@
-import { makeECPrivateKey, getPublicKeyFromPrivate, publicKeyToAddress, connectToGaiaHub, uploadToGaiaHub, default as blockstack, wrapProfileToken, Person, BlockstackWallet} from "blockstack";
+import { makeECPrivateKey, getPublicKeyFromPrivate, publicKeyToAddress, connectToGaiaHub, uploadToGaiaHub, default as blockstack, wrapProfileToken, Person, BlockstackWallet, lookupProfile, verifyProfileToken} from "blockstack";
 import * as bitcoin from "bitcoinjs-lib";
+import request from "request";
 
 // NameService abstraction
 
-export interface IBitcoinKeyPair {
-    privKey: string
-    pubKey: string
-    address: string
+export interface IIdentityClaim {
+    secret: string
 }
 
 
@@ -14,14 +13,15 @@ export abstract class NameService {
 
     constructor() {}
 
-    abstract generateIdentity = () => {}
-    abstract exportIdentity = () => {}
-    abstract restoreIdentity = () => {}
+    abstract generateIdentity = (): IIdentityClaim => {return {secret: null}}
+    abstract getNameAvailability = async (name: string): Promise<boolean> => {return false}
+    abstract registerName = async (name: string): Promise<string> => {return}
+    // TODO: need to respond with boolean
+    abstract getRegistrationStatus = (): Promise<string> => {return new Promise(() => "status")}
+    abstract resolveName = async (name: string, options?: JSON): Promise<string> => {return "pubkey"}
 
-    abstract registerName = (name: string, _options?: JSON): any => {}
-    // resolving a namespace -> publicKey
-    // abstract resolve = async (id: string): Promise<any> => {}
-    // check for the status of the namespace registration
+    // TODO: Implement methods to add/update address mapping (Gamma usecase)
+
 }
 
 
@@ -30,13 +30,21 @@ export abstract class NameService {
 
 // Blockstack Nameservice implementation
 
+export interface IBitcoinKeyPair {
+    privKey: string
+    pubKey: string
+    address: string
+}
 
 export class BlockstackService extends NameService {
+    // temporary
     public blockstack = blockstack
     public bitcoin = bitcoin
 
     private _mnemonic: string
     private _identityKeyPair: IBitcoinKeyPair
+    private _subdomain: string
+    private _domain: string = 'devcoinswitch.id'
 
 
     constructor() {
@@ -58,6 +66,7 @@ export class BlockstackService extends NameService {
         let encryptedMnemonic = await BlockstackWallet.encryptMnemonic(this._mnemonic, 'temp')
         let wallet = await BlockstackWallet.fromEncryptedMnemonic(encryptedMnemonic, 'temp')
         // Using the first identity key pair for now
+        // TODO: need to validate the name registration on the address if already available
         let { address, key, keyID} = wallet.getIdentityKeyPair(0)   
         let identityKeyPair: IBitcoinKeyPair = {
             address: address,
@@ -67,24 +76,18 @@ export class BlockstackService extends NameService {
         this._identityKeyPair = identityKeyPair
     }
 
-
-
-    public restoreIdentity = (options?: JSON) => {
-        if (!options || !options['mnemonic']) throw (`Require mnemonic for restoring the identity`)
-        this._setMnemonic(options['mnemonic'])
+    public restoreIdentity = (options?: any): void => {
+        if (!options || !options['identitySecret']) throw (`Require mnemonic for restoring the identity`)
+        this._setMnemonic(options['identitySecret'])
     }
 
-    public generateIdentity = (): void => {
+    public generateIdentity = (): IIdentityClaim => {
         let newMnemonic = this._generateMnemonic()
+        console.log(newMnemonic)
         alert(`Your new mnemonic backing your identity is \n ${newMnemonic}`)
         this._mnemonic = newMnemonic
+        return { secret: this._mnemonic }
     }
-
-    public exportIdentity = (): any => {
-        return this._mnemonic
-    }
-
-    
 
     private _generateKeyPair = (): IBitcoinKeyPair => {
         
@@ -103,7 +106,9 @@ export class BlockstackService extends NameService {
 
     private _uploadProfileInfo = (privKey: string) => {
         // TODO: validate the privateKey format and convert
-
+        if (privKey.length == 66 && privKey.slice(64) === '01') {
+            privKey = privKey.slice(0, 64);
+         }
 
         const promise: Promise<boolean> = new Promise(async (resolve, reject) => {
             let hubUrl = "https://hub.blockstack.org"
@@ -115,6 +120,7 @@ export class BlockstackService extends NameService {
                     }
                     let person = new Person(sampleProfileObj)
                     let token = person.toToken(privKey)
+                    console.log(token)
                     let tokenFile = [wrapProfileToken(token)]
                     console.log(tokenFile)
                     uploadToGaiaHub('profile.json', JSON.stringify(tokenFile), hubConfig, "application/json")
@@ -128,32 +134,35 @@ export class BlockstackService extends NameService {
     }
 
     private _registerSubdomain = (name: string, bitcoinAddress: string) => {
-        var request = require("request");
 
         var options = { 
             method: 'POST',
-            url: 'http://167.71.234.131:3000/register/',
+            baseUrl: 'http://167.71.234.131:3000',
+            url: '/register',
             headers: { 
-                'Content-Type': 'application/json',
-                Authorization: 'bearer API-KEY-IF-USED' 
+                'Content-Type': 'application/json'
             },
             body: { 
                 zonefile: `$ORIGIN ${name}\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.blockstack.org/hub/${bitcoinAddress}/profile.json"\n`,
                 name: name,
                 owner_address: bitcoinAddress
             },
-            json: true 
+            json: true,
+            strictSSL: false
         };
-
-        console.log(options)
 
         request(options, function (error, response, body) {
             if (error) throw new Error(error)
             console.log(body)
+            // TODO: resolve the promise to true on status: true
+            if (body && body['status'] == true) {
+                this._subdomain = name
+            }
         })
+
     }
 
-    public registerName = async (name: string, _options?: JSON): Promise<any> => {
+    public registerName = async (name: string): Promise<string> => {
         // Check for existing mnemonic
         if (!this._mnemonic) {
             // Generate new mnemonic if not available
@@ -163,22 +172,93 @@ export class BlockstackService extends NameService {
         await this._generateIdentityKeyPair()
 
         // Upload the profile.json file to the Gaia hub
-        this._uploadProfileInfo(this._identityKeyPair.privKey)
+        await this._uploadProfileInfo(this._identityKeyPair.privKey)
+        
         // Register the subdomain with Coinswitch registrar service
         this._registerSubdomain(name, this._identityKeyPair.address)
+        return `${this._subdomain}.${this._domain}`
     }
 
-    // public resolve = async (id: string): Promise<string> => {
-    //     let profile = await lookupProfile(id)
-    //     console.log(profile)
-    //     console.log(profile.address)
-    //     return profile.address
-    // }
+    public getRegistrationStatus = (): Promise<string> => {
+        const promise: Promise<string> = new Promise(async (resolve, reject) => {
+            if (!this._subdomain) throw (`No subdomain is registered`)
+            var options = { 
+                method: 'GET',
+                baseUrl: 'http://167.71.234.131:3000',
+                url: `/status/${this._subdomain}`,
+                json: true
+            };
 
-    // lookup = () => {
-    //     console.log(lookupProfile('coinswitch.id'))
-    // }
-    // zone = (zonefile, address) => {
-    //     console.log(resolveZoneFileToPerson(zonefile, address, console.log))
-    // }
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error)
+                console.log(body)
+                alert(body.status)
+                resolve(body.status)
+            })
+        })
+        return promise
+    }
+
+    private _fetchNameDetails = (name: string, domain?: string): Promise<JSON> => {
+        const promise: Promise<JSON> = new Promise(async (resolve, reject) => {
+            var options = { 
+                method: 'GET',
+                baseUrl: 'https://core.blockstack.org',
+                url: `/v1/names/${name}.${domain || this._domain}`,
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error)
+                resolve(body)
+            })
+        })
+        return promise
+    }
+
+    public getNameAvailability = async (name: string): Promise<boolean> => {
+        let nameData = await this._fetchNameDetails(name)
+        return nameData['status'] == "available" ? true : false
+    }
+
+    public resolveName = async (name: string, options = {}): Promise<string> => {
+        let domain = options['domain'] || this._domain
+        let nameData = await this._fetchNameDetails(name, domain)
+        if (!nameData) throw (`No name data availabe!`)
+        let bitcoinAddress = nameData['address']
+        console.log(nameData)
+        let profileUrl = "https://" + nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2] + "/profile.json"
+        const promise: Promise<string> = new Promise(async (resolve, reject) => {
+            var options = { 
+                method: 'GET',
+                url: profileUrl,
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error)
+                let publicKey: string
+
+                try {
+                    publicKey = body[0].decodedToken.payload.subject.publicKey
+                } catch {
+                    throw (`Probably this id resolves to a domain registrar`)
+                }
+                
+                let addressFromPub = publicKeyToAddress(publicKey)
+                
+                // validate the file integrity with the token signature
+                try {
+                    const decodedToken = verifyProfileToken(body[0].token, publicKey)
+                } catch(e) {
+                    console.log(e)
+                }
+
+                if (addressFromPub === bitcoinAddress) resolve (publicKey)
+                else reject (`Invalid zonefile`)
+            })
+        })
+        return promise
+    }
+
 }

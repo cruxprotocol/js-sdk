@@ -10,16 +10,23 @@
     <h4>Common Functions</h4>
     
     Peer Status: <span id='status'></span><br>
+
+    <button onclick="checkStatus()">Check Status</button><br>
     
-    <pre id="user"></pre><br>
     
-    <button onclick="checkStatus()">Check Status</button>
+    <pre id="user"></pre>
     
     <br><br>
 
     <button onclick="havePayIDClaim()">Have PayIDClaim?</button>
     <button onclick="getPayIDClaim()">Show PayIDClaim</button>
     
+    <br><br>
+
+    <input id="registrationId">
+    <button onclick="getIdAvailability()">Check Availability</button>
+    <span id='availability'></span><br><br>
+
     <br><br>
 
     Virtual Address: <input id="virtualAddress"><br>
@@ -40,12 +47,6 @@
     <button onclick="wallet.activateListener()">ActivateListener</button>
     <pre id="requests"></pre>
 
-    <br><br>
-
-    <input id="registrationId">
-    <button>Register ID</button>
-
-    <br><br>
     ========================
     <br><br>
 
