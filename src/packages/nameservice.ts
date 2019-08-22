@@ -133,32 +133,37 @@ export class BlockstackService extends NameService {
         return promise
     }
 
-    private _registerSubdomain = (name: string, bitcoinAddress: string) => {
-
-        var options = { 
-            method: 'POST',
-            baseUrl: 'https://167.71.234.131:3000',
-            url: '/register',
-            headers: { 
-                'Content-Type': 'application/json'
-            },
-            body: { 
-                zonefile: `$ORIGIN ${name}\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.blockstack.org/hub/${bitcoinAddress}/profile.json"\n`,
-                name: name,
-                owner_address: bitcoinAddress
-            },
-            json: true,
-            strictSSL: false
-        };
-
-        request(options, function (error, response, body) {
-            if (error) throw new Error(error)
-            console.log(body)
-            // TODO: resolve the promise to true on status: true
-            if (body && body['status'] == true) {
-                this._subdomain = name
-            }
+    private _registerSubdomain = (name: string, bitcoinAddress: string): Promise<string> => {
+        const promise: Promise<string> = new Promise(async (resolve, reject) => {
+            var options = { 
+                method: 'POST',
+                baseUrl: 'https://167.71.234.131:3000',
+                url: '/register',
+                headers: { 
+                    'Content-Type': 'application/json'
+                },
+                body: { 
+                    zonefile: `$ORIGIN ${name}\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.blockstack.org/hub/${bitcoinAddress}/profile.json"\n`,
+                    name: name,
+                    owner_address: bitcoinAddress
+                },
+                json: true,
+                strictSSL: false
+            };
+    
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error)
+                console.log(body)
+                // TODO: resolve the promise to true on status: true
+                if (body && body['status'] == true) {
+                    resolve(name)
+                }
+                else {
+                    reject(body)
+                }
+            })
         })
+        return promise
 
     }
 
@@ -175,7 +180,9 @@ export class BlockstackService extends NameService {
         await this._uploadProfileInfo(this._identityKeyPair.privKey)
         
         // Register the subdomain with Coinswitch registrar service
-        this._registerSubdomain(name, this._identityKeyPair.address)
+        let registeredSubdomain = await this._registerSubdomain(name, this._identityKeyPair.address)
+        this._subdomain = registeredSubdomain
+
         return `${this._subdomain}.${this._domain}`
     }
 
