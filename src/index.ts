@@ -1,5 +1,15 @@
 import { EventEmitter } from "eventemitter3";
-import 'regenerator-runtime/runtime'
+import 'regenerator-runtime/runtime';
+import Logger from "js-logger";
+import path from "path";
+
+// Setup logging configuration
+Logger.useDefaults();
+Logger.setLevel(Logger.DEBUG);
+export function getLogger (filename) {
+    return Logger.get("OpenPay: " + filename.slice(filename.lastIndexOf(path.sep)+1, filename.length -3))
+}
+let log = getLogger(__filename)
 
 import { 
     StorageService, LocalStorage, 
@@ -71,6 +81,7 @@ class OpenPayPeer extends EventEmitter {
             let payIDClaim = this._storage.getJSON('payIDClaim')
             this._setPayIDClaim(payIDClaim)
         }
+        log.info(`OpenPayPeer Initialised`)
     }
 
     public hasPayIDClaim = (): boolean =>  {
@@ -116,6 +127,7 @@ export class OpenPayWallet extends OpenPayPeer {
 
     constructor(_options: IOpenPayPeerOptions) {
         super(_options);
+        log.info(`OpenPayWallet Initialised`)
     }
 
     public activateListener = async (dataCallback?: (requestObj: JSON) => void): Promise<void> => {
@@ -155,7 +167,7 @@ export class OpenPayService extends OpenPayPeer {
 
     constructor(_options: IOpenPayPeerOptions) {
         super(_options);
-        
+        log.info(`OpenPayService Initialised`)
     }
 
     public sendPaymentRequest = async (receiverVirtualAddress: string, paymentRequest: IPaymentRequest, passcode?: string): Promise<void> => {
