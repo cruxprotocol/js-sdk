@@ -155,7 +155,7 @@ export class PeerJSService extends PubSubService {
 
         let peerIdentifier = await this._generatePeerId(peerVirtualAddress, peerPasscode)
 
-        let dataConnection: Peer.DataConnection = await this._peer.connect(peerIdentifier, {label: "openpay"})
+        let dataConnection: Peer.DataConnection = this._peer.connect(peerIdentifier, {label: "openpay"})
         this._registerDataCallbacks(payIDClaim, dataConnection)
         return dataConnection
     }
