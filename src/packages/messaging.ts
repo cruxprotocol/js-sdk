@@ -77,7 +77,7 @@ const iceConfig = {
 
 export class PeerJSService extends PubSubService {
     // TODO: fix the peerjs-server host
-    private _peerServerCred = {key: "peerjs", secure: false, host: "localhost", port: 9090, config: iceConfig}
+    private _peerServerCred = {key: "peerjs", secure: true, host: "157.230.199.143", port: 9090, config: iceConfig}
     private _peer: Peer
 
     constructor(_options: IPubSubServiceOptions) {
