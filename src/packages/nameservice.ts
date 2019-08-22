@@ -1,6 +1,11 @@
+Object.defineProperty(exports, "__esModule", { value: true });
+
 import { makeECPrivateKey, getPublicKeyFromPrivate, publicKeyToAddress, connectToGaiaHub, uploadToGaiaHub, default as blockstack, wrapProfileToken, Person, BlockstackWallet, lookupProfile, verifyProfileToken} from "blockstack";
 import * as bitcoin from "bitcoinjs-lib";
 import request from "request";
+import { TokenSigner, SECP256K1Client } from "jsontokens";
+
+import { AddressMapping } from "./AddressMapping";
 
 // NameService abstraction
 
@@ -19,6 +24,8 @@ export abstract class NameService {
     // TODO: need to respond with boolean
     abstract getRegistrationStatus = (): Promise<string> => {return new Promise(() => "status")}
     abstract resolveName = async (name: string, options?: JSON): Promise<string> => {return "pubkey"}
+    abstract getAddressMapping = async (name: string, currency: string, options?: JSON): Promise<AddressMapping> => {return new AddressMapping}
+    abstract putAddressMapping = async (addressMapping: JSON): Promise<string> => {return "pubkey"}
 
     // TODO: Implement methods to add/update address mapping (Gamma usecase)
 
@@ -29,7 +36,6 @@ export abstract class NameService {
 
 
 // Blockstack Nameservice implementation
-
 export interface IBitcoinKeyPair {
     privKey: string
     pubKey: string
@@ -133,35 +139,73 @@ export class BlockstackService extends NameService {
         return promise
     }
 
-    private _registerSubdomain = (name: string, bitcoinAddress: string): Promise<string> => {
-        const promise: Promise<string> = new Promise(async (resolve, reject) => {
-            var options = { 
-                method: 'POST',
-                baseUrl: 'https://167.71.234.131:3000',
-                url: '/register',
-                headers: { 
-                    'Content-Type': 'application/json'
-                },
-                body: { 
-                    zonefile: `$ORIGIN ${name}\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.blockstack.org/hub/${bitcoinAddress}/profile.json"\n`,
-                    name: name,
-                    owner_address: bitcoinAddress
-                },
-                json: true,
-                strictSSL: false
-            };
-    
-            request(options, function (error, response, body) {
-                if (error) throw new Error(error)
-                console.log(body)
-                // TODO: resolve the promise to true on status: true
-                if (body && body['status'] == true) {
-                    resolve(name)
-                }
-                else {
-                    reject(body)
-                }
-            })
+    private _uploadAddressMapping = (privKey: string, addressMap:JSON) => {
+        // TODO: validate the privateKey format and convert
+        if (privKey.length == 66 && privKey.slice(64) === '01') {
+            privKey = privKey.slice(0, 64);
+         }
+
+        const promise: Promise<boolean> = new Promise(async (resolve, reject) => {
+            let hubUrl = "https://hub.blockstack.org"
+            connectToGaiaHub(hubUrl, privKey)
+                .then(hubConfig => {
+                    // let sampleAddressMappingObj = {
+                    //     "btc": {
+                    //         "address": "some_btc_addr",
+                    //         "tag": null
+                    //     },
+                    //     "eth": {
+                    //         "address": "some_eth_addr",
+                    //         "tag": null
+                    //     },
+                    // }
+                    let addressMapObj = new AddressMapping(addressMap)
+                    const pubKey = SECP256K1Client.derivePublicKey(privKey)
+                    const tokenSigner = new TokenSigner("ES256K", privKey)
+                    const payload = {
+                        issuer: { pubKey },
+                        claim: addressMapObj.toJSON()
+                    }
+                    // @ts-ignore
+                    let token = tokenSigner.sign(payload)
+                    console.log(token)
+                    let tokenFile = [wrapProfileToken(token)]
+                    console.log(tokenFile)
+                    uploadToGaiaHub('openpay.json', JSON.stringify(tokenFile), hubConfig, "application/json")
+                        .then(finalUrl => {
+                            console.log(finalUrl)
+                            resolve(true)
+                        })
+                })
+        })
+        return promise
+    }
+
+    private _registerSubdomain = (name: string, bitcoinAddress: string) => {
+
+        var options = { 
+            method: 'POST',
+            baseUrl: 'https://167.71.234.131:3000',
+            url: '/register',
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            body: { 
+                zonefile: `$ORIGIN ${name}\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.blockstack.org/hub/${bitcoinAddress}/profile.json"\n`,
+                name: name,
+                owner_address: bitcoinAddress
+            },
+            json: true,
+            strictSSL: false
+        };
+
+        request(options, function (error, response, body) {
+            if (error) throw new Error(error)
+            console.log(body)
+            // TODO: resolve the promise to true on status: true
+            if (body && body['status'] == true) {
+                this._subdomain = name
+            }
         })
         return promise
 
@@ -266,6 +310,52 @@ export class BlockstackService extends NameService {
             })
         })
         return promise
+    }
+
+    public putAddressMapping = async(addressMapping: JSON): Promise<string> => {
+        await this._uploadAddressMapping(this._identityKeyPair.privKey, addressMapping)
+        return 'success'
+    }
+
+    public getAddressMapping = async(name: string, options?: JSON): Promise<AddressMapping> => {
+        // let domain = options['domain'] || this._domain
+        // let nameData = await this._fetchNameDetails(name, domain)
+        // if (!nameData) throw (`No name data availabe!`)
+        // let bitcoinAddress = nameData['address']
+        // console.log(nameData)
+        // let profileUrl = "https://" + nameData['zonefile'].match(/(.+)https:\/\/(.+)\/openpay.json/s)[2] + "/openpay.json"
+        // const promise: Promise<string> = new Promise(async (resolve, reject) => {
+        //     var options = { 
+        //         method: 'GET',
+        //         url: profileUrl,
+        //         json: true
+        //     };
+
+        //     request(options, function (error, response, body) {
+        //         if (error) throw new Error(error)
+        //         let addressMap: string
+
+        //         try {
+        //             addressMap = body[0].decodedToken.payload.claim
+        //         } catch {
+        //             throw (`Probably this id resolves to a domain registrar`)
+        //         }
+                
+        //         let addressFromPub = publicKeyToAddress(publicKey)
+                
+        //         // validate the file integrity with the token signature
+        //         try {
+        //             const decodedToken = verifyProfileToken(body[0].token, publicKey)
+        //         } catch(e) {
+        //             console.log(e)
+        //         }
+
+        //         if (addressFromPub === bitcoinAddress) resolve (publicKey)
+        //         else reject (`Invalid zonefile`)
+        //     })
+        // })
+        // return promise
+        return new AddressMapping
     }
 
 }
