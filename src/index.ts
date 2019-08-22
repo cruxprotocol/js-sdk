@@ -8,6 +8,8 @@ import {
     NameService, BlockstackService 
 } from "./packages";
 
+export { LocalStorage, Encryption, PeerJSService, BlockstackService }
+
 
 // TODO: Implement classes enforcing the interfaces
 export interface IPayIDClaim {
@@ -140,7 +142,7 @@ export class OpenPayWallet extends OpenPayPeer {
         }
         this._storage.setJSON('payIDClaim', payIDClaim)
         this._setPayIDClaim(payIDClaim)
-        
+
     }
 
 }
