@@ -1,3 +1,7 @@
+import { getLogger } from "..";
+
+let log = getLogger(__filename)
+
 
 // Stroage service abstraction
 
@@ -20,10 +24,10 @@ export class LocalStorage extends StorageService {
         super();
         if (!persist) {
             this.storage = sessionStorage
-            console.log(`Using sessionStorage as StorageService`)
+            log.info(`Using sessionStorage as StorageService`)
         } else {
             this.storage = localStorage
-            console.log(`Using localStorage as StorageService`)
+            log.info(`Using localStorage as StorageService`)
         }
     }
 
