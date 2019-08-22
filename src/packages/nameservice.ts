@@ -92,6 +92,7 @@ export class BlockstackService extends NameService {
     public restoreIdentity = (options?: any): void => {
         if (!options || !options['identitySecret']) throw (`Require mnemonic for restoring the identity`)
         this._setMnemonic(options['identitySecret'])
+        this._generateIdentityKeyPair()
     }
 
     public generateIdentity = (): IIdentityClaim => {
