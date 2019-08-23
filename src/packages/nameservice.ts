@@ -5,7 +5,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import request from "request";
 import { TokenSigner, SECP256K1Client } from "jsontokens";
 
-import { AddressMapping } from "./AddressMapping";
+import { AddressMapping } from "./addressmapping";
 import { getLogger } from "..";
 
 let log = getLogger(__filename)
@@ -347,44 +347,44 @@ export class BlockstackService extends NameService {
     }
 
     public getAddressMapping = async(name: string, options?: JSON): Promise<AddressMapping> => {
-        // let domain = options['domain'] || this._domain
-        // let nameData = await this._fetchNameDetails(name, domain)
-        // if (!nameData) throw (`No name data availabe!`)
-        // let bitcoinAddress = nameData['address']
-        // console.log(nameData)
-        // let profileUrl = "https://" + nameData['zonefile'].match(/(.+)https:\/\/(.+)\/openpay.json/s)[2] + "/openpay.json"
-        // const promise: Promise<string> = new Promise(async (resolve, reject) => {
-        //     var options = { 
-        //         method: 'GET',
-        //         url: profileUrl,
-        //         json: true
-        //     };
+        let pubKey = this._identityKeyPair.pubKey
+        let domain = options['domain'] || this._domain
+        let nameData = await this._fetchNameDetails(name, domain)
+        if (!nameData) throw (`No name data availabe!`)
+        let bitcoinAddress = nameData['address']
+        console.log(nameData)
+        let profileUrl = "https://" + nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2] + "/openpay.json"
+        const promise: Promise<string> = new Promise(async (resolve, reject) => {
+            var options = { 
+                method: 'GET',
+                url: profileUrl,
+                json: true
+            };
 
-        //     request(options, function (error, response, body) {
-        //         if (error) throw new Error(error)
-        //         let addressMap: string
+            request(options, function (error, response, body) {
+                if (error) throw new Error(error)
+                let addressMap: string
 
-        //         try {
-        //             addressMap = body[0].decodedToken.payload.claim
-        //         } catch {
-        //             throw (`Probably this id resolves to a domain registrar`)
-        //         }
+                try {
+                    addressMap = body[0].decodedToken.payload.claim
+                } catch {
+                    throw (`Probably this id resolves to a domain registrar`)
+                }
                 
-        //         let addressFromPub = publicKeyToAddress(publicKey)
+                let addressFromPub = publicKeyToAddress(pubKey)
                 
-        //         // validate the file integrity with the token signature
-        //         try {
-        //             const decodedToken = verifyProfileToken(body[0].token, publicKey)
-        //         } catch(e) {
-        //             console.log(e)
-        //         }
+                // validate the file integrity with the token signature
+                try {
+                    const decodedToken = verifyProfileToken(body[0].token, pubKey)
+                } catch(e) {
+                    console.log(e)
+                }
 
-        //         if (addressFromPub === bitcoinAddress) resolve (publicKey)
-        //         else reject (`Invalid zonefile`)
-        //     })
-        // })
-        // return promise
-        return new AddressMapping
+                if (addressFromPub === bitcoinAddress) resolve (addressMap)
+                else reject (`Invalid zonefile`)
+            })
+        })
+        return promise
     }
 
 }
