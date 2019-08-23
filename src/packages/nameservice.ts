@@ -6,6 +6,9 @@ import request from "request";
 import { TokenSigner, SECP256K1Client } from "jsontokens";
 
 import { AddressMapping } from "./AddressMapping";
+import { getLogger } from "..";
+
+let log = getLogger(__filename)
 
 // NameService abstraction
 
@@ -19,6 +22,8 @@ export abstract class NameService {
     constructor() {}
 
     abstract generateIdentity = (): IIdentityClaim => {return {secret: null}}
+    abstract restoreIdentity = (options?: any): void => {}
+    abstract getDecryptionKey = async (): Promise<string> => {return}
     abstract getNameAvailability = async (name: string): Promise<boolean> => {return false}
     abstract registerName = async (name: string): Promise<string> => {return}
     // TODO: need to respond with boolean
@@ -82,9 +87,18 @@ export class BlockstackService extends NameService {
         this._identityKeyPair = identityKeyPair
     }
 
+    public getDecryptionKey = async () => {
+        if (!this._identityKeyPair) {
+            await this._generateIdentityKeyPair()
+        }
+        let decryptionKey = (this._identityKeyPair.privKey.substr(-2) == "01" && this._identityKeyPair.privKey.length >= 66) ? this._identityKeyPair.privKey.slice(0, -2) : this._identityKeyPair.privKey
+        return decryptionKey
+    }
+
     public restoreIdentity = (options?: any): void => {
         if (!options || !options['identitySecret']) throw (`Require mnemonic for restoring the identity`)
         this._setMnemonic(options['identitySecret'])
+        this._generateIdentityKeyPair()
     }
 
     public generateIdentity = (): IIdentityClaim => {
@@ -250,12 +264,12 @@ export class BlockstackService extends NameService {
         return promise
     }
 
-    private _fetchNameDetails = (name: string, domain?: string): Promise<JSON> => {
+    private _fetchNameDetails = (blockstackId: string): Promise<JSON> => {
         const promise: Promise<JSON> = new Promise(async (resolve, reject) => {
             var options = { 
                 method: 'GET',
                 baseUrl: 'https://core.blockstack.org',
-                url: `/v1/names/${name}.${domain || this._domain}`,
+                url: `/v1/names/${blockstackId}`,
                 json: true
             };
 
@@ -273,8 +287,23 @@ export class BlockstackService extends NameService {
     }
 
     public resolveName = async (name: string, options = {}): Promise<string> => {
-        let domain = options['domain'] || this._domain
-        let nameData = await this._fetchNameDetails(name, domain)
+        let blockstackId: string
+        // if (ankit.coinswitch.id)
+        if (name.substr(-3) == ".id") {
+            let idArray = name.split('.').reverse()
+            let domain = idArray[1] + ".id"
+            blockstackId = (idArray[2] ? `${idArray[2]}.` : "" )+ domain
+        } 
+        // else (ankit)
+        else {
+            let domain = options['domain'] || this._domain
+            blockstackId = `${name}.${domain}`
+        }
+        log.info(`Resolving blockstackId: ${blockstackId}`)
+
+        let nameData = await this._fetchNameDetails(blockstackId)
+        
+        
         if (!nameData) throw (`No name data availabe!`)
         let bitcoinAddress = nameData['address']
         console.log(nameData)

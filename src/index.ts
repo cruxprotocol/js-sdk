@@ -80,6 +80,8 @@ class OpenPayPeer extends EventEmitter {
         if (this._hasPayIDClaimStored) {
             let payIDClaim = this._storage.getJSON('payIDClaim')
             this._setPayIDClaim(payIDClaim)
+            // if have local identitySecret, setup with the nameservice module
+            if ( this._payIDClaim && this._payIDClaim.identitySecret ) this._nameservice.restoreIdentity({ identitySecret: this._payIDClaim.identitySecret})
         }
         log.info(`OpenPayPeer Initialised`)
     }
@@ -99,7 +101,7 @@ class OpenPayPeer extends EventEmitter {
         }
         this._storage.setJSON('payIDClaim', payIDClaim)
         this._setPayIDClaim(payIDClaim)
-        
+        if ( this._payIDClaim && this._payIDClaim.identitySecret ) this._nameservice.restoreIdentity({ identitySecret: this._payIDClaim.identitySecret})
     }
 
     private _hasPayIDClaimStored = (): boolean => {
@@ -132,7 +134,11 @@ export class OpenPayWallet extends OpenPayPeer {
 
     public activateListener = async (dataCallback?: (requestObj: JSON) => void): Promise<void> => {
         if (!this._payIDClaim) throw ("Need PayIDClaim setup!")
-        await this._pubsub.registerTopic(this._payIDClaim, undefined, (dataObj: JSON) => {
+
+        // Derive the decryption privateKey from the nameservice module
+        let decryptionPrivateKey = await this._nameservice.getDecryptionKey()
+
+        await this._pubsub.registerTopic(this._payIDClaim, decryptionPrivateKey, undefined, (dataObj: JSON) => {
             this.emit('request', dataObj)
             if (dataCallback) dataCallback(dataObj)
         })
@@ -172,11 +178,14 @@ export class OpenPayService extends OpenPayPeer {
 
     public sendPaymentRequest = async (receiverVirtualAddress: string, paymentRequest: IPaymentRequest, passcode?: string): Promise<void> => {
         // Resolve the public key of the receiver via nameservice
+        let receiverPublicKey: string
         try {
-            let receiverPublicKey = await this._nameservice.resolveName(receiverVirtualAddress)
-            console.log(receiverPublicKey)
+            receiverPublicKey = await this._nameservice.resolveName(receiverVirtualAddress)
+            log.info(`Resolved public key of ${receiverVirtualAddress}: ${receiverPublicKey}`)
         } catch {
-            console.log(`Receiver is probably not a blockstack id owner`)
+            let errorMsg = `Receiver is not registered as blockstack id`
+            log.error(errorMsg)
+            throw (errorMsg)
         }
         
 
@@ -186,6 +195,6 @@ export class OpenPayService extends OpenPayPeer {
         // Publish the Payment Request to the receiver topic
         paymentRequest = Object.assign(paymentRequest, {format: "openpay_v1"})
 
-        this._pubsub.publishMsg(this._payIDClaim, receiverVirtualAddress, paymentRequest, receiverPasscode)
+        this._pubsub.publishMsg(this._payIDClaim, receiverVirtualAddress, receiverPublicKey, paymentRequest, receiverPasscode)
     }
 }
