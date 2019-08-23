@@ -40,7 +40,7 @@ export abstract class NameService {
     // TODO: need to respond with boolean
     abstract getRegistrationStatus = (): Promise<string> => {return new Promise(() => "status")}
     abstract resolveName = async (name: string, options?: JSON): Promise<string> => {return "pubkey"}
-    abstract getAddressMapping = async (name: string, options?: JSON): Promise<AddressMapping> => {return new AddressMapping()}
+    abstract getAddressMapping = async (name: string, options?: JSON): Promise<IAddressMapping> => {return}
     abstract putAddressMapping = async (addressMapping: JSON): Promise<string> => {return "pubkey"}
 
     // TODO: Implement methods to add/update address mapping (Gamma usecase)
@@ -370,7 +370,7 @@ export class BlockstackService extends NameService {
         return promise
     }
 
-    public getAddressMapping = async(name: string, options?: JSON): Promise<AddressMapping> => {
+    public getAddressMapping = async(name: string, options?: JSON): Promise<IAddressMapping> => {
         let pubKey = await this.resolveName(name, options)
         let domain = options['domain'] || this._domain
         let nameData = await this._fetchNameDetails(name)
@@ -378,7 +378,7 @@ export class BlockstackService extends NameService {
         let bitcoinAddress = nameData['address']
         console.log(nameData)
         let profileUrl = "https://" + nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2] + "/openpay.json"
-        const promise: Promise<AddressMapping> = new Promise(async (resolve, reject) => {
+        const promise: Promise<IAddressMapping> = new Promise(async (resolve, reject) => {
             var options = { 
                 method: 'GET',
                 url: profileUrl,
@@ -387,7 +387,7 @@ export class BlockstackService extends NameService {
 
             request(options, function (error, response, body) {
                 if (error) throw new Error(error)
-                let addressMap: AddressMapping
+                let addressMap: IAddressMapping
 
                 try {
                     addressMap = JSON.parse(body[0].decodedToken.payload.claim)
