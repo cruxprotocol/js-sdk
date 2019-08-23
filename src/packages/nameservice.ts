@@ -150,9 +150,9 @@ export class BlockstackService extends NameService {
                     }
                     let person = new Person(sampleProfileObj)
                     let token = person.toToken(privKey)
-                    console.log(token)
+                    log.debug(token)
                     let tokenFile = [wrapProfileToken(token)]
-                    console.log(tokenFile)
+                    log.debug(tokenFile)
                     uploadToGaiaHub('profile.json', JSON.stringify(tokenFile), hubConfig, "application/json")
                         .then(finalUrl => {
                             console.log(finalUrl)
