@@ -1,4 +1,4 @@
-import { IPayIDClaim, IPaymentRequest, OpenPayWallet, OpenPayService } from "../../sdk/src/index";
+import { IPayIDClaim, IPaymentRequest, OpenPayWallet, OpenPayService } from "../../open_pay_sdk/src/index";
 
 
 window.OpenPayWallet = OpenPayWallet
