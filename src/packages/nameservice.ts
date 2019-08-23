@@ -22,7 +22,7 @@ export abstract class NameService {
     abstract getNameAvailability = async (name: string): Promise<boolean> => {return false}
     abstract registerName = async (name: string): Promise<string> => {return}
     // TODO: need to respond with boolean
-    abstract getRegistrationStatus = (): Promise<string> => {return new Promise(() => "status")}
+    abstract getRegistrationStatus = (): Promise<any> => {return}
     abstract resolveName = async (name: string, options?: JSON): Promise<string> => {return "pubkey"}
 
     // TODO: Implement methods to add/update address mapping (Gamma usecase)
@@ -47,6 +47,13 @@ export interface IBlockstackServiceOptions {
     subdomainRegistrar: string
 }
 
+export enum SubdomainRegistrationStatus {
+    NONE,
+    INIT = "INIT",
+    PENDING = "PENDING",
+    DONE = "DONE"
+}
+
 let defaultBNSConfig: IBlockstackServiceOptions = {
     domain: 'devcoinswitch.id', 
     gaiaHub: 'https://hub.blockstack.org',
@@ -69,8 +76,10 @@ export class BlockstackService extends NameService {
     constructor(options: any = {}) {
         super(options);
         let _options: IBlockstackServiceOptions = Object.assign(options, defaultBNSConfig)
+        
         this._domain = _options.domain
         this._gaiaHub = _options.gaiaHub
+        this._subdomainRegistrar = _options.subdomainRegistrar
     }
 
     private _generateMnemonic = (): string => {
@@ -217,8 +226,8 @@ export class BlockstackService extends NameService {
         return `${this._subdomain}.${this._domain}`
     }
 
-    public getRegistrationStatus = (): Promise<string> => {
-        const promise: Promise<string> = new Promise(async (resolve, reject) => {
+    public getRegistrationStatus = (): Promise<SubdomainRegistrationStatus> => {
+        const promise: Promise<SubdomainRegistrationStatus> = new Promise(async (resolve, reject) => {
             if (!this._subdomain) throw (`No subdomain is registered`)
             var options = { 
                 method: 'GET',
@@ -226,12 +235,27 @@ export class BlockstackService extends NameService {
                 url: `/status/${this._subdomain}`,
                 json: true
             };
-
+            log.debug("registration query params", options)
             request(options, function (error, response, body) {
-                if (error) throw new Error(error)
-                console.log(body)
-                alert(body.status)
-                resolve(body.status)
+                if (error) reject(error)
+                log.debug(body)
+                let status: SubdomainRegistrationStatus
+                let rawStatus = body['status']
+                switch (rawStatus) {
+                    case "Subdomain not registered with this registrar":
+                        status = SubdomainRegistrationStatus.NONE
+                        break;
+                    case rawStatus.includes('Your subdomain was registered in transaction') || "Subdomain is queued for update and should be announced within the next few blocks.":
+                        status = SubdomainRegistrationStatus.PENDING
+                        break;
+                    case "Subdomain propagated":
+                        status = SubdomainRegistrationStatus.DONE
+                        break;
+                    default:
+                        status = SubdomainRegistrationStatus.NONE
+                        break;
+                }
+                resolve(status)
             })
         })
         return promise
@@ -259,25 +283,35 @@ export class BlockstackService extends NameService {
         return nameData['status'] == "available" ? true : false
     }
 
-    public resolveName = async (name: string, options = {}): Promise<string> => {
-        let blockstackId: string
+    public _getNamespaceArray = (name: string, domainFallback?: string): [string, string?, string?] => {
         // if (ankit.coinswitch.id)
+        let subdomain: string, domain: string, namespace: string
+        namespace = "id"
         if (name.substr(-3) == ".id") {
             let idArray = name.split('.').reverse()
-            let domain = idArray[1] + ".id"
-            blockstackId = (idArray[2] ? `${idArray[2]}.` : "" )+ domain
+            log.debug(idArray)
+            domain = idArray[1]
+            subdomain = idArray[2]
         } 
         // else (ankit)
         else {
-            let domain = options['domain'] || this._domain
-            blockstackId = `${name}.${domain}`
+            subdomain = name
+            domain = domainFallback ? domainFallback.split('.').reverse()[1] : this._domain.split('.')[0]
         }
+        return [namespace, domain, subdomain]
+    }
+
+    public resolveName = async (name: string, options = {}): Promise<string> => {
+        let namespaceArray = this._getNamespaceArray(name, options['domain'])
+        log.debug(namespaceArray)
+        let blockstackId = `${namespaceArray.reverse().join('.')}`
+        
         log.info(`Resolving blockstackId: ${blockstackId}`)
 
         let nameData = await this._fetchNameDetails(blockstackId)
         
         
-        if (!nameData) throw (`No name data availabe!`)
+        if (!nameData || nameData['status'] == "available") throw (`No name data availabe!`)
         let bitcoinAddress = nameData['address']
         log.debug(nameData)
         let zonefilePath = nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2]
