@@ -17,6 +17,7 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
+    "@mojotech/json-type-validation": "^3.1.0",
     "bitcoinjs-lib": "^5.1.4",
     "blockstack": "^19.2.5",
     "eventemitter3": "^4.0.0",

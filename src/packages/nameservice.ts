@@ -4,6 +4,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import request from "request";
 import { TokenSigner, SECP256K1Client } from "jsontokens";
 import { getLogger, IAddress } from "..";
+import {Decoder, object, string, optional, number, boolean} from '@mojotech/json-type-validation'
 
 let log = getLogger(__filename)
 
@@ -353,8 +354,20 @@ export class BlockstackService extends NameService {
     }
 
     public putAddressMapping = async(addressMapping: JSON): Promise<string> => {
-        await this._uploadAddressMapping(this._identityKeyPair.privKey, addressMapping)
-        return 'success'
+        
+        const addressDecoder: Decoder<IAddress> = object({
+            addressHash: string(),
+            secIdentifier: optional(string())
+        });
+        const promise: Promise<string> = new Promise(async (resolve, rejecxt) =>{
+            for(let currency in addressMapping){
+                let addressObject: IAddress = addressMapping[currency];
+                addressDecoder.runWithException(addressObject)
+            }
+            this._uploadAddressMapping(this._identityKeyPair.privKey, addressMapping)
+            resolve('success')
+        })
+        return promise
     }
 
     public getAddressMapping = async(name: string, options?: JSON): Promise<AddressMapping> => {
@@ -375,6 +388,7 @@ export class BlockstackService extends NameService {
             request(options, function (error, response, body) {
                 if (error) throw new Error(error)
                 let addressMap: AddressMapping
+
                 try {
                     addressMap = JSON.parse(body[0].decodedToken.payload.claim)
                 } catch {
