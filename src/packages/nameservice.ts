@@ -14,7 +14,7 @@ export interface IIdentityClaim {
 
 export abstract class NameService {
 
-    constructor(_options: any) {}
+    constructor(options: any = {}) {}
 
     abstract generateIdentity = (): IIdentityClaim => {return {secret: null}}
     abstract restoreIdentity = (options?: any): void => {}
@@ -43,6 +43,14 @@ export interface IBitcoinKeyPair {
 
 export interface IBlockstackServiceOptions {
     domain: string
+    gaiaHub: string
+    subdomainRegistrar: string
+}
+
+let defaultBNSConfig: IBlockstackServiceOptions = {
+    domain: 'devcoinswitch.id', 
+    gaiaHub: 'https://hub.blockstack.org',
+    subdomainRegistrar: 'https://167.71.234.131:3000'
 }
 
 export class BlockstackService extends NameService {
@@ -50,15 +58,19 @@ export class BlockstackService extends NameService {
     public blockstack = blockstack
     public bitcoin = bitcoin
 
+    private _domain: string
+    private _gaiaHub: string
+    private _subdomainRegistrar: string
+
     private _mnemonic: string
     private _identityKeyPair: IBitcoinKeyPair
     private _subdomain: string
-    private _domain: string
 
-
-    constructor(_options: IBlockstackServiceOptions = { domain: 'devcoinswitch.id' }) {
-        super(_options);
+    constructor(options: any = {}) {
+        super(options);
+        let _options: IBlockstackServiceOptions = Object.assign(options, defaultBNSConfig)
         this._domain = _options.domain
+        this._gaiaHub = _options.gaiaHub
     }
 
     private _generateMnemonic = (): string => {
@@ -129,7 +141,7 @@ export class BlockstackService extends NameService {
          }
 
         const promise: Promise<boolean> = new Promise(async (resolve, reject) => {
-            let hubUrl = "https://hub.blockstack.org"
+            let hubUrl = this._gaiaHub
             connectToGaiaHub(hubUrl, privKey)
                 .then(hubConfig => {
                     let sampleProfileObj = {
@@ -155,11 +167,12 @@ export class BlockstackService extends NameService {
         const promise: Promise<string> = new Promise(async (resolve, reject) => {
             var options = { 
                 method: 'POST',
-                baseUrl: 'https://167.71.234.131:3000',
+                baseUrl: this._subdomainRegistrar,
                 url: '/register',
                 headers: { 
                     'Content-Type': 'application/json'
                 },
+                // TODO: need to convert the gaia configURL into variable
                 body: { 
                     zonefile: `$ORIGIN ${name}\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.blockstack.org/hub/${bitcoinAddress}/profile.json"\n`,
                     name: name,
@@ -209,7 +222,7 @@ export class BlockstackService extends NameService {
             if (!this._subdomain) throw (`No subdomain is registered`)
             var options = { 
                 method: 'GET',
-                baseUrl: 'https://167.71.234.131:3000',
+                baseUrl: this._subdomainRegistrar,
                 url: `/status/${this._subdomain}`,
                 json: true
             };
@@ -266,8 +279,9 @@ export class BlockstackService extends NameService {
         
         if (!nameData) throw (`No name data availabe!`)
         let bitcoinAddress = nameData['address']
-        console.log(nameData)
-        let profileUrl = "https://" + nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2] + "/profile.json"
+        log.debug(nameData)
+        let zonefilePath = nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2]
+        let profileUrl = "https://" + zonefilePath + "/profile.json"
         const promise: Promise<string> = new Promise(async (resolve, reject) => {
             var options = { 
                 method: 'GET',
