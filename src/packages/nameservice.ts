@@ -14,7 +14,7 @@ export interface IIdentityClaim {
 
 export abstract class NameService {
 
-    constructor() {}
+    constructor(_options: any) {}
 
     abstract generateIdentity = (): IIdentityClaim => {return {secret: null}}
     abstract restoreIdentity = (options?: any): void => {}
@@ -41,6 +41,10 @@ export interface IBitcoinKeyPair {
     address: string
 }
 
+export interface IBlockstackServiceOptions {
+    domain: string
+}
+
 export class BlockstackService extends NameService {
     // temporary
     public blockstack = blockstack
@@ -49,12 +53,12 @@ export class BlockstackService extends NameService {
     private _mnemonic: string
     private _identityKeyPair: IBitcoinKeyPair
     private _subdomain: string
-    private _domain: string = 'devcoinswitch.id'
+    private _domain: string
 
 
-    constructor() {
-        super();
-
+    constructor(_options: IBlockstackServiceOptions = { domain: 'devcoinswitch.id' }) {
+        super(_options);
+        this._domain = _options.domain
     }
 
     private _generateMnemonic = (): string => {
