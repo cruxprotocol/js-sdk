@@ -1,4 +1,5 @@
 import { EventEmitter } from "eventemitter3";
+import { OpenPayIframe } from "./iframe-interface";
 import 'regenerator-runtime/runtime';
 import Logger from "js-logger";
 import path from "path";
@@ -11,11 +12,11 @@ export function getLogger (filename) {
 }
 let log = getLogger(__filename)
 
-import { 
-    StorageService, LocalStorage, 
-    Encryption, 
+import {
+    StorageService, LocalStorage,
+    Encryption,
     PubSubService, PeerJSService,
-    NameService, BlockstackService 
+    NameService, BlockstackService
 } from "./packages";
 
 export { LocalStorage, Encryption, PeerJSService, BlockstackService }
@@ -74,7 +75,7 @@ class OpenPayPeer extends EventEmitter {
     protected _nameservice: NameService
 
     protected _payIDClaim: IPayIDClaim
-    
+
     constructor(_options: IOpenPayPeerOptions) {
         super();
 
@@ -163,7 +164,11 @@ export class OpenPayWallet extends OpenPayPeer {
             if (dataCallback) dataCallback(dataObj)
         })
     }
-    
+
+	public invokeSetup = (openPaySetupOptions: JSON): void => {
+		let cs = new OpenPayIframe(openPaySetupOptions);
+		cs.open();
+	}
 
     // NameService specific methods
 
@@ -171,7 +176,6 @@ export class OpenPayWallet extends OpenPayPeer {
         // Generating the identityClaim
         let identityClaim = this._nameservice.generateIdentity()
         let registeredPublicID = await this._nameservice.registerName(virtualAddress)
-        
         // Setup the payIDClaim locally
         let payIDClaim: IPayIDClaim = {
             virtualAddress: registeredPublicID,
@@ -223,7 +227,7 @@ export class OpenPayService extends OpenPayPeer {
             log.error(errorMsg)
             throw (errorMsg)
         }
-        
+
 
         // Initialise the DataConnection for sending the request
         let receiverPasscode = passcode || prompt("Receiver passcode")
