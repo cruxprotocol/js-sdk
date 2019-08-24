@@ -82,7 +82,7 @@ export class PeerJSService extends PubSubService {
 
     constructor(_options: IPubSubServiceOptions) {
         super(_options)
-        console.log(`Using PeerJSService for pubsub communication`)
+        log.info(`Using PeerJSService for pubsub communication`)
     }
 
     private async _initialisePeer(payIDClaim, options: { publicKey?: string, privateKey?: string }, dataCallback?: (requestObj: JSON) => void): Promise<boolean> {

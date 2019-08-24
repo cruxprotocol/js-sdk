@@ -3,8 +3,8 @@ import { makeECPrivateKey, getPublicKeyFromPrivate, publicKeyToAddress, connectT
 import * as bitcoin from "bitcoinjs-lib";
 import request from "request";
 import { TokenSigner, SECP256K1Client } from "jsontokens";
-import { getLogger, IAddress } from "..";
-import {Decoder, object, string, optional, number, boolean} from '@mojotech/json-type-validation'
+import { getLogger, IAddress, IAddressMapping, AddressMapping } from "..";
+import {Decoder, object, string, optional} from '@mojotech/json-type-validation'
 
 let log = getLogger(__filename)
 
@@ -12,20 +12,6 @@ let log = getLogger(__filename)
 
 export interface IIdentityClaim {
     secret: string
-}
-
-
-interface IAddressMapping {
-    [currency: string]: IAddress
-}
-
-class AddressMapping {
-    constructor(values: IAddressMapping | any = {}) {
-        Object.assign(this, values);
-    }
-    toJSON() {
-        return Object.assign({}, this)
-    }
 }
 
 export abstract class NameService {
@@ -41,7 +27,7 @@ export abstract class NameService {
     abstract getRegistrationStatus = (): Promise<any> => {return}
     abstract resolveName = async (name: string, options?: JSON): Promise<string> => {return "pubkey"}
     abstract getAddressMapping = async (name: string, options?: JSON): Promise<IAddressMapping> => {return}
-    abstract putAddressMapping = async (addressMapping: JSON): Promise<string> => {return "pubkey"}
+    abstract putAddressMapping = async (addressMapping: IAddressMapping): Promise<boolean> => {return false}
 
     // TODO: Implement methods to add/update address mapping (Gamma usecase)
 
@@ -160,11 +146,16 @@ export class BlockstackService extends NameService {
         return getPublicKeyFromPrivate(privKey)
     }
 
-    private _uploadProfileInfo = (privKey: string) => {
-        // TODO: validate the privateKey format and convert
+    private _sanitizePrivKey = (privKey: string): string => {
         if (privKey.length == 66 && privKey.slice(64) === '01') {
             privKey = privKey.slice(0, 64);
-         }
+        }
+        return privKey
+    }
+
+    private _uploadProfileInfo = (privKey: string) => {
+        // TODO: validate the privateKey format and convert
+        privKey = this._sanitizePrivKey(privKey)
 
         const promise: Promise<boolean> = new Promise(async (resolve, reject) => {
             let hubUrl = this._gaiaHub
@@ -189,44 +180,40 @@ export class BlockstackService extends NameService {
         return promise
     }
 
-    private _uploadAddressMapping = (privKey: string, addressMap:JSON) => {
-        // TODO: validate the privateKey format and convert
-        if (privKey.length == 66 && privKey.slice(64) === '01') {
-            privKey = privKey.slice(0, 64);
-         }
+    private _addressMapToToken = (addressMap: IAddressMapping, privKey: string): string => {
+        let addressMapObj = new AddressMapping(addressMap)
+        const publicKey = SECP256K1Client.derivePublicKey(privKey)
+        const tokenSigner = new TokenSigner("ES256K", privKey)
+        const payload = {
+            issuer: { publicKey },
+            subject: { publicKey },
+            claim: addressMapObj.toJSON()
+        }
+        let token = tokenSigner.sign(payload)
+        return token
+    }
+
+    private _uploadAddressMapping = async (privKey: string, addressMap: IAddressMapping): Promise<boolean> => {
+        // Fetch the existing addressMapping and merge the JSON before uploading
+        addressMap = Object.assign(await this.getAddressMapping(this._subdomain), addressMap) 
+        log.debug(`Merged addressMap: `, addressMap)       
+        privKey = this._sanitizePrivKey(privKey)
 
         const promise: Promise<boolean> = new Promise(async (resolve, reject) => {
-            let hubUrl = "https://hub.blockstack.org"
+            let hubUrl = this._gaiaHub
             connectToGaiaHub(hubUrl, privKey)
                 .then(hubConfig => {
-                    // let sampleAddressMappingObj = {
-                    //     "btc": {
-                    //         "address": "some_btc_addr",
-                    //         "tag": null
-                    //     },
-                    //     "eth": {
-                    //         "address": "some_eth_addr",
-                    //         "tag": null
-                    //     },
-                    // }
-                    let addressMapObj = new AddressMapping(addressMap)
-                    const pubKey = SECP256K1Client.derivePublicKey(privKey)
-                    const tokenSigner = new TokenSigner("ES256K", privKey)
-                    const payload = {
-                        issuer: { pubKey },
-                        claim: addressMapObj.toJSON()
-                    }
-                    // @ts-ignore
-                    let token = tokenSigner.sign(payload)
-                    console.log(token)
+                    let token = this._addressMapToToken(addressMap, privKey)
+                    log.debug(token)
                     let tokenFile = [wrapProfileToken(token)]
-                    console.log(tokenFile)
+                    log.debug(tokenFile)
                     uploadToGaiaHub('openpay.json', JSON.stringify(tokenFile), hubConfig, "application/json")
                         .then(finalUrl => {
-                            console.log(finalUrl)
+                            log.debug(finalUrl)
                             resolve(true)
                         })
                 })
+                .catch(reject)
         })
         return promise
     }
@@ -343,6 +330,7 @@ export class BlockstackService extends NameService {
     }
 
     public _getNamespaceArray = (name: string, domainFallback?: string): [string, string?, string?] => {
+        log.debug(`_getNamespaceArray for ${name}`)
         // if (ankit.coinswitch.id)
         let subdomain: string, domain: string, namespace: string
         namespace = "id"
@@ -360,11 +348,15 @@ export class BlockstackService extends NameService {
         return [namespace, domain, subdomain]
     }
 
-    public resolveName = async (name: string, options = {}): Promise<string> => {
-        let namespaceArray = this._getNamespaceArray(name, options['domain'])
+    private _getBlockstackId = (name: string, domain?: string) => {
+        let namespaceArray = this._getNamespaceArray(name, domain)
         log.debug(namespaceArray)
         let blockstackId = `${namespaceArray.reverse().join('.')}`
-        
+        return blockstackId
+    }
+
+    public resolveName = async (name: string, options = {}): Promise<string> => {
+        let blockstackId = this._getBlockstackId(name, options['domain'])
         log.info(`Resolving blockstackId: ${blockstackId}`)
 
         let nameData = await this._fetchNameDetails(blockstackId)
@@ -372,6 +364,7 @@ export class BlockstackService extends NameService {
         
         if (!nameData || nameData['status'] == "available") throw (`No name data availabe!`)
         let bitcoinAddress = nameData['address']
+        log.debug(`ID owner: ${bitcoinAddress}`)
         log.debug(nameData)
         let zonefilePath = nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2]
         let profileUrl = "https://" + zonefilePath + "/profile.json"
@@ -408,30 +401,33 @@ export class BlockstackService extends NameService {
         return promise
     }
 
-    public putAddressMapping = async(addressMapping: JSON): Promise<string> => {
-        
+    public putAddressMapping = async (addressMapping: IAddressMapping): Promise<boolean> => {
         const addressDecoder: Decoder<IAddress> = object({
             addressHash: string(),
             secIdentifier: optional(string())
         });
-        const promise: Promise<string> = new Promise(async (resolve, rejecxt) =>{
-            for(let currency in addressMapping){
-                let addressObject: IAddress = addressMapping[currency];
-                addressDecoder.runWithException(addressObject)
+        const promise: Promise<boolean> = new Promise((resolve, reject) => {
+            try {
+                for ( let currency in addressMapping ) {
+                    let addressObject: IAddress = addressDecoder.runWithException(addressMapping[currency])
+                }
+                this._uploadAddressMapping(this._identityKeyPair.privKey, addressMapping)
+                    .then(bool => resolve(bool))
+            } catch (e) {
+                reject (e)
             }
-            this._uploadAddressMapping(this._identityKeyPair.privKey, addressMapping)
-            resolve('success')
         })
         return promise
     }
 
-    public getAddressMapping = async(name: string, options?: JSON): Promise<IAddressMapping> => {
-        let pubKey = await this.resolveName(name, options)
-        let domain = options['domain'] || this._domain
-        let nameData = await this._fetchNameDetails(name)
+    public getAddressMapping = async (name: string, options = {}): Promise<IAddressMapping> => {
+        let blockstackId = this._getBlockstackId(name, options['domain'])
+        let pubKey = await this.resolveName(blockstackId, options)
+        let nameData = await this._fetchNameDetails(blockstackId)
+        log.debug(nameData)
         if (!nameData) throw (`No name data availabe!`)
         let bitcoinAddress = nameData['address']
-        console.log(nameData)
+        log.debug(`ID owner: ${bitcoinAddress}`)
         let profileUrl = "https://" + nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2] + "/openpay.json"
         const promise: Promise<IAddressMapping> = new Promise(async (resolve, reject) => {
             var options = { 
@@ -441,12 +437,16 @@ export class BlockstackService extends NameService {
             };
 
             request(options, function (error, response, body) {
+                log.debug(`Response from openpay.json`, body)
                 if (error) throw new Error(error)
                 let addressMap: IAddressMapping
 
                 try {
-                    addressMap = JSON.parse(body[0].decodedToken.payload.claim)
-                } catch {
+                    addressMap = body[0].decodedToken.payload.claim
+                    log.debug(`Address map: `, addressMap)
+                } catch (e) {
+                    log.error(e)
+                    // TODO: fix the error log
                     throw (`Probably this id resolves to a domain registrar`)
                 }
                 
@@ -456,7 +456,8 @@ export class BlockstackService extends NameService {
                 try {
                     const decodedToken = verifyProfileToken(body[0].token, pubKey)
                 } catch(e) {
-                    console.log(e)
+                    // TODO: validate the token properly after publishing the subject
+                    log.error(e)
                 }
 
                 if (addressFromPub === bitcoinAddress) resolve (addressMap)
