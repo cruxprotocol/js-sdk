@@ -165,8 +165,13 @@ export class OpenPayWallet extends OpenPayPeer {
         })
     }
 
-	public invokeSetup = (openPaySetupOptions: JSON): void => {
+	public invokeSetup = async (openPaySetupOptions: JSON): Promise<void> => {
+        log.info("Setup Invoked")
         openPaySetupOptions['payIDName'] = this._payIDClaim && this._payIDClaim.virtualAddress
+        let addressMap = await this.getAddressMap();
+        log.info(addressMap)
+        openPaySetupOptions['publicAddressCurrencies'] = Object.keys(addressMap).map(x=>x.toUpperCase());
+        log.info(openPaySetupOptions)
 		let cs = new OpenPayIframe(openPaySetupOptions);
 		cs.open();
 	}
@@ -197,16 +202,21 @@ export class OpenPayWallet extends OpenPayPeer {
                     return `\n${addressMap[currency].addressHash}`
                 })
             }`)
-            await this.addAddressMap(addressMap)
+            await this.putAddressMap(addressMap)
         }
 
     }
 
-    public addAddressMap = async (addressMap: IAddressMapping): Promise<boolean> => {
+    public putAddressMap = async (addressMap: IAddressMapping): Promise<boolean> => {
         let acknowledgement = await this._nameservice.putAddressMapping(addressMap)
         if (!acknowledgement) throw (`Could not update the addressMap`)
         return acknowledgement
     }
+
+    public getAddressMap = async (): Promise<IAddressMapping> => {
+        return this._nameservice.getAddressMapping(this._payIDClaim.virtualAddress);
+    }
+
 
 }
 
@@ -223,7 +233,7 @@ export class OpenPayService extends OpenPayPeer {
 
     public sendPaymentRequest = async (receiverVirtualAddress: string, paymentRequest: IPaymentRequest, passcode?: string): Promise<void> => {
         // Resolve the public key of the receiver via nameservice
-        let receiverPublicKey: string
+        let receiverPublicKey: string;
         try {
             receiverPublicKey = await this._nameservice.resolveName(receiverVirtualAddress)
             log.info(`Resolved public key of ${receiverVirtualAddress}: ${receiverPublicKey}`)

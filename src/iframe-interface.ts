@@ -4,20 +4,10 @@ let postMessage = function(message) {
 	this.contentWindow.postMessage(message, "*")
 }
 
-let makeMessage = function(type) {
-	if (type == 'register') {
-		// the below item can be prototype
-		return {
-			type: 'register',
-			payIDName: this.openPayOptions.payIDName,
-			publicKey: this.openPayOptions.publicKey,
-		}
-	}
-}
 
 let onload = function() {
 	console.log('called onload!')
-	this.postMessage(this.makeMessage('register'))
+	this.postMessage(this.openPayOptions)
 }
 
 export class OpenPayIframe {
@@ -37,7 +27,6 @@ export class OpenPayIframe {
 			this.el.style.width = 100 + "%"
 			this.el.style.height = 100 + "%"
 			this.el.postMessage = postMessage
-			this.el.makeMessage = makeMessage
 			this.el.onload = onload
 		}
 		return this.el

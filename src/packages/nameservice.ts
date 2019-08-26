@@ -195,7 +195,7 @@ export class BlockstackService extends NameService {
 
     private _uploadAddressMapping = async (privKey: string, addressMap: IAddressMapping): Promise<boolean> => {
         // Fetch the existing addressMapping and merge the JSON before uploading
-        addressMap = Object.assign(await this.getAddressMapping(this._subdomain), addressMap) 
+        // addressMap = Object.assign(await this.getAddressMapping(this._subdomain), addressMap)
         log.debug(`Merged addressMap: `, addressMap)       
         privKey = this._sanitizePrivKey(privKey)
 
