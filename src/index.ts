@@ -146,7 +146,7 @@ export class OpenPayWallet extends OpenPayPeer {
     }
 
 	public invokeSetup = (openPaySetupOptions: JSON): void => {
-        openPaySetupOptions['payIDName'] = this._payIDClaim.virtualAddress
+        openPaySetupOptions['payIDName'] = this._payIDClaim && this._payIDClaim.virtualAddress
 		let cs = new OpenPayIframe(openPaySetupOptions);
 		cs.open();
 	}
