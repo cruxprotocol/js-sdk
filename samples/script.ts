@@ -1,4 +1,4 @@
-import { IPayIDClaim, IPaymentRequest, OpenPayWallet, OpenPayService } from "../../sdk/src/index";
+import { IPayIDClaim, IPaymentRequest, OpenPayWallet, OpenPayService, IAddressMapping } from "../../open_pay_sdk/src/index";
 
 
 window.OpenPayWallet = OpenPayWallet
@@ -10,6 +10,13 @@ window.OpenPayService = OpenPayService
 
 // Wallet
 const wallet_btc_address = "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V"
+
+let sampleAddressMap: IAddressMapping = {
+    btc: {
+        addressHash: wallet_btc_address
+    }
+}
+
 // Move the input logic to wallet side
 const openpayWallet = new OpenPayWallet()
 
@@ -47,7 +54,7 @@ const addPayIDClaim = async () => {
     let vA = document.getElementById('virtualAddress').value
     let pass = document.getElementById('passcode').value
 
-    await wallet.addPayIDClaim(vA, pass)
+    await wallet.addPayIDClaim(vA, pass, sampleAddressMap)
 }
 
 window.addPayIDClaim = addPayIDClaim

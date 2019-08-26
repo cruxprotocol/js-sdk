@@ -1,7 +1,10 @@
-import { makeECPrivateKey, getPublicKeyFromPrivate, publicKeyToAddress, connectToGaiaHub, uploadToGaiaHub, default as blockstack, wrapProfileToken, Person, BlockstackWallet, lookupProfile, verifyProfileToken} from "blockstack";
+
+import { makeECPrivateKey, getPublicKeyFromPrivate, publicKeyToAddress, connectToGaiaHub, uploadToGaiaHub, default as blockstack, wrapProfileToken, Person, BlockstackWallet, lookupProfile, verifyProfileToken, isManifestUriValid} from "blockstack";
 import * as bitcoin from "bitcoinjs-lib";
 import request from "request";
-import { getLogger } from "..";
+import { TokenSigner, SECP256K1Client } from "jsontokens";
+import { getLogger, IAddress, IAddressMapping, AddressMapping } from "..";
+import {Decoder, object, string, optional} from '@mojotech/json-type-validation'
 
 let log = getLogger(__filename)
 
@@ -11,10 +14,9 @@ export interface IIdentityClaim {
     secret: string
 }
 
-
 export abstract class NameService {
 
-    constructor() {}
+    constructor(options: any = {}) {}
 
     abstract generateIdentity = (): IIdentityClaim => {return {secret: null}}
     abstract restoreIdentity = (options?: any): void => {}
@@ -22,8 +24,10 @@ export abstract class NameService {
     abstract getNameAvailability = async (name: string): Promise<boolean> => {return false}
     abstract registerName = async (name: string): Promise<string> => {return}
     // TODO: need to respond with boolean
-    abstract getRegistrationStatus = (): Promise<string> => {return new Promise(() => "status")}
+    abstract getRegistrationStatus = (): Promise<any> => {return}
     abstract resolveName = async (name: string, options?: JSON): Promise<string> => {return "pubkey"}
+    abstract getAddressMapping = async (name: string, options?: JSON): Promise<IAddressMapping> => {return}
+    abstract putAddressMapping = async (addressMapping: IAddressMapping): Promise<boolean> => {return false}
 
     // TODO: Implement methods to add/update address mapping (Gamma usecase)
 
@@ -34,11 +38,29 @@ export abstract class NameService {
 
 
 // Blockstack Nameservice implementation
-
 export interface IBitcoinKeyPair {
     privKey: string
     pubKey: string
     address: string
+}
+
+export interface IBlockstackServiceOptions {
+    domain: string
+    gaiaHub: string
+    subdomainRegistrar: string
+}
+
+export enum SubdomainRegistrationStatus {
+    NONE,
+    INIT = "INIT",
+    PENDING = "PENDING",
+    DONE = "DONE"
+}
+
+let defaultBNSConfig: IBlockstackServiceOptions = {
+    domain: 'devcoinswitch.id', 
+    gaiaHub: 'https://hub.blockstack.org',
+    subdomainRegistrar: 'https://167.71.234.131:3000'
 }
 
 export class BlockstackService extends NameService {
@@ -46,15 +68,21 @@ export class BlockstackService extends NameService {
     public blockstack = blockstack
     public bitcoin = bitcoin
 
+    private _domain: string
+    private _gaiaHub: string
+    private _subdomainRegistrar: string
+
     private _mnemonic: string
     private _identityKeyPair: IBitcoinKeyPair
     private _subdomain: string
-    private _domain: string = 'devcoinswitch.id'
 
-
-    constructor() {
-        super();
-
+    constructor(options: any = {}) {
+        super(options);
+        let _options: IBlockstackServiceOptions = Object.assign(options, defaultBNSConfig)
+        
+        this._domain = _options.domain
+        this._gaiaHub = _options.gaiaHub
+        this._subdomainRegistrar = _options.subdomainRegistrar
     }
 
     private _generateMnemonic = (): string => {
@@ -118,14 +146,19 @@ export class BlockstackService extends NameService {
         return getPublicKeyFromPrivate(privKey)
     }
 
-    private _uploadProfileInfo = (privKey: string) => {
-        // TODO: validate the privateKey format and convert
+    private _sanitizePrivKey = (privKey: string): string => {
         if (privKey.length == 66 && privKey.slice(64) === '01') {
             privKey = privKey.slice(0, 64);
-         }
+        }
+        return privKey
+    }
+
+    private _uploadProfileInfo = (privKey: string) => {
+        // TODO: validate the privateKey format and convert
+        privKey = this._sanitizePrivKey(privKey)
 
         const promise: Promise<boolean> = new Promise(async (resolve, reject) => {
-            let hubUrl = "https://hub.blockstack.org"
+            let hubUrl = this._gaiaHub
             connectToGaiaHub(hubUrl, privKey)
                 .then(hubConfig => {
                     let sampleProfileObj = {
@@ -134,9 +167,9 @@ export class BlockstackService extends NameService {
                     }
                     let person = new Person(sampleProfileObj)
                     let token = person.toToken(privKey)
-                    console.log(token)
+                    log.debug(token)
                     let tokenFile = [wrapProfileToken(token)]
-                    console.log(tokenFile)
+                    log.debug(tokenFile)
                     uploadToGaiaHub('profile.json', JSON.stringify(tokenFile), hubConfig, "application/json")
                         .then(finalUrl => {
                             console.log(finalUrl)
@@ -147,15 +180,54 @@ export class BlockstackService extends NameService {
         return promise
     }
 
+    private _addressMapToToken = (addressMap: IAddressMapping, privKey: string): string => {
+        let addressMapObj = new AddressMapping(addressMap)
+        const publicKey = SECP256K1Client.derivePublicKey(privKey)
+        const tokenSigner = new TokenSigner("ES256K", privKey)
+        const payload = {
+            issuer: { publicKey },
+            subject: { publicKey },
+            claim: addressMapObj.toJSON()
+        }
+        let token = tokenSigner.sign(payload)
+        return token
+    }
+
+    private _uploadAddressMapping = async (privKey: string, addressMap: IAddressMapping): Promise<boolean> => {
+        // Fetch the existing addressMapping and merge the JSON before uploading
+        addressMap = Object.assign(await this.getAddressMapping(this._subdomain), addressMap) 
+        log.debug(`Merged addressMap: `, addressMap)       
+        privKey = this._sanitizePrivKey(privKey)
+
+        const promise: Promise<boolean> = new Promise(async (resolve, reject) => {
+            let hubUrl = this._gaiaHub
+            connectToGaiaHub(hubUrl, privKey)
+                .then(hubConfig => {
+                    let token = this._addressMapToToken(addressMap, privKey)
+                    log.debug(token)
+                    let tokenFile = [wrapProfileToken(token)]
+                    log.debug(tokenFile)
+                    uploadToGaiaHub('openpay.json', JSON.stringify(tokenFile), hubConfig, "application/json")
+                        .then(finalUrl => {
+                            log.debug(finalUrl)
+                            resolve(true)
+                        })
+                })
+                .catch(reject)
+        })
+        return promise
+    }
+
     private _registerSubdomain = (name: string, bitcoinAddress: string): Promise<string> => {
         const promise: Promise<string> = new Promise(async (resolve, reject) => {
             var options = { 
                 method: 'POST',
-                baseUrl: 'https://167.71.234.131:3000',
+                baseUrl: this._subdomainRegistrar,
                 url: '/register',
                 headers: { 
                     'Content-Type': 'application/json'
                 },
+                // TODO: need to convert the gaia configURL into variable
                 body: { 
                     zonefile: `$ORIGIN ${name}\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.blockstack.org/hub/${bitcoinAddress}/profile.json"\n`,
                     name: name,
@@ -177,8 +249,8 @@ export class BlockstackService extends NameService {
                 }
             })
         })
+        
         return promise
-
     }
 
     public registerName = async (name: string): Promise<string> => {
@@ -200,21 +272,36 @@ export class BlockstackService extends NameService {
         return `${this._subdomain}.${this._domain}`
     }
 
-    public getRegistrationStatus = (): Promise<string> => {
-        const promise: Promise<string> = new Promise(async (resolve, reject) => {
+    public getRegistrationStatus = (): Promise<SubdomainRegistrationStatus> => {
+        const promise: Promise<SubdomainRegistrationStatus> = new Promise(async (resolve, reject) => {
             if (!this._subdomain) throw (`No subdomain is registered`)
             var options = { 
                 method: 'GET',
-                baseUrl: 'https://167.71.234.131:3000',
+                baseUrl: this._subdomainRegistrar,
                 url: `/status/${this._subdomain}`,
                 json: true
             };
-
+            log.debug("registration query params", options)
             request(options, function (error, response, body) {
-                if (error) throw new Error(error)
-                console.log(body)
-                alert(body.status)
-                resolve(body.status)
+                if (error) reject(error)
+                log.debug(body)
+                let status: SubdomainRegistrationStatus
+                let rawStatus = body['status']
+                switch (rawStatus) {
+                    case "Subdomain not registered with this registrar":
+                        status = SubdomainRegistrationStatus.NONE
+                        break;
+                    case rawStatus.includes('Your subdomain was registered in transaction') || "Subdomain is queued for update and should be announced within the next few blocks.":
+                        status = SubdomainRegistrationStatus.PENDING
+                        break;
+                    case "Subdomain propagated":
+                        status = SubdomainRegistrationStatus.DONE
+                        break;
+                    default:
+                        status = SubdomainRegistrationStatus.NONE
+                        break;
+                }
+                resolve(status)
             })
         })
         return promise
@@ -242,28 +329,45 @@ export class BlockstackService extends NameService {
         return nameData['status'] == "available" ? true : false
     }
 
-    public resolveName = async (name: string, options = {}): Promise<string> => {
-        let blockstackId: string
+    public _getNamespaceArray = (name: string, domainFallback?: string): [string, string?, string?] => {
+        log.debug(`_getNamespaceArray for ${name}`)
         // if (ankit.coinswitch.id)
+        let subdomain: string, domain: string, namespace: string
+        namespace = "id"
         if (name.substr(-3) == ".id") {
             let idArray = name.split('.').reverse()
-            let domain = idArray[1] + ".id"
-            blockstackId = (idArray[2] ? `${idArray[2]}.` : "" )+ domain
+            log.debug(idArray)
+            domain = idArray[1]
+            subdomain = idArray[2]
         } 
         // else (ankit)
         else {
-            let domain = options['domain'] || this._domain
-            blockstackId = `${name}.${domain}`
+            subdomain = name
+            domain = domainFallback ? domainFallback.split('.').reverse()[1] : this._domain.split('.')[0]
         }
+        return [namespace, domain, subdomain]
+    }
+
+    private _getBlockstackId = (name: string, domain?: string) => {
+        let namespaceArray = this._getNamespaceArray(name, domain)
+        log.debug(namespaceArray)
+        let blockstackId = `${namespaceArray.reverse().join('.')}`
+        return blockstackId
+    }
+
+    public resolveName = async (name: string, options = {}): Promise<string> => {
+        let blockstackId = this._getBlockstackId(name, options['domain'])
         log.info(`Resolving blockstackId: ${blockstackId}`)
 
         let nameData = await this._fetchNameDetails(blockstackId)
         
         
-        if (!nameData) throw (`No name data availabe!`)
+        if (!nameData || nameData['status'] == "available") throw (`No name data availabe!`)
         let bitcoinAddress = nameData['address']
-        console.log(nameData)
-        let profileUrl = "https://" + nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2] + "/profile.json"
+        log.debug(`ID owner: ${bitcoinAddress}`)
+        log.debug(nameData)
+        let zonefilePath = nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2]
+        let profileUrl = "https://" + zonefilePath + "/profile.json"
         const promise: Promise<string> = new Promise(async (resolve, reject) => {
             var options = { 
                 method: 'GET',
@@ -291,6 +395,72 @@ export class BlockstackService extends NameService {
                 }
 
                 if (addressFromPub === bitcoinAddress) resolve (publicKey)
+                else reject (`Invalid zonefile`)
+            })
+        })
+        return promise
+    }
+
+    public putAddressMapping = async (addressMapping: IAddressMapping): Promise<boolean> => {
+        const addressDecoder: Decoder<IAddress> = object({
+            addressHash: string(),
+            secIdentifier: optional(string())
+        });
+        const promise: Promise<boolean> = new Promise((resolve, reject) => {
+            try {
+                for ( let currency in addressMapping ) {
+                    let addressObject: IAddress = addressDecoder.runWithException(addressMapping[currency])
+                }
+                this._uploadAddressMapping(this._identityKeyPair.privKey, addressMapping)
+                    .then(bool => resolve(bool))
+            } catch (e) {
+                reject (e)
+            }
+        })
+        return promise
+    }
+
+    public getAddressMapping = async (name: string, options = {}): Promise<IAddressMapping> => {
+        let blockstackId = this._getBlockstackId(name, options['domain'])
+        let pubKey = await this.resolveName(blockstackId, options)
+        let nameData = await this._fetchNameDetails(blockstackId)
+        log.debug(nameData)
+        if (!nameData) throw (`No name data availabe!`)
+        let bitcoinAddress = nameData['address']
+        log.debug(`ID owner: ${bitcoinAddress}`)
+        let profileUrl = "https://" + nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2] + "/openpay.json"
+        const promise: Promise<IAddressMapping> = new Promise(async (resolve, reject) => {
+            var options = { 
+                method: 'GET',
+                url: profileUrl,
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                log.debug(`Response from openpay.json`, body)
+                if (error) throw new Error(error)
+                let addressMap: IAddressMapping
+
+                try {
+                    addressMap = body[0].decodedToken.payload.claim
+                    log.debug(`Address map: `, addressMap)
+                } catch (e) {
+                    log.error(e)
+                    // TODO: fix the error log
+                    throw (`Probably this id resolves to a domain registrar`)
+                }
+                
+                let addressFromPub = publicKeyToAddress(pubKey)
+                
+                // validate the file integrity with the token signature
+                try {
+                    const decodedToken = verifyProfileToken(body[0].token, pubKey)
+                } catch(e) {
+                    // TODO: validate the token properly after publishing the subject
+                    log.error(e)
+                }
+
+                if (addressFromPub === bitcoinAddress) resolve (addressMap)
                 else reject (`Invalid zonefile`)
             })
         })

@@ -34,12 +34,25 @@ export interface IAddress {
     secIdentifier?: string
 }
 
+export interface IAddressMapping {
+    [currency: string]: IAddress
+}
+
 export interface IPaymentRequest {
     format: string
     currency: string
     fromAddress?: IAddress
     toAddress: IAddress
     value: number
+}
+
+export class AddressMapping {
+    constructor(values: IAddressMapping | any = {}) {
+        Object.assign(this, values);
+    }
+    toJSON() {
+        return Object.assign({}, this)
+    }
 }
 
 
@@ -121,6 +134,13 @@ class OpenPayPeer extends EventEmitter {
         return this._nameservice.getNameAvailability(username)
     }
 
+    public resolveAddress = async (receiverVirtualAddress: string, currency: string): Promise<IAddress> => {
+        let addressMap = await this._nameservice.getAddressMapping(receiverVirtualAddress)
+        log.debug(`Address map: `, addressMap)
+        let address: IAddress = addressMap[currency] || addressMap[currency.toLowerCase()]
+        return address
+    }
+
 }
 
 
@@ -157,7 +177,7 @@ export class OpenPayWallet extends OpenPayPeer {
     }
     // NameService specific methods
 
-    public addPayIDClaim = async (virtualAddress: string, passcode: string): Promise<void> => {
+    public addPayIDClaim = async (virtualAddress: string, passcode: string, addressMap?: IAddressMapping): Promise<void> => {
         // Generating the identityClaim
         let identityClaim = this._nameservice.generateIdentity()
         let registeredPublicID = await this._nameservice.registerName(virtualAddress)
@@ -170,6 +190,22 @@ export class OpenPayWallet extends OpenPayPeer {
         this._storage.setJSON('payIDClaim', payIDClaim)
         this._setPayIDClaim(payIDClaim)
 
+        // TODO: Setup public addresses
+        if (addressMap) {
+            alert(`Selected addresses for resolving via your ID: ${
+                Object.keys(addressMap).map(currency => {
+                    return `\n${addressMap[currency].addressHash}`
+                })
+            }`)
+            await this.addAddressMap(addressMap)
+        }
+
+    }
+
+    public addAddressMap = async (addressMap: IAddressMapping): Promise<boolean> => {
+        let acknowledgement = await this._nameservice.putAddressMapping(addressMap)
+        if (!acknowledgement) throw (`Could not update the addressMap`)
+        return acknowledgement
     }
 
 }
