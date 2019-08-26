@@ -137,7 +137,7 @@ class OpenPayPeer extends EventEmitter {
     public resolveAddress = async (receiverVirtualAddress: string, currency: string): Promise<IAddress> => {
         let addressMap = await this._nameservice.getAddressMapping(receiverVirtualAddress)
         log.debug(`Address map: `, addressMap)
-        let address: IAddress = addressMap[currency]
+        let address: IAddress = addressMap[currency] || addressMap[currency.toLowerCase()]
         return address
     }
 
