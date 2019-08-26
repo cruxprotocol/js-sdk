@@ -31,7 +31,7 @@ export class OpenPayIframe {
 		if (!this.el) {
 			this.el = window.document.createElement("iframe")
 			this.el.setAttribute("style", "opacity: 1; height: 100%; position: relative; background: none; display: block; border: 0 none transparent; margin: 0px; padding: 0px; z-index: 2;")
-			this.el.setAttribute("src", "https://s3-ap-southeast-1.amazonaws.com/files.coinswitch.co/openpay-setup/index.html")
+			this.el.setAttribute("src", "http://127.0.0.1:8777/dist/openpay-setup/index.html")
 			this.el.setAttribute("id", "frame")
 			this.el.frameBorder = 0
 			this.el.style.width = 100 + "%"
@@ -80,6 +80,13 @@ export class OpenPayIframe {
 		this.el.openPayOptions = this.openPayOptions
 		let elementId = this.openPayOptions['iframeEmbedElementId']
 		document.getElementById(elementId).appendChild(this.el)
+		// this.onload()
+		this.addPostMessageListeners()
+	}
+
+	destroy = function() {
+		let elementId = this.openPayOptions['iframeEmbedElementId']
+		document.getElementById(elementId).remove();
 		// this.onload()
 		this.addPostMessageListeners()
 	}
