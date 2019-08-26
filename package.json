@@ -6,8 +6,9 @@
   "scripts": {
     "sample": "node_modules/.bin/parcel samples/sdk_test.html --https",
     "build:js": "node_modules/.bin/parcel build src/index.ts -d dist --out-file openpay.min.js",
-    "build:dom": "node_modules/.bin/parcel build src/openpay-dom.ts -d dist --out-file openpay-dom.min.js",
-    "build": "npm run build:js && npm run build:dom"
+    "build:dom": "node_modules/.bin/parcel build --no-minify src/openpay-dom.ts -d dist --out-file openpay-dom.js",
+    "build": "npm run build:js && npm run build:dom",
+    "dist-server": "python -m SimpleHTTPServer 8777"
   },
   "keywords": [],
   "author": "",
