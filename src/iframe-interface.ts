@@ -86,9 +86,7 @@ export class OpenPayIframe {
 
 	destroy = function() {
 		let elementId = this.openPayOptions['iframeEmbedElementId']
-		document.getElementById(elementId).remove();
-		// this.onload()
-		this.addPostMessageListeners()
+		document.getElementById(elementId).innerHTML = ''
 	}
 }
 
