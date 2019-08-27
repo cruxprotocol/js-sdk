@@ -214,7 +214,11 @@ export class OpenPayWallet extends OpenPayPeer {
     }
 
     public getAddressMap = async (): Promise<IAddressMapping> => {
-        return this._nameservice.getAddressMapping(this._payIDClaim.virtualAddress);
+        if(this._payIDClaim){
+            return this._nameservice.getAddressMapping(this._payIDClaim.virtualAddress);
+        } else {
+            return {};
+        }
     }
 
 
