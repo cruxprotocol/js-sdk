@@ -90,8 +90,8 @@ const openpayService = new OpenPayService()
 window.service = openpayService
 
 window.sendPaymentRequest = () => {
-    let payIDClaim = sessionStorage.getItem('payIDClaim') || localStorage.getItem('payIDClaim')
-    openpayService.addPayIDClaim(payIDClaim.virtualAddress, payIDClaim.passcode)
+    // let payIDClaim = sessionStorage.getItem('payIDClaim') || localStorage.getItem('payIDClaim')
+    // openpayService.addPayIDClaim(payIDClaim.virtualAddress, payIDClaim.passcode)
     
     let receiverVirtualAddress: string =  document.getElementById('receiver').value
     let receiverPasscode: string = prompt('Receiver passcode')

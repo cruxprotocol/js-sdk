@@ -95,7 +95,12 @@ class OpenPayPeer extends EventEmitter {
             let payIDClaim = this._storage.getJSON('payIDClaim')
             this._setPayIDClaim(payIDClaim)
             // if have local identitySecret, setup with the nameservice module
-            if ( this._payIDClaim && this._payIDClaim.identitySecret ) this._nameservice.restoreIdentity({ identitySecret: this._payIDClaim.identitySecret})
+            try{
+                if ( this._payIDClaim && this._payIDClaim.identitySecret ) this._nameservice.restoreIdentity({ identitySecret: this._payIDClaim.identitySecret})
+            }
+            catch(error){
+                log.info(`Unable to restore identity for ${this._payIDClaim}`)
+            }
         }
         log.info(`OpenPayPeer Initialised`)
     }
