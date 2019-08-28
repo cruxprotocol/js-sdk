@@ -4,16 +4,32 @@ let postMessage = function(message) {
 	this.contentWindow.postMessage(message, "*")
 }
 
+let makeMessage = function(type) {
+	if (type == 'close-newtab') {
+		return {
+			type: 'close'
+		}
+	}
+}
 
 let onload = function() {
 	console.log('called onload!')
-	this.postMessage(this.openPayOptions)
+	let message = {type: 'register'}
+	Object.assign(message, this.openPayOptions)
+	this.postMessage(message)
 }
 
 export class OpenPayIframe {
 
 	constructor (options) {
-		this.createOpenPayIframe()
+		if (!options.experience) {
+			options.experience = 'iframe'
+		}
+		if (options.experience == 'iframe') {
+			this.createOpenPayIframe()
+		} else {
+			this.el = null
+		}
 		this.parseOptions(options)
 	}
 
@@ -40,9 +56,16 @@ export class OpenPayIframe {
 
 	sdkHandler = function(data) {
 		// TODO: add sdk wala logic here
-		var type = data.type
-		if (type == 'register') {
+		let type = data.type
+		if (type == 'createNew') {
 			console.log(data)
+			if (this.openPayOptions.experience == 'newtab') {
+				setTimeout(() => {
+					let message = JSON.stringify(makeMessage('close-newtab'))
+					this.el.postMessage(message, "*")
+					console.log('close message sent' + message)
+				}, 500);
+			}
 		}
 	}
 
@@ -53,23 +76,40 @@ export class OpenPayIframe {
 	}
 
 	addPostMessageListeners = function () {
-		var walletHandler = this.openPayOptions.handler
-		var sdkHandler = this.sdkHandler
-		var maskDataForWallet = this.maskDataForWallet
-		window.addEventListener('message', function (event) {
-			var data = JSON.parse(event.data)
-			sdkHandler(data)
-			var dataForWallet = maskDataForWallet(data)
-			walletHandler(dataForWallet)
+		window.addEventListener('message', (event) => {
+			let data = JSON.parse(event.data)
+			this.sdkHandler(data)
+			this.openPayOptions.handler(this.maskDataForWallet(data))
 		})
+	}
+
+	openNewTab = function(options) {
+		console.log('called openNewTab!');
+		this.el = window.open('http://127.0.0.1:8777/dist/openpay-setup/index.html');
+		setTimeout(() => {
+			let message = {type: 'register'}
+			Object.assign(message, this.openPayOptions)
+			this.el.postMessage(JSON.stringify(message), "*")
+			// this.el.sendEmailPrePopulationMessage = onload
+			// this.el.sendEmailPrePopulationMessage()
+			console.log('event s');
+		}, 3000);
+	}
+
+	openIframe = function() {
+		console.log('called open iframe!');
+		this.el.openPayOptions = this.openPayOptions
+		let elementId = this.openPayOptions['iframeEmbedElementId']
+		document.getElementById(elementId).appendChild(this.el)
 	}
 
 	open = function() {
 		console.log('called open!')
-		this.el.openPayOptions = this.openPayOptions
-		let elementId = this.openPayOptions['iframeEmbedElementId']
-		document.getElementById(elementId).appendChild(this.el)
-		// this.onload()
+		if (this.openPayOptions.experience == 'iframe') {
+			this.openIframe()
+		} else {
+			this.openNewTab(this.openPayOptions)
+		}
 		this.addPostMessageListeners()
 	}
 
