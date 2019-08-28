@@ -65,6 +65,9 @@ export class OpenPayIframe {
 					this.el.postMessage(message, "*")
 					console.log('close message sent' + message)
 				}, 500);
+			} else {
+				let my_iframe = document.getElementById("frame")
+				my_iframe.parentNode.removeChild(my_iframe)
 			}
 		}
 	}
