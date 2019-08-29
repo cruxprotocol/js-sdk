@@ -39,10 +39,21 @@ export interface IAddressMapping {
     [currency: string]: IAddress
 }
 
-export interface IRequest {
+
+
+export interface PubSubMessage {
     format: string
     type: string
-    msg?: string
+    id?: string
+}
+
+
+export interface Message extends PubSubMessage {
+    payload: IPaymentRequest
+}
+
+export interface Ack extends PubSubMessage {
+    payload: IPaymentAck
 }
 
 export interface IPaymentRequest {
@@ -52,12 +63,21 @@ export interface IPaymentRequest {
     value: number
 }
 
+export interface IPaymentAck {
+    ackid: string
+    request: IPaymentRequest
+}
 
 var Errors = Object.freeze({
     data_channel: 'data_channel'
 });
 
-export {Errors};
+var PubSubMessageType = Object.freeze({
+    ack: 'ack',
+    payment: 'payment'
+})
+
+export {Errors, PubSubMessageType};
 
 export interface error {
     code: string,
@@ -168,9 +188,12 @@ class OpenPayPeer extends EventEmitter {
         return address
     }
 
-    public sendMessageToChannelId = async (topic, payload: IRequest) => {
-        let request = Object.assign(payload, {format: "openpay_v1", type: "ack"});
-        this._pubsub.publishMsg(topic, request, this._payIDClaim);
+    public sendMessageToChannelId = async (topic, payload: PubSubMessage) => {
+        if(!payload.id){
+            payload.id = String(Date.now());
+        }
+        payload = Object.assign(payload, {format: "openpay_v1"});
+        this._pubsub.publishMsg(topic, payload, this._payIDClaim);
     }
 }
 
@@ -293,7 +316,7 @@ export class OpenPayService extends OpenPayPeer {
         // let receiverPasscode = passcode || prompt("Receiver passcode")
 
         // Publish the Payment Request to the receiver topic
-        let paylod: IRequest = Object.assign(paymentRequest, {format: "openpay_v1", type: "payment"})
-        this._pubsub.publishMsg(receiverVirtualAddress, paylod, this._payIDClaim)
+        let payload: Message = {format: "openpay_v1", type: PubSubMessageType.payment, id: String(Date.now()), payload: paymentRequest};
+        this._pubsub.publishMsg(receiverVirtualAddress, payload, this._payIDClaim)
     }
 }

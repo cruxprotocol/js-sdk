@@ -1,5 +1,5 @@
 import Peer from "peerjs";
-import { IPaymentRequest, IPayIDClaim, getLogger, IRequest, Errors } from "..";
+import { IPaymentRequest, IPayIDClaim, getLogger, PubSubMessage, Errors, PubSubMessageType, IPaymentAck, Ack } from "..";
 import { Encryption, LocalStorage, StorageService } from ".";
 import { EventEmitter } from "eventemitter3";
 import { resolve } from "url";
@@ -30,7 +30,7 @@ export abstract class PubSubService extends EventEmitter {
 
     abstract isActive = (): boolean => false
     abstract isListening = (): boolean => false
-    abstract publishMsg = async (topic: string, payload: IRequest, payIDClaim: IPayIDClaim): Promise<void> => {}
+    abstract publishMsg = async (topic: string, payload: PubSubMessage, payIDClaim: IPayIDClaim): Promise<void> => {}
     abstract registerTopic = (payIDClaim: IPayIDClaim, privateKey: string, topic?: string, dataCallback?: (requestObj: JSON) => void): void => {}
     abstract connectToPeer = async (payIDClaim: IPayIDClaim, receiverVirtualAddress: string, receiverPublicKey: string, receiverPasscode: string): Promise<void> => {}
     abstract getConnectionForVirtualAddress = (virtualAddress: string): string => {return ''}
@@ -118,8 +118,8 @@ export class PeerJSService extends PubSubService {
         dataConnection.on('data', async data => {      
             // Respond to the ping
             if (data == "ping" || data == "pong") {
-                console.log(`${dataConnection.peer}: ${data}`)
-                if (data == "ping") dataConnection.send("pong")
+                // console.log(`${dataConnection.peer}: ${data}`)
+                // if (data == "ping") dataConnection.send("pong")
             }
             
             // Try parsing the ecrypted JSON data
@@ -138,14 +138,20 @@ export class PeerJSService extends PubSubService {
                 
                 // Parse openpay_v1 
                 if (decryptedJSON.format == "openpay_v1") {
-                    if (decryptedJSON.type == 'ack'){
-                        console.log(`ack reciever from ${dataConnection.peer}:`, decryptedJSON)
+                    if (decryptedJSON.type == PubSubMessageType.ack){
+                        log.info(`ack recieved from ${dataConnection.peer} for id ${decryptedJSON.payload.ackid}, message ${decryptedJSON}`)
                         this.emit('ack', decryptedJSON)
                     }
-                    else{
-                        console.log(`${dataConnection.peer}:`, decryptedJSON)
+                    else if(decryptedJSON.type == PubSubMessageType.payment){
+                        log.info(`payment recieved from ${dataConnection.peer} id ${decryptedJSON.id}, message ${decryptedJSON}`)
+                        let ackPayment: Ack = {format: "openpay_v1", type: PubSubMessageType.ack, id: String(Date.now()), payload: {ackid: decryptedJSON.id, request: decryptedJSON}}; 
+                        let encryptedPaymentRequest: JSON = await this._encryption.encryptJSON(ackPayment,  payIDClaim.passcode);        
+                        dataConnection.send(encryptedPaymentRequest);
                         this.emit('request', decryptedJSON)
                         if (dataCallback) dataCallback(decryptedJSON)
+                    }
+                    else{
+                        log.info(`unknown message ${decryptedJSON}, ignoring it`)
                     }
                 } 
 
@@ -220,18 +226,15 @@ export class PeerJSService extends PubSubService {
         return liveConnections.length > 0 ? true : false
     }
 
-    public publishMsg = async (topic: string, payload: IRequest, payIDClaim: IPayIDClaim): Promise<void> => {
+    public publishMsg = async (topic: string, payload: PubSubMessage, payIDClaim: IPayIDClaim): Promise<void> => {
         // await this._sendPaymentRequest(topic, payload)
-        log.info(`getting data channel for ${topic}`)
+        log.info(`sending message on topic :- ${topic} ${payload}`)
         let dataConnection = this.getConnectionForVirtualAddress(topic); // reciever virtual address
-        log.info(`data connection is ${dataConnection}`);
         if(!dataConnection){
-            log.info(`no existing login found for ${topic}, please login using your payIDClaim and try again..`);
             throw(`no existing login found for ${topic}, please login using your payIDClaim and try again.d.`);
         }
         let receiverPasscode = payIDClaim.passcode;
-        let encryptedPaymentRequest: JSON = await this._encryption.encryptJSON(payload, receiverPasscode)
-        console.log("Encrypted Payment Request", encryptedPaymentRequest)
+        let encryptedPaymentRequest: JSON = await this._encryption.encryptJSON(payload, receiverPasscode);
         dataConnection.send(encryptedPaymentRequest);
 
     }
