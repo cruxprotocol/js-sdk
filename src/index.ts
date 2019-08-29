@@ -193,7 +193,7 @@ class OpenPayPeer extends EventEmitter {
             payload.id = String(Date.now());
         }
         payload = Object.assign(payload, {format: "openpay_v1"});
-        this._pubsub.publishMsg(topic, payload, this._payIDClaim);
+        this._pubsub.publishMsg(topic, payload);
     }
 }
 
@@ -317,6 +317,6 @@ export class OpenPayService extends OpenPayPeer {
 
         // Publish the Payment Request to the receiver topic
         let payload: Message = {format: "openpay_v1", type: PubSubMessageType.payment, id: String(Date.now()), payload: paymentRequest};
-        this._pubsub.publishMsg(receiverVirtualAddress, payload, this._payIDClaim)
+        this._pubsub.publishMsg(receiverVirtualAddress, payload)
     }
 }

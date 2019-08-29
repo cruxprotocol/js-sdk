@@ -18,6 +18,8 @@ export abstract class PubSubService extends EventEmitter {
 
     protected _storage: StorageService
     protected _encryption: typeof Encryption
+    protected _addressEncryptionKeyMap = {}
+    protected _addressDecryptionKeyMap = {}
 
     constructor(_options: IPubSubServiceOptions) {
         super()
@@ -30,7 +32,7 @@ export abstract class PubSubService extends EventEmitter {
 
     abstract isActive = (): boolean => false
     abstract isListening = (): boolean => false
-    abstract publishMsg = async (topic: string, payload: PubSubMessage, payIDClaim: IPayIDClaim): Promise<void> => {}
+    abstract publishMsg = async (topic: string, payload: PubSubMessage): Promise<void> => {}
     abstract registerTopic = (payIDClaim: IPayIDClaim, privateKey: string, topic?: string, dataCallback?: (requestObj: JSON) => void): void => {}
     abstract connectToPeer = async (payIDClaim: IPayIDClaim, receiverVirtualAddress: string, receiverPublicKey: string, receiverPasscode: string): Promise<void> => {}
     abstract getConnectionForVirtualAddress = (virtualAddress: string): string => {return ''}
@@ -96,6 +98,9 @@ export class PeerJSService extends PubSubService {
             let peer = new Peer(peerId, Object.assign(this._peerServerCred, options))
             peer.on('open', id => log.info(`PeerJS id: ${id}`))
             peer.on('connection', dc => {
+                this._addressDecryptionKeyMap[dc.peer] = payIDClaim.passcode;
+                this._addressEncryptionKeyMap[dc.peer] = dc.peer;
+                dc.receiverVirtualAddress = dc.peer;
                 this._registerDataCallbacks(payIDClaim, dc, dataCallback)
                 this.setConnectionForVirtualAddress(dc.peer, dc);
             })
@@ -128,7 +133,9 @@ export class PeerJSService extends PubSubService {
 
                 // Try to decrypt the data received. Ignore on not able to decrypt with the passcode
                 try {
-                    decryptedJSON = await this._encryption.decryptJSON(data.encBuffer, data.iv, payIDClaim.passcode);
+                    console.log(`channel reciever and decryption key are ${dataConnection.receiverVirtualAddress} ${this._addressDecryptionKeyMap[dataConnection.receiverVirtualAddress]}`)
+                    let decryptionKey = this._addressDecryptionKeyMap[dataConnection.receiverVirtualAddress];
+                    decryptedJSON = await this._encryption.decryptJSON(data.encBuffer, data.iv, decryptionKey);
 
                 } catch (err) {
                     console.log(`Data from ${dataConnection.peer} could not be decrypted`)
@@ -145,7 +152,9 @@ export class PeerJSService extends PubSubService {
                     else if(decryptedJSON.type == PubSubMessageType.payment){
                         log.info(`payment recieved from ${dataConnection.peer} id ${decryptedJSON.id}, message ${decryptedJSON}`)
                         let ackPayment: Ack = {format: "openpay_v1", type: PubSubMessageType.ack, id: String(Date.now()), payload: {ackid: decryptedJSON.id, request: decryptedJSON}}; 
-                        let encryptedPaymentRequest: JSON = await this._encryption.encryptJSON(ackPayment,  payIDClaim.passcode);        
+                        console.log(`using encryption key ${this._addressEncryptionKeyMap[dataConnection.receiverVirtualAddress]} for reciever virtual address ${dataConnection.receiverVirtualAddress}`)
+                        let encryptionPasscode = this._addressEncryptionKeyMap[dataConnection.receiverVirtualAddress];
+                        let encryptedPaymentRequest: JSON = await this._encryption.encryptJSON(ackPayment,  encryptionPasscode);        
                         dataConnection.send(encryptedPaymentRequest);
                         this.emit('request', decryptedJSON)
                         if (dataCallback) dataCallback(decryptedJSON)
@@ -188,9 +197,12 @@ export class PeerJSService extends PubSubService {
         if (!this._peer) await this._initialisePeer(payIDClaim, { publicKey: receiverPublicKey }).then(console.log)
         let peerIdentifier = await this._generatePeerId(peerVirtualAddress, peerPasscode)
         let dataConnection: Peer.DataConnection = await this._connectDC(peerIdentifier);
+        dataConnection.receiverVirtualAddress = peerVirtualAddress; // data channel itself tells who is the reciever for this
         console.log(`dataConnection in connect to virtual address ${peerVirtualAddress} is ${dataConnection}`)
+        this._addressEncryptionKeyMap[peerVirtualAddress] = peerPasscode; // service to use reciever wallet passcode for encryption
+        this._addressDecryptionKeyMap[peerVirtualAddress] = this._peer.id; // service to decrypt using channel name when message recieved from wallet
         this.setConnectionForVirtualAddress(peerVirtualAddress, dataConnection);
-        this._registerDataCallbacks(payIDClaim, dataConnection)
+        this._registerDataCallbacks(payIDClaim, dataConnection);
         return dataConnection
     }
 
@@ -226,15 +238,15 @@ export class PeerJSService extends PubSubService {
         return liveConnections.length > 0 ? true : false
     }
 
-    public publishMsg = async (topic: string, payload: PubSubMessage, payIDClaim: IPayIDClaim): Promise<void> => {
+    public publishMsg = async (topic: string, payload: PubSubMessage): Promise<void> => {
         // await this._sendPaymentRequest(topic, payload)
         log.info(`sending message on topic :- ${topic} ${payload}`)
         let dataConnection = this.getConnectionForVirtualAddress(topic); // reciever virtual address
         if(!dataConnection){
             throw(`no existing login found for ${topic}, please login using your payIDClaim and try again.d.`);
         }
-        let receiverPasscode = payIDClaim.passcode;
-        let encryptedPaymentRequest: JSON = await this._encryption.encryptJSON(payload, receiverPasscode);
+        let encryptionKey = this._addressEncryptionKeyMap[dataConnection.receiverVirtualAddress];
+        let encryptedPaymentRequest: JSON = await this._encryption.encryptJSON(payload, encryptionKey);
         dataConnection.send(encryptedPaymentRequest);
 
     }
