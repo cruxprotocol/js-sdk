@@ -92,10 +92,9 @@ window.service = openpayService
 window.sendPaymentRequest = () => {
     // let payIDClaim = sessionStorage.getItem('payIDClaim') || localStorage.getItem('payIDClaim')
     // openpayService.addPayIDClaim(payIDClaim.virtualAddress, payIDClaim.passcode)
-    
+    // openpayService.loginUsingPayIDClaim('cs1.devcoinswitch.id')
     let receiverVirtualAddress: string =  document.getElementById('receiver').value
-    let receiverPasscode: string = prompt('Receiver passcode')
     // Storage.setItem('peerVirtualAddress', receiverVirtualAddress)
-    openpayService.sendPaymentRequest(receiverVirtualAddress, dummyPaymentRequest, receiverPasscode)
+    openpayService.sendPaymentRequest(receiverVirtualAddress, dummyPaymentRequest)
 }
 

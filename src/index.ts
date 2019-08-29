@@ -18,6 +18,7 @@ import {
     PubSubService, PeerJSService,
     NameService, BlockstackService
 } from "./packages";
+import { object } from "@mojotech/json-type-validation";
 
 export { LocalStorage, Encryption, PeerJSService, BlockstackService }
 
@@ -38,12 +39,29 @@ export interface IAddressMapping {
     [currency: string]: IAddress
 }
 
-export interface IPaymentRequest {
+export interface IRequest {
     format: string
+    type: string
+    msg?: string
+}
+
+export interface IPaymentRequest {
     currency: string
     fromAddress?: IAddress
     toAddress: IAddress
     value: number
+}
+
+
+var Errors = Object.freeze({
+    data_channel: 'data_channel'
+});
+
+export {Errors};
+
+export interface error {
+    code: string,
+    msg?: string
 }
 
 export class AddressMapping {
@@ -88,6 +106,10 @@ class OpenPayPeer extends EventEmitter {
         this._pubsub = this._options.pubsub || new PeerJSService({
             storage: this._storage,
             encryption: this._options.encryption
+        })
+        this._pubsub.on('ack', message => {
+            console.log(`open pay peer recieved ack :- ${JSON.stringify(message)}`);
+            this.emit('ack', message);
         })
         this._nameservice = this._options.nameservice || new BlockstackService()
 
@@ -146,6 +168,10 @@ class OpenPayPeer extends EventEmitter {
         return address
     }
 
+    public sendMessageToChannelId = async (topic, payload: IRequest) => {
+        let request = Object.assign(payload, {format: "openpay_v1", type: "ack"});
+        this._pubsub.publishMsg(topic, request, this._payIDClaim);
+    }
 }
 
 
@@ -240,25 +266,34 @@ export class OpenPayService extends OpenPayPeer {
         log.info(`OpenPayService Initialised`)
     }
 
-    public sendPaymentRequest = async (receiverVirtualAddress: string, paymentRequest: IPaymentRequest, passcode?: string): Promise<void> => {
+    public async loginUsingPayIDClaim(recieverVirtualAddress: string, receiverPassCode?: string){
+        receiverPassCode = receiverPassCode || prompt("Receiver passcode");
+        let receiverPublicKey = await this._nameservice.resolveName(recieverVirtualAddress)
+        console.log(`payidclaim ${this._payIDClaim} virtual address ${recieverVirtualAddress} public key ${receiverPublicKey} passcode ${receiverPassCode}`);
+
+        // maintain login state in the underlying pubsub and not in this layer
+        await this._pubsub.connectToPeer(this._payIDClaim, recieverVirtualAddress, receiverPublicKey, receiverPassCode);
+    }
+
+    public sendPaymentRequest = async (receiverVirtualAddress: string, paymentRequest: IPaymentRequest): Promise<void> => {
         // Resolve the public key of the receiver via nameservice
-        let receiverPublicKey: string;
-        try {
-            receiverPublicKey = await this._nameservice.resolveName(receiverVirtualAddress)
-            log.info(`Resolved public key of ${receiverVirtualAddress}: ${receiverPublicKey}`)
-        } catch {
-            let errorMsg = `Receiver is not registered as blockstack id`
-            log.error(errorMsg)
-            throw (errorMsg)
-        }
+        await this.loginUsingPayIDClaim(receiverVirtualAddress);
+        // let receiverPublicKey: string;
+        // try {
+        //     receiverPublicKey = await this._nameservice.resolveName(receiverVirtualAddress)
+        //     log.info(`Resolved public key of ${receiverVirtualAddress}: ${receiverPublicKey}`)
+        // } catch {
+        //     let errorMsg = `Receiver is not registered as blockstack id`
+        //     log.error(errorMsg)
+        //     throw (errorMsg)
+        // }
 
 
         // Initialise the DataConnection for sending the request
-        let receiverPasscode = passcode || prompt("Receiver passcode")
+        // let receiverPasscode = passcode || prompt("Receiver passcode")
 
         // Publish the Payment Request to the receiver topic
-        paymentRequest = Object.assign(paymentRequest, {format: "openpay_v1"})
-
-        this._pubsub.publishMsg(this._payIDClaim, receiverVirtualAddress, receiverPublicKey, paymentRequest, receiverPasscode)
+        let paylod: IRequest = Object.assign(paymentRequest, {format: "openpay_v1", type: "payment"})
+        this._pubsub.publishMsg(receiverVirtualAddress, paylod, this._payIDClaim)
     }
 }
