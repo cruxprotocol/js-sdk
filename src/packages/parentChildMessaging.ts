@@ -1,3 +1,5 @@
+import { any } from "async";
+
 class Message {
 
 	source: string
@@ -30,8 +32,8 @@ class PostMessageMessage extends Message {
 
 abstract class AbstractCommunicator {
 	name: string = "AbstractCommunicator"
-	source = null
-	target = null
+	source: any
+	target: any
 
 	protected constructor(source, target) {
 		this.source = source
@@ -53,15 +55,14 @@ abstract class AbstractCommunicator {
 
 class PostMessageCommunicator extends AbstractCommunicator{
 	name: string = 'PostMessageCommunicator'
-	source = null
-	target = null
 
-	public postMessage(string, type: string, data:JSON):void {
+	public postMessage(type: string, data: JSON): void {
+		console.log(type, data)
 		let content = PostMessageMessage._constructPostMessageContent(type, data)
 		this.source.postMessage(content, this.target)
 	}
 
-	public start(handler):void {
+	public start(handler): void {
 		window.addEventListener('message', (event) => {
 			if (typeof(event.data) == "string") {
 				return handler(JSON.parse(event.data))

@@ -15,6 +15,7 @@ let onload = function() {
 export class OpenPayServiceIframe {
 
 	iframeUrl:string = "http://127.0.0.1:8777/dist/openpay-setup/service.html"
+	iframeDomain: string = '*'
 	el = null
 	mp = null
 	openPayOptions = null
@@ -54,8 +55,7 @@ export class OpenPayServiceIframe {
 	openNewTab = function(options) {
 		console.log('called openNewTab!')
 		this.el = window.open(this.iframeUrl)
-		this.mp = new MessageProcessor('newtab', this.el, '*', this.sdkHandler);
-		this.payment_failed()
+		this.mp = new MessageProcessor('newtab', this.el, this.iframeDomain, this.openPayOptions.sdkCallback);
 	}
 
 	openIframe = function() {
@@ -63,7 +63,7 @@ export class OpenPayServiceIframe {
 		this.el.openPayOptions = this.openPayOptions
 		let elementId = this.openPayOptions['iframeEmbedElementId']
 		document.getElementById(elementId).appendChild(this.el)
-		this.mp = new MessageProcessor('iframe', this.contentWindow,'*', this.openPayOptions.sdkHandler)
+		this.mp = new MessageProcessor('iframe', this.contentWindow,'*', this.openPayOptions.sdkCallback)
 	}
 
 	open = function() {
@@ -84,16 +84,14 @@ export class OpenPayServiceIframe {
 		}
 	}
 
-	payment_failed = function(){
-		this.mp.communicator.postMessage('payment_failed')
-	}
+	// payment_failed
+	// payment_failed
+	// channel_creation_acknowledged
+	// public_key
 
-	payment_success = function(){
-		this.mp.communicator.postMessage('payment_success')
-	}
-
-	channel_creation_acknowledged = function(){
-		this.mp.communicator.postMessage('channel_creation_acknowledged')
+	send_message = (type, data) => {
+		let message = {type: type, data: data}
+		this.mp.communicator.postMessage(type, data)
 	}
 }
 

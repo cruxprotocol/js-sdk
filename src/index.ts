@@ -18,10 +18,10 @@ import {
     PubSubService, PeerJSService,
     NameService, BlockstackService,
     TokenController,
-    MessageProcessor
+    MessageProcessor, OpenPayServiceIframe
 } from "./packages";
 
-export { LocalStorage, Encryption, PeerJSService, BlockstackService, TokenController, MessageProcessor }
+export { LocalStorage, Encryption, PeerJSService, BlockstackService, TokenController, MessageProcessor, OpenPayServiceIframe }
 
 
 // TODO: Implement classes enforcing the interfaces
@@ -268,10 +268,11 @@ export class OpenPayService extends OpenPayPeer {
                 log.debug(`Openpay receiverVirtualAddress provided: `, receiverVirtualAddress)
                 let receiverPublicKey = await this._nameservice.resolveName(receiverVirtualAddress)
                 log.debug(`Receiver public key: `, receiverPublicKey)
-                this._iframe.sendMsg('public_key', {public_key: receiverPublicKey})
+                this._iframe.send_message('public_key', {public_key: receiverPublicKey})
                 break;
             case "encryption_payload": 
                 log.debug(`Encryption payload provided: `, message.data.encryptionPayload)
+                // Build the payment request
             default:
                 console.warn('unhandled:' + JSON.stringify(message))
         }
@@ -284,18 +285,18 @@ export class OpenPayService extends OpenPayPeer {
 		this._iframe.open();
     }
     
-	public f() {
-    	console.log('calling')
-		this._iframe.payment_failed();
-	}
-	public s() {
-    	console.log('calling')
-		this._iframe.payment_success();
-    }
+	// public f() {
+    // 	console.log('calling')
+	// 	this._iframe.payment_failed();
+	// }
+	// public s() {
+    // 	console.log('calling')
+	// 	this._iframe.payment_success();
+    // }
 
-	public c() {
-    	console.log('calling')
-		this._iframe.channel_creation_acknowledged();
-	}
+	// public c() {
+    // 	console.log('calling')
+	// 	this._iframe.channel_creation_acknowledged();
+	// }
 
 }

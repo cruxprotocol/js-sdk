@@ -153,14 +153,13 @@ function thirdPartyIntegrationCode (data){
 
 
 
-window.invokePaymentSetup = async (event) => {
-    console.log(event)
+window.invokePaymentSetup = (event) => {
     event.preventDefault()
     let serviceOptions = {
         serviceName: "Keys4Coins",
         experience: "newtab",
         handler: thirdPartyIntegrationCode
     }
-    let openpayUI = await openpayService.invokeServiceSetup(serviceOptions)
+    let openpayUI = openpayService.invokeServiceSetup(serviceOptions)
     window.openpayUI = openpayUI
 }
