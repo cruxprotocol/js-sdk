@@ -3,14 +3,16 @@ import { Encryption } from "./encryption";
 import { PubSubService, PeerJSService } from "./messaging";
 import { NameService, BlockstackService } from "./nameservice";
 import { TokenController } from "./token";
+import { MessageProcessor } from "./parentChildMessaging";
 
-export { 
+export {
     StorageService,
-    LocalStorage, 
+    LocalStorage,
     Encryption,
     PubSubService,
     PeerJSService,
     NameService,
     BlockstackService,
-    TokenController
+    TokenController,
+	MessageProcessor
 }

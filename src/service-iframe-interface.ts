@@ -19,25 +19,28 @@ let onload = function() {
 	this.postMessage(message)
 }
 
-export class OpenPayIframe {
+export class OpenPayServiceIframe {
+
+	iframeUrl:string = "http://127.0.0.1:8777/dist/openpay-setup/service.html"
+	el = null;
 
 	constructor (options) {
 		if (!options.experience) {
 			options.experience = 'iframe'
 		}
 		if (options.experience == 'iframe') {
-			this.createOpenPayIframe()
+			this.createOpenPayServiceIframe()
 		} else {
 			this.el = null
 		}
 		this.parseOptions(options)
 	}
 
-	createOpenPayIframe = function() {
+	createOpenPayServiceIframe = function() {
 		if (!this.el) {
 			this.el = window.document.createElement("iframe")
 			this.el.setAttribute("style", "opacity: 1; height: 100%; position: relative; background: none; display: block; border: 0 none transparent; margin: 0px; padding: 0px; z-index: 2;")
-			this.el.setAttribute("src", "http://127.0.0.1:8777/dist/openpay-setup/index.html")
+			this.el.setAttribute("src", this.iframeUrl)
 			this.el.setAttribute("id", "frame")
 			this.el.frameBorder = 0
 			this.el.style.width = 100 + "%"
@@ -88,7 +91,7 @@ export class OpenPayIframe {
 
 	openNewTab = function(options) {
 		console.log('called openNewTab!');
-		this.el = window.open('http://127.0.0.1:8777/dist/openpay-setup/index.html');
+		this.el = window.open(this.iframeUrl);
 		setTimeout(() => {
 			let message = {type: 'register'}
 			Object.assign(message, this.openPayOptions)
@@ -119,6 +122,21 @@ export class OpenPayIframe {
 	destroy = function() {
 		let elementId = this.openPayOptions['iframeEmbedElementId']
 		document.getElementById(elementId).innerHTML = ''
+	}
+
+	payment_failed = function(){
+		let message = {'type': 'payment_failed'}
+		this.el.postMessage(JSON.stringify(message), "*")
+	}
+
+	payment_success = function(){
+		let message = {'type': 'payment_success'}
+		this.el.postMessage(JSON.stringify(message), "*")
+	};
+
+	channel_creation_acknowledged = function(){
+		let message = {'type': 'channel_creation_acknowledged'}
+		this.el.postMessage(JSON.stringify(message), "*")
 	}
 }
 
