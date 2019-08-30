@@ -5,11 +5,11 @@ class Message {
 	content: string
 
 	public static makeMessage(source: string, target: string, content: string) {
-		let msg:Message = new Message();
+		let msg: Message = new Message()
 		msg.source = source
 		msg.source = target
 		msg.source = content
-		return msg;
+		return msg
 	}
 
 	showMessage(): void {
@@ -17,32 +17,28 @@ class Message {
 	}
 }
 
-export class PostMessageMessage extends Message {
+class PostMessageMessage extends Message {
 
-	public static makeMessage(source: string, target: string, type: string, data:JSON) {
-		function _constructPostMessageContent(type: string, data: JSON) {
-			let content = {
-				type: type,
-				data: data
-			}
-			return JSON.stringify(content)
+	public static _constructPostMessageContent(type: string, data: JSON) {
+		let content = {
+			type: type,
+			data: data
 		}
-		let content = _constructPostMessageContent(type, data)
-		return super.makeMessage(source, target, content);
+		return JSON.stringify(content)
 	}
 }
 
 abstract class AbstractCommunicator {
-	name:string = "AbstractCommunicator";
-	source = null;
-	target = null;
+	name: string = "AbstractCommunicator"
+	source = null
+	target = null
 
 	protected constructor(source, target) {
 		this.source = source
 		this.target = target
 	}
 
-	public postMessage(msg: Message):void {
+	public postMessage(...args):void {
 
 	}
 
@@ -55,13 +51,14 @@ abstract class AbstractCommunicator {
 	// public wait():void {}
 }
 
-export class PostMessageCommunicator extends AbstractCommunicator{
-	name:string = 'AbstractCommunicator';
-	source = null;
-	target = null;
+class PostMessageCommunicator extends AbstractCommunicator{
+	name: string = 'PostMessageCommunicator'
+	source = null
+	target = null
 
-	public postMessage(msg: Message):void {
-		this.source.postMessage(msg.content, this.target)
+	public postMessage(string, type: string, data:JSON):void {
+		let content = PostMessageMessage._constructPostMessageContent(type, data)
+		this.source.postMessage(content, this.target)
 	}
 
 	public start(handler):void {
@@ -79,34 +76,34 @@ export class PostMessageCommunicator extends AbstractCommunicator{
 	// public wait():void {}
 }
 
-export class CommunicatorFactory {
-	communicatorLookup: { [name: string]: AbstractCommunicator; } = {
+class CommunicatorFactory {
+	communicatorLookup: { [name: string]: AbstractCommunicator } = {
 		'iframe': PostMessageCommunicator,
 		'newtab': PostMessageCommunicator
-	};
-
-	public getInstance(name:string): AbstractCommunicator {
-		return this.communicatorLookup[name];
 	}
 
-	public register(communicator:AbstractCommunicator):void {
-		if (communicator.name == this.name)  // don't allow MessageDispatcher to register itself
+	public getInstance(type: string): AbstractCommunicator {
+		return this.communicatorLookup[type]
+	}
+
+	public register(type: string, communicator: AbstractCommunicator):void {
+		if (type in this.communicatorLookup)  // don't allow MessageDispatcher to register itself
 			return;
-		this.communicatorLookup[communicator.name] = communicator;
+		this.communicatorLookup[type] = communicator
 	}
 }
 
 export class MessageProcessor{
 
-	communicator: AbstractCommunicator;
-	source = null;
-	target = null;
+	communicator: AbstractCommunicator
+	source = null
+	target = null
 
 	constructor(type, source, target, handler) {
 		this.source = source
 		this.target = target
 		this.communicator = new (new CommunicatorFactory().getInstance(type))(source, target)
-		this.communicator.start(handler);
+		this.communicator.start(handler)
 	}
 
 }

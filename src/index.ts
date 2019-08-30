@@ -1,6 +1,5 @@
 import { EventEmitter } from "eventemitter3";
 import { OpenPayIframe } from "./iframe-interface";
-import { OpenPayServiceIframe } from "./service-iframe-interface";
 import 'regenerator-runtime/runtime';
 import Logger from "js-logger";
 import path from "path";
