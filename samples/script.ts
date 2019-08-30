@@ -99,3 +99,68 @@ window.sendPaymentRequest = () => {
     openpayService.sendPaymentRequest(receiverVirtualAddress, dummyPaymentRequest, receiverPasscode)
 }
 
+// Helper methods
+function hideDom(id) {
+    var arr;
+    if (!Array.isArray(id)) {
+        arr = [id];
+    } else {
+        arr = id;
+    }
+    arr.forEach(function (domid) {
+        document.getElementById(domid).style.display = 'none';
+    });
+}
+
+function showDom(id) {
+    var arr;
+    if (!Array.isArray(id)) {
+        arr = [id];
+    } else {
+        arr = id;
+    }
+    arr.forEach(function (domid) {
+        document.getElementById(domid).style.display = 'initial';
+    });
+}
+
+function displayUserInformation(user) {
+    hideDom('coinswitch-container');
+    document.getElementById('newPayIDName').textContent = 'newPayIDName: ' + user.newPayIDName;
+    document.getElementById('encryptedNewPayIDPass').textContent = 'encryptedNewPayIDPass: ' + user.encryptedNewPayIDPass;
+    showDom('userInformation');
+}
+
+function displayLoginContainer() {
+    hideDom('userInformation');
+    showDom('coinswitch-container');
+}
+
+function initSpinner() {
+    var spinner = new Spinner().spin();
+    document.getElementById('spinner').appendChild(spinner.el);
+}
+
+
+function thirdPartyIntegrationCode (data){
+    if (data.type === 'emailPrepopulation') {
+        console.log('Received Email Message: ' + data);
+    } else if (data.type === 'register') {
+        console.log('Received after register message: '+ data);
+        displayUserInformation(data);
+    }
+}
+
+
+
+window.invokePaymentSetup = async (event) => {
+    console.log(event)
+    event.preventDefault()
+    let serviceOptions = {
+        serviceName: "Keys4Coins",
+        experience: "newtab",
+        handler: thirdPartyIntegrationCode
+    }
+    let openpayUI = await openpayService.invokeServiceSetup(serviceOptions)
+    window.openpayUI = openpayUI
+}

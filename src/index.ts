@@ -231,8 +231,8 @@ export class OpenPayWallet extends OpenPayPeer {
 
 // Services specific SDK code
 export class OpenPayService extends OpenPayPeer {
+    private _iframe: OpenPayServiceIframe;
 
-	private cs_ = null;
     constructor(_options: IOpenPayPeerOptions) {
         super(_options);
         log.info(`OpenPayService Initialised`)
@@ -250,7 +250,6 @@ export class OpenPayService extends OpenPayPeer {
             throw (errorMsg)
         }
 
-
         // Initialise the DataConnection for sending the request
         let receiverPasscode = passcode || prompt("Receiver passcode")
 
@@ -260,23 +259,43 @@ export class OpenPayService extends OpenPayPeer {
         this._pubsub.publishMsg(this._payIDClaim, receiverVirtualAddress, receiverPublicKey, paymentRequest, receiverPasscode)
     }
 
-	public invokeServiceSetup = async (openPaySetupOptions: JSON): Promise<void> => {
-		log.info("Service Setup Invoked")
-		this.cs_ = new OpenPayServiceIframe(openPaySetupOptions);
-		this.cs_.open();
-	}
+    // Iframe UI handler methods
 
+    private _onPostMessage = async (message) => {
+        switch(message.type){
+            case "get_public_key":
+                let receiverVirtualAddress = message.data.openpay_id
+                log.debug(`Openpay receiverVirtualAddress provided: `, receiverVirtualAddress)
+                let receiverPublicKey = await this._nameservice.resolveName(receiverVirtualAddress)
+                log.debug(`Receiver public key: `, receiverPublicKey)
+                this._iframe.sendMsg('public_key', {public_key: receiverPublicKey})
+                break;
+            case "encryption_payload": 
+                log.debug(`Encryption payload provided: `, message.data.encryptionPayload)
+            default:
+                console.warn('unhandled:' + JSON.stringify(message))
+        }
+    }
+
+	public invokeServiceSetup = (serviceIframeOptions: JSON): void => {
+        log.info("Service setup invoked")
+        Object.assign(serviceIframeOptions, {sdkCallback: this._onPostMessage })
+		this._iframe = new OpenPayServiceIframe(serviceIframeOptions);
+		this._iframe.open();
+    }
+    
 	public f() {
     	console.log('calling')
-		this.cs_.payment_failed();
+		this._iframe.payment_failed();
 	}
 	public s() {
     	console.log('calling')
-		this.cs_.payment_success();
-	}
+		this._iframe.payment_success();
+    }
+
 	public c() {
     	console.log('calling')
-		this.cs_.channel_creation_acknowledged();
+		this._iframe.channel_creation_acknowledged();
 	}
 
 }

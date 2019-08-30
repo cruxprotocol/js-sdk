@@ -25,6 +25,6 @@
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
     "regenerator-runtime": "^0.13.3",
-    "peerjs": "git+ssh://git@bitbucket.org:coinswitch/webrtc-client.git"
+    "peerjs": "file:../webrtc-client"
   }
 }

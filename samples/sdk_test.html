@@ -54,6 +54,15 @@
     <input id='receiver'>
     <button onclick="sendPaymentRequest()">Request Payment</button>
 
+    <br><br>
+
+    <button onclick="invokePaymentSetup(event)">Paywith Openpay</button>
+    <div id='coinswitch-container'></div>
+    <div id="userInformation" style="display:none">
+        <div id="newPayIDName"></div>
+        <div id="encryptedNewPayIDPass"></div>
+    </div>
+
     <script src="../samples/script.ts"></script>
 </body>
 </html>
