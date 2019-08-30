@@ -228,7 +228,7 @@ export class PeerJSService extends PubSubService {
 
         dataConnection.receiverVirtualAddress = peerVirtualAddress; // data channel itself tells who is the reciever for this
         this.setConnectionForVirtualAddress(peerVirtualAddress, dataConnection);
-        this._registerDataCallbacks(payIDClaim, dataConnection);
+        this._registerDataCallbacks(dataConnection);
         return dataConnection
     }
 
