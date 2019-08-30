@@ -251,8 +251,7 @@ export class PeerJSService extends PubSubService {
         if(!dataConnection){
             throw(`no existing login found for ${topic}, please login using your payIDClaim and try again.d.`);
         }
-        let encryptionKey = this._addressEncryptionKeyMap[dataConnection.receiverVirtualAddress];
-        let encryptedPaymentRequest: JSON = await this._encryption.encryptJSON(payload, encryptionKey);
+        let encryptedPaymentRequest: JSON = await this._encryption.encryptJSON(payload, dataConnection.options.encryptionPayload.encryptionToken);
         dataConnection.send(encryptedPaymentRequest);
 
     }
