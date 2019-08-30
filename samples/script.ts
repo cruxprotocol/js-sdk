@@ -1,4 +1,4 @@
-import { IPayIDClaim, IPaymentRequest, OpenPayWallet, OpenPayService, IAddressMapping } from "../../open_pay_sdk/src/index";
+import { IPayIDClaim, IPaymentRequest, OpenPayWallet, OpenPayService, IAddressMapping } from "../src/index";
 
 
 window.OpenPayWallet = OpenPayWallet
@@ -62,8 +62,8 @@ window.addPayIDClaim = addPayIDClaim
 
 const getIdAvailability = async () => {
     let username = document.getElementById('registrationId').value
-    let availability = await wallet.getPublicIdAvailability(username) 
-    document.getElementById('availability').innerHTML = availability  
+    let availability = await wallet.getPublicIdAvailability(username)
+    document.getElementById('availability').innerHTML = availability
 }
 
 window.getIdAvailability = getIdAvailability
@@ -92,7 +92,7 @@ window.service = openpayService
 window.sendPaymentRequest = () => {
     let payIDClaim = sessionStorage.getItem('payIDClaim') || localStorage.getItem('payIDClaim')
     openpayService.addPayIDClaim(payIDClaim.virtualAddress, payIDClaim.passcode)
-    
+
     let receiverVirtualAddress: string =  document.getElementById('receiver').value
     let receiverPasscode: string = prompt('Receiver passcode')
     // Storage.setItem('peerVirtualAddress', receiverVirtualAddress)
