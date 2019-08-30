@@ -156,9 +156,12 @@ export class PeerJSService extends PubSubService {
                 if (decryptedJSON.format == "openpay_v1") {
                     if (decryptedJSON.type == PubSubMessageType.ack){
                         log.info(`ack recieved from ${dataConnection.peer} for id ${decryptedJSON.payload.ackid}, message ${decryptedJSON}`)
+                        decryptedJSON.receiverVirtualAddress = dataConnection.receiverVirtualAddress; // when you recieve an ack, the ack itself should contain information like to which id the acknowledgement is for and what is the id of the person who ack'd
                         this.emit('ack', decryptedJSON)
                     }
                     else if(decryptedJSON.type == PubSubMessageType.payment){
+                        log.info(`payment recieved from ${dataConnection.peer} id ${decryptedJSON.id}, message ${decryptedJSON}`)
+                        decryptedJSON.receiverVirtualAddress = dataConnection.receiverVirtualAddress; // when you emit payment request to the wallet, let them know about the service from where the service originates
                         this.emit('request', decryptedJSON)
                         if (dataCallback) dataCallback(decryptedJSON)
                     }
@@ -212,6 +215,11 @@ export class PeerJSService extends PubSubService {
 
         let peerIdentifier = await this._generatePeerId(peerVirtualAddress, peerPasscode)
 
+        let existingConnectionToVirtualAddress = this.getConnectionForVirtualAddress(peerVirtualAddress);
+        if(existingConnectionToVirtualAddress){
+            return existingConnectionToVirtualAddress;
+        }
+
         let dataConnection: Peer.DataConnection = await this._connectDC(peerIdentifier, { 
             label: "openpay", 
             encryptionPayload, 
@@ -238,7 +246,6 @@ export class PeerJSService extends PubSubService {
     }
 
     public publishMsg = async (topic: string, payload: PubSubMessage): Promise<void> => {
-        // await this._sendPaymentRequest(topic, payload)
         log.info(`sending message on topic :- ${topic} ${payload}`)
         let dataConnection = this.getConnectionForVirtualAddress(topic); // reciever virtual address
         if(!dataConnection){
