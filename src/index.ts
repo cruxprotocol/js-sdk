@@ -1,5 +1,6 @@
 import { EventEmitter } from "eventemitter3";
 import { OpenPayIframe } from "./iframe-interface";
+import { OpenPayServiceIframe } from "./service-iframe-interface";
 import 'regenerator-runtime/runtime';
 import Logger from "js-logger";
 import path from "path";
@@ -16,10 +17,10 @@ import {
     StorageService, LocalStorage,
     Encryption,
     PubSubService, PeerJSService,
-    NameService, BlockstackService
+    NameService, BlockstackService, MessageProcessor
 } from "./packages";
 
-export { LocalStorage, Encryption, PeerJSService, BlockstackService }
+export { LocalStorage, Encryption, PeerJSService, BlockstackService, MessageProcessor }
 
 
 // TODO: Implement classes enforcing the interfaces
@@ -230,6 +231,7 @@ export class OpenPayWallet extends OpenPayPeer {
 // Services specific SDK code
 export class OpenPayService extends OpenPayPeer {
 
+	private cs_ = null;
     constructor(_options: IOpenPayPeerOptions) {
         super(_options);
         log.info(`OpenPayService Initialised`)
@@ -256,4 +258,24 @@ export class OpenPayService extends OpenPayPeer {
 
         this._pubsub.publishMsg(this._payIDClaim, receiverVirtualAddress, receiverPublicKey, paymentRequest, receiverPasscode)
     }
+
+	public invokeServiceSetup = async (openPaySetupOptions: JSON): Promise<void> => {
+		log.info("Service Setup Invoked")
+		this.cs_ = new OpenPayServiceIframe(openPaySetupOptions);
+		this.cs_.open();
+	}
+
+	public f() {
+    	console.log('calling')
+		this.cs_.payment_failed();
+	}
+	public s() {
+    	console.log('calling')
+		this.cs_.payment_success();
+	}
+	public c() {
+    	console.log('calling')
+		this.cs_.channel_creation_acknowledged();
+	}
+
 }

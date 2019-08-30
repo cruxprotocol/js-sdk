@@ -2,13 +2,15 @@ import { StorageService, LocalStorage } from "./storage";
 import { Encryption } from "./encryption";
 import { PubSubService, PeerJSService } from "./messaging";
 import { NameService, BlockstackService } from "./nameservice";
+import { MessageProcessor } from "./parentChildMessaging";
 
-export { 
+export {
     StorageService,
-    LocalStorage, 
+    LocalStorage,
     Encryption,
     PubSubService,
     PeerJSService,
     NameService,
-    BlockstackService
+    BlockstackService,
+	MessageProcessor
 }
