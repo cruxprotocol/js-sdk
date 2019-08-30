@@ -16,10 +16,11 @@ import {
     StorageService, LocalStorage,
     Encryption,
     PubSubService, PeerJSService,
-    NameService, BlockstackService
+    NameService, BlockstackService,
+    TokenController,
 } from "./packages";
 
-export { LocalStorage, Encryption, PeerJSService, BlockstackService }
+export { LocalStorage, Encryption, PeerJSService, BlockstackService, TokenController }
 
 
 // TODO: Implement classes enforcing the interfaces

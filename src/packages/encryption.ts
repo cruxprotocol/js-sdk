@@ -5,7 +5,7 @@ export class Encryption {
         return Array.prototype.map.call(new Uint8Array(buffer), x=>(('00'+x.toString(16)).slice(-2))).join('')
     }
 
-    static encryptJSON = async (jsonObj: JSON, password: string): Promise<JSON> => {
+    static encryptJSON = async (jsonObj: JSON, password: string): Promise<{encBuffer: ArrayBuffer, iv: Uint8Array}> => {
         let plainText = JSON.stringify(jsonObj)
         return Encryption.encryptText(plainText, password)
     }
@@ -15,13 +15,13 @@ export class Encryption {
         return JSON.parse(JSONString)
     }
 
-    static encryptText = async (plainText: string, password: string): Promise<JSON> => {
+    static encryptText = async (plainText: string, password: string, ivBase64?: string): Promise<{encBuffer: ArrayBuffer, iv: Uint8Array}> => {
         const ptUtf8 = new TextEncoder().encode(plainText);
 
         const pwUtf8 = new TextEncoder().encode(password);
         const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8); 
 
-        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const iv = ivBase64 ? Buffer.from(ivBase64, 'base64') : crypto.getRandomValues(new Uint8Array(12));
         const alg = { name: 'AES-GCM', iv: iv };
         const key = await crypto.subtle.importKey('raw', pwHash, alg, false, ['encrypt']);
 

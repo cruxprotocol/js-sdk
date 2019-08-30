@@ -1,6 +1,6 @@
 import Peer from "peerjs";
 import { IPaymentRequest, IPayIDClaim, getLogger } from "..";
-import { Encryption, LocalStorage, StorageService } from ".";
+import { Encryption, LocalStorage, StorageService, TokenController } from ".";
 import { EventEmitter } from "eventemitter3";
 
 let log = getLogger(__filename)
@@ -77,7 +77,7 @@ const iceConfig = {
 
 export class PeerJSService extends PubSubService {
     // TODO: fix the peerjs-server host
-    private _peerServerCred = {key: "peerjs", secure: true, host: "157.230.199.143", port: 9090, config: iceConfig}
+    private _peerServerCred = {key: "peerjs", secure: false, host: "localhost", port: 9090, config: iceConfig}
     private _peer: Peer
 
     constructor(_options: IPubSubServiceOptions) {
@@ -85,14 +85,14 @@ export class PeerJSService extends PubSubService {
         log.info(`Using PeerJSService for pubsub communication`)
     }
 
-    private async _initialisePeer(payIDClaim, options: { publicKey?: string, privateKey?: string }, dataCallback?: (requestObj: JSON) => void): Promise<boolean> {
-        if (!options.publicKey && !options.privateKey) throw (`Need either privateKey or publicKey to initialise the peer.`)
+    private async _initialisePeer(payIDClaim: IPayIDClaim, options?: { passcode: string, privateKey: string }, dataCallback?: (requestObj: JSON) => void): Promise<boolean> {
+        Object.assign(options || {} , {generateAccessToken: TokenController.generateAccessToken})
         const promise: Promise<boolean> = new Promise(async (resolve, reject) => {
             // Instantiate a messaging peer/node instance
             let peerId = await this._generatePeerId(payIDClaim.virtualAddress, payIDClaim.passcode)
-            let peer = new Peer(peerId, Object.assign(this._peerServerCred, options))
+            let peer = new Peer(peerId, Object.assign(this._peerServerCred, {decryptionPayload: options}))
             peer.on('open', id => log.info(`PeerJS id: ${id}`))
-            peer.on('connection', dc => this._registerDataCallbacks(payIDClaim, dc, dataCallback))
+            peer.on('connection', dc => this._registerDataCallbacks(payIDClaim, dc, options, dataCallback))
             peer.on('disconnected', () => this._peer = undefined)
             peer.on('error', (err) => {throw(err)})
             peer.on('close', () => this._peer = undefined)
@@ -108,7 +108,7 @@ export class PeerJSService extends PubSubService {
         return this._encryption.digest(`${virtualAddress}#${passcode}`)
     }
 
-    private _registerDataCallbacks = (payIDClaim: IPayIDClaim, dataConnection: Peer.DataConnection, dataCallback?: (requestObj: JSON) => void): void => {
+    private _registerDataCallbacks = (payIDClaim: IPayIDClaim, dataConnection: Peer.DataConnection, options: {privateKey?: string} = {}, dataCallback?: (requestObj: JSON) => void): void => {
         dataConnection.on('open', () => {
             console.log(`New peer connection ${dataConnection.peer}`)
             dataConnection.send("ping")
@@ -122,6 +122,13 @@ export class PeerJSService extends PubSubService {
             
             // Try parsing the ecrypted JSON data
             else {
+                // Check for the validity of the messages on wallet side (ownership of privatekey)
+                if (options.privateKey) {
+                    log.debug(`Encrypted validity of dataConnection: `, dataConnection.metadata.encryptedValidity)
+                    // check for the validity of the dataConnection
+                    if (!TokenController.checkValidity(options.privateKey, dataConnection.options._payload.ephemeralPublicKey, dataConnection.metadata.encryptedValidity)) throw (`Validity of the dataConnection has expired!`)
+                }
+                
                 let decryptedJSON
 
                 // Try to decrypt the data received. Ignore on not able to decrypt with the passcode
@@ -151,11 +158,22 @@ export class PeerJSService extends PubSubService {
 
     private async _connectToPeer(payIDClaim: IPayIDClaim, peerVirtualAddress: string, receiverPublicKey: string, peerPasscode: string): Promise<Peer.DataConnection> {        
         // todo: validate to reconnect the existing peer object (in disconnect mode)
-        if (!this._peer) await this._initialisePeer(payIDClaim, { publicKey: receiverPublicKey }).then(console.log)
+        if (!this._peer) await this._initialisePeer(payIDClaim).then(console.log)
 
         let peerIdentifier = await this._generatePeerId(peerVirtualAddress, peerPasscode)
 
-        let dataConnection: Peer.DataConnection = this._peer.connect(peerIdentifier, {label: "openpay"})
+        // Generate the accessToken using the TokenController (External UI JOB)
+        let accessTokenData = TokenController.generateAccessToken(peerPasscode, receiverPublicKey)
+        let encryptionPayload = {
+            encryptionToken: accessTokenData.accessToken,
+            ephemeralPublicKey: accessTokenData.ephemeralPublicKey,
+            ivHex: accessTokenData.iv
+        }
+
+        let encryptedValidity = accessTokenData.encryptedValidity
+
+
+        let dataConnection: Peer.DataConnection = this._peer.connect(peerIdentifier, { label: "openpay", encryptionPayload, metadata: {encryptedValidity: encryptedValidity}})
         this._registerDataCallbacks(payIDClaim, dataConnection)
         return dataConnection
     }
@@ -163,11 +181,9 @@ export class PeerJSService extends PubSubService {
     private async _sendPaymentRequest(payIDClaim: IPayIDClaim, receiverVirtualAddress: string, receiverPublicKey: string, paymentRequest: IPaymentRequest, passcode?: string): Promise<void> {        
         // Initialise the DataConnection for sending the request
         let receiverPasscode = passcode || prompt("Receiver passcode")
-
-        // Send the Payment Request
-        paymentRequest = Object.assign(paymentRequest, {format: "openpay_v1"})
-
         let dataConnection = await this._connectToPeer(payIDClaim, receiverVirtualAddress, receiverPublicKey, receiverPasscode)
+        // Send the Payment Request
+        paymentRequest = Object.assign(paymentRequest, {format: "openpay_v1", encryptedValidity: dataConnection.metadata.encryptedValidity})
         let encryptedPaymentRequest: JSON = await this._encryption.encryptJSON(paymentRequest, receiverPasscode)
         console.log("Encrypted Payment Request", encryptedPaymentRequest)
         dataConnection.on('open', () => {dataConnection.send(encryptedPaymentRequest)})
@@ -192,7 +208,7 @@ export class PeerJSService extends PubSubService {
     }
 
     public registerTopic = async (payIDClaim: IPayIDClaim, decryptionPrivateKey: string, topic?: string, dataCallback?: (requestObj: JSON) => void): Promise<void> => {
-        await this._initialisePeer(payIDClaim, { privateKey: decryptionPrivateKey }, dataCallback).then(console.log)
+        await this._initialisePeer(payIDClaim, { passcode: payIDClaim.passcode, privateKey: decryptionPrivateKey }, dataCallback).then(console.log)
     }
     
 }
