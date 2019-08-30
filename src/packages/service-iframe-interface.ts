@@ -1,15 +1,8 @@
 import {MessageProcessor} from ".."
 
-let postMessage = function(message) {
-	message = JSON.stringify(message)
-	this.contentWindow.postMessage(message, "*")
-}
-
 let onload = function() {
+	// NOTE: if we need to send something to iframe at start it goes here
 	console.log('called onload!')
-	let message = {type: 'register'}
-	Object.assign(message, this.openPayOptions)
-	this.postMessage(message)
 }
 
 export class OpenPayServiceIframe {
@@ -42,7 +35,6 @@ export class OpenPayServiceIframe {
 			this.el.frameBorder = 0
 			this.el.style.width = 100 + "%"
 			this.el.style.height = 100 + "%"
-			this.el.postMessage = postMessage
 			this.el.onload = onload
 		}
 		return this.el
@@ -60,10 +52,10 @@ export class OpenPayServiceIframe {
 
 	openIframe = function() {
 		console.log('called open iframe!')
-		this.el.openPayOptions = this.openPayOptions
+		// this.el.openPayOptions = this.openPayOptions
 		let elementId = this.openPayOptions['iframeEmbedElementId']
 		document.getElementById(elementId).appendChild(this.el)
-		this.mp = new MessageProcessor('iframe', this.contentWindow,'*', this.openPayOptions.sdkCallback)
+		this.mp = new MessageProcessor('iframe', this.contentWindow, this.iframeDomain, this.openPayOptions.sdkCallback)
 	}
 
 	open = function() {
@@ -90,7 +82,6 @@ export class OpenPayServiceIframe {
 	// public_key
 
 	send_message = (type, data) => {
-		let message = {type: type, data: data}
 		this.mp.communicator.postMessage(type, data)
 	}
 }
