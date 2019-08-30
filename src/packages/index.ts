@@ -4,6 +4,7 @@ import { PubSubService, PeerJSService } from "./messaging";
 import { NameService, BlockstackService } from "./nameservice";
 import { TokenController } from "./token";
 import { MessageProcessor } from "./parentChildMessaging";
+import { OpenPayServiceIframe } from "./service-iframe-interface";
 
 export {
     StorageService,
@@ -14,5 +15,6 @@ export {
     NameService,
     BlockstackService,
     TokenController,
-	MessageProcessor
+	MessageProcessor,
+	OpenPayServiceIframe
 }
