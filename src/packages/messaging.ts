@@ -83,7 +83,7 @@ const iceConfig = {
 
 export class PeerJSService extends PubSubService {
     // TODO: fix the peerjs-server host
-    private _peerServerCred = {key: "peerjs", secure: false, host: "localhost", port: 9090, config: iceConfig}
+    private _peerServerCred = {key: "peerjs", secure: true, host: "signaling.coinswitch.co", port: 9090, config: iceConfig}
     private _peer: Peer
     private _loggedInWithPayIDClaim = {}
 
