@@ -188,12 +188,16 @@ export class PeerJSService extends PubSubService {
     }
 
     private _connectDC = (peerIdentifier: string, options): Promise<Peer.DataConnection> => {
-        const promise: Promise<Peer.DataConnection> = new Promise(async (resolve, reject) => {
+        const promise: Promise<Peer.DataConnection> = new Promise((resolve, reject) => {
             let dataConnection: Peer.DataConnection = this._peer.connect(peerIdentifier, options)
             dataConnection.on('open', () => {
-                console.log(`data channel open state with peer:- ${peerIdentifier}`);
+                log.debug(`data channel open state with peer:- ${peerIdentifier}`);
                 resolve(dataConnection);
             });
+            dataConnection.on('error', (error) => {
+                log.error(`unable to create dc: `, error)
+                reject(error)
+            })
         });
         return promise
     }
