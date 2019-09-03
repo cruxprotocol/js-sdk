@@ -191,11 +191,13 @@ class OpenPayPeer extends EventEmitter {
     }
 
     public sendMessageToChannelId = async (topic, payload: PubSubMessage) => {
+        let requestId = topic + "-" + String(Date.now())
         if(!payload.id){
-            payload.id = String(Date.now());
+            payload.id = requestId;
         }
         payload = Object.assign(payload, {format: "openpay_v1"});
         this._pubsub.publishMsg(topic, payload);
+        return requestId;
     }
 }
 
@@ -301,7 +303,7 @@ export class OpenPayService extends OpenPayPeer {
         await this._pubsub.connectToPeer(this._payIDClaim, recieverVirtualAddress, receiverPublicKey, receiverPassCode);
     }
 
-    public sendPaymentRequest = async (receiverVirtualAddress: string, paymentRequest: IPaymentRequest): Promise<void> => {
+    public sendPaymentRequest = async (receiverVirtualAddress: string, paymentRequest: IPaymentRequest): Promise<string> => {
         // Resolve the public key of the receiver via nameservice
         await this.loginUsingPayIDClaim(receiverVirtualAddress);
         // let receiverPublicKey: string;
@@ -318,8 +320,10 @@ export class OpenPayService extends OpenPayPeer {
         // let receiverPasscode = passcode || prompt("Receiver passcode")
 
         // Publish the Payment Request to the receiver topic
-        let payload: Message = {format: "openpay_v1", type: PubSubMessageType.payment, id: String(Date.now()), payload: paymentRequest};
+        let requestId = receiverVirtualAddress + "-" + String(Date.now());
+        let payload: Message = {format: "openpay_v1", type: PubSubMessageType.payment, id: requestId, payload: paymentRequest};
         this._pubsub.publishMsg(receiverVirtualAddress, payload)
+        return requestId;
     }
 
     // Iframe UI handler methods

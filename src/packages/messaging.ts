@@ -156,12 +156,12 @@ export class PeerJSService extends PubSubService {
                 if (decryptedJSON.format == "openpay_v1") {
                     if (decryptedJSON.type == PubSubMessageType.ack){
                         log.info(`ack recieved from ${dataConnection.peer} for id ${decryptedJSON.payload.ackid}, message ${decryptedJSON}`)
-                        decryptedJSON.receiverVirtualAddress = dataConnection.receiverVirtualAddress; // when you recieve an ack, the ack itself should contain information like to which id the acknowledgement is for and what is the id of the person who ack'd
+                        decryptedJSON.receiverVirtualAddress = dataConnection.receiverVirtualAddress;
                         this.emit('ack', decryptedJSON)
                     }
                     else if(decryptedJSON.type == PubSubMessageType.payment){
-                        log.info(`payment recieved from ${dataConnection.peer} id ${decryptedJSON.id}, message ${decryptedJSON}`)
-                        decryptedJSON.receiverVirtualAddress = dataConnection.receiverVirtualAddress; // when you emit payment request to the wallet, let them know about the service from where the service originates
+                        log.info(`payment recieved from ${dataConnection.peer} id ${decryptedJSON.id}, message ${JSON.stringify(decryptedJSON)}`)
+                        decryptedJSON.receiverVirtualAddress = dataConnection.receiverVirtualAddress;
                         this.emit('request', decryptedJSON)
                         if (dataCallback) dataCallback(decryptedJSON)
                     }
