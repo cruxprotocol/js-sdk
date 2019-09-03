@@ -21,6 +21,7 @@ import {
     MessageProcessor, OpenPayServiceIframe
 } from "./packages";
 import { object } from "@mojotech/json-type-validation";
+import { ITokenPayload } from "./packages/token";
 
 export { LocalStorage, Encryption, PeerJSService, BlockstackService, TokenController, MessageProcessor, OpenPayServiceIframe }
 
@@ -294,18 +295,18 @@ export class OpenPayService extends OpenPayPeer {
         log.info(`OpenPayService Initialised`)
     }
 
-    public async loginUsingPayIDClaim(recieverVirtualAddress: string, receiverPassCode?: string){
+    public async loginUsingPayIDClaim(recieverVirtualAddress: string, accessTokenData: any, receiverPassCode?: string){
         receiverPassCode = receiverPassCode || prompt("Receiver passcode");
         let receiverPublicKey = await this._nameservice.resolveName(recieverVirtualAddress)
         console.log(`payidclaim ${this._payIDClaim} virtual address ${recieverVirtualAddress} public key ${receiverPublicKey} passcode ${receiverPassCode}`);
-
+        
         // maintain login state in the underlying pubsub and not in this layer
-        await this._pubsub.connectToPeer(this._payIDClaim, recieverVirtualAddress, receiverPublicKey, receiverPassCode);
+        await this._pubsub.connectToPeer(this._payIDClaim, recieverVirtualAddress, receiverPublicKey, receiverPassCode, accessTokenData);
     }
 
-    public sendPaymentRequest = async (receiverVirtualAddress: string, paymentRequest: IPaymentRequest): Promise<string> => {
+    public sendPaymentRequest = async (receiverVirtualAddress: string, paymentRequest: IPaymentRequest, accessTokenData): Promise<void> => {
         // Resolve the public key of the receiver via nameservice
-        await this.loginUsingPayIDClaim(receiverVirtualAddress);
+        await this.loginUsingPayIDClaim(receiverVirtualAddress, accessTokenData);
         // let receiverPublicKey: string;
         // try {
         //     receiverPublicKey = await this._nameservice.resolveName(receiverVirtualAddress)
@@ -320,10 +321,9 @@ export class OpenPayService extends OpenPayPeer {
         // let receiverPasscode = passcode || prompt("Receiver passcode")
 
         // Publish the Payment Request to the receiver topic
-        let requestId = receiverVirtualAddress + "-" + String(Date.now());
-        let payload: Message = {format: "openpay_v1", type: PubSubMessageType.payment, id: requestId, payload: paymentRequest};
+        let payload: Message = {format: "openpay_v1", type: PubSubMessageType.payment, id: String(Date.now()), payload: paymentRequest};
+        log.debug(`Payment request payload: `, payload)
         this._pubsub.publishMsg(receiverVirtualAddress, payload)
-        return requestId;
     }
 
     // Iframe UI handler methods
@@ -338,8 +338,19 @@ export class OpenPayService extends OpenPayPeer {
                 this._iframe.send_message('public_key', {public_key: receiverPublicKey})
                 break;
             case "encryption_payload": 
+                log.debug(`Receiver details: `, message.data.receiverData)
+                let receiverData = message.data.receiverData
                 log.debug(`Encryption payload provided: `, message.data.encryptionPayload)
+                let encryptionPayload = message.data.encryptionPayload
                 // Build the payment request
+                const dummyPaymentRequest: IPaymentRequest = {
+                    currency: "btc",
+                    toAddress: {
+                        addressHash: "test"
+                    },
+                    value: 2
+                }
+                this.sendPaymentRequest(receiverData.receiverVirtualAddress, dummyPaymentRequest, encryptionPayload)
             default:
                 console.warn('unhandled:' + JSON.stringify(message))
         }

@@ -4,6 +4,7 @@ import { IPaymentRequest, IPayIDClaim, getLogger, PubSubMessage, Errors, PubSubM
 
 import { EventEmitter } from "eventemitter3";
 import { resolve } from "url";
+import { ITokenPayload } from "./token";
 
 let log = getLogger(__filename)
 
@@ -35,7 +36,7 @@ export abstract class PubSubService extends EventEmitter {
     abstract isListening = (): boolean => false
     abstract publishMsg = async (topic: string, payload: PubSubMessage): Promise<void> => {}
     abstract registerTopic = (payIDClaim: IPayIDClaim, privateKey: string, topic?: string, dataCallback?: (requestObj: JSON) => void): void => {}
-    abstract connectToPeer = async (payIDClaim: IPayIDClaim, receiverVirtualAddress: string, receiverPublicKey: string, receiverPasscode: string): Promise<void> => {}
+    abstract connectToPeer = async (payIDClaim: IPayIDClaim, receiverVirtualAddress: string, receiverPublicKey: string, receiverPasscode: string, accessTokenPayload: ITokenPayload): Promise<void> => {}
     abstract getConnectionForVirtualAddress = (virtualAddress: string): string => {return ''}
 }
 
@@ -82,7 +83,7 @@ const iceConfig = {
 
 export class PeerJSService extends PubSubService {
     // TODO: fix the peerjs-server host
-    private _peerServerCred = {key: "peerjs", secure: true, host: "157.230.199.143", port: 9090, config: iceConfig}
+    private _peerServerCred = {key: "peerjs", secure: false, host: "localhost", port: 9090, config: iceConfig}
     private _peer: Peer
     private _loggedInWithPayIDClaim = {}
 
@@ -198,27 +199,26 @@ export class PeerJSService extends PubSubService {
     }
 
 
-    private async _connectToPeer(payIDClaim: IPayIDClaim, peerVirtualAddress: string, receiverPublicKey: string, peerPasscode: string): Promise<Peer.DataConnection> {        
+    private async _connectToPeer(payIDClaim: IPayIDClaim, peerVirtualAddress: string, receiverPublicKey: string, peerPasscode: string, accessTokenPayload: ITokenPayload): Promise<Peer.DataConnection> {        
         
         // todo: validate to reconnect the existing peer object (in disconnect mode)
         if (!this._peer) await this._initialisePeer(payIDClaim).then(console.log)
 
-        // Generate the accessToken using the TokenController (External UI JOB)
-        let accessTokenData = TokenController.generateAccessToken(peerPasscode, receiverPublicKey)
-        let encryptionPayload = {
-            encryptionToken: accessTokenData.accessToken,
-            ephemeralPublicKey: accessTokenData.ephemeralPublicKey,
-            ivHex: accessTokenData.iv
-        }
-        let encryptedValidity = accessTokenData.encryptedValidity
-        log.info(`Token details to be saved by services would be: `, Buffer.from(JSON.stringify({encryptionPayload, encryptedValidity})).toString('base64'))
-
         let peerIdentifier = await this._generatePeerId(peerVirtualAddress, peerPasscode)
-
+        log.debug(`PeerId: `, peerIdentifier)
         let existingConnectionToVirtualAddress = this.getConnectionForVirtualAddress(peerVirtualAddress);
         if(existingConnectionToVirtualAddress){
             return existingConnectionToVirtualAddress;
         }
+
+        accessTokenPayload = TokenController.generateAccessToken(peerPasscode, receiverPublicKey)
+        let encryptionPayload = {
+            encryptionToken: accessTokenPayload.accessToken,
+            ephemeralPublicKey: accessTokenPayload.ephemeralPublicKey,
+            ivHex: accessTokenPayload.iv
+        }
+        let encryptedValidity = accessTokenPayload.encryptedValidity
+        log.info(`Token details to be saved by services would be: `, Buffer.from(JSON.stringify({encryptionPayload, encryptedValidity})).toString('base64'))
 
         let dataConnection: Peer.DataConnection = await this._connectDC(peerIdentifier, { 
             label: "openpay", 
@@ -260,8 +260,8 @@ export class PeerJSService extends PubSubService {
         await this._initialisePeer(payIDClaim, { passcode: payIDClaim.passcode, privateKey: decryptionPrivateKey }, dataCallback).then(console.log)
     }
 
-    public connectToPeer = async (payIDClaim: IPayIDClaim, receiverVirtualAddress: string, receiverPublicKey: string, receiverPasscode: string): Promise<void> => {
-        await this._connectToPeer(payIDClaim, receiverVirtualAddress, receiverPublicKey, receiverPasscode);
+    public connectToPeer = async (payIDClaim: IPayIDClaim, receiverVirtualAddress: string, receiverPublicKey: string, receiverPasscode: string, accessTokenPayload: ITokenPayload): Promise<void> => {
+        await this._connectToPeer(payIDClaim, receiverVirtualAddress, receiverPublicKey, receiverPasscode, accessTokenPayload);
     }
 
     public getConnectionForVirtualAddress = (virtualAddress: string) => {

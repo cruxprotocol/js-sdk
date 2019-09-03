@@ -3,6 +3,13 @@ import crypto from "crypto";
 
 let log = getLogger(__filename)
 
+export interface ITokenPayload {
+    accessToken: string
+    ephemeralPublicKey: string
+    iv: string
+    encryptedValidity?: string
+}
+
 export class TokenController {
     static _encryptStringSymmetric = (value: string, key: string, ivHex?: string): { encryptedString: string, iv: string} => {
         let keyHash = crypto.createHash('sha256').update(key).digest()
