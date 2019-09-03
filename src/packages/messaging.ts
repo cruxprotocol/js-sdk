@@ -147,15 +147,12 @@ export class PeerJSService extends PubSubService {
                 if (decryptedJSON.format == "openpay_v1") {
                     if (decryptedJSON.type == PubSubMessageType.ack){
                         log.info(`ack recieved from ${dataConnection.peer} for id ${decryptedJSON.payload.ackid}, message ${decryptedJSON}`)
+                        decryptedJSON.receiverVirtualAddress = dataConnection.receiverVirtualAddress;
                         this.emit('ack', decryptedJSON)
                     }
                     else if(decryptedJSON.type == PubSubMessageType.payment){
-                        log.info(`payment recieved from ${dataConnection.peer} id ${decryptedJSON.id}, message ${decryptedJSON}`)
-                        let ackPayment: Ack = {format: "openpay_v1", type: PubSubMessageType.ack, id: String(Date.now()), payload: {ackid: decryptedJSON.id, request: decryptedJSON}}; 
-                        console.log(`using encryption key ${this._addressEncryptionKeyMap[dataConnection.receiverVirtualAddress]} for reciever virtual address ${dataConnection.receiverVirtualAddress}`)
-                        let encryptionPasscode = this._addressEncryptionKeyMap[dataConnection.receiverVirtualAddress];
-                        let encryptedPaymentRequest: JSON = await this._encryption.encryptJSON(ackPayment,  encryptionPasscode);        
-                        dataConnection.send(encryptedPaymentRequest);
+                        log.info(`payment recieved from ${dataConnection.peer} id ${decryptedJSON.id}, message ${JSON.stringify(decryptedJSON)}`)
+                        decryptedJSON.receiverVirtualAddress = dataConnection.receiverVirtualAddress;
                         this.emit('request', decryptedJSON)
                         if (dataCallback) dataCallback(decryptedJSON)
                     }
