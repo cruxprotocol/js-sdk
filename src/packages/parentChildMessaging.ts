@@ -65,7 +65,11 @@ class PostMessageCommunicator extends AbstractCommunicator{
 	public start(handler): void {
 		window.addEventListener('message', (event) => {
 			if (typeof(event.data) == "string") {
-				return handler(JSON.parse(event.data))
+			    // We should only process those event whose source is communicator's target or when target is '*'
+				// https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage#Security_concerns
+			    if (this.target == '*' || this.target == event.origin) {
+					return handler(JSON.parse(event.data))
+				}
 			}
 		})
 	}
