@@ -342,6 +342,7 @@ export class OpenPayService extends OpenPayPeer {
                         else if (payload.payload.type == 'payment_initiated') {
                             log.debug(`Acknowledgement received for successful action on the payment request`)
                             this._iframe.send_message('payment_initiated')
+                            this.emit('payment_initiated')
                         }
                     })
                     
