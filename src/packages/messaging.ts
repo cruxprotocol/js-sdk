@@ -215,7 +215,6 @@ export class PeerJSService extends PubSubService {
             return existingConnectionToVirtualAddress;
         }
 
-        accessTokenPayload = TokenController.generateAccessToken(peerPasscode, receiverPublicKey)
         let encryptionPayload = {
             encryptionToken: accessTokenPayload.accessToken,
             ephemeralPublicKey: accessTokenPayload.ephemeralPublicKey,

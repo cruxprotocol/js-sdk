@@ -304,77 +304,58 @@ export class OpenPayService extends OpenPayPeer {
         await this._pubsub.connectToPeer(this._payIDClaim, recieverVirtualAddress, receiverPublicKey, receiverPassCode, accessTokenData);
     }
 
-    public sendPaymentRequest = async (receiverVirtualAddress: string, paymentRequest: IPaymentRequest, accessTokenData): Promise<void> => {
-        // Resolve the public key of the receiver via nameservice
+    public _sendPaymentRequest = async (receiverVirtualAddress: string, paymentRequest: IPaymentRequest, accessTokenData): Promise<string> => {
         await this.loginUsingPayIDClaim(receiverVirtualAddress, accessTokenData);
-        // let receiverPublicKey: string;
-        // try {
-        //     receiverPublicKey = await this._nameservice.resolveName(receiverVirtualAddress)
-        //     log.info(`Resolved public key of ${receiverVirtualAddress}: ${receiverPublicKey}`)
-        // } catch {
-        //     let errorMsg = `Receiver is not registered as blockstack id`
-        //     log.error(errorMsg)
-        //     throw (errorMsg)
-        // }
-
-        // Initialise the DataConnection for sending the request
-        // let receiverPasscode = passcode || prompt("Receiver passcode")
-
-        // Publish the Payment Request to the receiver topic
         let payload: Message = {format: "openpay_v1", type: PubSubMessageType.payment, id: String(Date.now()), payload: paymentRequest};
         log.debug(`Payment request payload: `, payload)
         this._pubsub.publishMsg(receiverVirtualAddress, payload)
+        return payload.id
     }
 
     // Iframe UI handler methods
 
-    private _onPostMessage = async (message) => {
-        switch(message.type){
-            case "get_public_key":
-                let receiverVirtualAddress = message.data.openpay_id
-                log.debug(`Openpay receiverVirtualAddress provided: `, receiverVirtualAddress)
-                let receiverPublicKey = await this._nameservice.resolveName(receiverVirtualAddress)
-                log.debug(`Receiver public key: `, receiverPublicKey)
-                this._iframe.send_message('public_key', {public_key: receiverPublicKey})
-                break;
-            case "encryption_payload": 
-                log.debug(`Receiver details: `, message.data.receiverData)
-                let receiverData = message.data.receiverData
-                log.debug(`Encryption payload provided: `, message.data.encryptionPayload)
-                let encryptionPayload = message.data.encryptionPayload
-                // Build the payment request
-                const dummyPaymentRequest: IPaymentRequest = {
-                    currency: "btc",
-                    toAddress: {
-                        addressHash: "test"
-                    },
-                    value: 2
-                }
-                this.sendPaymentRequest(receiverData.receiverVirtualAddress, dummyPaymentRequest, encryptionPayload)
-            default:
-                console.warn('unhandled:' + JSON.stringify(message))
+    private _onPostMessage = (paymentRequest) => {
+        return async (message) => {
+            switch(message.type){
+                
+                case "get_public_key":
+                    let receiverVirtualAddress = message.data.openpay_id
+                    log.debug(`Openpay receiverVirtualAddress provided: `, receiverVirtualAddress)
+                    let receiverPublicKey = await this._nameservice.resolveName(receiverVirtualAddress)
+                    log.debug(`Receiver public key: `, receiverPublicKey)
+                    this._iframe.send_message('public_key', {public_key: receiverPublicKey})
+                    break;
+
+                case "encryption_payload": 
+                    log.debug(`Receiver details: `, message.data.receiverData)
+                    let receiverData = message.data.receiverData
+                    log.debug(`Encryption payload provided: `, message.data.encryptionPayload)
+                    let encryptionPayload = message.data.encryptionPayload
+                    // Build the payment request
+                    await this._sendPaymentRequest(receiverData.receiverVirtualAddress, paymentRequest, encryptionPayload)
+                    this._pubsub.on('ack', payload => {
+                        log.debug(`acknowledgement payload: `, payload)
+                        
+                        if (payload.payload.type == 'payment_received') {
+                            log.debug(`Acknowledgement received for receipt of payment request`)
+                            this._iframe.send_message('payment_request_received')
+                        }
+                        else if (payload.payload.type == 'payment_initiated') {
+                            log.debug(`Acknowledgement received for successful action on the payment request`)
+                            this._iframe.send_message('payment_initiated')
+                        }
+                    })
+                    
+                default:
+                    console.warn('unhandled:' + JSON.stringify(message))
+            }
         }
     }
 
-	public invokeServiceSetup = (serviceIframeOptions: JSON): void => {
+	public payWithOpenpay = (serviceIframeOptions: JSON, paymentRequest: IPaymentRequest): void => {
         log.info("Service setup invoked")
-        Object.assign(serviceIframeOptions, {sdkCallback: this._onPostMessage })
+        Object.assign(serviceIframeOptions, {sdkCallback: this._onPostMessage(paymentRequest) })
 		this._iframe = new OpenPayServiceIframe(serviceIframeOptions);
-		this._iframe.open();
+        this._iframe.open();
     }
-    
-	// public f() {
-    // 	console.log('calling')
-	// 	this._iframe.payment_failed();
-	// }
-	// public s() {
-    // 	console.log('calling')
-	// 	this._iframe.payment_success();
-    // }
-
-	// public c() {
-    // 	console.log('calling')
-	// 	this._iframe.channel_creation_acknowledged();
-	// }
-
 }
