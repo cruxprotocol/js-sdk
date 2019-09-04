@@ -345,7 +345,11 @@ export class OpenPayService extends OpenPayPeer {
                             this.emit('payment_initiated')
                         }
                     })
-                    
+                
+                case "close":
+                    this._iframe.destroy()
+                    break;
+                
                 default:
                     console.warn('unhandled:' + JSON.stringify(message))
             }
