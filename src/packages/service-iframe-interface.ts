@@ -55,7 +55,7 @@ export class OpenPayServiceIframe {
 		// this.el.openPayOptions = this.openPayOptions
 		let elementId = this.openPayOptions['iframeEmbedElementId']
 		document.getElementById(elementId).appendChild(this.el)
-		this.mp = new MessageProcessor('iframe', this.contentWindow, this.iframeDomain, this.openPayOptions.sdkCallback)
+		this.mp = new MessageProcessor('iframe', this.el.contentWindow, this.iframeDomain, this.openPayOptions.sdkCallback)
 	}
 
 	open = function() {
