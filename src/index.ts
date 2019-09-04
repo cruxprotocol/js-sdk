@@ -347,6 +347,7 @@ export class OpenPayService extends OpenPayPeer {
                     })
                 
                 case "close":
+                    this.emit('close')
                     this._iframe.destroy()
                     break;
                 
