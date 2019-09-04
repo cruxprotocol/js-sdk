@@ -295,13 +295,12 @@ export class OpenPayService extends OpenPayPeer {
         log.info(`OpenPayService Initialised`)
     }
 
-    public async loginUsingPayIDClaim(recieverVirtualAddress: string, accessTokenData: any, receiverPassCode?: string){
-        receiverPassCode = receiverPassCode || prompt("Receiver passcode");
+    public async loginUsingPayIDClaim(recieverVirtualAddress: string, accessTokenData: any){
         let receiverPublicKey = await this._nameservice.resolveName(recieverVirtualAddress)
-        console.log(`payidclaim ${this._payIDClaim} virtual address ${recieverVirtualAddress} public key ${receiverPublicKey} passcode ${receiverPassCode}`);
+        log.debug(`receiver virtual address: ${recieverVirtualAddress} and public key: ${receiverPublicKey}`);
         
         // maintain login state in the underlying pubsub and not in this layer
-        await this._pubsub.connectToPeer(this._payIDClaim, recieverVirtualAddress, receiverPublicKey, receiverPassCode, accessTokenData);
+        await this._pubsub.connectToPeer(this._payIDClaim, recieverVirtualAddress, receiverPublicKey, accessTokenData);
     }
 
     public _sendPaymentRequest = async (receiverVirtualAddress: string, paymentRequest: IPaymentRequest, accessTokenData): Promise<string> => {
@@ -317,7 +316,7 @@ export class OpenPayService extends OpenPayPeer {
     private _onPostMessage = (paymentRequest) => {
         return async (message) => {
             switch(message.type){
-                
+
                 case "get_public_key":
                     let receiverVirtualAddress = message.data.openpay_id
                     log.debug(`Openpay receiverVirtualAddress provided: `, receiverVirtualAddress)

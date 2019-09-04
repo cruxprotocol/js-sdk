@@ -36,7 +36,7 @@ export abstract class PubSubService extends EventEmitter {
     abstract isListening = (): boolean => false
     abstract publishMsg = async (topic: string, payload: PubSubMessage): Promise<void> => {}
     abstract registerTopic = (payIDClaim: IPayIDClaim, privateKey: string, topic?: string, dataCallback?: (requestObj: JSON) => void): void => {}
-    abstract connectToPeer = async (payIDClaim: IPayIDClaim, receiverVirtualAddress: string, receiverPublicKey: string, receiverPasscode: string, accessTokenPayload: ITokenPayload): Promise<void> => {}
+    abstract connectToPeer = async (payIDClaim: IPayIDClaim, receiverVirtualAddress: string, receiverPublicKey: string, accessTokenPayload: ITokenPayload): Promise<void> => {}
     abstract getConnectionForVirtualAddress = (virtualAddress: string): string => {return ''}
 }
 
@@ -96,7 +96,7 @@ export class PeerJSService extends PubSubService {
         Object.assign(options || {} , {generateAccessToken: TokenController.generateAccessToken})
         const promise: Promise<boolean> = new Promise(async (resolve, reject) => {
             // Instantiate a messaging peer/node instance
-            let peerId = await this._generatePeerId(payIDClaim.virtualAddress, payIDClaim.passcode)
+            let peerId = await this._generatePeerId(payIDClaim ? payIDClaim.virtualAddress : undefined)
             let peer = new Peer(peerId, Object.assign(this._peerServerCred, {decryptionPayload: options}))
             peer.on('open', id => log.info(`PeerJS id: ${id}`))
 
@@ -117,8 +117,13 @@ export class PeerJSService extends PubSubService {
 
     }
 
-    private async _generatePeerId(virtualAddress: string, passcode: string): Promise<string> {
-        return this._encryption.digest(`${virtualAddress}#${passcode}`)
+    private async _generatePeerId(virtualAddress?: string): Promise<string> {
+        if (virtualAddress) {
+            return this._encryption.digest(`${virtualAddress}`)
+        } else {
+            return this._encryption.digest(`${Math.random()}`)
+        }
+        
     }
 
     private _registerDataCallbacks = (dataConnection: Peer.DataConnection, options: {privateKey?: string} = {}, dataCallback?: (requestObj: JSON) => void): void => {
@@ -203,12 +208,12 @@ export class PeerJSService extends PubSubService {
     }
 
 
-    private async _connectToPeer(payIDClaim: IPayIDClaim, peerVirtualAddress: string, receiverPublicKey: string, peerPasscode: string, accessTokenPayload: ITokenPayload): Promise<Peer.DataConnection> {        
+    private async _connectToPeer(payIDClaim: IPayIDClaim, peerVirtualAddress: string, receiverPublicKey: string, accessTokenPayload: ITokenPayload): Promise<Peer.DataConnection> {        
         
         // todo: validate to reconnect the existing peer object (in disconnect mode)
         if (!this._peer) await this._initialisePeer(payIDClaim).then(console.log)
 
-        let peerIdentifier = await this._generatePeerId(peerVirtualAddress, peerPasscode)
+        let peerIdentifier = await this._generatePeerId(peerVirtualAddress)
         log.debug(`PeerId: `, peerIdentifier)
         let existingConnectionToVirtualAddress = this.getConnectionForVirtualAddress(peerVirtualAddress);
         if(existingConnectionToVirtualAddress){
@@ -263,8 +268,8 @@ export class PeerJSService extends PubSubService {
         await this._initialisePeer(payIDClaim, { passcode: payIDClaim.passcode, privateKey: decryptionPrivateKey }, dataCallback).then(console.log)
     }
 
-    public connectToPeer = async (payIDClaim: IPayIDClaim, receiverVirtualAddress: string, receiverPublicKey: string, receiverPasscode: string, accessTokenPayload: ITokenPayload): Promise<void> => {
-        await this._connectToPeer(payIDClaim, receiverVirtualAddress, receiverPublicKey, receiverPasscode, accessTokenPayload);
+    public connectToPeer = async (payIDClaim: IPayIDClaim, receiverVirtualAddress: string, receiverPublicKey: string, accessTokenPayload: ITokenPayload): Promise<void> => {
+        await this._connectToPeer(payIDClaim, receiverVirtualAddress, receiverPublicKey, accessTokenPayload);
     }
 
     public getConnectionForVirtualAddress = (virtualAddress: string) => {
