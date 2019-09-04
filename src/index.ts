@@ -345,6 +345,7 @@ export class OpenPayService extends OpenPayPeer {
                             this.emit('payment_initiated')
                         }
                     })
+                    break;
                 
                 case "close":
                     this.emit('close')
