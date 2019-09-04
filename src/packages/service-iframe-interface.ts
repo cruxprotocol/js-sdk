@@ -30,7 +30,7 @@ export class OpenPayServiceIframe {
 		if (!this.el) {
 			this.el = window.document.createElement("iframe")
 			this.el.setAttribute("style", "opacity: 1; height: 100%; position: relative; background: none; display: block; border: 0 none transparent; margin: 0px; padding: 0px; z-index: 2;")
-			this.el.setAttribute("src", this.iframeUrl)
+			this.el.setAttribute("src", this.iframeUrl + "?mode=iframe")
 			this.el.setAttribute("id", "frame")
 			this.el.frameBorder = 0
 			this.el.style.width = 100 + "%"
@@ -46,7 +46,7 @@ export class OpenPayServiceIframe {
 
 	openNewTab = function(options) {
 		console.log('called openNewTab!')
-		this.el = window.open(this.iframeUrl)
+		this.el = window.open(this.iframeUrl + "?mode=newtab")
 		this.mp = new MessageProcessor('newtab', this.el, this.iframeDomain, this.openPayOptions.sdkCallback);
 	}
 
