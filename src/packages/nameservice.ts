@@ -441,27 +441,34 @@ export class BlockstackService extends NameService {
                 if (error) throw new Error(error)
                 let addressMap: IAddressMapping
 
-                try {
-                    addressMap = body[0].decodedToken.payload.claim
-                    log.debug(`Address map: `, addressMap)
-                } catch (e) {
-                    log.error(e)
-                    // TODO: fix the error log
-                    throw (`Probably this id resolves to a domain registrar`)
-                }
-                
-                let addressFromPub = publicKeyToAddress(pubKey)
-                
-                // validate the file integrity with the token signature
-                try {
-                    const decodedToken = verifyProfileToken(body[0].token, pubKey)
-                } catch(e) {
-                    // TODO: validate the token properly after publishing the subject
-                    log.error(e)
-                }
+				if (body.indexOf('BlobNotFound') > 0){
+					resolve ({});
+				} else {
 
-                if (addressFromPub === bitcoinAddress) resolve (addressMap)
-                else reject (`Invalid zonefile`)
+
+					try {
+						addressMap = body[0].decodedToken.payload.claim
+						log.debug(`Address map: `, addressMap)
+					} catch (e) {
+						log.error(e)
+						// TODO: fix the error log
+						throw (`Probably this id resolves to a domain registrar`)
+					}
+
+					let addressFromPub = publicKeyToAddress(pubKey)
+
+					// validate the file integrity with the token signature
+					try {
+						const decodedToken = verifyProfileToken(body[0].token, pubKey)
+					} catch (e) {
+						// TODO: validate the token properly after publishing the subject
+						log.error(e)
+					}
+
+					if (addressFromPub === bitcoinAddress) resolve(addressMap)
+					else reject (`Invalid zonefile`)
+				}
+
             })
         })
         return promise
