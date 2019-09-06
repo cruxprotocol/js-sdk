@@ -66,8 +66,9 @@ export class OpenPayIframe {
 					console.log('close message sent' + message)
 				}, 500);
 			} else {
-				let my_iframe = document.getElementById("frame")
-				my_iframe.parentNode.removeChild(my_iframe)
+				// TODO: As of v0.004, UX has not incorporated this code change
+				//let my_iframe = document.getElementById("frame")
+				//my_iframe.parentNode.removeChild(my_iframe)
 			}
 		}
 	}
@@ -99,11 +100,48 @@ export class OpenPayIframe {
 		}, 3000);
 	}
 
+		dispModal = function({template , width , height}) {
+		let modalBackdrop = document.createElement('div');
+		modalBackdrop.id = 'openpay-modal';
+		modalBackdrop.style.position = 'fixed';
+		modalBackdrop.style.top = '0';
+		modalBackdrop.style.left = '0';
+		modalBackdrop.style.width = '100%';
+		modalBackdrop.style.height = '100%';
+		modalBackdrop.style.background = 'rgba(0,0,0,0.5)';
+		modalBackdrop.style.zIndex = '100';
+		modalBackdrop.style.display = 'flex';
+		modalBackdrop.style.justifyContent = 'center';
+		modalBackdrop.style.alignItems = 'center';
+
+		let modal = document.createElement('div');
+		modal.style.width = width ||'500px';
+		modal.style.height = height || '300px';
+		modal.style.borderRadius = '8px';
+		modal.style.background = 'rgba(255,255,255,0)';
+
+		// modal.innerHTML = template || '<div></div>';
+		modal.appendChild(template)
+
+
+		modalBackdrop.appendChild(modal);
+		document.body.appendChild(modalBackdrop);
+	}
+
+	hideModal = function(){
+		document.getElementById('openpay-modal').remove();
+	}
+
 	openIframe = function() {
 		console.log('called open iframe!');
 		this.el.openPayOptions = this.openPayOptions
-		let elementId = this.openPayOptions['iframeEmbedElementId']
-		document.getElementById(elementId).appendChild(this.el)
+		this.dispModal({
+			template: this.el,
+			width: '500px',
+			height: '500px'
+		})
+		// let elementId = this.openPayOptions['iframeEmbedElementId']
+		// document.getElementById(elementId).appendChild(this.el)
 	}
 
 	open = function() {
