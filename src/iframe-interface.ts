@@ -155,8 +155,8 @@ export class OpenPayIframe {
 	}
 
 	destroy = function() {
-		let elementId = this.openPayOptions['iframeEmbedElementId']
-		document.getElementById(elementId).innerHTML = ''
+		let elementId = 'openpay-modal';
+		document.getElementById(elementId).remove();
 	}
 }
 
