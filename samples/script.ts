@@ -28,7 +28,12 @@ document.getElementById('address').innerHTML = wallet_btc_address
 
 openpayWallet.on('request', (a) => {
     console.log("EventParser", a)
-    document.getElementById('requests').innerHTML += JSON.stringify(a, undefined, 4)
+    openpayWallet.sendMessageToChannelId(a.receiverVirtualAddress, {format: 'openpay_v1', type: 'ack', id: String(Date.now()), payload: {ackid: a.id, type: 'payment_received'}})
+    document.getElementById('requests').innerHTML += JSON.stringify(a, undefined, 4) + `
+    <button onclick="((receiverVirtualAddress, id) => {
+        window.wallet.sendMessageToChannelId(receiverVirtualAddress, {format: 'openpay_v1', type: 'ack', id: String(Date.now()), payload: {ackid: id, type: 'payment_initiated'}})
+    })('${a.receiverVirtualAddress}', ${a.id})">Accept Request</button>
+    `
 })
 
 const checkStatus = () => {

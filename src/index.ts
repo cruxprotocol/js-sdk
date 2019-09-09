@@ -30,7 +30,7 @@ export { LocalStorage, Encryption, PeerJSService, BlockstackService, TokenContro
 export interface IPayIDClaim {
     virtualAddress: string
     passcode: string
-    identitySecret?: string
+    identitySecrets?: any
 }
 
 export interface IAddress {
@@ -139,15 +139,26 @@ class OpenPayPeer extends EventEmitter {
         if (this._hasPayIDClaimStored) {
             let payIDClaim = this._storage.getJSON('payIDClaim')
             this._setPayIDClaim(payIDClaim)
-            // if have local identitySecret, setup with the nameservice module
-            try{
-                if ( this._payIDClaim && this._payIDClaim.identitySecret ) this._nameservice.restoreIdentity({ identitySecret: this._payIDClaim.identitySecret})
-            }
-            catch(error){
-                log.info(`Unable to restore identity for ${this._payIDClaim}`)
-            }
+            this._restoreIdentity()
         }
         log.info(`OpenPayPeer Initialised`)
+    }
+
+    private _restoreIdentity() {
+        // if have local identitySecret, setup with the nameservice module
+        if ( this._payIDClaim && this._payIDClaim.identitySecrets ) {
+            this._nameservice.restoreIdentity({ identitySecrets: this._payIDClaim.identitySecrets})
+                .then(identityClaim => {
+                    this._payIDClaim.identitySecrets = identityClaim.secrets
+                    log.debug(`PayIDClaim with restored identity: `, this._payIDClaim)
+                    this._storage.setJSON('payIDClaim', this._payIDClaim)
+                    log.info(`Identity restored`)
+                })
+                .catch(err => log.error(err))
+        }
+        else {
+            log.info(`payIDClaim or identitySecrets not available! Identity restoration skipped`)
+        }
     }
 
     public hasPayIDClaim = (): boolean =>  {
@@ -165,7 +176,7 @@ class OpenPayPeer extends EventEmitter {
         }
         this._storage.setJSON('payIDClaim', payIDClaim)
         this._setPayIDClaim(payIDClaim)
-        if ( this._payIDClaim && this._payIDClaim.identitySecret ) this._nameservice.restoreIdentity({ identitySecret: this._payIDClaim.identitySecret})
+        this._restoreIdentity()
     }
 
     private _hasPayIDClaimStored = (): boolean => {
@@ -243,13 +254,13 @@ export class OpenPayWallet extends OpenPayPeer {
 
     public addPayIDClaim = async (virtualAddress: string, passcode: string, addressMap?: IAddressMapping): Promise<void> => {
         // Generating the identityClaim
-        let identityClaim = this._nameservice.generateIdentity()
+        let identityClaim = await this._nameservice.generateIdentity()
         let registeredPublicID = await this._nameservice.registerName(virtualAddress)
         // Setup the payIDClaim locally
         let payIDClaim: IPayIDClaim = {
             virtualAddress: registeredPublicID,
             passcode: passcode,
-            identitySecret: identityClaim.secret
+            identitySecrets: identityClaim.secrets
         }
         this._storage.setJSON('payIDClaim', payIDClaim)
         this._setPayIDClaim(payIDClaim)

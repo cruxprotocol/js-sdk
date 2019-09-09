@@ -11,15 +11,15 @@ let log = getLogger(__filename)
 // NameService abstraction
 
 export interface IIdentityClaim {
-    secret: string
+    secrets: any
 }
 
 export abstract class NameService {
 
     constructor(options: any = {}) {}
 
-    abstract generateIdentity = (): IIdentityClaim => {return {secret: null}}
-    abstract restoreIdentity = (options?: any): void => {}
+    abstract generateIdentity = async (): Promise<IIdentityClaim> => {return { secrets: null }}
+    abstract restoreIdentity = async (options?: any): Promise<IIdentityClaim> => {return { secrets: null }}
     abstract getDecryptionKey = async (): Promise<string> => {return}
     abstract getNameAvailability = async (name: string): Promise<boolean> => {return false}
     abstract registerName = async (name: string): Promise<string> => {return}
@@ -94,6 +94,10 @@ export class BlockstackService extends NameService {
         this._mnemonic = mnemonic
     }
 
+    private _setIdentityKeyPair = (identityKeyPair: IBitcoinKeyPair): void => {
+        this._identityKeyPair = identityKeyPair
+    }
+
     private _generateIdentityKeyPair = async (): Promise<void> => {
         // TODO: need to use passcode encryption
         let encryptedMnemonic = await BlockstackWallet.encryptMnemonic(this._mnemonic, 'temp')
@@ -117,18 +121,41 @@ export class BlockstackService extends NameService {
         return decryptionKey
     }
 
-    public restoreIdentity = (options?: any): void => {
-        if (!options || !options['identitySecret']) throw (`Require mnemonic for restoring the identity`)
-        this._setMnemonic(options['identitySecret'])
-        this._generateIdentityKeyPair()
+    public restoreIdentity = async (options?: any): Promise<IIdentityClaim> => {
+        if (!options || !options['identitySecrets']) throw (`Require mnemonic for restoring the identity`)
+        this._setMnemonic(options['identitySecrets']['mnemonic'])
+
+        // If identityKeypair is not stored locally, generate them using the mnemonic
+        if (!options['identitySecrets']['identityKeyPair']) {
+            await this._generateIdentityKeyPair()
+        } 
+        
+        // Otherwise, set the identityKeyPair directly
+        else {
+            this._setIdentityKeyPair(options['identitySecrets']['identityKeyPair'])
+        }
+
+        return {
+            secrets: {
+                mnemonic: this._mnemonic,
+                identityKeyPair: this._identityKeyPair
+            }
+        }
+        
     }
 
-    public generateIdentity = (): IIdentityClaim => {
+    public generateIdentity = async (): Promise<IIdentityClaim> => {
         let newMnemonic = this._generateMnemonic()
-        console.log(newMnemonic)
+        log.debug(newMnemonic)
         alert(`Your new mnemonic backing your identity is \n ${newMnemonic}`)
+        await this._generateIdentityKeyPair()
         this._mnemonic = newMnemonic
-        return { secret: this._mnemonic }
+        return { 
+            secrets: { 
+                mnemonic: this._mnemonic,
+                identityKeyPair: this._identityKeyPair
+            } 
+        }
     }
 
     private _generateKeyPair = (): IBitcoinKeyPair => {
