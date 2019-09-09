@@ -126,14 +126,6 @@ class OpenPayPeer extends EventEmitter {
         // Setting up the default modules as fallbacks
         this._storage =  this._options.storage || new LocalStorage()
         this._encryption = this._options.encryption || Encryption
-        this._pubsub = this._options.pubsub || new PeerJSService({
-            storage: this._storage,
-            encryption: this._options.encryption
-        })
-        this._pubsub.on('ack', message => {
-            console.log(`open pay peer recieved ack :- ${JSON.stringify(message)}`);
-            this.emit('ack', message);
-        })
         this._nameservice = this._options.nameservice || new BlockstackService()
 
         if (this._hasPayIDClaimStored) {
@@ -187,10 +179,6 @@ class OpenPayPeer extends EventEmitter {
         this._payIDClaim = payIDClaim
     }
 
-    public isActive = () => this._pubsub.isActive()
-
-    public isListening = () => this._pubsub.isListening()
-
     public getPublicIdAvailability = (username: string): Promise<boolean> => {
         return this._nameservice.getNameAvailability(username)
     }
@@ -202,17 +190,7 @@ class OpenPayPeer extends EventEmitter {
         return address
     }
 
-    public sendMessageToChannelId = async (topic, payload: PubSubMessage) => {
-        let requestId = topic + "-" + String(Date.now())
-        if(!payload.id){
-            payload.id = requestId;
-        }
-        payload = Object.assign(payload, {format: "openpay_v1"});
-        this._pubsub.publishMsg(topic, payload);
-        return requestId;
-    }
 }
-
 
 
 // Wallets specific SDK code
@@ -221,18 +199,6 @@ export class OpenPayWallet extends OpenPayPeer {
     constructor(_options: IOpenPayPeerOptions) {
         super(_options);
         log.info(`OpenPayWallet Initialised`)
-    }
-
-    public activateListener = async (dataCallback?: (requestObj: JSON) => void): Promise<void> => {
-        if (!this._payIDClaim) throw ("Need PayIDClaim setup!")
-
-        // Derive the decryption privateKey from the nameservice module
-        let decryptionPrivateKey = await this._nameservice.getDecryptionKey()
-
-        await this._pubsub.registerTopic(this._payIDClaim, decryptionPrivateKey, undefined, (dataObj: JSON) => {
-            this.emit('request', dataObj)
-            if (dataCallback) dataCallback(dataObj)
-        })
     }
 
 	public invokeSetup = async (openPaySetupOptions: JSON): Promise<void> => {
@@ -291,19 +257,73 @@ export class OpenPayWallet extends OpenPayPeer {
         }
     }
 
+}
+
+// Services specific SDK code
+export class OpenPayService extends OpenPayPeer {
+    constructor(_options: IOpenPayPeerOptions) {
+        super(_options);
+        log.info(`OpenPayService Initialised`)
+    }
 
 }
 
 
 
 
-// Services specific SDK code
-export class OpenPayService extends OpenPayPeer {
-    private _iframe: OpenPayServiceIframe;
+// Experimental implementations
+
+export class OpenPayWalletExperimental extends OpenPayPeer {
+    protected _pubsub: PubSubService
 
     constructor(_options: IOpenPayPeerOptions) {
         super(_options);
-        log.info(`OpenPayService Initialised`)
+        this._options = Object.assign({}, _options)
+
+        this._pubsub = this._options.pubsub || new PeerJSService({
+            storage: this._storage,
+            encryption: this._options.encryption
+        })
+        this._pubsub.on('ack', message => {
+            console.log(`open pay peer recieved ack :- ${JSON.stringify(message)}`);
+            this.emit('ack', message);
+        })
+        log.info(`OpenPayWalletExperimental Initialised`)
+    }
+
+    public isActive = () => this._pubsub.isActive()
+
+    public isListening = () => this._pubsub.isListening()
+    
+    public sendMessageToChannelId = async (topic, payload: PubSubMessage) => {
+        let requestId = topic + "-" + String(Date.now())
+        if(!payload.id){
+            payload.id = requestId;
+        }
+        payload = Object.assign(payload, {format: "openpay_v1"});
+        this._pubsub.publishMsg(topic, payload);
+        return requestId;
+    }
+
+    public activateListener = async (dataCallback?: (requestObj: JSON) => void): Promise<void> => {
+        if (!this._payIDClaim) throw ("Need PayIDClaim setup!")
+
+        // Derive the decryption privateKey from the nameservice module
+        let decryptionPrivateKey = await this._nameservice.getDecryptionKey()
+
+        await this._pubsub.registerTopic(this._payIDClaim, decryptionPrivateKey, undefined, (dataObj: JSON) => {
+            this.emit('request', dataObj)
+            if (dataCallback) dataCallback(dataObj)
+        })
+    }
+}
+
+export class OpenPayServiceExperimental extends OpenPayWalletExperimental {
+    protected _iframe: OpenPayServiceIframe;
+
+    constructor(_options: IOpenPayPeerOptions) {
+        super(_options);
+        log.info(`OpenPayServiceExperimental Initialised`)
     }
 
     public async loginUsingPayIDClaim(recieverVirtualAddress: string, accessTokenData: any){

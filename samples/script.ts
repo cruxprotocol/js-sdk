@@ -1,8 +1,8 @@
-import { IPayIDClaim, IPaymentRequest, OpenPayWallet, OpenPayService, IAddressMapping } from "../src/index";
+import { IPayIDClaim, IPaymentRequest, OpenPayWalletExperimental, OpenPayServiceExperimental, IAddressMapping } from "../src/index";
 
 
-window.OpenPayWallet = OpenPayWallet
-window.OpenPayService = OpenPayService
+window.OpenPayWallet = OpenPayWalletExperimental
+window.OpenPayService = OpenPayServiceExperimental
 
 
 
@@ -18,7 +18,7 @@ let sampleAddressMap: IAddressMapping = {
 }
 
 // Move the input logic to wallet side
-const openpayWallet = new OpenPayWallet()
+const openpayWallet = new OpenPayWalletExperimental()
 
 window.wallet = openpayWallet
 
@@ -90,7 +90,7 @@ const dummyPaymentRequest: IPaymentRequest = {
 }
 window.dummyPaymentRequest = dummyPaymentRequest
 
-const openpayService = new OpenPayService()
+const openpayService = new OpenPayServiceExperimental()
 
 window.service = openpayService
 
