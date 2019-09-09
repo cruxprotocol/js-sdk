@@ -99,6 +99,8 @@ export class BlockstackService extends NameService {
     }
 
     private _generateIdentityKeyPair = async (): Promise<void> => {
+        if (this._identityKeyPair) return
+
         // TODO: need to use passcode encryption
         let encryptedMnemonic = await BlockstackWallet.encryptMnemonic(this._mnemonic, 'temp')
         let wallet = await BlockstackWallet.fromEncryptedMnemonic(encryptedMnemonic, 'temp')
@@ -148,8 +150,8 @@ export class BlockstackService extends NameService {
         let newMnemonic = this._generateMnemonic()
         log.debug(newMnemonic)
         alert(`Your new mnemonic backing your identity is \n ${newMnemonic}`)
-        await this._generateIdentityKeyPair()
         this._mnemonic = newMnemonic
+        await this._generateIdentityKeyPair()
         return { 
             secrets: { 
                 mnemonic: this._mnemonic,
@@ -284,7 +286,7 @@ export class BlockstackService extends NameService {
         // Check for existing mnemonic
         if (!this._mnemonic) {
             // Generate new mnemonic if not available
-            this.generateIdentity()
+            await this.generateIdentity()
         }
         // Generate the Identity key pair
         await this._generateIdentityKeyPair()
