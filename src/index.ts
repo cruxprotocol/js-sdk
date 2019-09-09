@@ -196,7 +196,7 @@ class OpenPayPeer extends EventEmitter {
 // Wallets specific SDK code
 export class OpenPayWallet extends OpenPayPeer {
 
-    constructor(_options: IOpenPayPeerOptions) {
+    constructor(_options?: IOpenPayPeerOptions) {
         super(_options);
         log.info(`OpenPayWallet Initialised`)
     }
@@ -261,7 +261,7 @@ export class OpenPayWallet extends OpenPayPeer {
 
 // Services specific SDK code
 export class OpenPayService extends OpenPayPeer {
-    constructor(_options: IOpenPayPeerOptions) {
+    constructor(_options?: IOpenPayPeerOptions) {
         super(_options);
         log.info(`OpenPayService Initialised`)
     }

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Exodus Gamma Sample</title>
+</head>
+<body>
+    <h4>Demo Wallet</h4>
+    ========================
+    <br><br>
+    
+    Peer Status: <span id='status'></span>
+    
+    
+    <pre id="user"></pre>
+    
+    <br><br>
+
+    <button onclick="havePayIDClaim()">Have PayIDClaim?</button>
+    <button onclick="getPayIDClaim()">Show PayIDClaim</button>
+    
+    <br><br>
+
+    <input id="registrationId">
+    <button onclick="getIdAvailability()">Check Availability</button>
+    <span id='availability'></span><br><br>
+
+    <br><br>
+
+    Virtual Address: <input id="virtualAddress"><br>
+    Passcode: <input id="passcode"><br>
+    <button onclick="addPayIDClaim()">Add PayIDClaim</button>
+    
+    <br><br>    
+    
+    Wallet Address: <span id='address'></span>
+
+
+    <script src="./exodus_gamma.ts"></script>
+</body>
+</html>
