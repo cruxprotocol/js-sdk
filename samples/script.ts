@@ -1,12 +1,10 @@
-import { IPayIDClaim, IPaymentRequest, OpenPayWalletExperimental, OpenPayServiceExperimental, IAddressMapping } from "../src/index";
+import { IPayIDClaim, IPaymentRequest, OpenPayWalletExperimental, OpenPayServiceExperimental, IAddressMapping, OpenPayWallet } from "../src/index";
 
 
 window.OpenPayWallet = OpenPayWalletExperimental
 window.OpenPayService = OpenPayServiceExperimental
 
-
-
-
+window.wallet_new = new OpenPayWallet()
 
 // Wallet
 const wallet_btc_address = "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V"
