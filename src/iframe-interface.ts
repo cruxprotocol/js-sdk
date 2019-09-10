@@ -20,17 +20,12 @@ let onload = function() {
 }
 
 export class OpenPayIframe {
+	setupResultHandler: Function;
 
-	constructor (options) {
-		if (!options.experience) {
-			options.experience = 'iframe'
-		}
-		if (options.experience == 'iframe') {
-			this.createOpenPayIframe()
-		} else {
-			this.el = null
-		}
-		this.parseOptions(options)
+	constructor (setupResultHandler: Function) {
+		this.createOpenPayIframe();
+		this.setupResultHandler = setupResultHandler;
+		this.addPostMessageListeners()
 	}
 
 	createOpenPayIframe = function() {
@@ -48,28 +43,12 @@ export class OpenPayIframe {
 		return this.el
 	}
 
-	parseOptions = function(options) {
-		// TODO: add validation
-		this.openPayOptions = options
-		console.log('called parseOptions!')
-	}
 
 	sdkHandler = function(data) {
 		// TODO: add sdk wala logic here
 		let type = data.type
 		if (type == 'createNew') {
 			console.log(data)
-			if (this.openPayOptions.experience == 'newtab') {
-				setTimeout(() => {
-					let message = JSON.stringify(makeMessage('close-newtab'))
-					this.el.postMessage(message, "*")
-					console.log('close message sent' + message)
-				}, 500);
-			} else {
-				// TODO: As of v0.004, UX has not incorporated this code change
-				//let my_iframe = document.getElementById("frame")
-				//my_iframe.parentNode.removeChild(my_iframe)
-			}
 		}
 	}
 
@@ -83,7 +62,7 @@ export class OpenPayIframe {
 		window.addEventListener('message', (event) => {
 			let data = JSON.parse(event.data)
 			this.sdkHandler(data)
-			this.openPayOptions.handler(this.maskDataForWallet(data))
+			this.setupResultHandler(this.maskDataForWallet(data))
 		})
 	}
 
@@ -100,7 +79,7 @@ export class OpenPayIframe {
 		}, 3000);
 	}
 
-		dispModal = function({template , width , height}) {
+	dispModal = function({template , width , height}) {
 		let modalBackdrop = document.createElement('div');
 		modalBackdrop.id = 'openpay-modal';
 		modalBackdrop.style.position = 'fixed';
@@ -132,9 +111,9 @@ export class OpenPayIframe {
 		document.getElementById('openpay-modal').remove();
 	}
 
-	openIframe = function() {
+	openIframe = function(walletState) {
 		console.log('called open iframe!');
-		this.el.openPayOptions = this.openPayOptions
+		this.el.openPayOptions = walletState
 		this.dispModal({
 			template: this.el,
 			width: '500px',
@@ -144,14 +123,10 @@ export class OpenPayIframe {
 		// document.getElementById(elementId).appendChild(this.el)
 	}
 
-	open = function() {
+
+	open = function(walletState) {
 		console.log('called open!')
-		if (this.openPayOptions.experience == 'iframe') {
-			this.openIframe()
-		} else {
-			this.openNewTab(this.openPayOptions)
-		}
-		this.addPostMessageListeners()
+		this.openIframe(walletState)
 	}
 
 	destroy = function() {

@@ -104,7 +104,8 @@ interface IOpenPayPeerOptions {
     storage?: StorageService
     encryption?: typeof Encryption
     pubsub?: PubSubService
-    nameservice?: NameService
+    nameservice?: NameService,
+	setupHandler?: Function
 }
 
 class OpenPayPeer extends EventEmitter {
@@ -195,27 +196,28 @@ class OpenPayPeer extends EventEmitter {
 
 // Wallets specific SDK code
 export class OpenPayWallet extends OpenPayPeer {
+	private walletSetupUi: OpenPayIframe;
 
     constructor(_options?: IOpenPayPeerOptions) {
         super(_options);
+		this.walletSetupUi = new OpenPayIframe(_options.setupHandler);
         log.info(`OpenPayWallet Initialised`)
     }
 
-	public invokeSetup = async (openPaySetupOptions: JSON): Promise<void> => {
+	public invokeSetup = async (openPaySetupState: JSON): Promise<void> => {
         log.info("Setup Invoked")
-        openPaySetupOptions['payIDName'] = this._payIDClaim && this._payIDClaim.virtualAddress
+		openPaySetupState['payIDName'] = this._payIDClaim && this._payIDClaim.virtualAddress
         let addressMap = await this.getAddressMap();
         log.info(addressMap)
-        openPaySetupOptions['publicAddressCurrencies'] = Object.keys(addressMap).map(x=>x.toUpperCase());
-        log.info(openPaySetupOptions)
-		let cs = new OpenPayIframe(openPaySetupOptions);
-		cs.open();
+		openPaySetupState['publicAddressCurrencies'] = Object.keys(addressMap).map(x=>x.toUpperCase());
+        log.info(openPaySetupState)
+		this.walletSetupUi.open(openPaySetupState);
 	}
 
-	public destroySetup = (openPaySetupOptions: JSON): void => {
-        let cs = new OpenPayIframe(openPaySetupOptions); // TODO: This is being initialized twice
-        cs.destroy();
+	public destroySetup = (): void => {
+		this.walletSetupUi.destroy()
     }
+
     // NameService specific methods
 
     public addPayIDClaim = async (virtualAddress: string, passcode: string, addressMap?: IAddressMapping): Promise<void> => {
