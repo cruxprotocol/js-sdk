@@ -1,6 +1,10 @@
+import { Encryption } from ".";
 
 let postMessage = function(message) {
 	message = JSON.stringify(message)
+	if(window.encryptionKey){
+		message = Encryption.eciesEncryptString(message, window.encryptionKey)
+	}
 	this.contentWindow.postMessage(message, "*")
 }
 
@@ -25,19 +29,23 @@ export class OpenPayIframe {
 		if (!options.experience) {
 			options.experience = 'iframe'
 		}
+		this.parseOptions(options)
 		if (options.experience == 'iframe') {
 			this.createOpenPayIframe()
 		} else {
 			this.el = null
 		}
-		this.parseOptions(options)
 	}
 
 	createOpenPayIframe = function() {
+		let iFrameUri = "http://127.0.0.1:8777/dist/openpay-setup/index.html"
+		if(this.openPayOptions.publicKey){
+			iFrameUri = iFrameUri + "?encryptionKey=" + this.openPayOptions.publicKey
+		}
 		if (!this.el) {
 			this.el = window.document.createElement("iframe")
 			this.el.setAttribute("style", "opacity: 1; height: 100%; position: relative; background: none; display: block; border: 0 none transparent; margin: 0px; padding: 0px; z-index: 2;")
-			this.el.setAttribute("src", "http://127.0.0.1:8777/dist/openpay-setup/index.html")
+			this.el.setAttribute("src", iFrameUri)
 			this.el.setAttribute("id", "frame")
 			this.el.frameBorder = 0
 			this.el.style.width = 100 + "%"
@@ -81,7 +89,11 @@ export class OpenPayIframe {
 
 	addPostMessageListeners = function () {
 		window.addEventListener('message', (event) => {
-			let data = JSON.parse(event.data)
+			let data = event.data
+			if(this.openPayOptions.privateKey){
+				data = Encryption.eciesDecryptString(data, this.openPayOptions.privateKey)
+			}
+			data = JSON.parse(data)
 			this.sdkHandler(data)
 			this.openPayOptions.handler(this.maskDataForWallet(data))
 		})
@@ -100,7 +112,7 @@ export class OpenPayIframe {
 		}, 3000);
 	}
 
-		dispModal = function({template , width , height}) {
+	dispModal = function({template , width , height}) {
 		let modalBackdrop = document.createElement('div');
 		modalBackdrop.id = 'openpay-modal';
 		modalBackdrop.style.position = 'fixed';

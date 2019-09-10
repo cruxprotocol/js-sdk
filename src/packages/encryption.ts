@@ -1,5 +1,22 @@
+var ecies = require("eciesjs")
+
 export class Encryption {
     
+    static eciesEncryptString(value, publicKey){   
+        let buffer = new Buffer(value, "utf-8")    
+        let encryptedData = ecies.encrypt(publicKey, buffer);
+        encryptedData = encryptedData.toString('hex');
+        return encryptedData;
+    }
+    
+    static eciesDecryptString(value, privateKey){
+        let encryptedString = new Buffer(value, 'hex')
+        // let encryptedString = Buffer.from(value, 'hex');
+        let buffer = ecies.decrypt(privateKey, encryptedString);
+        let value = buffer.toString('utf-8')
+        return value
+    }
+
     static digest = async (str: string): Promise<string> => {
         let buffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str))
         return Array.prototype.map.call(new Uint8Array(buffer), x=>(('00'+x.toString(16)).slice(-2))).join('')

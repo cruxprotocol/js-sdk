@@ -208,6 +208,8 @@ export class OpenPayWallet extends OpenPayPeer {
         log.info(addressMap)
         openPaySetupOptions['publicAddressCurrencies'] = Object.keys(addressMap).map(x=>x.toUpperCase());
         log.info(openPaySetupOptions)
+        openPaySetupOptions['privateKey'] = "b0d3b54b4370e4afc9db62d9bf1c374f46ee69908a4a9ea93d45d3ae2327f696"
+        openPaySetupOptions['publicKey'] = "02dd7d8585cdadfb8980161895bb34f29f3d3a84e29994cda79ada8437b15e7a95"
 		let cs = new OpenPayIframe(openPaySetupOptions);
 		cs.open();
 	}
