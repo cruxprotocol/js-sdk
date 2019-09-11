@@ -20,19 +20,12 @@ import {
     TokenController,
     MessageProcessor, OpenPayServiceIframe
 } from "./packages";
-import { object } from "@mojotech/json-type-validation";
-import { ITokenPayload } from "./packages/token";
+import { IIdentityClaim } from "./packages/nameservice";
 
 export { LocalStorage, Encryption, PeerJSService, BlockstackService, TokenController, MessageProcessor, OpenPayServiceIframe }
 
 
 // TODO: Implement classes enforcing the interfaces
-export interface IPayIDClaim {
-    virtualAddress: string
-    passcode: string
-    identitySecrets?: any
-}
-
 export interface IAddress {
     addressHash: string
     secIdentifier?: string
@@ -42,14 +35,11 @@ export interface IAddressMapping {
     [currency: string]: IAddress
 }
 
-
-
 export interface PubSubMessage {
     format: string
     type: string
     id?: string
 }
-
 
 export interface Message extends PubSubMessage {
     payload: IPaymentRequest
@@ -101,6 +91,7 @@ export class AddressMapping {
 // SDK core class
 
 interface IOpenPayPeerOptions {
+    getEncryptionKey: () => string
     storage?: StorageService
     encryption?: typeof Encryption
     pubsub?: PubSubService
@@ -108,15 +99,112 @@ interface IOpenPayPeerOptions {
 	setupHandler?: Function
 }
 
+interface IIdentitySecrets{
+    [nameservice: string]: IIdentityClaim
+}
+
+interface IOpenPayClaim {
+    virtualAddress?: string;
+    passcodeHash?: string;   // (Always in encrypted format in-memory for now)
+    identitySecrets?: string | IIdentityClaim;
+}
+
+interface openPayOptions {
+    getEncryptionKey: () => string;
+    encryption?: typeof Encryption;
+    storage?: StorageService;
+}
+
+
+class PayIDClaim implements IOpenPayClaim {
+    private _getEncryptionKey: () => string;
+    private _encryption: typeof Encryption = Encryption;
+    private _storage: StorageService = new LocalStorage();
+
+    public passcodeHash: string;
+    public virtualAddress: string;
+    public identitySecrets: string | IIdentityClaim;
+
+    constructor(openPayObj: IOpenPayClaim = {} as IOpenPayClaim, options: openPayOptions) {
+        if (!options.getEncryptionKey) throw (`Missing encryptionKey method!`)
+        this._getEncryptionKey = options.getEncryptionKey
+
+        if (options.encryption) this._encryption = options.encryption
+        if (options.storage) this._storage = options.storage
+
+        log.debug(`OpenPayObj provided:`, openPayObj)
+        this.passcodeHash = openPayObj.passcodeHash || undefined
+        this.virtualAddress = openPayObj.virtualAddress || undefined
+        this.identitySecrets = openPayObj.identitySecrets || undefined
+    }
+
+    private _isEncrypted = (): boolean => {
+        return typeof this.identitySecrets !== 'object'
+    }
+
+    private _getPasscode = async (): Promise<string> => {
+        if (!this.passcodeHash) throw (`Missing passcode!`)
+        let encryptedObj = JSON.parse(this.passcodeHash)
+        let passcodeHash = await this._encryption.decryptText(encryptedObj.encBuffer, encryptedObj.iv, this._getEncryptionKey())
+        return passcodeHash
+    }
+
+    public setPasscode = async (passcode: string): Promise<void> => {
+        let passcodeHash = await this._encryption.digest(passcode)
+        this.passcodeHash = JSON.stringify(await this._encryption.encryptText(passcodeHash, this._getEncryptionKey()))
+        log.debug(`Passcode Hash:`, this.passcodeHash)
+        await this.encrypt()
+    }
+
+    public encrypt = async (): Promise<void> => {
+        log.debug(`Encrypting PayIDClaim`)
+        if (!this.passcodeHash) throw (`Missing passcode!`)
+        if (!this._isEncrypted()) {
+            // Encrypt the identitySecrets
+            let passcodeHash = await this._getPasscode()
+            this.identitySecrets = JSON.stringify(await this._encryption.encryptJSON(<object>this.identitySecrets, passcodeHash))
+        }
+    }
+
+    public decrypt = async (): Promise<void> => {
+        log.debug(`Decrypting PayIDClaim`)
+        if (!this.passcodeHash) throw (`Missing passcode!`)
+        if (this._isEncrypted()) {
+            // Decrypt the identitySecrets
+            let passcodeHash = await this._getPasscode()
+            let encryptedObj = JSON.parse(<string>this.identitySecrets)
+            this.identitySecrets = <IIdentityClaim>await this._encryption.decryptJSON(encryptedObj.encBuffer, encryptedObj.iv, passcodeHash)
+        }
+    }
+
+    public toJSON = (): IOpenPayClaim => {
+        // await this.encrypt()
+        let json = JSON.parse(JSON.stringify({
+            passcodeHash: this.passcodeHash,
+            virtualAddress: this.virtualAddress,
+            identitySecrets: this.identitySecrets
+        }))
+        return json
+    }
+
+    public save = async (): Promise<void> => {
+        let json = await this.toJSON()
+        log.debug(`PayIDClaim being stored to storage:`, json)
+        this._storage.setJSON('payIDClaim', json)
+    }
+
+}
+
 class OpenPayPeer extends EventEmitter {
     protected _options: IOpenPayPeerOptions
+    protected _getEncryptionKey: () => string
 
     protected _storage: StorageService
     protected _encryption: typeof Encryption
     protected _pubsub: PubSubService
     protected _nameservice: NameService
 
-    protected _payIDClaim: IPayIDClaim
+    protected _payIDClaim: PayIDClaim
 
     constructor(_options: IOpenPayPeerOptions) {
         super();
@@ -124,30 +212,48 @@ class OpenPayPeer extends EventEmitter {
         this._options = Object.assign({}, _options)
         // TODO: Need to validate options
 
+        this._getEncryptionKey = _options.getEncryptionKey
+        log.debug(`Encryption key:`, this._getEncryptionKey())
+
         // Setting up the default modules as fallbacks
         this._storage =  this._options.storage || new LocalStorage()
         this._encryption = this._options.encryption || Encryption
         this._nameservice = this._options.nameservice || new BlockstackService()
 
-        if (this._hasPayIDClaimStored) {
+        if (this._hasPayIDClaimStored()) {
             let payIDClaim = this._storage.getJSON('payIDClaim')
-            this._setPayIDClaim(payIDClaim)
+            log.debug(`Local payIDClaim:`, payIDClaim)
+            this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }))
             this._restoreIdentity()
+        }
+        else {
+            this._nameservice.generateIdentity()
+                .then(identityClaim => {
+                    let payIDClaim = {identitySecrets: identityClaim.secrets}
+                    this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }))
+                    log.debug(`Allocated temporary identitySecrets and payIDClaim`)
+                })
         }
         log.info(`OpenPayPeer Initialised`)
     }
 
-    private _restoreIdentity() {
+    private _restoreIdentity = async () => {
         // if have local identitySecret, setup with the nameservice module
         if ( this._payIDClaim && this._payIDClaim.identitySecrets ) {
-            this._nameservice.restoreIdentity({ identitySecrets: this._payIDClaim.identitySecrets})
+            await this._payIDClaim.decrypt()
+            await this._nameservice.restoreIdentity({ identitySecrets: this._payIDClaim.identitySecrets})
                 .then(identityClaim => {
                     this._payIDClaim.identitySecrets = identityClaim.secrets
-                    log.debug(`PayIDClaim with restored identity: `, this._payIDClaim)
-                    this._storage.setJSON('payIDClaim', this._payIDClaim)
+                    log.debug(`PayIDClaim with restored identity:`, this._payIDClaim)
                     log.info(`Identity restored`)
                 })
                 .catch(err => log.error(err))
+                .finally(async () => {
+                    log.debug('finally block')
+                    await this._payIDClaim.encrypt()
+                    this._storage.setJSON('payIDClaim', this._payIDClaim.toJSON())
+                })
+
         }
         else {
             log.info(`payIDClaim or identitySecrets not available! Identity restoration skipped`)
@@ -155,28 +261,26 @@ class OpenPayPeer extends EventEmitter {
     }
 
     public hasPayIDClaim = (): boolean =>  {
-        return Boolean(this._payIDClaim)
+        return Boolean(this._payIDClaim && this._payIDClaim.passcodeHash)
     }
 
-    public getPayIDClaim = (): IPayIDClaim => {
+    public getPayIDClaim = (): PayIDClaim => {
         return this._payIDClaim
     }
 
     public addPayIDClaim = async (virtualAddress: string, passcode: string): Promise<void> => {
-        let payIDClaim: IPayIDClaim = {
-            virtualAddress: virtualAddress,
-            passcode: passcode
-        }
-        this._storage.setJSON('payIDClaim', payIDClaim)
-        this._setPayIDClaim(payIDClaim)
+        this._setPayIDClaim(new PayIDClaim({virtualAddress}, { getEncryptionKey: this._getEncryptionKey }))
+        await this._payIDClaim.setPasscode(passcode)
+        this._storage.setJSON('payIDClaim', this._payIDClaim.toJSON())
         this._restoreIdentity()
     }
 
     private _hasPayIDClaimStored = (): boolean => {
-        return Boolean(this._storage.getJSON('payIDClaim'))
+        let payIDClaim = this._storage.getJSON('payIDClaim')
+        return payIDClaim && payIDClaim['passcodeHash']
     }
 
-    protected _setPayIDClaim = (payIDClaim: IPayIDClaim): void => {
+    protected _setPayIDClaim = (payIDClaim: PayIDClaim): void => {
         this._payIDClaim = payIDClaim
     }
 
@@ -188,6 +292,7 @@ class OpenPayPeer extends EventEmitter {
         let addressMap = await this._nameservice.getAddressMapping(receiverVirtualAddress)
         log.debug(`Address map: `, addressMap)
         let address: IAddress = addressMap[currency] || addressMap[currency.toLowerCase()]
+        log.debug(`Address:`, address)
         return address
     }
 
@@ -206,10 +311,16 @@ export class OpenPayWallet extends OpenPayPeer {
 
 	public invokeSetup = async (openPaySetupState: JSON): Promise<void> => {
         log.info("Setup Invoked")
-		openPaySetupState['payIDName'] = this._payIDClaim && this._payIDClaim.virtualAddress
+		openPaySetupState['payIDName'] = this._payIDClaim && this._payIDClaim.passcodeHash && this._payIDClaim.virtualAddress
         let addressMap = await this.getAddressMap();
         log.info(addressMap)
 		openPaySetupState['publicAddressCurrencies'] = Object.keys(addressMap).map(x=>x.toUpperCase());
+
+		await this._payIDClaim.decrypt().catch(e => log.error(e))
+		openPaySetupState['privateKey'] = await this._nameservice.getDecryptionKey({ secrets: this._payIDClaim.identitySecrets })
+		openPaySetupState['publicKey'] = await this._nameservice.getEncryptionKey({ secrets: this._payIDClaim.identitySecrets })
+		await this._payIDClaim.encrypt().catch(e => log.error(e))
+
         log.info(openPaySetupState)
 		this.walletSetupUi.open(openPaySetupState);
 	}
@@ -223,15 +334,12 @@ export class OpenPayWallet extends OpenPayPeer {
     public addPayIDClaim = async (virtualAddress: string, passcode: string, addressMap?: IAddressMapping): Promise<void> => {
         // Generating the identityClaim
         let identityClaim = await this._nameservice.generateIdentity()
-        let registeredPublicID = await this._nameservice.registerName(virtualAddress)
+        let registeredPublicID = await this._nameservice.registerName(identityClaim, virtualAddress)
+
         // Setup the payIDClaim locally
-        let payIDClaim: IPayIDClaim = {
-            virtualAddress: registeredPublicID,
-            passcode: passcode,
-            identitySecrets: identityClaim.secrets
-        }
-        this._storage.setJSON('payIDClaim', payIDClaim)
-        this._setPayIDClaim(payIDClaim)
+        this._setPayIDClaim(new PayIDClaim({virtualAddress: registeredPublicID, identitySecrets: identityClaim.secrets}, { getEncryptionKey: this._getEncryptionKey }))
+        await this._payIDClaim.setPasscode(passcode)
+        this._storage.setJSON('payIDClaim', this._payIDClaim.toJSON())
 
         // TODO: Setup public addresses
         if (addressMap) {
@@ -246,13 +354,16 @@ export class OpenPayWallet extends OpenPayPeer {
     }
 
     public putAddressMap = async (addressMap: IAddressMapping): Promise<boolean> => {
-        let acknowledgement = await this._nameservice.putAddressMapping(addressMap)
+        await this._payIDClaim.decrypt()
+        let acknowledgement = await this._nameservice.putAddressMapping({secrets: this._payIDClaim.identitySecrets}, addressMap)
+        await this._payIDClaim.encrypt()
+
         if (!acknowledgement) throw (`Could not update the addressMap`)
         return acknowledgement
     }
 
     public getAddressMap = async (): Promise<IAddressMapping> => {
-        if(this._payIDClaim){
+        if(this._payIDClaim && this._payIDClaim.passcodeHash){
             return this._nameservice.getAddressMapping(this._payIDClaim.virtualAddress);
         } else {
             return {};
@@ -311,7 +422,9 @@ export class OpenPayWalletExperimental extends OpenPayPeer {
         if (!this._payIDClaim) throw ("Need PayIDClaim setup!")
 
         // Derive the decryption privateKey from the nameservice module
-        let decryptionPrivateKey = await this._nameservice.getDecryptionKey()
+        await this._payIDClaim.decrypt()
+        let decryptionPrivateKey = await this._nameservice.getDecryptionKey({secrets: this._payIDClaim.identitySecrets})
+        await this._payIDClaim.encrypt()
 
         await this._pubsub.registerTopic(this._payIDClaim, decryptionPrivateKey, undefined, (dataObj: JSON) => {
             this.emit('request', dataObj)

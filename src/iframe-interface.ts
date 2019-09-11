@@ -1,7 +1,8 @@
+import { Encryption } from ".";
 
 let postMessage = function(message) {
 	message = JSON.stringify(message)
-	this.contentWindow.postMessage(message, "*")
+	this.contentWindow.postMessage(message, "http://127.0.0.1:8777")
 }
 
 let makeMessage = function(type) {
@@ -14,25 +15,33 @@ let makeMessage = function(type) {
 
 let onload = function() {
 	console.log('called onload!')
-	let message = {type: 'register'}
+	let message = {type: 'register', encryptionKey: this.openPayOptions.publicKey}
 	Object.assign(message, this.openPayOptions)
+	// WARNING: do not pass any sensitive data to the iframe instance
+	delete message['privateKey']
 	this.postMessage(message)
 }
 
 export class OpenPayIframe {
 	setupResultHandler: Function;
+	protected el: HTMLIFrameElement;
+	public iFrameDomain: string
+	public iFrameUri: string
 
 	constructor (setupResultHandler: Function) {
+		this.iFrameDomain = "http://127.0.0.1:8777"
+		this.iFrameUri = this.iFrameDomain + "/dist/openpay-setup/index.html"
 		this.createOpenPayIframe();
 		this.setupResultHandler = setupResultHandler;
 		this.addPostMessageListeners()
 	}
 
 	createOpenPayIframe = function() {
+		let iFrameUri = this.iFrameUri
 		if (!this.el) {
 			this.el = window.document.createElement("iframe")
 			this.el.setAttribute("style", "opacity: 1; height: 100%; position: relative; background: none; display: block; border: 0 none transparent; margin: 0px; padding: 0px; z-index: 2;")
-			this.el.setAttribute("src", "http://127.0.0.1:8777/dist/openpay-setup/index.html")
+			this.el.setAttribute("src", iFrameUri)
 			this.el.setAttribute("id", "frame")
 			this.el.frameBorder = 0
 			this.el.style.width = 100 + "%"
@@ -60,7 +69,8 @@ export class OpenPayIframe {
 
 	addPostMessageListeners = function () {
 		window.addEventListener('message', (event) => {
-			let data = JSON.parse(event.data)
+			let data = Encryption.eciesDecryptString(event.data, this.openPayOptions.privateKey)
+			data = JSON.parse(data)
 			this.sdkHandler(data)
 			this.setupResultHandler(this.maskDataForWallet(data))
 		})

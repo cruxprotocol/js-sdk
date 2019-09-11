@@ -1,6 +1,6 @@
 import { OpenPayWallet, IAddressMapping } from "../src/index";
 
-
+const encryptionKey = "encryptionKey"
 const wallet_btc_address = "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V"
 
 let sampleAddressMap: IAddressMapping = {
@@ -14,7 +14,9 @@ let sampleAddressMap: IAddressMapping = {
 // SDK integration
 // TODO: need to migrate to the new wallet integration interface with config initialisation
 
-window.wallet = new OpenPayWallet({});
+window.wallet = new OpenPayWallet({
+    getEncryptionKey: () => { return encryptionKey }
+});
 
 document.getElementById('address').innerHTML = wallet_btc_address
 
@@ -45,10 +47,21 @@ window.addPayIDClaim = addPayIDClaim
 
 const getIdAvailability = async () => {
     let username = document.getElementById('registrationId').value
+    document.getElementById('availability').innerHTML = 'checking availability...'
     let availability = await window.wallet.getPublicIdAvailability(username)
-    document.getElementById('availability').innerHTML = availability.toString()
+    document.getElementById('availability').innerHTML = availability ? 'Available' : 'Unavailable'
 }
 
 window.getIdAvailability = getIdAvailability
+
+const resolveAddress = async () => {
+    let receiverVirtualAddress = document.getElementById('receiverVirtualAddress').value
+    let currency = document.getElementById('currency').value
+    document.getElementById('addresses').innerHTML = 'resolving...'
+    let address = await window.wallet.resolveAddress(receiverVirtualAddress, currency)
+    document.getElementById('addresses').innerHTML = address ? JSON.stringify(address, undefined, 4) : `Error/Undefined`
+}
+
+window.resolveAddress = resolveAddress
 
 
