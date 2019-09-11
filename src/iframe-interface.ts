@@ -21,6 +21,7 @@ let onload = function() {
 }
 
 export class OpenPayIframe {
+	protected el: HTMLIFrameElement;
 
 	constructor (options) {
 		if (!options.experience) {
