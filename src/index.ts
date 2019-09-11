@@ -231,6 +231,14 @@ class OpenPayPeer extends EventEmitter {
             this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }))
             this._restoreIdentity()
         }
+        else {
+            this._nameservice.generateIdentity()
+                .then(identityClaim => {
+                    let payIDClaim = {identitySecrets: identityClaim.secrets}
+                    this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }))
+                    log.debug(`Allocated temporary identitySecrets and payIDClaim`)
+                })
+        }
         log.info(`OpenPayPeer Initialised`)
 
         this._assetList = JSON.parse(fs.readFileSync("asset-list.json", "utf-8"));
@@ -309,14 +317,18 @@ export class OpenPayWallet extends OpenPayPeer {
 
 	public invokeSetup = async (openPaySetupOptions: JSON): Promise<void> => {
         log.info("Setup Invoked")
-        openPaySetupOptions['payIDName'] = this._payIDClaim && this._payIDClaim.virtualAddress
+        openPaySetupOptions['payIDName'] = this._payIDClaim && this._payIDClaim.passcodeHash && this._payIDClaim.virtualAddress
         let addressMap = await this.getAddressMap();
         log.info(addressMap)
         openPaySetupOptions['publicAddressCurrencies'] = Object.keys(addressMap).map(x=>x.toUpperCase());
         log.info(openPaySetupOptions)
-        openPaySetupOptions['privateKey'] = "b0d3b54b4370e4afc9db62d9bf1c374f46ee69908a4a9ea93d45d3ae2327f696"
-        openPaySetupOptions['publicKey'] = "02dd7d8585cdadfb8980161895bb34f29f3d3a84e29994cda79ada8437b15e7a95"
-		let cs = new OpenPayIframe(openPaySetupOptions);
+        log.debug(this._payIDClaim)
+        // supressing the error on missing passcodeHash
+        await this._payIDClaim.decrypt().catch(e => log.error(e))
+        openPaySetupOptions['privateKey'] = await this._nameservice.getDecryptionKey({ secrets: this._payIDClaim.identitySecrets })
+        openPaySetupOptions['publicKey'] = await this._nameservice.getEncryptionKey({ secrets: this._payIDClaim.identitySecrets })
+        await this._payIDClaim.encrypt().catch(e => log.error(e))
+        let cs = new OpenPayIframe(openPaySetupOptions);
 		cs.open();
 	}
 
@@ -365,18 +377,20 @@ export class OpenPayWallet extends OpenPayPeer {
     }
 
     public getAddressMap = async (): Promise<IAddressMapping> => {
+
         let clientIdToAssetIdMap = {}
         for(let i in this._clientMapping){
             clientIdToAssetIdMap[this._clientMapping[i]] = i
         }
 
         let clientIdMap = {}
-        if(this._payIDClaim){
+        if(this._payIDClaim && this._payIDClaim.passcodeHash){
             let assetIdMap = await this._nameservice.getAddressMapping(this._payIDClaim.virtualAddress);
             for(let key in assetIdMap){
                 clientIdMap[clientIdToAssetIdMap[key]] = assetIdMap
             }
             return clientIdMap;
+
         } else {
             return {};
         }

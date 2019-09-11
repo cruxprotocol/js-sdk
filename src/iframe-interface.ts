@@ -17,6 +17,8 @@ let onload = function() {
 	console.log('called onload!')
 	let message = {type: 'register', encryptionKey: this.openPayOptions.publicKey}
 	Object.assign(message, this.openPayOptions)
+	// WARNING: do not pass any sensitive data to the iframe instance
+	delete message['privateKey']
 	this.postMessage(message)
 }
 
