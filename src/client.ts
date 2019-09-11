@@ -20,16 +20,8 @@ export default class OpenPayWalletClient {
 		}
 	}
 
-	static isSignedUp(){
-		return this.wallet.hasPayIDClaim();
-	}
-
 	static async resolveAddress(payIDName, currency){
 		return await this.wallet.resolveAddress(payIDName, currency)
-	}
-
-	static getPayIDClaim(){
-		return this.wallet.getPayIDClaim();
 	}
 
 	static async generateId({virtualAddress, passcode}){
