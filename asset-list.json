@@ -3,7 +3,7 @@
       "name": "Litecoin",
       "symbol": "ltc"
     },
-    "91fc3684-c751-48a5-b446-3bf7b115c3ec": {
+    "508b8f73-4b06-453e-8151-78cb8cfc3bc9": {
       "name": "Ethereum",
       "symbol": "eth"
     },
@@ -42,6 +42,14 @@
     "d133dd13-a791-4c2b-9c14-b4c8532f6b91": {
       "name": "district0x",
       "symbol": "dnt"
+    },
+    "9dbdc727-de68-4f2a-8956-04a38ed71ca5": {
+      "name": "Tron",
+      "symbol": "trx"
+    },
+    "1d6e1a99-1e77-41e1-9ebb-0e216faa166a": {
+      "name": "Bitcoin",
+      "symbol": "btc"
     },
     "b33adc7a-beb9-421f-95d6-d495dc549f79": {
       "name": "Lisk",

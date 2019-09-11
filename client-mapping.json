@@ -1,7 +1,7 @@
 {
     "exodus": {
         "LTC": "8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b",
-        "ETH": "91fc3684-c751-48a5-b446-3bf7b115c3ec",
+        "ETH": "508b8f73-4b06-453e-8151-78cb8cfc3bc9",
         "BAT": "9a267cc3-0e72-4db5-930c-c60a74d64c55",
         "DGB": "490f7648-7fc1-4f0d-aa23-e08185daf8a5",
         "DAI": "77a880a0-3443-4eef-8500-bdc8dcdd3370",
@@ -15,7 +15,8 @@
         "WAVES": "3e92f1b6-693c-4654-9b9b-938582d64e4f",
         "GNT": "2794e4c6-6bec-45da-b4a6-74996cdad79a",
         "OMG": "86a3f3fa-d616-4f40-b46c-09c49c0187e1",
-        "REP": "8960c3e7-c953-4db1-8497-34b82d9ce322"
+        "REP": "8960c3e7-c953-4db1-8497-34b82d9ce322",
+        "BTC": "1d6e1a99-1e77-41e1-9ebb-0e216faa166a"
     },
 
     "scatter": { 
