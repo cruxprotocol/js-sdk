@@ -70,7 +70,7 @@ export class OpenPayIframe {
 			if (this.openPayOptions.experience == 'newtab') {
 				setTimeout(() => {
 					let message = JSON.stringify(makeMessage('close-newtab'))
-					this.el.postMessage(message, this.iFrameDomain)
+					this.el.postMessage(message, "*")
 					console.log('close message sent' + message)
 				}, 500);
 			} else {
@@ -98,11 +98,11 @@ export class OpenPayIframe {
 
 	openNewTab = function(options) {
 		console.log('called openNewTab!');
-		this.el = window.open(this.iFrameUri);
+		this.el = window.open('http://127.0.0.1:8777/dist/openpay-setup/index.html');
 		setTimeout(() => {
 			let message = {type: 'register'}
 			Object.assign(message, this.openPayOptions)
-			this.el.postMessage(JSON.stringify(message), this.iFrameDomain)
+			this.el.postMessage(JSON.stringify(message), "*")
 			// this.el.sendEmailPrePopulationMessage = onload
 			// this.el.sendEmailPrePopulationMessage()
 			console.log('event s');
