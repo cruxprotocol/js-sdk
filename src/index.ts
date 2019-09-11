@@ -97,7 +97,7 @@ interface IOpenPayPeerOptions {
     encryption?: typeof Encryption
     pubsub?: PubSubService
     nameservice?: NameService, 
-    name: string
+    walletClientName: string
 }
 
 interface IIdentitySecrets{ 
@@ -204,7 +204,7 @@ class OpenPayPeer extends EventEmitter {
     protected _encryption: typeof Encryption
     protected _pubsub: PubSubService
     protected _nameservice: NameService
-    public name: string
+    public walletClientName: string
     protected _assetList: JSON
     protected _clientMapping: JSON
 
@@ -223,7 +223,7 @@ class OpenPayPeer extends EventEmitter {
         this._storage =  this._options.storage || new LocalStorage()
         this._encryption = this._options.encryption || Encryption
         this._nameservice = this._options.nameservice || new BlockstackService()
-        this.name = this._options.name || 'scatter'
+        this.walletClientName = this._options.walletClientName || 'scatter'
 
         if (this._hasPayIDClaimStored()) {
             let payIDClaim = this._storage.getJSON('payIDClaim')
@@ -242,7 +242,7 @@ class OpenPayPeer extends EventEmitter {
         log.info(`OpenPayPeer Initialised`)
 
         this._assetList = JSON.parse(fs.readFileSync("asset-list.json", "utf-8"));
-        this._clientMapping = JSON.parse(fs.readFileSync("client-mapping.json", "utf-8"))[this.name];
+        this._clientMapping = JSON.parse(fs.readFileSync("client-mapping.json", "utf-8"))[this.walletClientName];
     }
 
     private _restoreIdentity = async () => {
