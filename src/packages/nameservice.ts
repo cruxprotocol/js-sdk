@@ -5,6 +5,7 @@ import request from "request";
 import { TokenSigner, SECP256K1Client } from "jsontokens";
 import { getLogger, IAddress, IAddressMapping, AddressMapping } from "..";
 import {Decoder, object, string, optional} from '@mojotech/json-type-validation'
+import { deepStrictEqual, AssertionError } from "assert";
 
 let log = getLogger(__filename)
 
@@ -48,6 +49,7 @@ export interface IBlockstackServiceOptions {
     domain: string
     gaiaHub: string
     subdomainRegistrar: string
+    bnsNodes: string[]
 }
 
 export enum SubdomainRegistrationStatus {
@@ -60,7 +62,8 @@ export enum SubdomainRegistrationStatus {
 let defaultBNSConfig: IBlockstackServiceOptions = {
     domain: 'devcoinswitch.id', 
     gaiaHub: 'https://hub.blockstack.org',
-    subdomainRegistrar: 'https://registrar.coinswitch.co:3000'
+    subdomainRegistrar: 'https://registrar.coinswitch.co:3000',
+    bnsNodes: ['https://core.blockstack.org', 'https://bns.coinswitch.co']
 }
 
 export class BlockstackService extends NameService {
@@ -75,6 +78,7 @@ export class BlockstackService extends NameService {
     private _mnemonic: string
     private _identityKeyPair: IBitcoinKeyPair
     private _subdomain: string
+    private _bnsNodes: string[]
 
     constructor(options: any = {}) {
         super(options);
@@ -83,6 +87,7 @@ export class BlockstackService extends NameService {
         this._domain = _options.domain
         this._gaiaHub = _options.gaiaHub
         this._subdomainRegistrar = _options.subdomainRegistrar
+        this._bnsNodes = _options.bnsNodes
     }
 
     private _generateMnemonic = (): string => {
@@ -338,15 +343,50 @@ export class BlockstackService extends NameService {
 
     private _fetchNameDetails = (blockstackId: string): Promise<JSON> => {
         const promise: Promise<JSON> = new Promise(async (resolve, reject) => {
-            var options = { 
+            let bnsNodes = this._bnsNodes
+            
+            let nodeResponses = bnsNodes.map(baseUrl => this._bnsResolveName(baseUrl, blockstackId))
+            log.debug(`BNS node responses:`, nodeResponses);
+
+            Promise.all(nodeResponses).then(responsesArr => {
+                log.debug(`BNS resolved JSON array:`, responsesArr);
+                let prev_res;
+                for (let i = 0; i < responsesArr.length; i++) {
+                    const res = responsesArr[i];
+                    if (i === 0) {
+                        prev_res = res
+                    } else {
+                        try {
+                            deepStrictEqual(prev_res, res)
+                        } catch (e) {
+                            if (e instanceof AssertionError) {
+                                reject(new Error("Name resolution integrity check failed."))
+                            } else {
+                                log.error(e)
+                                throw e;
+                            }
+                        }
+                    }
+                    if (i === responsesArr.length - 1) {
+                        resolve(responsesArr[0])
+                    }
+                }
+            })
+        })
+        return promise
+    }
+
+    private _bnsResolveName = (baseUrl: string, blockstackId: string): Promise<JSON> => {
+        const promise: Promise<JSON> = new Promise((resolve, reject) => {
+            let options = { 
                 method: 'GET',
-                baseUrl: 'https://core.blockstack.org',
+                baseUrl: baseUrl,
                 url: `/v1/names/${blockstackId}`,
-                json: true
+                json: true,
             };
 
             request(options, function (error, response, body) {
-                if (error) throw new Error(error)
+                if (error) reject(new Error(`One or more nodes unavailable because: ${error}`))
                 resolve(body)
             })
         })
