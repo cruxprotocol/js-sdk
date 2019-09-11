@@ -24,9 +24,6 @@ export default class OpenPayWalletClient {
 		return await this.wallet.resolveAddress(payIDName, currency)
 	}
 
-	static async generateId({virtualAddress, passcode}){
-		await this.wallet.addPayIDClaim(virtualAddress, passcode)
-	}
 
 	static async invokeSetup(){
 		let walletAddressByCurrency = this.settings.walletGetAddressByCurrency();
@@ -58,10 +55,7 @@ export default class OpenPayWalletClient {
 		console.log("inside _handleSetupResultApproval!");
 		if(setupResult.type === 'createNew') {
 			console.log("Approved! Generating ID");
-			await OpenPayWalletClient.generateId({
-				virtualAddress: setupResult.data.newPayIDName,
-				passcode: setupResult.data.newPayIDPass
-			});
+			await this.wallet.addPayIDClaim(setupResult.data.newPayIDName, setupResult.data.newPayIDPass);
 			console.log("after Generating ID");
 		} else if (setupResult.type === 'editExisting') {
 			console.log("edit existing")
