@@ -323,7 +323,7 @@ export class OpenPayWallet extends OpenPayPeer {
         let registeredPublicID = await this._nameservice.registerName(identityClaim, virtualAddress)
         
         // Setup the payIDClaim locally
-        this._setPayIDClaim(new PayIDClaim({virtualAddress: registeredPublicID, identitySecrets: identityClaim.secrets}, { encryptionKey: this._encryptionKey }))
+        this._setPayIDClaim(new PayIDClaim({virtualAddress: registeredPublicID, identitySecrets: identityClaim.secrets}, { getEncryptionKey: this._getEncryptionKey }))
         await this._payIDClaim.setPasscode(passcode)
         this._storage.setJSON('payIDClaim', this._payIDClaim.toJSON())
  
