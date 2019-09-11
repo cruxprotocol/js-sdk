@@ -387,7 +387,7 @@ export class OpenPayWallet extends OpenPayPeer {
         if(this._payIDClaim && this._payIDClaim.passcodeHash){
             let assetIdMap = await this._nameservice.getAddressMapping(this._payIDClaim.virtualAddress);
             for(let key in assetIdMap){
-                clientIdMap[clientIdToAssetIdMap[key]] = assetIdMap
+                clientIdMap[clientIdToAssetIdMap[key]] = assetIdMap[key]
             }
             return clientIdMap;
 
