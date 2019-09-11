@@ -3,12 +3,14 @@ import {OpenPayWallet} from "./index";
 export default class OpenPayWalletClient {
 	private static settings: any;
 	private static wallet: OpenPayWallet;
-	static init(settings){
+	static async init(settings) {
 		this.settings = settings;
-		this.wallet =  new OpenPayWallet({
+		this.wallet = new OpenPayWallet({
 			storage: settings.storage,
-			setupHandler: this._openSetupResultHandler.bind(this)
+			setupHandler: this._openSetupResultHandler.bind(this),
+			getEncryptionKey: settings.getKey
 		});
+		await this.wallet.init();
 
 	}
 

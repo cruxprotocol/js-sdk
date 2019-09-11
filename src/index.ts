@@ -305,9 +305,18 @@ export class OpenPayWallet extends OpenPayPeer {
 
     constructor(_options?: IOpenPayPeerOptions) {
         super(_options);
-		this.walletSetupUi = new OpenPayIframe(_options.setupHandler);
-        log.info(`OpenPayWallet Initialised`)
+        this._options = _options;
+
     }
+
+    public init = async () => {
+		await this._payIDClaim.decrypt().catch(e => log.error(e))
+		let decryptionKey = await this._nameservice.getDecryptionKey({ secrets: this._payIDClaim.identitySecrets })
+		let encryptionKey = await this._nameservice.getEncryptionKey({ secrets: this._payIDClaim.identitySecrets })
+		await this._payIDClaim.encrypt().catch(e => log.error(e))
+		this.walletSetupUi = new OpenPayIframe(this._options.setupHandler, decryptionKey, encryptionKey);
+		log.info(`OpenPayWallet Initialised`)
+	}
 
 	public invokeSetup = async (openPaySetupState: JSON): Promise<void> => {
         log.info("Setup Invoked")
@@ -316,11 +325,8 @@ export class OpenPayWallet extends OpenPayPeer {
         log.info(addressMap)
 		openPaySetupState['publicAddressCurrencies'] = Object.keys(addressMap).map(x=>x.toUpperCase());
 
-		await this._payIDClaim.decrypt().catch(e => log.error(e))
-		openPaySetupState['privateKey'] = await this._nameservice.getDecryptionKey({ secrets: this._payIDClaim.identitySecrets })
-		openPaySetupState['publicKey'] = await this._nameservice.getEncryptionKey({ secrets: this._payIDClaim.identitySecrets })
-		await this._payIDClaim.encrypt().catch(e => log.error(e))
 
+		log.info("Passing openPaySetupState to walletSetupUi")
         log.info(openPaySetupState)
 		this.walletSetupUi.open(openPaySetupState);
 	}

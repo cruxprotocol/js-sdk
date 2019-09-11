@@ -5,13 +5,6 @@ let postMessage = function(message) {
 	this.contentWindow.postMessage(message, "http://127.0.0.1:8777")
 }
 
-let makeMessage = function(type) {
-	if (type == 'close-newtab') {
-		return {
-			type: 'close'
-		}
-	}
-}
 
 let onload = function() {
 	console.log('called onload!')
@@ -27,13 +20,15 @@ export class OpenPayIframe {
 	protected el: HTMLIFrameElement;
 	public iFrameDomain: string
 	public iFrameUri: string
+	private encryptionKey: string;
 
-	constructor (setupResultHandler: Function) {
+	constructor (setupResultHandler: Function, decryptionKey: string, encryptionKey: string) {
 		this.iFrameDomain = "http://127.0.0.1:8777"
 		this.iFrameUri = this.iFrameDomain + "/dist/openpay-setup/index.html"
 		this.createOpenPayIframe();
 		this.setupResultHandler = setupResultHandler;
-		this.addPostMessageListeners()
+		this.encryptionKey = encryptionKey;
+		this.addPostMessageListeners(decryptionKey)
 	}
 
 	createOpenPayIframe = function() {
@@ -53,26 +48,11 @@ export class OpenPayIframe {
 	}
 
 
-	sdkHandler = function(data) {
-		// TODO: add sdk wala logic here
-		let type = data.type
-		if (type == 'createNew') {
-			console.log(data)
-		}
-	}
-
-	maskDataForWallet = function (data) {
-		// manipulate to field that you want to send to wallet who called .open()
-		// right now we pass everything
-		return data
-	}
-
-	addPostMessageListeners = function () {
+	addPostMessageListeners = function (decryptionKey: string) {
 		window.addEventListener('message', (event) => {
-			let data = Encryption.eciesDecryptString(event.data, this.openPayOptions.privateKey)
+			let data = Encryption.eciesDecryptString(event.data, decryptionKey)
 			data = JSON.parse(data)
-			this.sdkHandler(data)
-			this.setupResultHandler(this.maskDataForWallet(data))
+			this.setupResultHandler(data)
 		})
 	}
 
@@ -136,6 +116,7 @@ export class OpenPayIframe {
 
 	open = function(walletState) {
 		console.log('called open!')
+		walletState.encryptionKey = this.encryptionKey;
 		this.openIframe(walletState)
 	}
 
