@@ -15,7 +15,7 @@ let makeMessage = function(type) {
 
 let onload = function() {
 	console.log('called onload!')
-	let message = {type: 'register'}
+	let message = {type: 'register', encryptionKey: this.openPayOptions.publicKey}
 	Object.assign(message, this.openPayOptions)
 	this.postMessage(message)
 }
@@ -27,12 +27,12 @@ export class OpenPayIframe {
 			options.experience = 'iframe'
 		}
 
-		this.parseOptions(options)
 		if (options.experience == 'iframe') {
 			this.createOpenPayIframe()
 		} else {
 			this.el = null
 		}
+		this.parseOptions(options)
 	}
 
 	createOpenPayIframe = function() {
@@ -152,8 +152,6 @@ export class OpenPayIframe {
 		console.log('called open!')
 		if (this.openPayOptions.experience == 'iframe') {
 			this.openIframe()
-			let message = JSON.stringify({type: 'encryptionKey', value: this.openPayOptions.publicKey})
-			this.el.postMessage(message, "*")
 		} else {
 			this.openNewTab(this.openPayOptions)
 		}

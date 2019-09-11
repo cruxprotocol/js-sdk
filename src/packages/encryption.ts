@@ -2,19 +2,19 @@ var ecies = require("eciesjs")
 
 export class Encryption {
     
-    static eciesEncryptString(value, publicKey){   
+    static eciesEncryptString(value: string, publicKey: string){   
         let buffer = new Buffer(value, "utf-8")    
         let encryptedData = ecies.encrypt(publicKey, buffer);
         encryptedData = encryptedData.toString('hex');
         return encryptedData;
     }
     
-    static eciesDecryptString(value, privateKey){
+    static eciesDecryptString(value: string, privateKey: string){
         let encryptedString = new Buffer(value, 'hex')
         // let encryptedString = Buffer.from(value, 'hex');
         let buffer = ecies.decrypt(privateKey, encryptedString);
-        let value = buffer.toString('utf-8')
-        return value
+        let converted = buffer.toString('utf-8')
+        return converted
     }
 
     static digest = async (str: string): Promise<string> => {
