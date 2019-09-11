@@ -20,14 +20,14 @@ export abstract class NameService {
 
     abstract generateIdentity = async (): Promise<IIdentityClaim> => {return { secrets: null }}
     abstract restoreIdentity = async (options?: any): Promise<IIdentityClaim> => {return { secrets: null }}
-    abstract getDecryptionKey = async (): Promise<string> => {return}
+    abstract getDecryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {return}
     abstract getNameAvailability = async (name: string): Promise<boolean> => {return false}
-    abstract registerName = async (name: string): Promise<string> => {return}
+    abstract registerName = async (identityClaim: IIdentityClaim, name: string): Promise<string> => {return}
     // TODO: need to respond with boolean
     abstract getRegistrationStatus = (): Promise<any> => {return}
     abstract resolveName = async (name: string, options?: JSON): Promise<string> => {return "pubkey"}
     abstract getAddressMapping = async (name: string, options?: JSON): Promise<IAddressMapping> => {return}
-    abstract putAddressMapping = async (addressMapping: IAddressMapping): Promise<boolean> => {return false}
+    abstract putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {return false}
 
     // TODO: Implement methods to add/update address mapping (Gamma usecase)
 
@@ -67,13 +67,13 @@ export class BlockstackService extends NameService {
     // temporary
     public blockstack = blockstack
     public bitcoin = bitcoin
+    
+    public readonly type = 'blockstack'    
 
     private _domain: string
     private _gaiaHub: string
     private _subdomainRegistrar: string
 
-    private _mnemonic: string
-    private _identityKeyPair: IBitcoinKeyPair
     private _subdomain: string
 
     constructor(options: any = {}) {
@@ -89,20 +89,10 @@ export class BlockstackService extends NameService {
         return BlockstackWallet.generateMnemonic()
     }
 
-    private _setMnemonic = (mnemonic: string): void => {
-        // TODO: validate the mnemonic format
-        this._mnemonic = mnemonic
-    }
 
-    private _setIdentityKeyPair = (identityKeyPair: IBitcoinKeyPair): void => {
-        this._identityKeyPair = identityKeyPair
-    }
-
-    private _generateIdentityKeyPair = async (): Promise<void> => {
-        if (this._identityKeyPair) return
-
+    private _generateIdentityKeyPair = async (mnemonic: string): Promise<IBitcoinKeyPair> => {
         // TODO: need to use passcode encryption
-        let encryptedMnemonic = await BlockstackWallet.encryptMnemonic(this._mnemonic, 'temp')
+        let encryptedMnemonic = await BlockstackWallet.encryptMnemonic(mnemonic, 'temp')
         let wallet = await BlockstackWallet.fromEncryptedMnemonic(encryptedMnemonic, 'temp')
         // Using the first identity key pair for now
         // TODO: need to validate the name registration on the address if already available
@@ -112,35 +102,34 @@ export class BlockstackService extends NameService {
             privKey: key,
             pubKey: keyID
         }
-        this._identityKeyPair = identityKeyPair
+        return identityKeyPair
     }
 
-    public getDecryptionKey = async () => {
-        if (!this._identityKeyPair) {
-            await this._generateIdentityKeyPair()
+    public getDecryptionKey = async (identityClaim) => {
+        let identityKeyPair
+        if (!identityClaim.secrets._identityKeyPair) {
+            identityKeyPair = await this._generateIdentityKeyPair(identityClaim.secrets.mnemonic)
         }
-        let decryptionKey = (this._identityKeyPair.privKey.substr(-2) == "01" && this._identityKeyPair.privKey.length >= 66) ? this._identityKeyPair.privKey.slice(0, -2) : this._identityKeyPair.privKey
+        let decryptionKey = (identityKeyPair.privKey.substr(-2) == "01" && identityKeyPair.privKey.length >= 66) ? identityKeyPair.privKey.slice(0, -2) : identityKeyPair.privKey
         return decryptionKey
     }
 
     public restoreIdentity = async (options?: any): Promise<IIdentityClaim> => {
         if (!options || !options['identitySecrets']) throw (`Require mnemonic for restoring the identity`)
-        this._setMnemonic(options['identitySecrets']['mnemonic'])
+
+        let mnemonic = options['identitySecrets']['mnemonic']
+        let identityKeyPair
 
         // If identityKeypair is not stored locally, generate them using the mnemonic
         if (!options['identitySecrets']['identityKeyPair']) {
-            await this._generateIdentityKeyPair()
+            identityKeyPair = await this._generateIdentityKeyPair(mnemonic)
         } 
         
-        // Otherwise, set the identityKeyPair directly
-        else {
-            this._setIdentityKeyPair(options['identitySecrets']['identityKeyPair'])
-        }
 
         return {
             secrets: {
-                mnemonic: this._mnemonic,
-                identityKeyPair: this._identityKeyPair
+                mnemonic: mnemonic,
+                identityKeyPair: identityKeyPair
             }
         }
         
@@ -149,13 +138,12 @@ export class BlockstackService extends NameService {
     public generateIdentity = async (): Promise<IIdentityClaim> => {
         let newMnemonic = this._generateMnemonic()
         log.debug(newMnemonic)
-        alert(`Your new mnemonic backing your identity is \n ${newMnemonic}`)
-        this._mnemonic = newMnemonic
-        await this._generateIdentityKeyPair()
+        alert(`Your new mnemonic backing your identity is: \n${newMnemonic}`)
+        let identityKeyPair = await this._generateIdentityKeyPair(newMnemonic)
         return { 
             secrets: { 
-                mnemonic: this._mnemonic,
-                identityKeyPair: this._identityKeyPair
+                mnemonic: newMnemonic,
+                identityKeyPair: identityKeyPair
             } 
         }
     }
@@ -282,17 +270,18 @@ export class BlockstackService extends NameService {
         return promise
     }
 
-    public registerName = async (name: string): Promise<string> => {
+    public registerName = async (identityClaim: IIdentityClaim, name: string): Promise<string> => {
+        let mnemonic = identityClaim.secrets['mnemonic']
         // Check for existing mnemonic
-        if (!this._mnemonic) {
+        if (!mnemonic) {
             // Generate new mnemonic if not available
             await this.generateIdentity()
         }
         // Generate the Identity key pair
-        await this._generateIdentityKeyPair()
+        let identityKeyPair = await this._generateIdentityKeyPair(mnemonic)
 
         // Upload the profile.json file to the Gaia hub
-        await this._uploadProfileInfo(this._identityKeyPair.privKey)
+        await this._uploadProfileInfo(identityKeyPair.privKey)
         
         // Register the subdomain with Coinswitch registrar service
         let registeredSubdomain = await this._registerSubdomain(name, this._identityKeyPair.address)
@@ -354,7 +343,8 @@ export class BlockstackService extends NameService {
     }
 
     public getNameAvailability = async (name: string): Promise<boolean> => {
-        let nameData = await this._fetchNameDetails(name)
+        let blockstackId = this._getBlockstackId(name)
+        let nameData = await this._fetchNameDetails(blockstackId)
         return nameData['status'] == "available" ? true : false
     }
 
@@ -430,7 +420,16 @@ export class BlockstackService extends NameService {
         return promise
     }
 
-    public putAddressMapping = async (addressMapping: IAddressMapping): Promise<boolean> => {
+    public putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {
+        if (!identityClaim.secrets.identityKeyPair) {
+            if (!identityClaim.secrets.mnemonic) {
+                identityClaim = await this.generateIdentity()
+            }
+            else {
+                identityClaim = await this.restoreIdentity({identitySecrets: identityClaim.secrets})
+            }
+            
+        }
         const addressDecoder: Decoder<IAddress> = object({
             addressHash: string(),
             secIdentifier: optional(string())
@@ -440,7 +439,7 @@ export class BlockstackService extends NameService {
                 for ( let currency in addressMapping ) {
                     let addressObject: IAddress = addressDecoder.runWithException(addressMapping[currency])
                 }
-                this._uploadAddressMapping(this._identityKeyPair.privKey, addressMapping)
+                this._uploadAddressMapping(identityClaim.secrets.identityKeyPair.privKey, addressMapping)
                     .then(bool => resolve(bool))
             } catch (e) {
                 reject (e)
