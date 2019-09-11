@@ -21,6 +21,7 @@ export abstract class NameService {
     abstract generateIdentity = async (): Promise<IIdentityClaim> => {return { secrets: null }}
     abstract restoreIdentity = async (options?: any): Promise<IIdentityClaim> => {return { secrets: null }}
     abstract getDecryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {return}
+    abstract getEncryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {return}
     abstract getNameAvailability = async (name: string): Promise<boolean> => {return false}
     abstract registerName = async (identityClaim: IIdentityClaim, name: string): Promise<string> => {return}
     // TODO: need to respond with boolean
@@ -105,13 +106,32 @@ export class BlockstackService extends NameService {
         return identityKeyPair
     }
 
-    public getDecryptionKey = async (identityClaim) => {
-        let identityKeyPair
-        if (!identityClaim.secrets._identityKeyPair) {
+    public getDecryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {
+        let identityKeyPair: IBitcoinKeyPair
+        
+        if (!identityClaim.secrets.identityKeyPair) {
             identityKeyPair = await this._generateIdentityKeyPair(identityClaim.secrets.mnemonic)
+        } 
+        else {
+            identityKeyPair = identityClaim.secrets.identityKeyPair
         }
+
         let decryptionKey = (identityKeyPair.privKey.substr(-2) == "01" && identityKeyPair.privKey.length >= 66) ? identityKeyPair.privKey.slice(0, -2) : identityKeyPair.privKey
         return decryptionKey
+    }
+
+    public getEncryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {
+        let identityKeyPair: IBitcoinKeyPair
+        
+        if (!identityClaim.secrets.identityKeyPair) {
+            identityKeyPair = await this._generateIdentityKeyPair(identityClaim.secrets.mnemonic)
+        }
+        else {
+            identityKeyPair = identityClaim.secrets.identityKeyPair
+        }
+
+        let encryptionKey = identityKeyPair.pubKey
+        return encryptionKey
     }
 
     public restoreIdentity = async (options?: any): Promise<IIdentityClaim> => {
@@ -138,7 +158,7 @@ export class BlockstackService extends NameService {
     public generateIdentity = async (): Promise<IIdentityClaim> => {
         let newMnemonic = this._generateMnemonic()
         log.debug(newMnemonic)
-        alert(`Your new mnemonic backing your identity is: \n${newMnemonic}`)
+        log.warn(`Your new mnemonic backing your identity is: \n${newMnemonic}`)
         let identityKeyPair = await this._generateIdentityKeyPair(newMnemonic)
         return { 
             secrets: { 

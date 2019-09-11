@@ -59,7 +59,7 @@ const resolveAddress = async () => {
     let currency = document.getElementById('currency').value
     document.getElementById('addresses').innerHTML = 'resolving...'
     let address = await window.wallet.resolveAddress(receiverVirtualAddress, currency)
-    document.getElementById('addresses').innerHTML = address ? address.toString() : `Error/Undefined`
+    document.getElementById('addresses').innerHTML = address ? JSON.stringify(address, undefined, 4) : `Error/Undefined`
 }
 
 window.resolveAddress = resolveAddress
