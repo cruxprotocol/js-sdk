@@ -2,7 +2,6 @@ import { Encryption } from ".";
 
 let postMessage = function(message) {
 	message = JSON.stringify(message)
-	message = Encryption.eciesEncryptString(message, window.encryptionKey)
 	this.contentWindow.postMessage(message, "*")
 }
 
@@ -38,7 +37,6 @@ export class OpenPayIframe {
 
 	createOpenPayIframe = function() {
 		let iFrameUri = "http://127.0.0.1:8777/dist/openpay-setup/index.html"
-		iFrameUri = iFrameUri + "?encryptionKey=" + this.openPayOptions.publicKey
 		if (!this.el) {
 			this.el = window.document.createElement("iframe")
 			this.el.setAttribute("style", "opacity: 1; height: 100%; position: relative; background: none; display: block; border: 0 none transparent; margin: 0px; padding: 0px; z-index: 2;")
@@ -154,6 +152,8 @@ export class OpenPayIframe {
 		console.log('called open!')
 		if (this.openPayOptions.experience == 'iframe') {
 			this.openIframe()
+			let message = JSON.stringify({type: 'encryptionKey', value: this.openPayOptions.publicKey})
+			this.el.postMessage(message, "*")
 		} else {
 			this.openNewTab(this.openPayOptions)
 		}
