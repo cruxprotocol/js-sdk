@@ -1,6 +1,8 @@
 {
     "exodus": {
-
+        "ETH": "508b8f73-4b06-453e-8151-78cb8cfc3bc9",
+        "TRX": "9dbdc727-de68-4f2a-8956-04a38ed71ca5",
+        "BTC": "1d6e1a99-1e77-41e1-9ebb-0e216faa166a"
     },
 
     "scatter": { 

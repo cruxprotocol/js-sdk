@@ -141,7 +141,7 @@ class OpenPayPeer extends EventEmitter {
         log.info(`OpenPayPeer Initialised`)
 
         this._assetList = JSON.parse(fs.readFileSync("asset-list.json", "utf-8"));
-        this._clientMapping = JSON.parse(fs.readFileSync("client-mapping.json", "utf-8")).name
+        this._clientMapping = JSON.parse(fs.readFileSync("client-mapping.json", "utf-8"))[this.name];
     }
 
     private _restoreIdentity() {
@@ -269,7 +269,7 @@ export class OpenPayWallet extends OpenPayPeer {
 
         let clientIdMap = {}
         if(this._payIDClaim){
-            let assetIdMap = this._nameservice.getAddressMapping(this._payIDClaim.virtualAddress);
+            let assetIdMap = await this._nameservice.getAddressMapping(this._payIDClaim.virtualAddress);
             for(let key in assetIdMap){
                 clientIdMap[clientIdToAssetIdMap[key]] = assetIdMap
             }
