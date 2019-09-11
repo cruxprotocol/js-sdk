@@ -1,0 +1,22 @@
+{
+    "1d6e1a99-1e77-41e1-9ebb-0e216faa166a": {
+        "name": "bitcoin",
+        "symbol": "btc"
+    },
+    "508b8f73-4b06-453e-8151-78cb8cfc3bc9": {
+        "name": "Ethereum",
+        "symbol": "eth"
+    },
+    "a4a12989-2024-4ee4-88a9-268fd226d3b4": {
+        "name": "Litecoin",
+        "symbol": "ltc"
+    },
+    "fc83c96a-bafd-45f1-985e-3771ae1389ed": {
+        "name": "Ripple",
+        "symbol": "xrp"
+    },
+    "9dbdc727-de68-4f2a-8956-04a38ed71ca5": {
+        "name": "Tron",
+        "symbol": "trx"
+    }
+}
