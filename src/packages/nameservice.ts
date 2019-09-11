@@ -360,8 +360,9 @@ export class BlockstackService extends NameService {
                             deepStrictEqual(prev_res, res)
                         } catch (e) {
                             if (e instanceof AssertionError) {
-                                throw new Error("Name resolution integrity check failed.")
+                                reject("Name resolution integrity check failed.")
                             } else {
+                                log.error(e);
                                 throw e;
                             }
                         }
@@ -385,7 +386,7 @@ export class BlockstackService extends NameService {
             };
 
             request(options, function (error, response, body) {
-                if (error) throw new Error("One or more nodes unavailable because: " + error)
+                if (error) reject("One or more nodes unavailable because: " + error)
                 resolve(body)
             })
         })
