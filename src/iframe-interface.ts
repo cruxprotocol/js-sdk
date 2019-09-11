@@ -2,7 +2,7 @@ import { Encryption } from ".";
 
 let postMessage = function(message) {
 	message = JSON.stringify(message)
-	this.contentWindow.postMessage(message, "*")
+	this.contentWindow.postMessage(message, "http://127.0.0.1:8777")
 }
 
 let makeMessage = function(type) {
@@ -22,8 +22,12 @@ let onload = function() {
 
 export class OpenPayIframe {
 	protected el: HTMLIFrameElement;
+	public iFrameDomain: string
+	public iFrameUri: string
 
 	constructor (options) {
+		this.iFrameDomain = "http://127.0.0.1:8777"
+		this.iFrameUri = this.iFrameDomain + "/dist/openpay-setup/index.html"
 		if (!options.experience) {
 			options.experience = 'iframe'
 		}
@@ -37,7 +41,7 @@ export class OpenPayIframe {
 	}
 
 	createOpenPayIframe = function() {
-		let iFrameUri = "http://127.0.0.1:8777/dist/openpay-setup/index.html"
+		let iFrameUri = this.iFrameUri
 		if (!this.el) {
 			this.el = window.document.createElement("iframe")
 			this.el.setAttribute("style", "opacity: 1; height: 100%; position: relative; background: none; display: block; border: 0 none transparent; margin: 0px; padding: 0px; z-index: 2;")
@@ -66,7 +70,7 @@ export class OpenPayIframe {
 			if (this.openPayOptions.experience == 'newtab') {
 				setTimeout(() => {
 					let message = JSON.stringify(makeMessage('close-newtab'))
-					this.el.postMessage(message, "*")
+					this.el.postMessage(message, this.iFrameDomain)
 					console.log('close message sent' + message)
 				}, 500);
 			} else {
@@ -94,11 +98,11 @@ export class OpenPayIframe {
 
 	openNewTab = function(options) {
 		console.log('called openNewTab!');
-		this.el = window.open('http://127.0.0.1:8777/dist/openpay-setup/index.html');
+		this.el = window.open(this.iFrameUri);
 		setTimeout(() => {
 			let message = {type: 'register'}
 			Object.assign(message, this.openPayOptions)
-			this.el.postMessage(JSON.stringify(message), "*")
+			this.el.postMessage(JSON.stringify(message), this.iFrameDomain)
 			// this.el.sendEmailPrePopulationMessage = onload
 			// this.el.sendEmailPrePopulationMessage()
 			console.log('event s');
