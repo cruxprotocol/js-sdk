@@ -3,6 +3,7 @@ import { OpenPayIframe } from "./iframe-interface";
 import 'regenerator-runtime/runtime';
 import Logger from "js-logger";
 import path from "path";
+var fs = require("fs");
 
 // Setup logging configuration
 Logger.useDefaults();
@@ -96,7 +97,8 @@ interface IOpenPayPeerOptions {
     encryption?: typeof Encryption
     pubsub?: PubSubService
     nameservice?: NameService,
-	setupHandler?: Function
+    setupHandler?: Function,
+    walletClientName: string
 }
 
 interface IIdentitySecrets{
@@ -203,6 +205,9 @@ class OpenPayPeer extends EventEmitter {
     protected _encryption: typeof Encryption
     protected _pubsub: PubSubService
     protected _nameservice: NameService
+    public walletClientName: string
+    protected _assetList: JSON
+    protected _clientMapping: JSON
 
     protected _payIDClaim: PayIDClaim
 
@@ -219,8 +224,13 @@ class OpenPayPeer extends EventEmitter {
         this._storage =  this._options.storage || new LocalStorage()
         this._encryption = this._options.encryption || Encryption
         this._nameservice = this._options.nameservice || new BlockstackService()
+        this.walletClientName = this._options.walletClientName || 'scatter'
 
         log.info(`OpenPayPeer Initialised`)
+
+        this._assetList = JSON.parse(fs.readFileSync("asset-list.json", "utf-8"));
+        let allClientMapping = JSON.parse(fs.readFileSync("client-mapping.json", "utf-8"));
+        this._clientMapping = allClientMapping[this.walletClientName]
     }
 
 	protected async init() {
@@ -327,7 +337,7 @@ export class OpenPayWallet extends OpenPayPeer {
         log.info(addressMap)
 		openPaySetupState['publicAddressCurrencies'] = Object.keys(addressMap).map(x=>x.toUpperCase());
 
-
+        openPaySetupState['assetList'] = this._assetList
 		log.info("Passing openPaySetupState to walletSetupUi")
         log.info(openPaySetupState)
 		this.walletSetupUi.open(openPaySetupState);
@@ -362,17 +372,37 @@ export class OpenPayWallet extends OpenPayPeer {
     }
 
     public putAddressMap = async (addressMap: IAddressMapping): Promise<boolean> => {
+
+        let csAddressMap = {}
+        for(let key in addressMap){
+            csAddressMap[this._clientMapping[key]] = addressMap[key]
+        }
+
         await this._payIDClaim.decrypt()
-        let acknowledgement = await this._nameservice.putAddressMapping({secrets: this._payIDClaim.identitySecrets}, addressMap)
+        let acknowledgement = await this._nameservice.putAddressMapping({secrets: this._payIDClaim.identitySecrets}, csAddressMap)
         await this._payIDClaim.encrypt()
+
 
         if (!acknowledgement) throw (`Could not update the addressMap`)
         return acknowledgement
     }
 
     public getAddressMap = async (): Promise<IAddressMapping> => {
+
+        let clientIdToAssetIdMap = {}
+        for(let i in this._clientMapping){
+            clientIdToAssetIdMap[this._clientMapping[i]] = i
+        }
+
+        let clientIdMap = {}
         if(this._payIDClaim && this._payIDClaim.passcodeHash){
-            return this._nameservice.getAddressMapping(this._payIDClaim.virtualAddress);
+            let assetIdMap = await this._nameservice.getAddressMapping(this._payIDClaim.virtualAddress);
+
+            for(let key in assetIdMap){
+                clientIdMap[clientIdToAssetIdMap[key]] = assetIdMap[key]
+            }
+            return clientIdMap;
+
         } else {
             return {};
         }
