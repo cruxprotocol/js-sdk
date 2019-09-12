@@ -9,7 +9,7 @@
     "asset_id": "508b8f73-4b06-453e-8151-78cb8cfc3bc9",
     "name": "Ethereum",
     "symbol": "eth",
-    "image_sm_url": "https://s3.ap-south-1.amazonaws.com/crypto-exchange/coins-sm/ether.png"
+    "image_sm_url": "https://files.coinswitch.co/public/coins/eth.png"
   },
   {
     "asset_id": "9a267cc3-0e72-4db5-930c-c60a74d64c55",
@@ -69,13 +69,19 @@
     "asset_id": "9dbdc727-de68-4f2a-8956-04a38ed71ca5",
     "name": "Tron",
     "symbol": "trx",
-    "image_sm_url": ""
+    "image_sm_url": "https://files.coinswitch.co/public/coins/trx.png"
+  },
+  {
+    "asset_id": "9dbdc727-de68-4f2a-8956-04a38ed71ca6",
+    "name": "EOS",
+    "symbol": "eos",
+    "image_sm_url": "https://files.coinswitch.co/public/coins/eos.png"
   },
   {
     "asset_id": "1d6e1a99-1e77-41e1-9ebb-0e216faa166a",
     "name": "Bitcoin",
     "symbol": "btc",
-    "image_sm_url": ""
+    "image_sm_url": "https://files.coinswitch.co/public/coins/btc.png"
   },
   {
     "asset_id": "b33adc7a-beb9-421f-95d6-d495dc549f79",
