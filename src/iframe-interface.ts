@@ -78,7 +78,7 @@ export class OpenPayIframe {
 		modalBackdrop.style.width = '100%';
 		modalBackdrop.style.height = '100%';
 		modalBackdrop.style.background = 'rgba(0,0,0,0.5)';
-		modalBackdrop.style.zIndex = '100';
+		modalBackdrop.style.zIndex = '10001';
 		modalBackdrop.style.display = 'flex';
 		modalBackdrop.style.justifyContent = 'center';
 		modalBackdrop.style.alignItems = 'center';

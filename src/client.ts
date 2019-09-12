@@ -59,7 +59,19 @@ export default class OpenPayWalletClient {
 		console.log("inside _handleSetupResultApproval!");
 		if(setupResult.type === 'createNew') {
 			console.log("Approved! Generating ID");
-			await this.wallet.addPayIDClaim(setupResult.data.newPayIDName, setupResult.data.newPayIDPass);
+			let newAddressMap = {};
+			if (setupResult.data.checkedCurrencies) {
+				let addressByCurrency = this.settings.walletGetAddressByCurrency();
+				for (let cur of setupResult.data.checkedCurrencies) {
+					if(addressByCurrency[cur]) {
+						newAddressMap[cur] = {addressHash: addressByCurrency[cur]}
+					}
+				}
+				console.log("Created Address Map in createNew path");
+				console.log(newAddressMap);
+			}
+
+			await this.wallet.addPayIDClaim(setupResult.data.newPayIDName, setupResult.data.newPayIDPass, newAddressMap);
 			console.log("after Generating ID");
 		} else if (setupResult.type === 'editExisting') {
 			console.log("edit existing")
