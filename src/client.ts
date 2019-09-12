@@ -15,9 +15,10 @@ export default class OpenPayWalletClient {
 	}
 
 	static getState(){
-		let payIdClaim = this.wallet.getPayIDClaim();
+		let hasPayIdClaim = this.wallet.hasPayIDClaim();
+		let payIdClaim = hasPayIdClaim ? this.wallet.getPayIDClaim() : null;
 		return {
-			isSignedUp: Boolean(payIdClaim),
+			isSignedUp: hasPayIdClaim,
 			payId: payIdClaim
 		}
 	}
