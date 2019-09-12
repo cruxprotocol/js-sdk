@@ -187,7 +187,6 @@ class OpenPayPeer extends EventEmitter {
         let addressMap = await this._nameservice.getAddressMapping(receiverVirtualAddress)
         log.debug(`Address map: `, addressMap)
         if (!addressMap[currency]) {
-            log.debug(`Currency not available!`)
             throw new Error("Currency address not available for user")
         }
         let address: IAddress = addressMap[currency] || addressMap[currency.toLowerCase()]

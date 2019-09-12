@@ -494,8 +494,8 @@ export class BlockstackService extends NameService {
         let pubKey = await this.resolveName(blockstackId, options)
         let nameData = await this._fetchNameDetails(blockstackId)
         log.debug(nameData)
-        if (!nameData) throw (`No name data availabe!`)
-        if (!nameData["address"]) throw new Error(`Name not registered.`)
+        if (!nameData) throw new Error(`No name data availabe!`)
+        if (nameData["status"] !== "registered_subdomain") throw new Error(`Name not registered.`)
         let bitcoinAddress = nameData['address']
         log.debug(`ID owner: ${bitcoinAddress}`)
         let profileUrl = "https://" + nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2] + "/openpay.json"
@@ -522,7 +522,7 @@ export class BlockstackService extends NameService {
 					} catch (e) {
 						log.error(e)
 						// TODO: fix the error log
-						throw (`Probably this id resolves to a domain registrar`)
+						throw new Error(`Probably this id resolves to a domain registrar`)
 					}
 
 					let addressFromPub = publicKeyToAddress(pubKey)
