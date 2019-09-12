@@ -495,6 +495,7 @@ export class BlockstackService extends NameService {
         let nameData = await this._fetchNameDetails(blockstackId)
         log.debug(nameData)
         if (!nameData) throw (`No name data availabe!`)
+        if (!nameData["address"]) throw new Error(`Name not registered.`)
         let bitcoinAddress = nameData['address']
         log.debug(`ID owner: ${bitcoinAddress}`)
         let profileUrl = "https://" + nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2] + "/openpay.json"

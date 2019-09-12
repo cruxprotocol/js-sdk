@@ -22,6 +22,7 @@ import {
 } from "./packages";
 import { object } from "@mojotech/json-type-validation";
 import { ITokenPayload } from "./packages/token";
+import { connect } from "tls";
 
 export { LocalStorage, Encryption, PeerJSService, BlockstackService, TokenController, MessageProcessor, OpenPayServiceIframe }
 
@@ -186,6 +187,10 @@ class OpenPayPeer extends EventEmitter {
     public resolveAddress = async (receiverVirtualAddress: string, currency: string): Promise<IAddress> => {
         let addressMap = await this._nameservice.getAddressMapping(receiverVirtualAddress)
         log.debug(`Address map: `, addressMap)
+        if (!addressMap[currency]) {
+            log.debug(`Currency not available!`)
+            throw new Error("Currency address not available for user")
+        }
         let address: IAddress = addressMap[currency] || addressMap[currency.toLowerCase()]
         return address
     }
