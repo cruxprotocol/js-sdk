@@ -106,8 +106,8 @@ export class OpenPayIframe {
 		this.el.openPayOptions = walletState
 		this.dispModal({
 			template: this.el,
-			width: '500px',
-			height: '500px'
+			width: '900px',
+			height: '600px'
 		})
 		// let elementId = this.openPayOptions['iframeEmbedElementId']
 		// document.getElementById(elementId).appendChild(this.el)
