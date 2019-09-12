@@ -22,7 +22,6 @@ import {
 } from "./packages";
 import { object } from "@mojotech/json-type-validation";
 import { ITokenPayload } from "./packages/token";
-import { connect } from "tls";
 
 export { LocalStorage, Encryption, PeerJSService, BlockstackService, TokenController, MessageProcessor, OpenPayServiceIframe }
 
