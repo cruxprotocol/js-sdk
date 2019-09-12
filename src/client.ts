@@ -8,7 +8,8 @@ export default class OpenPayWalletClient {
 		this.wallet = new OpenPayWallet({
 			storage: settings.storage,
 			setupHandler: this._openSetupResultHandler.bind(this),
-			getEncryptionKey: settings.getKey
+			getEncryptionKey: settings.getKey,
+			walletClientName: 'scatter'
 		});
 		await this.wallet.init();
 

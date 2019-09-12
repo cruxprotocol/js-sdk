@@ -229,7 +229,8 @@ class OpenPayPeer extends EventEmitter {
         log.info(`OpenPayPeer Initialised`)
 
         this._assetList = JSON.parse(fs.readFileSync("asset-list.json", "utf-8"));
-        this._clientMapping = JSON.parse(fs.readFileSync("client-mapping.json", "utf-8"))[this.walletClientName];
+        let allClientMapping = JSON.parse(fs.readFileSync("client-mapping.json", "utf-8"));
+        this._clientMapping = allClientMapping[this.walletClientName]
     }
 
 	protected async init() {
@@ -336,7 +337,7 @@ export class OpenPayWallet extends OpenPayPeer {
         log.info(addressMap)
 		openPaySetupState['publicAddressCurrencies'] = Object.keys(addressMap).map(x=>x.toUpperCase());
 
-
+        openPaySetupState['assetList'] = this._assetList
 		log.info("Passing openPaySetupState to walletSetupUi")
         log.info(openPaySetupState)
 		this.walletSetupUi.open(openPaySetupState);
@@ -396,6 +397,7 @@ export class OpenPayWallet extends OpenPayPeer {
         let clientIdMap = {}
         if(this._payIDClaim && this._payIDClaim.passcodeHash){
             let assetIdMap = await this._nameservice.getAddressMapping(this._payIDClaim.virtualAddress);
+
             for(let key in assetIdMap){
                 clientIdMap[clientIdToAssetIdMap[key]] = assetIdMap[key]
             }
