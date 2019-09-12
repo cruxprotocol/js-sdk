@@ -96,12 +96,13 @@ interface IOpenPayPeerOptions {
     storage?: StorageService
     encryption?: typeof Encryption
     pubsub?: PubSubService
-    nameservice?: NameService, 
+    nameservice?: NameService,
+    setupHandler?: Function,
     walletClientName: string
 }
 
-interface IIdentitySecrets{ 
-    [nameservice: string]: IIdentityClaim 
+interface IIdentitySecrets{
+    [nameservice: string]: IIdentityClaim
 }
 
 interface IOpenPayClaim {
@@ -121,7 +122,7 @@ class PayIDClaim implements IOpenPayClaim {
     private _getEncryptionKey: () => string;
     private _encryption: typeof Encryption = Encryption;
     private _storage: StorageService = new LocalStorage();
-    
+
     public passcodeHash: string;
     public virtualAddress: string;
     public identitySecrets: string | IIdentityClaim;
@@ -129,7 +130,7 @@ class PayIDClaim implements IOpenPayClaim {
     constructor(openPayObj: IOpenPayClaim = {} as IOpenPayClaim, options: openPayOptions) {
         if (!options.getEncryptionKey) throw (`Missing encryptionKey method!`)
         this._getEncryptionKey = options.getEncryptionKey
-        
+
         if (options.encryption) this._encryption = options.encryption
         if (options.storage) this._storage = options.storage
 
@@ -215,7 +216,7 @@ class OpenPayPeer extends EventEmitter {
 
         this._options = Object.assign({}, _options)
         // TODO: Need to validate options
-        
+
         this._getEncryptionKey = _options.getEncryptionKey
         log.debug(`Encryption key:`, this._getEncryptionKey())
 
@@ -225,25 +226,27 @@ class OpenPayPeer extends EventEmitter {
         this._nameservice = this._options.nameservice || new BlockstackService()
         this.walletClientName = this._options.walletClientName || 'scatter'
 
-        if (this._hasPayIDClaimStored()) {
-            let payIDClaim = this._storage.getJSON('payIDClaim')
-            log.debug(`Local payIDClaim:`, payIDClaim)
-            this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }))
-            this._restoreIdentity()
-        }
-        else {
-            this._nameservice.generateIdentity()
-                .then(identityClaim => {
-                    let payIDClaim = {identitySecrets: identityClaim.secrets}
-                    this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }))
-                    log.debug(`Allocated temporary identitySecrets and payIDClaim`)
-                })
-        }
         log.info(`OpenPayPeer Initialised`)
 
         this._assetList = JSON.parse(fs.readFileSync("asset-list.json", "utf-8"));
         this._clientMapping = JSON.parse(fs.readFileSync("client-mapping.json", "utf-8"))[this.walletClientName];
     }
+
+	protected async init() {
+		if (this._hasPayIDClaimStored()) {
+			let payIDClaim = this._storage.getJSON('payIDClaim')
+			log.debug(`Local payIDClaim:`, payIDClaim)
+			this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }))
+			this._restoreIdentity()
+		}
+		else {
+			let identityClaim = await this._nameservice.generateIdentity();
+			let payIDClaim = {identitySecrets: identityClaim.secrets}
+			this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }))
+			log.debug(`Allocated temporary identitySecrets and payIDClaim`)
+		}
+	}
+
 
     private _restoreIdentity = async () => {
         // if have local identitySecret, setup with the nameservice module
@@ -309,45 +312,52 @@ class OpenPayPeer extends EventEmitter {
 
 // Wallets specific SDK code
 export class OpenPayWallet extends OpenPayPeer {
+	private walletSetupUi: OpenPayIframe;
 
     constructor(_options?: IOpenPayPeerOptions) {
         super(_options);
-        log.info(`OpenPayWallet Initialised`)
+        this._options = _options;
+		log.info(`OpenPayWallet Initialised`)
     }
 
-	public invokeSetup = async (openPaySetupOptions: JSON): Promise<void> => {
-        log.info("Setup Invoked")
-        openPaySetupOptions['payIDName'] = this._payIDClaim && this._payIDClaim.passcodeHash && this._payIDClaim.virtualAddress
-        let addressMap = await this.getAddressMap();
-        log.info(addressMap)
-        openPaySetupOptions['publicAddressCurrencies'] = Object.keys(addressMap).map(x=>x.toUpperCase());
-        log.info(openPaySetupOptions)
-        log.debug(this._payIDClaim)
-        // supressing the error on missing passcodeHash
-        await this._payIDClaim.decrypt().catch(e => log.error(e))
-        openPaySetupOptions['privateKey'] = await this._nameservice.getDecryptionKey({ secrets: this._payIDClaim.identitySecrets })
-        openPaySetupOptions['publicKey'] = await this._nameservice.getEncryptionKey({ secrets: this._payIDClaim.identitySecrets })
-        await this._payIDClaim.encrypt().catch(e => log.error(e))
-        let cs = new OpenPayIframe(openPaySetupOptions);
-		cs.open();
+    public async init() {
+		await super.init();
+		await this._payIDClaim.decrypt().catch(e => log.error(e))
+		let decryptionKey = await this._nameservice.getDecryptionKey({secrets: this._payIDClaim.identitySecrets})
+		let encryptionKey = await this._nameservice.getEncryptionKey({secrets: this._payIDClaim.identitySecrets})
+		await this._payIDClaim.encrypt().catch(e => log.error(e))
+		this.walletSetupUi = new OpenPayIframe(this._options.setupHandler, decryptionKey, encryptionKey);
 	}
 
-	public destroySetup = (openPaySetupOptions: JSON): void => {
-        let cs = new OpenPayIframe(openPaySetupOptions); // TODO: This is being initialized twice
-        cs.destroy();
+	public invokeSetup = async (openPaySetupState: JSON): Promise<void> => {
+        log.info("Setup Invoked")
+		openPaySetupState['payIDName'] = this._payIDClaim && this._payIDClaim.passcodeHash && this._payIDClaim.virtualAddress
+        let addressMap = await this.getAddressMap();
+        log.info(addressMap)
+		openPaySetupState['publicAddressCurrencies'] = Object.keys(addressMap).map(x=>x.toUpperCase());
+
+
+		log.info("Passing openPaySetupState to walletSetupUi")
+        log.info(openPaySetupState)
+		this.walletSetupUi.open(openPaySetupState);
+	}
+
+	public destroySetup = (): void => {
+		this.walletSetupUi.destroy()
     }
+
     // NameService specific methods
 
     public addPayIDClaim = async (virtualAddress: string, passcode: string, addressMap?: IAddressMapping): Promise<void> => {
         // Generating the identityClaim
-        let identityClaim = await this._nameservice.generateIdentity()
+		let identityClaim = this._payIDClaim ? {secrets: this._payIDClaim.identitySecrets} : await this._nameservice.generateIdentity()
         let registeredPublicID = await this._nameservice.registerName(identityClaim, virtualAddress)
-        
+
         // Setup the payIDClaim locally
         this._setPayIDClaim(new PayIDClaim({virtualAddress: registeredPublicID, identitySecrets: identityClaim.secrets}, { getEncryptionKey: this._getEncryptionKey }))
         await this._payIDClaim.setPasscode(passcode)
         this._storage.setJSON('payIDClaim', this._payIDClaim.toJSON())
- 
+
         // TODO: Setup public addresses
         if (addressMap) {
             alert(`Selected addresses for resolving via your ID: ${

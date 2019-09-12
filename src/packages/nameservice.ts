@@ -304,7 +304,7 @@ export class BlockstackService extends NameService {
         await this._uploadProfileInfo(identityKeyPair.privKey)
         
         // Register the subdomain with Coinswitch registrar service
-        let registeredSubdomain = await this._registerSubdomain(name, this._identityKeyPair.address)
+        let registeredSubdomain = await this._registerSubdomain(name, identityClaim.secrets.identityKeyPair.address)
         this._subdomain = registeredSubdomain
 
         return `${this._subdomain}.${this._domain}`
