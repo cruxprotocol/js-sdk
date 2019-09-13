@@ -364,7 +364,7 @@ export class OpenPayWallet extends OpenPayPeer {
 
         // TODO: Setup public addresses
         if (addressMap) {
-            alert(`Selected addresses for resolving via your ID: ${
+            log.debug(`Selected addresses for resolving via your ID: ${
                 Object.keys(addressMap).map(currency => {
                     return `\n${addressMap[currency].addressHash}`
                 })
