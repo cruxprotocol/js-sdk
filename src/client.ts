@@ -73,6 +73,7 @@ export default class OpenPayWalletClient {
 
 			await this.wallet.addPayIDClaim(setupResult.data.newPayIDName, setupResult.data.newPayIDPass, newAddressMap);
 			console.log("after Generating ID");
+			this.settings.walletAcknowledgeAction({'status': 'success'})
 		} else if (setupResult.type === 'editExisting') {
 			console.log("edit existing")
 			let addressByCurrency = this.settings.walletGetAddressByCurrency();
@@ -85,6 +86,7 @@ export default class OpenPayWalletClient {
 			console.log("put address map");
 			console.log(newAddressMap);
 			await this.wallet.putAddressMap(newAddressMap)
+			this.settings.walletAcknowledgeAction({'status': 'success'})
 		}
 	}
 }
