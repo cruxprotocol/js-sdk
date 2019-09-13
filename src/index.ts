@@ -301,12 +301,19 @@ class OpenPayPeer extends EventEmitter {
     }
 
     public resolveAddress = async (receiverVirtualAddress: string, currency: string): Promise<IAddress> => {
+		let correspondingAssetId = null;
+		for(let i in this._clientMapping){
+			if (i == currency) {
+				correspondingAssetId = this._clientMapping[i]
+			}
+		}
+
         let addressMap = await this._nameservice.getAddressMapping(receiverVirtualAddress)
         log.debug(`Address map: `, addressMap)
-        if (!addressMap[currency]) {
+        if (!addressMap[correspondingAssetId]) {
             throw new Error("Currency address not available for user")
         }
-        let address: IAddress = addressMap[currency] || addressMap[currency.toLowerCase()]
+        let address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()]
         log.debug(`Address:`, address)
         return address
     }
