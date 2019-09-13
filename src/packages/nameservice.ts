@@ -63,7 +63,7 @@ export enum SubdomainRegistrationStatus {
 let defaultBNSConfig: IBlockstackServiceOptions = {
     domain: 'devcoinswitch.id', 
     gaiaHub: 'https://hub.blockstack.org',
-    subdomainRegistrar: 'https://registrar.coinswitch.co:3000',
+    subdomainRegistrar: 'https://registrar-prod.coinswitch.co:3000',
     bnsNodes: ['https://core.blockstack.org', 'https://bns.coinswitch.co']
 }
 
