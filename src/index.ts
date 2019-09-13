@@ -147,13 +147,13 @@ class PayIDClaim implements IOpenPayClaim {
     private _getPasscode = async (): Promise<string> => {
         if (!this.passcodeHash) throw (`Missing passcode!`)
         let encryptedObj = JSON.parse(this.passcodeHash)
-        let passcodeHash = await this._encryption.decryptText(encryptedObj.encBuffer, encryptedObj.iv, this._getEncryptionKey())
+        let passcodeHash = await this._encryption.decryptText(encryptedObj.encBuffer, encryptedObj.iv, await this._getEncryptionKey())
         return passcodeHash
     }
 
     public setPasscode = async (passcode: string): Promise<void> => {
         let passcodeHash = await this._encryption.digest(passcode)
-        this.passcodeHash = JSON.stringify(await this._encryption.encryptText(passcodeHash, this._getEncryptionKey()))
+        this.passcodeHash = JSON.stringify(await this._encryption.encryptText(passcodeHash, await this._getEncryptionKey()))
         log.debug(`Passcode Hash:`, this.passcodeHash)
         await this.encrypt()
     }
@@ -218,7 +218,7 @@ class OpenPayPeer extends EventEmitter {
         // TODO: Need to validate options
 
         this._getEncryptionKey = _options.getEncryptionKey
-        log.debug(`Encryption key:`, this._getEncryptionKey())
+        // log.debug(`Encryption key:`, this._getEncryptionKey())
 
         // Setting up the default modules as fallbacks
         this._storage =  this._options.storage || new LocalStorage()
