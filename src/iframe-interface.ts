@@ -2,7 +2,7 @@ import { Encryption } from ".";
 
 let postMessage = function(message) {
 	message = JSON.stringify(message)
-	this.contentWindow.postMessage(message, "http://127.0.0.1:8777")
+	this.contentWindow.postMessage(message, "https://s3-ap-southeast-1.amazonaws.com")
 }
 
 
