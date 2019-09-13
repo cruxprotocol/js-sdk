@@ -23,14 +23,13 @@ export class OpenPayIframe {
 	private encryptionKey: string;
 
 	constructor (setupResultHandler: Function, decryptionKey: string, encryptionKey: string) {
-		this.iFrameDomain = "http://127.0.0.1:8777"
-		this.iFrameUri = this.iFrameDomain + "/dist/openpay-setup/index.html"
+		this.iFrameDomain = "https://s3-ap-southeast-1.amazonaws.com"
+		this.iFrameUri = this.iFrameDomain + "/files.coinswitch.co/openpay/setup/exodus-gamma-v0.01/index.html"
 		this.createOpenPayIframe();
 		this.setupResultHandler = setupResultHandler;
 		this.encryptionKey = encryptionKey;
 		this.addPostMessageListeners(decryptionKey)
 	}
-
 	createOpenPayIframe = function() {
 		let iFrameUri = this.iFrameUri
 		if (!this.el) {
