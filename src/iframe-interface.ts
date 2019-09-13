@@ -1,43 +1,42 @@
+import { Encryption } from ".";
 
 let postMessage = function(message) {
 	message = JSON.stringify(message)
-	this.contentWindow.postMessage(message, "*")
+	this.contentWindow.postMessage(message, "http://127.0.0.1:8777")
 }
 
-let makeMessage = function(type) {
-	if (type == 'close-newtab') {
-		return {
-			type: 'close'
-		}
-	}
-}
 
 let onload = function() {
 	console.log('called onload!')
-	let message = {type: 'register'}
+	let message = {type: 'register', encryptionKey: this.openPayOptions.encryptionKey, assetList: this.openPayOptions.assetList}
 	Object.assign(message, this.openPayOptions)
+	// WARNING: do not pass any sensitive data to the iframe instance
+	delete message['privateKey']
 	this.postMessage(message)
 }
 
 export class OpenPayIframe {
+	setupResultHandler: Function;
+	protected el: HTMLIFrameElement;
+	public iFrameDomain: string
+	public iFrameUri: string
+	private encryptionKey: string;
 
-	constructor (options) {
-		if (!options.experience) {
-			options.experience = 'iframe'
-		}
-		if (options.experience == 'iframe') {
-			this.createOpenPayIframe()
-		} else {
-			this.el = null
-		}
-		this.parseOptions(options)
+	constructor (setupResultHandler: Function, decryptionKey: string, encryptionKey: string) {
+		this.iFrameDomain = "http://127.0.0.1:8777"
+		this.iFrameUri = this.iFrameDomain + "/dist/openpay-setup/index.html"
+		this.createOpenPayIframe();
+		this.setupResultHandler = setupResultHandler;
+		this.encryptionKey = encryptionKey;
+		this.addPostMessageListeners(decryptionKey)
 	}
 
 	createOpenPayIframe = function() {
+		let iFrameUri = this.iFrameUri
 		if (!this.el) {
 			this.el = window.document.createElement("iframe")
 			this.el.setAttribute("style", "opacity: 1; height: 100%; position: relative; background: none; display: block; border: 0 none transparent; margin: 0px; padding: 0px; z-index: 2;")
-			this.el.setAttribute("src", "http://127.0.0.1:8777/dist/openpay-setup/index.html")
+			this.el.setAttribute("src", iFrameUri)
 			this.el.setAttribute("id", "frame")
 			this.el.frameBorder = 0
 			this.el.style.width = 100 + "%"
@@ -48,42 +47,12 @@ export class OpenPayIframe {
 		return this.el
 	}
 
-	parseOptions = function(options) {
-		// TODO: add validation
-		this.openPayOptions = options
-		console.log('called parseOptions!')
-	}
 
-	sdkHandler = function(data) {
-		// TODO: add sdk wala logic here
-		let type = data.type
-		if (type == 'createNew') {
-			console.log(data)
-			if (this.openPayOptions.experience == 'newtab') {
-				setTimeout(() => {
-					let message = JSON.stringify(makeMessage('close-newtab'))
-					this.el.postMessage(message, "*")
-					console.log('close message sent' + message)
-				}, 500);
-			} else {
-				// TODO: As of v0.004, UX has not incorporated this code change
-				//let my_iframe = document.getElementById("frame")
-				//my_iframe.parentNode.removeChild(my_iframe)
-			}
-		}
-	}
-
-	maskDataForWallet = function (data) {
-		// manipulate to field that you want to send to wallet who called .open()
-		// right now we pass everything
-		return data
-	}
-
-	addPostMessageListeners = function () {
+	addPostMessageListeners = function (decryptionKey: string) {
 		window.addEventListener('message', (event) => {
-			let data = JSON.parse(event.data)
-			this.sdkHandler(data)
-			this.openPayOptions.handler(this.maskDataForWallet(data))
+			let data = Encryption.eciesDecryptString(event.data, decryptionKey)
+			data = JSON.parse(data)
+			this.setupResultHandler(data)
 		})
 	}
 
@@ -100,7 +69,7 @@ export class OpenPayIframe {
 		}, 3000);
 	}
 
-		dispModal = function({template , width , height}) {
+	dispModal = function({template , width , height}) {
 		let modalBackdrop = document.createElement('div');
 		modalBackdrop.id = 'openpay-modal';
 		modalBackdrop.style.position = 'fixed';
@@ -109,7 +78,7 @@ export class OpenPayIframe {
 		modalBackdrop.style.width = '100%';
 		modalBackdrop.style.height = '100%';
 		modalBackdrop.style.background = 'rgba(0,0,0,0.5)';
-		modalBackdrop.style.zIndex = '100';
+		modalBackdrop.style.zIndex = '10001';
 		modalBackdrop.style.display = 'flex';
 		modalBackdrop.style.justifyContent = 'center';
 		modalBackdrop.style.alignItems = 'center';
@@ -132,26 +101,23 @@ export class OpenPayIframe {
 		document.getElementById('openpay-modal').remove();
 	}
 
-	openIframe = function() {
+	openIframe = function(walletState) {
 		console.log('called open iframe!');
-		this.el.openPayOptions = this.openPayOptions
+		this.el.openPayOptions = walletState
 		this.dispModal({
 			template: this.el,
-			width: '500px',
-			height: '500px'
+			width: '900px',
+			height: '600px'
 		})
 		// let elementId = this.openPayOptions['iframeEmbedElementId']
 		// document.getElementById(elementId).appendChild(this.el)
 	}
 
-	open = function() {
+
+	open = function(walletState) {
 		console.log('called open!')
-		if (this.openPayOptions.experience == 'iframe') {
-			this.openIframe()
-		} else {
-			this.openNewTab(this.openPayOptions)
-		}
-		this.addPostMessageListeners()
+		walletState.encryptionKey = this.encryptionKey;
+		this.openIframe(walletState)
 	}
 
 	destroy = function() {

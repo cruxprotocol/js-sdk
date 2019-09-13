@@ -1,0 +1,29 @@
+{
+    "exodus": {
+        "LTC": "8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b",
+        "ETH": "508b8f73-4b06-453e-8151-78cb8cfc3bc9",
+        "BAT": "9a267cc3-0e72-4db5-930c-c60a74d64c55",
+        "DGB": "490f7648-7fc1-4f0d-aa23-e08185daf8a5",
+        "DAI": "77a880a0-3443-4eef-8500-bdc8dcdd3370",
+        "ZRX": "902d4bde-f877-486e-813e-135920cc7f33",
+        "MCO": "0999c959-f691-4553-b461-b88ea5032e0c",
+        "CVC": "fecfeb26-e612-4df4-aed7-bd4ad0194936",
+        "DCR": "20d57d7d-3cc1-428a-ae90-09fb9c5168f5",
+        "DGD": "9d796569-0faf-4e4a-b581-676fab3433d9",
+        "DNT": "d133dd13-a791-4c2b-9c14-b4c8532f6b91",
+        "LSK": "b33adc7a-beb9-421f-95d6-d495dc549f79",
+        "WAVES": "3e92f1b6-693c-4654-9b9b-938582d64e4f",
+        "GNT": "2794e4c6-6bec-45da-b4a6-74996cdad79a",
+        "OMG": "86a3f3fa-d616-4f40-b46c-09c49c0187e1",
+        "REP": "8960c3e7-c953-4db1-8497-34b82d9ce322",
+        "BTC": "1d6e1a99-1e77-41e1-9ebb-0e216faa166a",
+        "EOS": "9dbdc727-de68-4f2a-8956-04a38ed71ca6"
+    },
+
+    "scatter": { 
+        "EOS": "9dbdc727-de68-4f2a-8956-04a38ed71ca6",
+        "ETH": "508b8f73-4b06-453e-8151-78cb8cfc3bc9",
+        "TRX": "9dbdc727-de68-4f2a-8956-04a38ed71ca5",
+        "BTC": "1d6e1a99-1e77-41e1-9ebb-0e216faa166a"
+    }
+}

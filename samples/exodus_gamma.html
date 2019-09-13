@@ -9,10 +9,7 @@
 <body>
     <h4>Demo Wallet</h4>
     ========================
-    <br><br>
-    
-    Peer Status: <span id='status'></span>
-    
+    <br><br>   
     
     <pre id="user"></pre>
     
@@ -24,8 +21,10 @@
     <br><br>
 
     <input id="registrationId">
-    <button onclick="getIdAvailability()">Check Availability</button>
-    <span id='availability'></span><br><br>
+    <button onclick="getIdAvailability()">Check Availability</button><br>
+    <span id='availability'></span>
+    
+    <br><br>
 
     <br><br>
 
@@ -36,6 +35,19 @@
     <br><br>    
     
     Wallet Address: <span id='address'></span>
+
+    <br><br>
+
+    <input id="receiverVirtualAddress">
+    <select id="currency">
+        <option value="BTC">BTC</option>
+        <option value="ETH">ETH</option>
+        <option value="TRX">TRX</option>
+    </select>
+    <button onclick="resolveAddress()">Resolve Address</button><br>
+    <pre id='addresses'></pre>
+    
+    <br><br>
 
 
     <script src="./exodus_gamma.ts"></script>
