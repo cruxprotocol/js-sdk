@@ -1,13 +1,16 @@
 {
-  "name": "openpay_sdk",
+  "name": "@coinswitch/openpay",
   "version": "0.0.1",
-  "description": "OpenPay-ID sdk",
-  "main": "dist/openpay.min.js",
+  "description": "OpenPay SDK",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
-    "exodus": "node_modules/.bin/parcel samples/exodus_gamma.html --https",
-    "sample": "node_modules/.bin/parcel samples/sdk_test.html --https",
-    "build:js": "node_modules/.bin/parcel build src/index.ts -d dist --out-file openpay.min.js",
-    "build:dom": "node_modules/.bin/parcel build --no-minify src/openpay-dom.ts -d dist --out-file openpay-dom.js",
+    "exodus": "./node_modules/.bin/parcel samples/exodus_gamma.html --https",
+    "sample": "./node_modules/.bin/parcel samples/sdk_test.html --https",
+    "typecheck": "./node_modules/.bin/tsc --noEmit",
+    "transpile": "./node_modules/.bin/tsc",
+    "build:js": "./node_modules/.bin/parcel build src/index.ts -d dist --out-file openpay.js --no-minify",
+    "build:dom": "./node_modules/.bin/parcel build src/openpay-dom.ts -d dist --out-file openpay-dom.js --no-minify",
     "build": "npm run build:js && npm run build:dom",
     "dist-server": "python -m SimpleHTTPServer 8777"
   },
@@ -15,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "parcel": "^1.12.3",
+    "parcel-bundler": "^1.12.3",
     "typescript": "^3.5.3"
   },
   "dependencies": {
@@ -26,7 +29,7 @@
     "eventemitter3": "^4.0.0",
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
-    "peerjs": "git+ssh://git@bitbucket.org:coinswitch/webrtc-client.git",
+    "peerjs": "file:../webrtc-client",
     "regenerator-runtime": "^0.13.3"
   }
 }
