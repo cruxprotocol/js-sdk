@@ -30,7 +30,6 @@ export class OpenPayIframe {
 		this.encryptionKey = encryptionKey;
 		this.addPostMessageListeners(decryptionKey)
 	}
-
 	createOpenPayIframe = function() {
 		let iFrameUri = this.iFrameUri
 		if (!this.el) {
