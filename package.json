@@ -1,6 +1,6 @@
 {
   "name": "@coinswitch/openpay",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "OpenPay SDK",
   "unpkg": "dist/openpay-dom.js",
   "main": "lib/exports.js",
