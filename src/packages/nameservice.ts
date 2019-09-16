@@ -584,7 +584,8 @@ export class BlockstackService extends NameService {
                 resolve(content);
             }
             catch(error){
-                reject(`Unable to decode address mapping, ${error}`)
+                log.error(`Unable to decode address mapping, ${error}`)
+                reject({})
             }
         })
         return promise
@@ -600,7 +601,8 @@ export class BlockstackService extends NameService {
                 resolve(assetList);
             }
             catch(error){
-                reject(`failed to get asset list from gaia hub, error is:- ${error}`)
+                log.error(`failed to get asset list from gaia hub, error is:- ${error}`)
+                reject([])
             }
         });
         return assetListPromise;
