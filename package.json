@@ -13,7 +13,9 @@
     "build:js": "./node_modules/.bin/parcel build src/index.ts -d dist --out-file openpay.js --no-minify",
     "build:dom": "./node_modules/.bin/parcel build src/openpay-dom.ts -d dist --out-file openpay-dom.js --no-minify",
     "build": "npm run build:js && npm run build:dom",
-    "dist-server": "python -m SimpleHTTPServer 8777"
+    "dist-server": "python -m SimpleHTTPServer 8777",
+    "prepare": "npm run build && npm run transpile",
+    "publish": "npm version patch && npm publish --registry http://138.197.216.253:4873"
   },
   "keywords": [],
   "author": "",
