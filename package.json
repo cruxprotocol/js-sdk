@@ -6,8 +6,8 @@
   "main": "lib/exports.js",
   "types": "lib/exports.d.ts",
   "scripts": {
-    "exodus": "./node_modules/.bin/parcel samples/exodus_gamma.html --https",
-    "sample": "./node_modules/.bin/parcel samples/sdk_test.html --https",
+    "exodus": "./node_modules/.bin/parcel src/samples/exodus_gamma.html --https",
+    "sample": "./node_modules/.bin/parcel src/samples/sdk_test.html --https",
     "typecheck": "./node_modules/.bin/tsc --noEmit",
     "transpile": "./node_modules/.bin/tsc",
     "build:js": "./node_modules/.bin/parcel build src/index.ts -d dist --out-file openpay.js --no-minify",
