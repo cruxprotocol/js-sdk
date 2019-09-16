@@ -228,8 +228,8 @@ class OpenPayPeer extends EventEmitter {
 
         log.info(`OpenPayPeer Initialised`)
 
-        this._assetList = JSON.parse(fs.readFileSync(__dirname + "../asset-list.json", "utf-8"));
-        let allClientMapping = JSON.parse(fs.readFileSync(__dirname + "../client-mapping.json", "utf-8"));
+        this._assetList = JSON.parse(fs.readFileSync(__dirname + "/../asset-list.json", "utf-8"));
+        let allClientMapping = JSON.parse(fs.readFileSync(__dirname + "/../client-mapping.json", "utf-8"));
         this._clientMapping = allClientMapping[this.walletClientName]
     }
 
