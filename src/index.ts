@@ -22,6 +22,8 @@ import {
     MessageProcessor, OpenPayServiceIframe
 } from "./packages";
 import { IIdentityClaim } from "./packages/nameservice";
+import { async } from "q";
+import logger from "peerjs/lib/logger";
 
 export { LocalStorage, Encryption, PeerJSService, BlockstackService, TokenController, MessageProcessor, OpenPayServiceIframe }
 
@@ -198,16 +200,16 @@ class PayIDClaim implements IOpenPayClaim {
 }
 
 class OpenPayPeer extends EventEmitter {
-    protected _options: IOpenPayPeerOptions
-    protected _getEncryptionKey: () => string
+    protected _options: IOpenPayPeerOptions;
+    protected _getEncryptionKey: () => string;
 
     protected _storage: StorageService
     protected _encryption: typeof Encryption
     protected _pubsub: PubSubService
     protected _nameservice: NameService
     public walletClientName: string
-    protected _assetList: JSON
-    protected _clientMapping: JSON
+    protected _assetList: object
+    protected _clientMapping: object
 
     protected _payIDClaim: PayIDClaim
 
@@ -225,50 +227,30 @@ class OpenPayPeer extends EventEmitter {
         this._encryption = this._options.encryption || Encryption
         this._nameservice = this._options.nameservice || new BlockstackService()
         this.walletClientName = this._options.walletClientName || 'scatter'
-
+        this._assetList = null
+        this._clientMapping = null
         log.info(`OpenPayPeer Initialised`)
-
-        this._assetList = JSON.parse(fs.readFileSync("asset-list.json", "utf-8"));
-        let allClientMapping = JSON.parse(fs.readFileSync("client-mapping.json", "utf-8"));
-        this._clientMapping = allClientMapping[this.walletClientName]
     }
-
-	protected async init() {
-		if (this._hasPayIDClaimStored()) {
-			let payIDClaim = this._storage.getJSON('payIDClaim')
-			log.debug(`Local payIDClaim:`, payIDClaim)
-			this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }))
-			this._restoreIdentity()
-		}
-		else {
-			let identityClaim = await this._nameservice.generateIdentity();
-			let payIDClaim = {identitySecrets: identityClaim.secrets}
-			this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }))
-			log.debug(`Allocated temporary identitySecrets and payIDClaim`)
-		}
-	}
-
 
     private _restoreIdentity = async () => {
         // if have local identitySecret, setup with the nameservice module
         if ( this._payIDClaim && this._payIDClaim.identitySecrets ) {
-            await this._payIDClaim.decrypt()
+            await this._payIDClaim.decrypt();
             await this._nameservice.restoreIdentity({ identitySecrets: this._payIDClaim.identitySecrets})
-                .then(identityClaim => {
-                    this._payIDClaim.identitySecrets = identityClaim.secrets
-                    log.debug(`PayIDClaim with restored identity:`, this._payIDClaim)
-                    log.info(`Identity restored`)
+                .then((identityClaim) => {
+                    this._payIDClaim.identitySecrets = identityClaim.secrets;
+                    log.debug(`PayIDClaim with restored identity:`, this._payIDClaim);
+                    log.info(`Identity restored`);
                 })
-                .catch(err => log.error(err))
+                .catch((err) => log.error(err))
                 .finally(async () => {
-                    log.debug('finally block')
-                    await this._payIDClaim.encrypt()
-                    this._storage.setJSON('payIDClaim', this._payIDClaim.toJSON())
-                })
+                    log.debug("finally block");
+                    await this._payIDClaim.encrypt();
+                    this._storage.setJSON("payIDClaim", this._payIDClaim.toJSON());
+                });
 
-        }
-        else {
-            log.info(`payIDClaim or identitySecrets not available! Identity restoration skipped`)
+        } else {
+            log.info(`payIDClaim or identitySecrets not available! Identity restoration skipped`);
         }
     }
 
@@ -291,6 +273,26 @@ class OpenPayPeer extends EventEmitter {
         let payIDClaim = this._storage.getJSON('payIDClaim')
         return payIDClaim && payIDClaim['passcodeHash']
     }
+    
+	protected async init() {
+		if (this._hasPayIDClaimStored()) {
+			let payIDClaim = this._storage.getJSON('payIDClaim')
+			log.debug(`Local payIDClaim:`, payIDClaim)
+			this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }))
+			this._restoreIdentity()
+		}
+		else {
+			let identityClaim = await this._nameservice.generateIdentity();
+			let payIDClaim = {identitySecrets: identityClaim.secrets}
+			this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }))
+			log.debug(`Allocated temporary identitySecrets and payIDClaim`)
+        }
+        this._assetList = await this._nameservice.getGlobalAssetList()
+        this._clientMapping = await this._nameservice.getClientAssetMapping('ankit2.devcoinswitch.id')
+        log.debug(`global asset list is:- `, this._assetList);
+        log.debug(`client asset mapping is:- `, this._clientMapping);
+        log.info(`Done initializing`)
+	}
 
     protected _setPayIDClaim = (payIDClaim: PayIDClaim): void => {
         this._payIDClaim = payIDClaim
@@ -382,10 +384,10 @@ export class OpenPayWallet extends OpenPayPeer {
     }
 
     public putAddressMap = async (addressMap: IAddressMapping): Promise<boolean> => {
-
+        let clientMapping = this._clientMapping
         let csAddressMap = {}
         for(let key in addressMap){
-            csAddressMap[this._clientMapping[key]] = addressMap[key]
+            csAddressMap[clientMapping[key]] = addressMap[key]
         }
 
         await this._payIDClaim.decrypt()
@@ -398,10 +400,10 @@ export class OpenPayWallet extends OpenPayPeer {
     }
 
     public getAddressMap = async (): Promise<IAddressMapping> => {
-
+        let clientMapping = this._clientMapping;
         let clientIdToAssetIdMap = {}
-        for(let i in this._clientMapping){
-            clientIdToAssetIdMap[this._clientMapping[i]] = i
+        for(let i in clientMapping){
+            clientIdToAssetIdMap[clientMapping[i]] = i
         }
 
         let clientIdMap = {}
