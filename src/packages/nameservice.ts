@@ -445,7 +445,7 @@ export class BlockstackService extends NameService {
         let bitcoinAddress = nameData['address']
         log.debug(`ID owner: ${bitcoinAddress}`)
         log.debug(nameData)
-        let zonefilePath = nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2]
+        let zonefilePath = nameData['zonefile'].match(new RegExp('(.+)https:\/\/(.+)\/profile.json', 's'))[2]
         let profileUrl = "https://" + zonefilePath + "/profile.json"
         const promise: Promise<string> = new Promise(async (resolve, reject) => {
             var options = { 
