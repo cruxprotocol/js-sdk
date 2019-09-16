@@ -517,7 +517,7 @@ export class BlockstackService extends NameService {
         if (nameData["status"] !== "registered_subdomain") throw new Error(`Name not registered.`)
         let bitcoinAddress = nameData['address']
         log.debug(`ID owner: ${bitcoinAddress}`)
-        let profileUrl = "https://" + nameData['zonefile'].match(/(.+)https:\/\/(.+)\/profile.json/s)[2] + "/openpay.json"
+        let profileUrl = "https://" + nameData['zonefile'].match(new RegExp("(.+)https:\/\/(.+)\/profile.json", "s"))[2] + "/openpay.json"
         const promise: Promise<IAddressMapping> = new Promise(async (resolve, reject) => {
             var options = { 
                 method: 'GET',
