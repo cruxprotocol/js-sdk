@@ -1,4 +1,5 @@
-import { OpenPayWallet, IAddressMapping } from "../src/index";
+import { OpenPayWallet, IAddressMapping, LocalStorage } from "../src/index";
+import OpenPayWalletClient from "../src/client"; 
 
 const encryptionKey = "encryptionKey"
 const wallet_btc_address = "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V"
@@ -9,14 +10,22 @@ let sampleAddressMap: IAddressMapping = {
     }
 }
 
+window.onload = async () => {
+    await OpenPayWalletClient.init({
+        'storage': new LocalStorage(),
+        'walletGetAddressByCurrency': () => sampleAddressMap,
+        'walletOpenApprovalPopup': async (setupResult) => true,
+        'walletAcknowledgeAction': (action) => true,
+        'getKey': () => "fookey"
+    })
+}
+
 
 
 // SDK integration
 // TODO: need to migrate to the new wallet integration interface with config initialisation
 
-window.wallet = new OpenPayWallet({
-    getEncryptionKey: () => { return encryptionKey }
-});
+window.wallet = OpenPayWalletClient;
 
 document.getElementById('address').innerHTML = wallet_btc_address
 
@@ -43,6 +52,17 @@ const addPayIDClaim = async () => {
 }
 
 window.addPayIDClaim = addPayIDClaim
+
+
+const invokeSetup = async () => {
+    console.log('invokeSetup called')
+
+    window.wallet.invokeSetup({
+        availableCurrencies: Object.keys(sampleAddressMap)
+    })
+}
+
+window.invokeSetup = invokeSetup
 
 
 const getIdAvailability = async () => {
