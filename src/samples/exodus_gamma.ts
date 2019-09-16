@@ -1,5 +1,5 @@
-import { OpenPayWallet, IAddressMapping, LocalStorage } from "../src/index";
-import OpenPayWalletClient from "../src/client"; 
+import { OpenPayWallet, IAddressMapping, LocalStorage } from "../index";
+import OpenPayWalletClient from "../client"; 
 
 const encryptionKey = "encryptionKey"
 const wallet_btc_address = "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V"

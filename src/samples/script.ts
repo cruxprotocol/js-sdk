@@ -1,4 +1,4 @@
-import { IPayIDClaim, IPaymentRequest, OpenPayWalletExperimental, OpenPayServiceExperimental, IAddressMapping } from "../src/index";
+import { IPayIDClaim, IPaymentRequest, OpenPayWalletExperimental, OpenPayServiceExperimental, IAddressMapping } from "../index";
 
 
 window.OpenPayWallet = OpenPayWalletExperimental
