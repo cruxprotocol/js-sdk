@@ -22,8 +22,6 @@ import {
     MessageProcessor, OpenPayServiceIframe
 } from "./packages";
 import { IIdentityClaim } from "./packages/nameservice";
-import { async } from "q";
-import logger from "peerjs/lib/logger";
 
 export { LocalStorage, Encryption, PeerJSService, BlockstackService, TokenController, MessageProcessor, OpenPayServiceIframe }
 
@@ -259,18 +257,19 @@ class OpenPayPeer extends EventEmitter {
             await this._payIDClaim.decrypt()
             await this._nameservice.restoreIdentity({ identitySecrets: this._payIDClaim.identitySecrets})
                 .then(identityClaim => {
-                    this._payIDClaim.identitySecrets = identityClaim.secrets;
-                    log.debug(`PayIDClaim with restored identity:`, this._payIDClaim);
-                    log.info(`Identity restored`);
+                    this._payIDClaim.identitySecrets = identityClaim.secrets
+                    log.debug(`PayIDClaim with restored identity:`, this._payIDClaim)
+                    log.info(`Identity restored`)
                 })
                 .catch(err => log.error(err))
                 .finally(async () => {
                     log.debug('finally block')
                     await this._payIDClaim.encrypt()
-                    this._storage.setJSON("payIDClaim", this._payIDClaim.toJSON())
-                });
+                    this._storage.setJSON('payIDClaim', this._payIDClaim.toJSON())
+                })
 
-        } else {
+        } 
+        else {
             log.info(`payIDClaim or identitySecrets not available! Identity restoration skipped`)
         }
     }

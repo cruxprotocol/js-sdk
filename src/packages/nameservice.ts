@@ -6,9 +6,6 @@ import { TokenSigner, SECP256K1Client } from "jsontokens";
 import { getLogger, IAddress, IAddressMapping, AddressMapping } from "..";
 import {Decoder, object, string, optional} from '@mojotech/json-type-validation'
 import { deepStrictEqual, AssertionError } from "assert";
-import { async, reject } from "q";
-import { resolve } from "path";
-import { err } from "@mojotech/json-type-validation/dist/types/result";
 
 let log = getLogger(__filename)
 

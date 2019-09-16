@@ -1,5 +1,4 @@
 import { OpenPayWallet, IAddressMapping, BlockstackService } from "../src/index";
-import { async } from "q";
 
 
 window.blockstackservice = new BlockstackService();
