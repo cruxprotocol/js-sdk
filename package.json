@@ -3,8 +3,8 @@
   "version": "0.0.4",
   "description": "OpenPay SDK",
   "unpkg": "dist/openpay-dom.js",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "dist/src/exports.js",
+  "types": "dist/src/exports.d.ts",
   "scripts": {
     "exodus": "./node_modules/.bin/parcel samples/exodus_gamma.html --https",
     "sample": "./node_modules/.bin/parcel samples/sdk_test.html --https",
