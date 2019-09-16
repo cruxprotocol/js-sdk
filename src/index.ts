@@ -268,7 +268,7 @@ class OpenPayPeer extends EventEmitter {
                     this._storage.setJSON('payIDClaim', this._payIDClaim.toJSON())
                 })
 
-        } 
+        }
         else {
             log.info(`payIDClaim or identitySecrets not available! Identity restoration skipped`)
         }
