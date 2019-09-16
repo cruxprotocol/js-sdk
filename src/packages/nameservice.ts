@@ -249,10 +249,10 @@ export class BlockstackService extends NameService {
         return tokenFile
     }
 
-    public uploadContentToGaiaHub = async (filename: string, privKey: string, content: any, type="application/json"): Promise<String> => {
+    public uploadContentToGaiaHub = async (filename: string, privKey: string, content: any, type="application/json"): Promise<string> => {
         let sanitizedPrivKey = this._sanitizePrivKey(privKey)
         let hubURL = this._gaiaHub
-        const uploadPromise: Promise<String> = new Promise(async(resolve, reject) => {
+        const uploadPromise: Promise<string> = new Promise(async(resolve, reject) => {
             connectToGaiaHub(hubURL, sanitizedPrivKey).then(hubConfig => {
                 let tokenFile = this._generateTokenFileForContent(sanitizedPrivKey, content)
                 let contentToUpload: any = null
@@ -584,8 +584,7 @@ export class BlockstackService extends NameService {
                 resolve(content);
             }
             catch(error){
-                log.error(`Unable to decode address mapping, ${error}`)
-                reject({})
+                reject(`Unable to decode address mapping, ${error}`)
             }
         })
         return promise
@@ -601,8 +600,7 @@ export class BlockstackService extends NameService {
                 resolve(assetList);
             }
             catch(error){
-                log.error(`failed to get asset list from gaia hub, error is:- ${error}`)
-                reject([])
+                reject(`Unable to decode address mapping, ${error}`)
             }
         });
         return assetListPromise;
