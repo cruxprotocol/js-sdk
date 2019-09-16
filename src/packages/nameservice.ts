@@ -263,7 +263,7 @@ export class BlockstackService extends NameService {
                     throw `Unhandled content-type ${type}`
                 }
                 uploadToGaiaHub(filename, contentToUpload, hubConfig, type).then(finalURL => {
-                    console.log(`finalUrl is ${finalURL}`);
+                    log.debug(`finalUrl is ${finalURL}`);
                     resolve(finalURL)
                 }).catch(error => {
                     reject(`unable to upload to gaiahub, ${error}`)
@@ -580,7 +580,7 @@ export class BlockstackService extends NameService {
         let pubKey = await this.resolveName(blockstackId, options)
         const promise: Promise<IAddressMapping> = new Promise(async (resolve, reject) => {
             try{
-                let content: IAddressMapping = await this.getContentFromGaiaHub(blockstackId, pubKey, 'openpay.json');
+                let content: IAddressMapping = await this.getContentFromGaiaHub(blockstackId, pubKey, 'openpay.json', "application/json");
                 resolve(content);
             }
             catch(error){
