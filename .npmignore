@@ -1,4 +1,6 @@
 .cache
 .idea
+.editorconfig
 dist/openpay-setup
 node_modules
+src

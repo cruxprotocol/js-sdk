@@ -3,7 +3,6 @@ import { OpenPayIframe } from "./iframe-interface";
 import 'regenerator-runtime/runtime';
 import Logger from "js-logger";
 import path from "path";
-var fs = require("fs");
 
 // Setup logging configuration
 Logger.useDefaults();
