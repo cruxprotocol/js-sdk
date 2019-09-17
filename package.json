@@ -16,8 +16,8 @@
     "build": "npm run build:js && npm run build:dom",
     "dist-server": "python -m SimpleHTTPServer 8777",
     "version-bump": "((./node_modules/.bin/git-branch-is release/dev || ./node_modules/.bin/git-branch-is release/prod) && npm version patch) || true",
-    "publish:dev": "npm run build && npm run transpile && cross-env NODE_ENV=dev gulp config && npm publish --registry http://138.197.216.253:4873",
-    "publish:prod": "npm run build && npm run transpile && cross-env NODE_ENV=prod gulp config && npm publish --access public"
+    "publish:dev": "npm run build:dom && npm run transpile && cross-env NODE_ENV=dev gulp config && npm publish --registry http://138.197.216.253:4873",
+    "publish:prod": "npm run build:dom && npm run transpile && cross-env NODE_ENV=prod gulp config && npm publish --access public"
   },
   "pre-push": [
     "version-bump"
