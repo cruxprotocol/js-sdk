@@ -386,11 +386,7 @@ export class BlockstackService extends NameService {
 
         const promise: Promise<SubdomainRegistrationStatus> = new Promise(async (resolve, reject) => {
             console.log("====getRegistrationStatus====")
-            console.log(this._)
-            if (!this._subdomain) {
-                resolve(SubdomainRegistrationStatus.NONE);
-                return
-            }
+            if (!this._subdomain) throw (`No subdomain is registered`)
             var options = {
                 method: 'GET',
                 baseUrl: this._subdomainRegistrar,
