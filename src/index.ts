@@ -253,7 +253,7 @@ class OpenPayPeer extends EventEmitter {
         // if have local identitySecret, setup with the nameservice module
         if ( this._payIDClaim && this._payIDClaim.identitySecrets ) {
             await this._payIDClaim.decrypt()
-            await this._nameservice.restoreIdentity({ identitySecrets: this._payIDClaim.identitySecrets})
+            await this._nameservice.restoreIdentity(this._payIDClaim.virtualAddress, { identitySecrets: this._payIDClaim.identitySecrets})
                 .then(identityClaim => {
                     this._payIDClaim.identitySecrets = identityClaim.secrets
                     log.debug(`PayIDClaim with restored identity:`, this._payIDClaim)
@@ -353,6 +353,11 @@ export class OpenPayWallet extends OpenPayPeer {
         log.info(openPaySetupState)
 		this.walletSetupUi.open(openPaySetupState);
 	}
+
+
+    public getIDStatus = async (): Promise<any> => {
+        return this._nameservice.getRegistrationStatus()
+    }
 
 	public destroySetup = (): void => {
 		this.walletSetupUi.destroy()

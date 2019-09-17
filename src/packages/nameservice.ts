@@ -20,7 +20,7 @@ export abstract class NameService {
     constructor(options: any = {}) {}
 
     abstract generateIdentity = async (): Promise<IIdentityClaim> => {return { secrets: null }}
-    abstract restoreIdentity = async (options?: any): Promise<IIdentityClaim> => {return { secrets: null }}
+    abstract restoreIdentity = async (name:string, options?: any): Promise<IIdentityClaim> => {return { secrets: null }}
     abstract getDecryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {return}
     abstract getEncryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {return}
     abstract getNameAvailability = async (name: string): Promise<boolean> => {return false}
@@ -55,8 +55,7 @@ export interface IBlockstackServiceOptions {
 }
 
 export enum SubdomainRegistrationStatus {
-    NONE,
-    INIT = "INIT",
+    NONE = "NONE",
     PENDING = "PENDING",
     DONE = "DONE"
 }
@@ -140,18 +139,19 @@ export class BlockstackService extends NameService {
         return encryptionKey
     }
 
-    public restoreIdentity = async (options?: any): Promise<IIdentityClaim> => {
-        if (!options || !options['identitySecrets']) throw (`Require mnemonic for restoring the identity`)
+    public restoreIdentity = async (name:string, options?: any): Promise<IIdentityClaim> => {
+        if (!options || !options['identitySecrets']) throw (`Require mnemonic for restoring the identity`);
 
-        let mnemonic = options['identitySecrets']['mnemonic']
-        let identityKeyPair
+        let mnemonic = options['identitySecrets']['mnemonic'];
+        let identityKeyPair;
 
         // If identityKeypair is not stored locally, generate them using the mnemonic
         if (!options['identitySecrets']['identityKeyPair']) {
             identityKeyPair = await this._generateIdentityKeyPair(mnemonic)
         } 
-        
 
+        let namespaceArray = this._getNamespaceArray(name);
+        this._subdomain = namespaceArray[2];
         return {
             secrets: {
                 mnemonic: mnemonic,
@@ -382,10 +382,16 @@ export class BlockstackService extends NameService {
         return `${this._subdomain}.${this._domain}`
     }
 
-    public getRegistrationStatus = (): Promise<SubdomainRegistrationStatus> => {
+    public getRegistrationStatus = async (): Promise<SubdomainRegistrationStatus> => {
+
         const promise: Promise<SubdomainRegistrationStatus> = new Promise(async (resolve, reject) => {
-            if (!this._subdomain) throw (`No subdomain is registered`)
-            var options = { 
+            console.log("====getRegistrationStatus====")
+            console.log(this._)
+            if (!this._subdomain) {
+                resolve(SubdomainRegistrationStatus.NONE);
+                return
+            }
+            var options = {
                 method: 'GET',
                 baseUrl: this._subdomainRegistrar,
                 url: `/status/${this._subdomain}`,
@@ -397,6 +403,7 @@ export class BlockstackService extends NameService {
                 log.debug(body)
                 let status: SubdomainRegistrationStatus
                 let rawStatus = body['status']
+                console.log(body)
                 switch (rawStatus) {
                     case "Subdomain not registered with this registrar":
                         status = SubdomainRegistrationStatus.NONE
@@ -549,13 +556,7 @@ export class BlockstackService extends NameService {
 
     public putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {
         if (!identityClaim.secrets.identityKeyPair) {
-            if (!identityClaim.secrets.mnemonic) {
-                identityClaim = await this.generateIdentity()
-            }
-            else {
-                identityClaim = await this.restoreIdentity({identitySecrets: identityClaim.secrets})
-            }
-            
+            identityClaim = await this.generateIdentity()
         }
         const addressDecoder: Decoder<IAddress> = object({
             addressHash: string(),
