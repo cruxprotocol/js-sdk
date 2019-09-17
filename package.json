@@ -8,6 +8,7 @@
   "scripts": {
     "exodus": "./node_modules/.bin/parcel src/samples/exodus_gamma.html --https",
     "sample": "./node_modules/.bin/parcel src/samples/sdk_test.html --https",
+    "blockstack": "node_modules/.bin/parcel src/samples/blockstack.html --https",
     "typecheck": "./node_modules/.bin/tsc --noEmit",
     "transpile": "./node_modules/.bin/tsc || true",
     "build:js": "./node_modules/.bin/parcel build src/index.ts -d dist --out-file openpay.js --no-minify",

@@ -107,7 +107,7 @@ export class OpenPayIframe {
 		this.dispModal({
 			template: this.el,
 			width: '900px',
-			height: '600px'
+			height: '700px'
 		})
 		// let elementId = this.openPayOptions['iframeEmbedElementId']
 		// document.getElementById(elementId).appendChild(this.el)

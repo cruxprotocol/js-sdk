@@ -21,7 +21,7 @@ export abstract class NameService {
     constructor(options: any = {}) {}
 
     abstract generateIdentity = async (): Promise<IIdentityClaim> => {return { secrets: null }}
-    abstract restoreIdentity = async (options?: any): Promise<IIdentityClaim> => {return { secrets: null }}
+    abstract restoreIdentity = async (name:string, options?: any): Promise<IIdentityClaim> => {return { secrets: null }}
     abstract getDecryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {return}
     abstract getEncryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {return}
     abstract getNameAvailability = async (name: string): Promise<boolean> => {return false}
@@ -31,7 +31,8 @@ export abstract class NameService {
     abstract resolveName = async (name: string, options?: JSON): Promise<string> => {return "pubkey"}
     abstract getAddressMapping = async (name: string, options?: JSON): Promise<IAddressMapping> => {return}
     abstract putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {return false}
-
+    abstract getGlobalAssetList = async (): Promise<object> => {return {}}
+    abstract getClientAssetMapping = async (name: string): Promise<object> => {return {}}
     // TODO: Implement methods to add/update address mapping (Gamma usecase)
 
 }
@@ -55,8 +56,7 @@ export interface IBlockstackServiceOptions {
 }
 
 export enum SubdomainRegistrationStatus {
-    NONE,
-    INIT = "INIT",
+    NONE = "NONE",
     PENDING = "PENDING",
     DONE = "DONE"
 }
@@ -140,18 +140,19 @@ export class BlockstackService extends NameService {
         return encryptionKey
     }
 
-    public restoreIdentity = async (options?: any): Promise<IIdentityClaim> => {
-        if (!options || !options['identitySecrets']) throw (`Require mnemonic for restoring the identity`)
+    public restoreIdentity = async (name:string, options?: any): Promise<IIdentityClaim> => {
+        if (!options || !options['identitySecrets']) throw (`Require mnemonic for restoring the identity`);
 
-        let mnemonic = options['identitySecrets']['mnemonic']
-        let identityKeyPair
+        let mnemonic = options['identitySecrets']['mnemonic'];
+        let identityKeyPair;
 
         // If identityKeypair is not stored locally, generate them using the mnemonic
         if (!options['identitySecrets']['identityKeyPair']) {
             identityKeyPair = await this._generateIdentityKeyPair(mnemonic)
         } 
-        
 
+        let namespaceArray = this._getNamespaceArray(name);
+        this._subdomain = namespaceArray[2];
         return {
             secrets: {
                 mnemonic: mnemonic,
@@ -236,29 +237,95 @@ export class BlockstackService extends NameService {
         return token
     }
 
-    private _uploadAddressMapping = async (privKey: string, addressMap: IAddressMapping): Promise<boolean> => {
-        // Fetch the existing addressMapping and merge the JSON before uploading
-        // addressMap = Object.assign(await this.getAddressMapping(this._subdomain), addressMap)
-        log.debug(`Merged addressMap: `, addressMap)       
-        privKey = this._sanitizePrivKey(privKey)
+    private _generateTokenFileForContent(privateKey: string, content: any){
+        const publicKey = SECP256K1Client.derivePublicKey(privateKey)
+        const tokenSigner = new TokenSigner("ES256K", privateKey)
+        const payload = {
+            issuer: { publicKey },
+            subject: { publicKey },
+            claim: content
+        }
+        let token = tokenSigner.sign(payload)
+        let tokenFile = [wrapProfileToken(token)]
+        return tokenFile
+    }
 
-        const promise: Promise<boolean> = new Promise(async (resolve, reject) => {
-            let hubUrl = this._gaiaHub
-            connectToGaiaHub(hubUrl, privKey)
-                .then(hubConfig => {
-                    let token = this._addressMapToToken(addressMap, privKey)
-                    log.debug(token)
-                    let tokenFile = [wrapProfileToken(token)]
-                    log.debug(tokenFile)
-                    uploadToGaiaHub('openpay.json', JSON.stringify(tokenFile), hubConfig, "application/json")
-                        .then(finalUrl => {
-                            log.debug(finalUrl)
-                            resolve(true)
-                        })
-                })
-                .catch(reject)
+    public uploadContentToGaiaHub = async (filename: string, privKey: string, content: any, type="application/json"): Promise<string> => {
+        let sanitizedPrivKey = this._sanitizePrivKey(privKey)
+        let hubURL = this._gaiaHub
+        const uploadPromise: Promise<string> = new Promise(async(resolve, reject) => {
+            connectToGaiaHub(hubURL, sanitizedPrivKey).then(hubConfig => {
+                let tokenFile = this._generateTokenFileForContent(sanitizedPrivKey, content)
+                let contentToUpload: any = null
+                if(type == "application/json"){
+                    contentToUpload = JSON.stringify(tokenFile);
+                }
+                else{
+                    throw `Unhandled content-type ${type}`
+                }
+                uploadToGaiaHub(filename, contentToUpload, hubConfig, type).then(finalURL => {
+                    log.debug(`finalUrl is ${finalURL}`);
+                    resolve(finalURL)
+                }).catch(error => {
+                    reject(`unable to upload to gaiahub, ${error}`)
+                });
+            })
+        });
+        return uploadPromise;
+    }
+
+    public getContentFromGaiaHub = async(blockstackId: string, pubKey: string, filename: string, type="application/json"): Promise<any> => {
+        let nameData = await this._fetchNameDetails(blockstackId)
+        log.debug(nameData)
+        if (!nameData) throw (`No name data availabe!`)
+        let bitcoinAddress = nameData['address']
+        log.debug(`ID owner: ${bitcoinAddress}`)
+        let profileUrl = "https://" + nameData['zonefile'].match(new RegExp('(.+)https:\/\/(.+)\/profile.json', 's'))[2] + "/" + filename;
+        const getContentPromise: Promise<any> = new Promise(async (resolve, reject) => {
+            var options = { 
+                method: 'GET',
+                url: profileUrl,
+                json: true
+            };
+
+            request(options, function (error, response, body) {
+                log.debug(`Response from openpay.json`, body)
+                if (error) throw new Error(error)
+                let content: string
+
+				if (body.indexOf('BlobNotFound') > 0){
+					resolve ("");
+				} else {
+					try {
+                        content = body[0].decodedToken.payload.claim
+                        if(!(type == "application/json")){
+                            log.error(`unhandled content type`)
+                            reject('invalid content type')
+                        }
+						log.debug(`Content:- `, content)
+					} catch (e) {
+						log.error(e)
+						throw (`Probably this id resolves to a domain registrar`)
+					}
+
+					let addressFromPub = publicKeyToAddress(pubKey)
+
+					// validate the file integrity with the token signature
+					try {
+						const decodedToken = verifyProfileToken(body[0].token, pubKey)
+					} catch (e) {
+						// TODO: validate the token properly after publishing the subject
+						log.error(e)
+					}
+
+					if (addressFromPub === bitcoinAddress) resolve(content)
+					else reject (`Invalid zonefile`)
+				}
+
+            })
         })
-        return promise
+        return getContentPromise
+
     }
 
     private _registerSubdomain = (name: string, bitcoinAddress: string): Promise<string> => {
@@ -316,10 +383,12 @@ export class BlockstackService extends NameService {
         return `${this._subdomain}.${this._domain}`
     }
 
-    public getRegistrationStatus = (): Promise<SubdomainRegistrationStatus> => {
+    public getRegistrationStatus = async (): Promise<SubdomainRegistrationStatus> => {
+
         const promise: Promise<SubdomainRegistrationStatus> = new Promise(async (resolve, reject) => {
+            console.log("====getRegistrationStatus====")
             if (!this._subdomain) throw (`No subdomain is registered`)
-            var options = { 
+            var options = {
                 method: 'GET',
                 baseUrl: this._subdomainRegistrar,
                 url: `/status/${this._subdomain}`,
@@ -331,6 +400,7 @@ export class BlockstackService extends NameService {
                 log.debug(body)
                 let status: SubdomainRegistrationStatus
                 let rawStatus = body['status']
+                console.log(body)
                 switch (rawStatus) {
                     case "Subdomain not registered with this registrar":
                         status = SubdomainRegistrationStatus.NONE
@@ -483,13 +553,7 @@ export class BlockstackService extends NameService {
 
     public putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {
         if (!identityClaim.secrets.identityKeyPair) {
-            if (!identityClaim.secrets.mnemonic) {
-                identityClaim = await this.generateIdentity()
-            }
-            else {
-                identityClaim = await this.restoreIdentity({identitySecrets: identityClaim.secrets})
-            }
-            
+            identityClaim = await this.generateIdentity()
         }
         const addressDecoder: Decoder<IAddress> = object({
             addressHash: string(),
@@ -500,8 +564,8 @@ export class BlockstackService extends NameService {
                 for ( let currency in addressMapping ) {
                     let addressObject: IAddress = addressDecoder.runWithException(addressMapping[currency])
                 }
-                this._uploadAddressMapping(identityClaim.secrets.identityKeyPair.privKey, addressMapping)
-                    .then(bool => resolve(bool))
+                this.uploadContentToGaiaHub('openpay.json', identityClaim.secrets.identityKeyPair.privKey, addressMapping, "application/json")
+                    .then( () => {resolve(true)}).catch(error => {reject(`content upload failed, error :- ${error}`)})
             } catch (e) {
                 reject (e)
             }
@@ -512,56 +576,46 @@ export class BlockstackService extends NameService {
     public getAddressMapping = async (name: string, options = {}): Promise<IAddressMapping> => {
         let blockstackId = this._getBlockstackId(name, options['domain'])
         let pubKey = await this.resolveName(blockstackId, options)
-        let nameData = await this._fetchNameDetails(blockstackId)
-        log.debug(nameData)
-        if (!nameData) throw new Error(`No name data availabe!`)
-        if (nameData["status"] !== "registered_subdomain") throw new Error(`Name not registered.`)
-        let bitcoinAddress = nameData['address']
-        log.debug(`ID owner: ${bitcoinAddress}`)
-        let profileUrl = "https://" + nameData['zonefile'].match(new RegExp("(.+)https:\/\/(.+)\/profile.json", "s"))[2] + "/openpay.json"
         const promise: Promise<IAddressMapping> = new Promise(async (resolve, reject) => {
-            var options = { 
-                method: 'GET',
-                url: profileUrl,
-                json: true
-            };
-
-            request(options, function (error, response, body) {
-                log.debug(`Response from openpay.json`, body)
-                if (error) throw new Error(error)
-                let addressMap: IAddressMapping
-
-				if (body.indexOf('BlobNotFound') > 0){
-					resolve ({});
-				} else {
-
-
-					try {
-						addressMap = body[0].decodedToken.payload.claim
-						log.debug(`Address map: `, addressMap)
-					} catch (e) {
-						log.error(e)
-						// TODO: fix the error log
-						throw new Error(`Probably this id resolves to a domain registrar`)
-					}
-
-					let addressFromPub = publicKeyToAddress(pubKey)
-
-					// validate the file integrity with the token signature
-					try {
-						const decodedToken = verifyProfileToken(body[0].token, pubKey)
-					} catch (e) {
-						// TODO: validate the token properly after publishing the subject
-						log.error(e)
-					}
-
-					if (addressFromPub === bitcoinAddress) resolve(addressMap)
-					else reject (`Invalid zonefile`)
-				}
-
-            })
+            try{
+                let content: IAddressMapping = await this.getContentFromGaiaHub(blockstackId, pubKey, 'openpay.json', "application/json");
+                resolve(content);
+            }
+            catch(error){
+                reject(`Unable to decode address mapping, ${error}`)
+            }
         })
         return promise
     }
 
+    public getGlobalAssetList = async (): Promise<object> => {
+        let name = 'ankit2.devcoinswitch.id'
+        let publicKey = '0378a4013ff52963500f6a3a31b522d48c36b0bebb56981a870fe52fe85564d55a'
+        let blockstackId = this._getBlockstackId(name)
+        const assetListPromise = new Promise<object>(async(resolve, reject) => {
+            try{
+                let assetList: object  =  await this.getContentFromGaiaHub(blockstackId, publicKey, "asset-list.json", "application/json")
+                resolve(assetList);
+            }
+            catch(error){
+                reject(`Unable to decode address mapping, ${error}`)
+            }
+        });
+        return assetListPromise;
+    }
+    
+    public getClientAssetMapping = async (name: string): Promise<object> => {
+        let publicKey = await this.resolveName(name)
+        let blockstackId = this._getBlockstackId(name)
+        const getAssetMappingPromise = new Promise<object>(async(resolve, reject) => {
+            try{
+                let assetList: object  =  await this.getContentFromGaiaHub(blockstackId, publicKey, "client-mapping.json", "application/json")
+                resolve(assetList);
+            }
+            catch(error){
+                reject(`failed to get client asset mapping from gaiahub, error is:- ${error}`)
+            }
+        });
+        return getAssetMappingPromise;
+    }
 }
