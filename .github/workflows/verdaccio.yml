@@ -28,6 +28,7 @@ jobs:
         with:
           node-version: 12
           registry-url: http://138.197.216.253:4873
+      - run: npm ci
       - run: npm run publish:dev
 #        env:
 #          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
