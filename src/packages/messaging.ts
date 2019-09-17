@@ -1,4 +1,4 @@
-import Peer from "peerjs";
+import Peer from "@cruxpay/peerjs";
 import { Encryption, LocalStorage, StorageService, TokenController } from ".";
 import { IPaymentRequest, IPayIDClaim, getLogger, PubSubMessage, Errors, PubSubMessageType, IPaymentAck, Ack } from "..";
 

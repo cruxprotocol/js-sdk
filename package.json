@@ -1,7 +1,7 @@
 {
-  "name": "@coinswitch/openpay",
-  "version": "0.0.33",
-  "description": "OpenPay SDK",
+  "name": "@cruxpay/js-sdk",
+  "version": "0.0.1",
+  "description": "CruxPay Javascript SDK",
   "unpkg": "dist/openpay-dom.js",
   "main": "lib/exports.js",
   "types": "lib/exports.d.ts",
@@ -15,7 +15,7 @@
     "build": "npm run build:js && npm run build:dom",
     "dist-server": "python -m SimpleHTTPServer 8777",
     "publish:dev": "npm run build && npm run transpile && cross-env NODE_ENV=dev gulp config && npm version patch && npm publish --registry http://138.197.216.253:4873",
-    "publish:prod": "npm run build && npm run transpile && cross-env NODE_ENV=prod gulp config && npm version patch && npm publish --registry http://138.197.216.253:4873"
+    "publish:prod": "npm run build && npm run transpile && cross-env NODE_ENV=prod gulp config && npm version patch && npm publish --access public"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +30,7 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
+    "@cruxpay/peerjs": "^1.0.3",
     "@mojotech/json-type-validation": "^3.1.0",
     "bitcoinjs-lib": "^5.1.4",
     "blockstack": "^19.2.5",
@@ -37,7 +38,6 @@
     "eventemitter3": "^4.0.0",
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
-    "peerjs": "^1.0.5",
     "regenerator-runtime": "^0.13.3"
   }
 }
