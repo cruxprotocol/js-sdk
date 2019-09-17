@@ -1,4 +1,5 @@
 import {MessageProcessor} from ".."
+import config from "../config.json";
 
 let onload = function() {
 	// NOTE: if we need to send something to iframe at start it goes here
@@ -7,7 +8,7 @@ let onload = function() {
 
 export class OpenPayServiceIframe {
 
-	iframeUrl:string = "http://127.0.0.1:8777/dist/openpay-setup/service.html"
+	iframeUrl:string = `${config.IFRAME_TARGET_DOMAIN}/dist/openpay-setup/service.html`
 	iframeDomain: string = '*'
 	el = null
 	mp = null
