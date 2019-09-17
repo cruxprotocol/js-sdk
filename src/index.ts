@@ -206,8 +206,8 @@ class OpenPayPeer extends EventEmitter {
     protected _pubsub: PubSubService
     protected _nameservice: NameService
     public walletClientName: string
-    protected _assetList: JSON
-    protected _clientMapping: JSON
+    protected _assetList: object
+    protected _clientMapping: object
 
     protected _payIDClaim: PayIDClaim
 
@@ -227,13 +227,9 @@ class OpenPayPeer extends EventEmitter {
         this.walletClientName = this._options.walletClientName || 'scatter'
 
         log.info(`OpenPayPeer Initialised`)
-
-        this._assetList = JSON.parse(fs.readFileSync("asset-list.json", "utf-8"));
-        let allClientMapping = JSON.parse(fs.readFileSync("client-mapping.json", "utf-8"));
-        this._clientMapping = allClientMapping[this.walletClientName]
     }
 
-	protected async init() {
+    protected async init() {
 		if (this._hasPayIDClaimStored()) {
 			let payIDClaim = this._storage.getJSON('payIDClaim')
 			log.debug(`Local payIDClaim:`, payIDClaim)
@@ -245,9 +241,13 @@ class OpenPayPeer extends EventEmitter {
 			let payIDClaim = {identitySecrets: identityClaim.secrets}
 			this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }))
 			log.debug(`Allocated temporary identitySecrets and payIDClaim`)
-		}
+        }
+        this._assetList = await this._nameservice.getGlobalAssetList()
+        this._clientMapping = await this._nameservice.getClientAssetMapping('ankit2.devcoinswitch.id')
+        log.debug(`global asset list is:- `, this._assetList);
+        log.debug(`client asset mapping is:- `, this._clientMapping);
+        log.info(`Done initializing`)
 	}
-
 
     private _restoreIdentity = async () => {
         // if have local identitySecret, setup with the nameservice module
@@ -348,6 +348,7 @@ export class OpenPayWallet extends OpenPayPeer {
 		openPaySetupState['publicAddressCurrencies'] = Object.keys(addressMap).map(x=>x.toUpperCase());
 
         openPaySetupState['assetList'] = this._assetList
+        openPaySetupState['clientMapping'] = this._clientMapping
 		log.info("Passing openPaySetupState to walletSetupUi")
         log.info(openPaySetupState)
 		this.walletSetupUi.open(openPaySetupState);
@@ -382,10 +383,10 @@ export class OpenPayWallet extends OpenPayPeer {
     }
 
     public putAddressMap = async (addressMap: IAddressMapping): Promise<boolean> => {
-
+        let clientMapping = this._clientMapping
         let csAddressMap = {}
         for(let key in addressMap){
-            csAddressMap[this._clientMapping[key]] = addressMap[key]
+            csAddressMap[clientMapping[key]] = addressMap[key]
         }
 
         await this._payIDClaim.decrypt()
@@ -398,10 +399,10 @@ export class OpenPayWallet extends OpenPayPeer {
     }
 
     public getAddressMap = async (): Promise<IAddressMapping> => {
-
+        let clientMapping = this._clientMapping;
         let clientIdToAssetIdMap = {}
-        for(let i in this._clientMapping){
-            clientIdToAssetIdMap[this._clientMapping[i]] = i
+        for(let i in clientMapping){
+            clientIdToAssetIdMap[clientMapping[i]] = i
         }
 
         let clientIdMap = {}
