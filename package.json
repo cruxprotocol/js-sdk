@@ -14,9 +14,9 @@
     "build:dom": "./node_modules/.bin/parcel build src/openpay-dom.ts -d dist --out-file openpay-dom.js --no-minify",
     "build": "npm run build:js && npm run build:dom",
     "dist-server": "python -m SimpleHTTPServer 8777",
-    "prepare": "npm run build && npm run transpile && gulp config",
-    "publish:dev": "cross-env NODE_ENV=dev npm version patch && npm publish --registry http://138.197.216.253:4873",
-    "publish:prod": "cross-env NODE_ENV=prod npm version patch && npm publish"
+    "prepare": "",
+    "publish:dev": "cross-env NODE_ENV=dev npm run build && npm run transpile && gulp config && npm version patch && npm publish --registry http://138.197.216.253:4873",
+    "publish:prod": "cross-env NODE_ENV=prod npm run build && npm run transpile && gulp config && npm version patch && npm publish"
   },
   "keywords": [],
   "author": "",
