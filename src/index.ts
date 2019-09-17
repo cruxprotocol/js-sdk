@@ -227,7 +227,8 @@ class OpenPayPeer extends EventEmitter {
         this._encryption = this._options.encryption || Encryption
         this._nameservice = this._options.nameservice || new BlockstackService()
         this.walletClientName = this._options.walletClientName || 'scatter'
-
+        
+        log.info(`Config mode:`, config.CONFIG_MODE)
         log.info(`OpenPayPeer Initialised`)
 
         this._assetList = [
