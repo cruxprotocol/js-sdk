@@ -7,15 +7,14 @@ function config (cb) {
         gulp.src('./src/config.prod.json')
             .pipe(rename('config.json'))
             .pipe(gulp.dest('./lib'));
-        cb();
     }
     else {
         gulp.src('./src/config.json')
             .pipe(rename('config.json'))
             .pipe(gulp.dest('./lib'));
-        cb();
     }
-    
+    console.log(`Using config:`, process.env.NODE_ENV)
+    cb();
 };
 
 
