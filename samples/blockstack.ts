@@ -1,7 +1,9 @@
-import { OpenPayWallet, IAddressMapping, BlockstackService } from "../src/index";
+import { OpenPayWallet, IAddressMapping, BlockstackService, OpenPayWalletExperimental } from "../src/index";
 
 
 window.blockstackservice = new BlockstackService();
+
+window.wallet = new OpenPayWallet({getEncryptionKey: () => { return encryptionKey }});
 
 const putClientCurrencyMapping = async () => {
     console.log("putClientCurrencyMapping called...")
@@ -151,6 +153,13 @@ const getAssetListEssentials = async () => {
     console.log(`client mapping is:- `, clientMapping);
 
 }
+
+
+const addPayIDClaim = async () => {
+    await window.wallet.addPayIDClaim("hassan_ashraf.devcoinswitch.id", "12345", null)
+}
+
+window.addPayIDClaim = addPayIDClaim
 
 
 window.putClientCurrencyMapping = putClientCurrencyMapping

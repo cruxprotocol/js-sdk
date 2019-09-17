@@ -348,6 +348,7 @@ export class OpenPayWallet extends OpenPayPeer {
 		openPaySetupState['publicAddressCurrencies'] = Object.keys(addressMap).map(x=>x.toUpperCase());
 
         openPaySetupState['assetList'] = this._assetList
+        openPaySetupState['clientMapping'] = this._clientMapping
 		log.info("Passing openPaySetupState to walletSetupUi")
         log.info(openPaySetupState)
 		this.walletSetupUi.open(openPaySetupState);
