@@ -1,3 +1,10 @@
 {
-    "CONFIG_MODE": "PROD"
+    "CONFIG_MODE": "PROD",
+    "IFRAME_TARGET_DOMAIN": "https://s3-ap-southeast-1.amazonaws.com",
+    "BLOCKSTACK": {
+        "GLOBAL_ASSET_LIST_DOMAIN": "ankit2.devcoinswitch.id",
+        "CLIENT_ASSET_LIST_DOMAIN": "devcoinswitch.id",
+        "DOMAIN": "devcoinswitch.id",
+        "SUBDOMAIN_REGISTRAR": "https://registrar.coinswitch.co:3000"
+    }
 }

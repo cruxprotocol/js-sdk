@@ -1,8 +1,9 @@
 import { Encryption } from ".";
+import config from "./config.json";
 
 let postMessage = function(message) {
 	message = JSON.stringify(message)
-	this.contentWindow.postMessage(message, "http://127.0.0.1:8777")
+	this.contentWindow.postMessage(message, config.IFRAME_TARGET_DOMAIN)
 }
 
 
@@ -23,7 +24,7 @@ export class OpenPayIframe {
 	private encryptionKey: string;
 
 	constructor (setupResultHandler: Function, decryptionKey: string, encryptionKey: string) {
-		this.iFrameDomain = "http://127.0.0.1:8777"
+		this.iFrameDomain = config.IFRAME_TARGET_DOMAIN
 		this.iFrameUri = this.iFrameDomain + "/dist/openpay-setup/index.html"
 		this.createOpenPayIframe();
 		this.setupResultHandler = setupResultHandler;

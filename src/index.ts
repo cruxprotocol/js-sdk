@@ -13,8 +13,6 @@ export function getLogger (filename) {
 }
 let log = getLogger(__filename)
 
-log.info(`Config mode:`, config.CONFIG_MODE)
-
 import {
     StorageService, LocalStorage,
     Encryption,

@@ -6,6 +6,7 @@ import { TokenSigner, SECP256K1Client } from "jsontokens";
 import { getLogger, IAddress, IAddressMapping, AddressMapping } from "..";
 import {Decoder, object, string, optional} from '@mojotech/json-type-validation'
 import { deepStrictEqual, AssertionError } from "assert";
+import config from "../config.json";
 
 let log = getLogger(__filename)
 
@@ -61,9 +62,9 @@ export enum SubdomainRegistrationStatus {
 }
 
 let defaultBNSConfig: IBlockstackServiceOptions = {
-    domain: 'devcoinswitch.id', 
+    domain: config.BLOCKSTACK.DOMAIN, 
     gaiaHub: 'https://hub.blockstack.org',
-    subdomainRegistrar: 'https://registrar.coinswitch.co:3000',
+    subdomainRegistrar: config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
     bnsNodes: ['https://core.blockstack.org', 'https://bns.coinswitch.co']
 }
 

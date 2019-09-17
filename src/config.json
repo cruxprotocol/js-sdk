@@ -1,3 +1,10 @@
 {
-    "CONFIG_MODE": "DEV"
+    "CONFIG_MODE": "DEV",
+    "IFRAME_TARGET_DOMAIN": "http://127.0.0.1:8777",
+    "BLOCKSTACK": {
+        "GLOBAL_ASSET_LIST_DOMAIN": "ankit2.devcoinswitch.id",
+        "CLIENT_ASSET_LIST_DOMAIN": "devcoinswitch.id",
+        "DOMAIN": "devcoinswitch.id",
+        "SUBDOMAIN_REGISTRAR": "https://registrar.coinswitch.co:3000"
+    }
 }
