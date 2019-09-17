@@ -20,7 +20,7 @@
     "publish:prod": "npm run build && npm run transpile && cross-env NODE_ENV=prod gulp config && npm publish --access public"
   },
   "pre-push": [
-    "vesrion-bump"
+    "version-bump"
   ],
   "keywords": [],
   "author": "",
