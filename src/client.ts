@@ -1,4 +1,5 @@
-import {OpenPayWallet} from "./index";
+import {getLogger, OpenPayWallet} from "./index";
+let log = getLogger(__filename)
 
 export default class OpenPayWalletClient {
 	private static settings: any;
@@ -7,12 +8,11 @@ export default class OpenPayWalletClient {
 		this.settings = settings;
 		this.wallet = new OpenPayWallet({
 			storage: settings.storage,
-			setupHandler: this._openSetupResultHandler.bind(this),
+			setupHandler: this._onPostMessage.bind(this),
 			getEncryptionKey: settings.getKey,
 			walletClientName: 'scatter'
 		});
 		await this.wallet.init();
-
 	}
 
 	static getState(){
@@ -37,8 +37,25 @@ export default class OpenPayWalletClient {
 
 		await this.wallet.invokeSetup(openPaySetupState)
 	}
-	static async _openSetupResultHandler(setupResult){
 
+	static async _onPostMessage(postMessage) {
+		log.info("postMessage received!");
+		log.info(postMessage);
+		let messageType = JSON.parse(postMessage)['type']
+		switch(messageType){
+			case "editExisting":
+			case "createNew":
+				await this._openSetupResultHandler(postMessage)
+				break;
+			case "closeIframe":
+				this.wallet.destroySetup();
+				break;
+			default:
+				console.warn('unhandled:' + postMessage)
+		}
+	}
+
+	static async _openSetupResultHandler(setupResult){
 		console.log("_openSetupResultHandler start");
 		console.log(setupResult);
 		console.log("setupResult got!");
@@ -52,9 +69,8 @@ export default class OpenPayWalletClient {
 			await this._handleSetupResultApproval(setupResult)
 			console.log("after _handleSetupResultApproval!");
 		}
-
-
 	}
+
 	static async _handleSetupResultApproval(setupResult) {
 		console.log("inside _handleSetupResultApproval!");
 		if(setupResult.type === 'createNew') {
