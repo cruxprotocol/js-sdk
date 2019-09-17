@@ -2,7 +2,7 @@ var gulp = require('gulp');
 const rename = require('gulp-rename');
 const { parallel } = require('gulp');
 
-function config (cb) {
+function config_dev (cb) {
     gulp.src('./src/config.json')
         .pipe(rename('config.json'))
         .pipe(gulp.dest('./lib'));
@@ -16,5 +16,5 @@ function config_prod (cb) {
     cb();
 };
 
-exports.config = parallel(config)
+exports.config_dev = parallel(config_dev)
 exports.config_prod = parallel(config_prod)

@@ -15,8 +15,9 @@
     "build": "npm run build:js && npm run build:dom",
     "dist-server": "python -m SimpleHTTPServer 8777",
     "prepare": "npm run build && npm run transpile",
-    "publish:dev": "gulp config && npm version patch && npm publish --registry http://138.197.216.253:4873",
-    "publish:prod": "gulp config_prod && npm version patch && npm publish"
+    "prepublishOnly": "gulp config_$NODE_ENV",
+    "publish:dev": "NODE_ENV=dev npm version patch && npm publish --registry http://138.197.216.253:4873",
+    "publish:prod": "NODE_ENV=prod npm version patch && npm publish"
   },
   "keywords": [],
   "author": "",
