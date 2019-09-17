@@ -3,7 +3,7 @@ const rename = require('gulp-rename');
 const { parallel } = require('gulp');
 
 function config (cb) {
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === "prod") {
         gulp.src('./src/config.prod.json')
             .pipe(rename('config.json'))
             .pipe(gulp.dest('./lib'));
