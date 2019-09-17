@@ -41,7 +41,7 @@ export default class OpenPayWalletClient {
 	static async _onPostMessage(postMessage) {
 		log.info("postMessage received!");
 		log.info(postMessage);
-		let messageType = JSON.parse(postMessage)['type']
+		let messageType = postMessage['type']
 		switch(messageType){
 			case "editExisting":
 			case "createNew":
