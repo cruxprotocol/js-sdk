@@ -16,5 +16,6 @@ function config_prod (cb) {
     cb();
 };
 
+// exports.config_ = parallel(config_dev)
 exports.config_dev = parallel(config_dev)
 exports.config_prod = parallel(config_prod)
