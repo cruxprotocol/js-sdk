@@ -3,6 +3,7 @@ import { OpenPayIframe } from "./iframe-interface";
 import 'regenerator-runtime/runtime';
 import Logger from "js-logger";
 import path from "path";
+import config from './config.json';
 
 // Setup logging configuration
 Logger.useDefaults();
@@ -11,6 +12,8 @@ export function getLogger (filename) {
     return Logger.get("OpenPay: " + filename.slice(filename.lastIndexOf(path.sep)+1, filename.length -3))
 }
 let log = getLogger(__filename)
+
+log.info(`Config mode:`, config.CONFIG_MODE)
 
 import {
     StorageService, LocalStorage,

@@ -15,13 +15,16 @@
     "build": "npm run build:js && npm run build:dom",
     "dist-server": "python -m SimpleHTTPServer 8777",
     "prepare": "npm run build && npm run transpile",
-    "publish:dev": "npm version patch && npm publish --registry http://138.197.216.253:4873",
-    "publish:prod": "npm version patch && npm publish"
+    "publish:dev": "gulp config && npm version patch && npm publish --registry http://138.197.216.253:4873",
+    "publish:prod": "gulp config_prod && npm version patch && npm publish"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-env": "^0.4.0",
+    "gulp-rename": "^1.4.0",
     "parcel-bundler": "^1.12.3",
     "typescript": "^3.5.3"
   },
