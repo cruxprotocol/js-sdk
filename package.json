@@ -26,6 +26,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.6.0",
     "@types/request": "^2.48.3",
     "cross-env": "^5.2.1",
     "git-branch-is": "^3.0.0",
