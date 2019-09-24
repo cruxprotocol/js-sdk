@@ -8,7 +8,7 @@
 First you need to get cruxpay sdk into your project. This can be done using the following methods:
 
 - npm: ``npm install @cruxpay/js-sdk``
-- pure js: link the [cruxpay-sdk.min.js]()
+- pure js: link the [cruxpay-sdk-dom.js](https://unpkg.com/@cruxpay/js-sdk/dist/cruxpay-sdk-dom.js)
 
 
 ### SDK Initialisation: 

@@ -1,7 +1,7 @@
-import * as OpenPay from "./index";
+import * as CruxPay from "./index";
 declare global {
     interface Window {
-        OpenPay: object;
+        CruxPay: object;
     }
 }
-window.OpenPay = OpenPay;
+window.CruxPay = CruxPay;

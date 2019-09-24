@@ -1,3 +1,3 @@
-import * as OpenPay from "./index";
+import * as CruxPay from "./index";
 
-export { OpenPay };
+export { CruxPay };
