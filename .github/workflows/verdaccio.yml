@@ -1,0 +1,23 @@
+name: Verdaccio dev publishing
+
+on:
+  pull_request:
+    branches:
+      - release/dev
+  push:
+    branches:
+      - release/dev
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: http://138.197.216.253:4873
+      - run: npm ci
+      - run: npm run publish:dev
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.verdaccio_token}}

@@ -1,0 +1,20 @@
+{
+    "mochaExplorer.mochaPath": "node_modules/mocha",
+    "mochaExplorer.env": {
+        "TS_NODE_PROJECT": "./src/test/tsconfig.commonjs.json",
+        "TS_NODE_TRANSPILE_ONLY": "true"
+    },
+    "mochaExplorer.files": "src/test/*.ts",
+    "mochaExplorer.require": ["ts-node/register", "mock-local-storage", "jsdom-global/register"],
+    "mochaExplorer.timeout": 5000,
+    "testExplorer.codeLens": true,
+    "testExplorer.gutterDecoration": true,
+    "testExplorer.onStart": "reset",
+    "testExplorer.onReload": "reset",
+    "testExplorer.errorDecoration": true,
+    "testExplorer.showCollapseButton": true,
+    "testExplorer.showOnRun": true,
+    "testExplorer.addToEditorContextMenu": true,
+    "testExplorer.showExpandButton": 5,
+    "testExplorer.errorDecorationHover": true
+}

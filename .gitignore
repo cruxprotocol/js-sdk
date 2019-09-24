@@ -1,4 +1,9 @@
-package-lock.json
+# package-lock.json
 node_modules
 dist
+lib
 .cache/
+.DS_Store
+.idea/
+.editorconfig
+#.vscode
