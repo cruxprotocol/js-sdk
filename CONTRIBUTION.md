@@ -13,4 +13,4 @@ Note that since CruxPay is still in development, the sdk operation are subject t
 
 ### Talk to us
 
-* Contact us at telegram channel t.me/cruxpay_integration
+* Contact us at [telegram](t.me/cruxpay_integration) channel.
