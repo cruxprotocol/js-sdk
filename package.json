@@ -25,7 +25,10 @@
   "pre-push": [
     "version-bump"
   ],
-  "keywords": ["cruxpay", "crux"],
+  "keywords": [
+    "cruxpay",
+    "crux"
+  ],
   "author": "",
   "license": "GPL-3.0",
   "devDependencies": {
