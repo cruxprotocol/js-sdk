@@ -22,7 +22,7 @@ To initialize the sdk, you need to minimally pass a javascript object with follo
         1. Subdomain Registrar Information
         2. BNS(BlockStack Name Service) Node
         3. Currency symbol map of your wallet
-    - To help you get started, you can use `cruxdev` as the value which is already configured for our dev test users. It has 5 pre-registered crypto symbols for a fast start. You can contact us at [telegram](t.me/cruxpay_integration) channel for registration of your own walletClientName.
+    - To help you get started, you can use `cruxdev` as the value which is already configured for our dev test users. It has 5 pre-registered crypto symbols for a fast start. You can contact us at [telegram](https://t.me/cruxpay_integration) channel for registration of your own walletClientName.
    
 Example below shows how to a cruxClient instance. Note that all [SDK Operation](#sdk-operation) can oly be run after `.init()` is called.   
 ```javascript
