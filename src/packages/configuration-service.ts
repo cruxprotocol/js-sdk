@@ -38,9 +38,9 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         let assetList: object
         try {
             assetList  =  await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, "asset-list.json", "application/json");
-            
         } catch (error) {
             console.groupEnd();
+            if(error instanceof Errors.ClientError){throw error}
             throw `Unable to decode address mapping, ${error}`;
         }
         console.groupEnd();
@@ -59,6 +59,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             }
         } catch (error) {
             console.groupEnd();
+            if(error instanceof Errors.ClientError) throw error
             throw new Error(`failed to get client config from gaiahub, error is:- ${error}`);
         }
         console.groupEnd();

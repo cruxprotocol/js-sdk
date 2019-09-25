@@ -6,6 +6,7 @@ export class ClientError extends Error {
         this.message = message || "";
         this.name = "ClientError";
         this.error_code = code || 1000;
+        Object.setPrototypeOf(this, new.target.prototype)
     }
 }
 
