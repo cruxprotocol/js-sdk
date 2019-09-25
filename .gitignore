@@ -5,5 +5,4 @@ lib
 .cache/
 .DS_Store
 .idea/
-.editorconfig
 #.vscode
