@@ -305,14 +305,17 @@ describe('CruxClient tests', () => {
 				});						
 				await cruxClient.init()
 				let raisesException = false	
-				let updateProfileStub = sinon.stub(cruxClient._nameservice, 'uploadContentToGaiaHub').throws('network error')
+				let updateProfileStub = sinon.stub(blockstack, 'uploadToGaiaHub').throws('network error')
 				try{
 					await cruxClient.putAddressMap(sampleAddressMap)
 				}catch(e){
 					raisesException = true
-					expect(e.error_code).to.equal(2006)
+					expect(e.error_code).to.equal(2005)
 				}
-				expect(raisesException).to.be.true
+				finally{
+					expect(raisesException).to.be.true
+					updateProfileStub.restore()
+				}
 			})
 		})
 	})
