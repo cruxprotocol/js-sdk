@@ -8,6 +8,8 @@ import requestFixtures from './requestMocks/cruxclient-reqmocks';
 import { expect } from 'chai';
 import { async } from "q";
 import * as blockstack from "blockstack";
+import { resolve } from "path";
+import { object } from "@mojotech/json-type-validation";
 interface Global {
 	crypto: any;
 	TextEncoder: any;
@@ -143,7 +145,7 @@ describe('CruxClient tests', () => {
 
 		describe("subdomain registration tests", () => {
 
-			it("valid subdomain registration", async () => {
+			it("positive case, valid subdomain registration", async () => {
 				localStorage.clear()
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
@@ -152,9 +154,10 @@ describe('CruxClient tests', () => {
 
 				let registerSubdomainPromise = new Promise<any>(async(resolve, reject) => {resolve(sampleUser['blockStackID'])})
 				let registerSubdomainStub = sinon.stub(cruxClient._nameservice, '_registerSubdomain').returns(registerSubdomainPromise)
+				let stubbedPutAddressMap = sinon.stub(cruxClient, 'putAddressMap').resolves()
 				let raisedException = false
 				try {
-					await cruxClient.registerCruxID(sampleUser['cruxIDSubdomain'])
+					await cruxClient.registerCruxID(sampleUser['cruxIDSubdomain'], sampleAddressMap)
 				} catch(e) {
 					raisedException = true
 				}
@@ -258,7 +261,7 @@ describe('CruxClient tests', () => {
 		})
 
 		describe("address mapping tests", () => {
-			it("put address map", async () => {
+			it("positive case, put address map", async () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
@@ -267,14 +270,37 @@ describe('CruxClient tests', () => {
 				addressMappingStub.restore()
 			})
 
-			it("get address map", async () => {
-				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
+			it("positive case, get address map", async () => {
+				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']));
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
+				let mockedClientMapping = { BTC: '1d6e1a99-1e77-41e1-9ebb-0e216faa166a' }
+				let clientMappingStub = sinon.stub(cruxClient, '_clientMapping').value(mockedClientMapping)
 				let addressMappingStub = sinon.stub(cruxClient._nameservice, 'getAddressMapping').returns(sampleUser['addressMapping'])
-				let resolvedAddressMap = await cruxClient.getAddressMap()
-				expect(resolvedAddressMap).to.eql({'BTC': {'addressHash': '19m51F8YkjzK625csaNtKnM9pgByeMJRU3'}})
+				let gotAddMap = await cruxClient.getAddressMap()
+				expect(gotAddMap.BTC.addressHash).to.equal('19m51F8YkjzK625csaNtKnM9pgByeMJRU3')
+				clientMappingStub.restore(gotAddMap.addressHash)
 				addressMappingStub.restore()
+			})
+
+			it("put address map, gaia upload call failed", async () => {
+				localStorage.setItem('payIDClaim', JSON.stringify({"virtualAddress":"syedhassanashraf@cruxdev.crux","identitySecrets":"{\"iv\":\"XJmOCWeHzU4HfsYI\",\"encBuffer\":\"ss20WCh7PW64wWswkRUu/dxMkPro2KmD1rCGLKdtew82cPuJwZTqcdrfz9GBJOYqsHrzE4lOoUmODHeWor3ebC6vHCU8tQdg17Rlpdj3hx2FU0XTY1PsmJft4wZOvb9uThk6estvQgnj5/7quw9Be6oGt6gyCtOYsxtfSQysH0kfgRauCEOx4tTjSXO2GAufeEK4hubCC7bJ6iQCr9uAeMWRSxFknK8I+M62RnE8iINVp2yQ+5I3M7Z8oFRSzwi0nJAVps/rTMfZOw2mXYtgEgY59aSXItr+hHSGGF0pWHqlRNzcCbV11MdBCIrEHWhOnU/hK5PWSxJMRytIwEaYspXqWEu+KaftkKIxr/CU/rnCd8w/ML0lS7hMXljMG95BN66M8k5vXHkAmdmMRZdQN4Y4nD5vhxY0q69+37fH0LmsMG0tKdm3d4H8PVpu\"}"}))
+				let cruxClient = new CruxClient({
+					getEncryptionKey: () => "fookey",
+					walletClientName: 'scatter_dev'
+				});
+				await cruxClient.init()
+				let raisesException = false
+				let updateProfileStub = sinon.stub(blockstack, 'uploadToGaiaHub').throws('network error')
+				try {
+					await cruxClient.putAddressMap(sampleAddressMap)
+				} catch(e) {
+					raisesException = true
+					expect(e.error_code).to.equal(2005)
+				} finally {
+					expect(raisesException).to.be.true
+					updateProfileStub.restore()
+				}
 			})
 		})
 	})
