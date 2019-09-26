@@ -6,7 +6,7 @@ export class ClientError extends Error {
         this.message = message || "";
         this.name = "ClientError";
         this.error_code = code || 1000;
-        Object.setPrototypeOf(this, new.target.prototype)
+        Object.setPrototypeOf(this, new.target.prototype);
     }
 }
 
@@ -32,93 +32,83 @@ export class ClientError extends Error {
 */
 class AddressNotAvailable extends ClientError {
     constructor(message?: string, error_code?: number) {
-        super(message);
-        this.message = message || "";
+        let code = error_code || 1103;
+        super(message, code);
         this.name = "AddressNotAvailable";
-        this.error_code = error_code || 1103;
     }
 }
 
 class UserDoesNotExist extends ClientError {
     constructor(message?: string, error_code?: number) {
-        super(message);
-        this.message = message || "";
+        let code = error_code || 1037;
+        super(message, code);
         this.name = "UserDoesNotExist";
-        this.error_code = error_code || 1037;
     }
 }
 
 class BnsResolutionFailed extends ClientError {
     public nodeUrl: string;
     constructor(nodeUrl: string, message?: string, error_code?: number) {
-        super(message);
+        let code = error_code || 1004;
+        super(message, code);
         this.nodeUrl = nodeUrl;
-        this.message = message || "";
         this.name = "BnsResolutionFailed";
-        this.error_code = error_code || 1004;
     }
 }
 
 class NameIntegrityCheckFailed extends ClientError {
     constructor(message?: string, error_code?: number) {
-        super(message);
-        this.message = message || "";
+        let code = error_code || 1100;
+        super(message, code);
         this.name = "NameIntegrityCheckFailed";
-        this.error_code = error_code || 1100;
     }
 }
 
 class GaiaUploadFailed extends ClientError {
     constructor(message?: string, error_code?: number) {
-        super(message);
-        this.message = message || "";
+        let code = error_code || 2005;
+        super(message, code);
         this.name = "GaiaUploadFailed";
-        this.error_code = error_code || 9991;
     }
 }
 
 class GaiaGetFileFailed extends ClientError {
     constructor(message?: string, error_code?: number) {
-        super(message);
-        this.message = message || "";
+        let code = error_code || 2105;
+        super(message, code);
         this.name = "GaiaGetFileFailed";
-        this.error_code = error_code || 9991;
     }
 }
 
 class TokenVerificationFailed extends ClientError {
     constructor(message?: string, error_code?: number) {
-        super(message);
-        this.message = message || "";
+        let code = error_code || 2016;
+        super(message, code);
         this.name = "TokenVerificationFailed";
-        this.error_code = error_code || 2016;
     }
 }
 
 class RegisterSubdomainFailed extends ClientError {
     constructor(message?: string, error_code?: number) {
-        super(message);
-        this.message = message || "";
+        let code = error_code || 3001;
+        super(message, code);
         this.name = "RegisterSubdomainFailed";
-        this.error_code = error_code || 3001;
     }
 }
 
 class AssetIDNotAvailable extends ClientError {
     constructor(message?: string, error_code?: number) {
-        super(message);
-        this.message = message || '';
+        let code = error_code || 1200;
+        super(message, code);
         this.name = 'AssetIDNotAvailable';
-        this.error_code = error_code || 1200;
     }
 }
 
 class DecryptionFailed extends ClientError {
     constructor(message?: string, error_code?: number) {
-        super(message);
-        this.message = message || "";
+        let code = error_code || 1300;
+        super(message, code);
         this.name = "DecryptionFailed";
-        this.error_code = error_code || 1300;
     }
 }
 

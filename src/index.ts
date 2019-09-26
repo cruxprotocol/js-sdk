@@ -231,14 +231,14 @@ class OpenPayPeer extends EventEmitter {
         }
         if (!correspondingAssetId) {
             console.groupEnd();
-            throw new Errors.ClientErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping", 1200)
+            throw new Errors.ClientErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping")
         }
 
         const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);
         log.debug(`Address map: `, addressMap);
         if (!addressMap[correspondingAssetId]) {
             console.groupEnd();
-            throw new Errors.ClientErrors.AddressNotAvailable("Currency address not available for user", 1103);
+            throw new Errors.ClientErrors.AddressNotAvailable("Currency address not available for user");
         }
         const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
         log.debug(`Address:`, address);
