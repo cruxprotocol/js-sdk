@@ -200,7 +200,7 @@ export class BlockstackService extends NameService {
             log.debug(`finalUrl is ${finalURL}`);
         } catch (error) {
             console.groupEnd();
-            throw new Errors.ClientErrors.GaiaUploadFailed(`unable to upload to gaiahub, ${error}`, 2005);
+            throw new Errors.ClientErrors.GaiaUploadFailed(`unable to upload ${filename} to gaiahub, ${error}`);
         }
         console.groupEnd();
         return finalURL;
@@ -218,7 +218,7 @@ export class BlockstackService extends NameService {
             const gaiaReadURL = responseBody.read_url_prefix;
             return gaiaReadURL;
         } catch (err) {
-            throw new Errors.ClientErrors.GaiaGetFileFailed(`Unable to get gaia read url prefix: ${err}`, 2105);
+            throw new Errors.ClientErrors.GaiaGetFileFailed(`Unable to get gaia read url prefix: ${err}`);
         }
     }
 
@@ -420,11 +420,7 @@ export class BlockstackService extends NameService {
             for ( const currency of Object.keys(addressMapping) ) {
                 const addressObject: IAddress = addressDecoder.runWithException(addressMapping[currency]);
             }
-            try {
-                await this.uploadContentToGaiaHub("cruxpay.json", identityClaim.secrets.identityKeyPair.privKey, addressMapping, "application/json");
-            } catch (error) {
-                throw new Errors.ClientErrors.GaiaUploadFailed(`unable to upload content to gaiahub, ${error}`, 2006);
-            }
+            await this.uploadContentToGaiaHub("cruxpay.json", identityClaim.secrets.identityKeyPair.privKey, addressMapping, "application/json");
         } catch (e) {
             console.groupEnd();
             throw e;

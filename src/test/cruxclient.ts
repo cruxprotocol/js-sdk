@@ -1,7 +1,7 @@
 
 import WebCrypto from "node-webcrypto-ossl";
 import 'mocha';
-import {CruxClient} from "../index";
+import {CruxClient, IAddressMapping} from "../index";
 import sinon from "sinon";
 import * as utils from "../packages/utils";
 import requestFixtures from './requestMocks/cruxclient-reqmocks';
@@ -130,7 +130,7 @@ describe('CruxClient tests', () => {
 			})
 		})
 
-		describe("subodmain registration tests", () => {
+		describe("subdomain registration tests", () => {
 
 			it("positive case, valid subdomain registration", async () => {
 				localStorage.clear()

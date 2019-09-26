@@ -53,7 +53,7 @@ interface IOpenPayClaim {
     identitySecrets?: string | nameservice.IIdentityClaim;
 }
 
-interface ICruxIDState {
+export interface ICruxIDState {
     cruxID?: string;
     status: nameservice.CruxIDRegistrationStatus;
 }
@@ -70,14 +70,11 @@ export class PayIDClaim implements IOpenPayClaim {
     public identitySecrets: string | nameservice.IIdentityClaim | undefined;
     private _getEncryptionKey: () => string;
     private _encryption: typeof encryption.Encryption = encryption.Encryption;
-    private _storage: storage.StorageService = new storage.LocalStorage();
 
     constructor(openPayObj: IOpenPayClaim = {} as IOpenPayClaim, options: openPayOptions) {
         if (!options.getEncryptionKey) { throw new Error((`Missing encryptionKey method!`)); }
         this._getEncryptionKey = options.getEncryptionKey;
-
         if (options.encryption) { this._encryption = options.encryption; }
-        if (options.storage) { this._storage = options.storage; }
 
         // log.debug(`OpenPayObj provided:`, openPayObj)
         this.virtualAddress = openPayObj.virtualAddress || undefined;
@@ -119,10 +116,10 @@ export class PayIDClaim implements IOpenPayClaim {
         return json;
     }
 
-    public save = async (): Promise<void> => {
+    public save = async (storage: storage.StorageService): Promise<void> => {
         const json = await this.toJSON();
         // log.debug(`PayIDClaim being stored to storage:`, json)
-        this._storage.setJSON("payIDClaim", json);
+        storage.setJSON("payIDClaim", json);
     }
 
     private _isEncrypted = (): boolean => {
@@ -202,7 +199,7 @@ class OpenPayPeer extends EventEmitter {
         this._setPayIDClaim(new PayIDClaim({virtualAddress}, { getEncryptionKey: this._getEncryptionKey }));
         // await this._payIDClaim.setPasscode(passcode)
         await (this._payIDClaim as PayIDClaim).encrypt();
-        this._storage.setJSON("payIDClaim", (this._payIDClaim as PayIDClaim).toJSON());
+        await (this._payIDClaim as PayIDClaim).save(this._storage);
         await this._restoreIdentity();
     }
 
@@ -210,7 +207,7 @@ class OpenPayPeer extends EventEmitter {
         if (this._hasPayIDClaimStored()) {
             await (this._payIDClaim as PayIDClaim).decrypt(oldEncryptionKey);
             await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
-            this._storage.setJSON("payIDClaim", (this._payIDClaim as PayIDClaim).toJSON());
+            await (this._payIDClaim as PayIDClaim).save(this._storage);
             return true;
         } else {
             return false;
@@ -234,14 +231,14 @@ class OpenPayPeer extends EventEmitter {
         }
         if (!correspondingAssetId) {
             console.groupEnd();
-            throw new Errors.ClientErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping", 1200)
+            throw new Errors.ClientErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping")
         }
 
         const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);
         log.debug(`Address map: `, addressMap);
         if (!addressMap[correspondingAssetId]) {
             console.groupEnd();
-            throw new Errors.ClientErrors.AddressNotAvailable("Currency address not available for user", 1103);
+            throw new Errors.ClientErrors.AddressNotAvailable("Currency address not available for user");
         }
         const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
         log.debug(`Address:`, address);
@@ -264,7 +261,7 @@ class OpenPayPeer extends EventEmitter {
             } finally {
                 log.debug("finally block");
                 await (this._payIDClaim as PayIDClaim).encrypt();
-                this._storage.setJSON("payIDClaim", (this._payIDClaim as PayIDClaim).toJSON());
+                await (this._payIDClaim as PayIDClaim).save(this._storage);
             }
         } else {
             log.info(`payIDClaim or identitySecrets not available! Identity restoration skipped`);
@@ -314,7 +311,7 @@ export class CruxClient extends OpenPayPeer {
         this._setPayIDClaim(new PayIDClaim({virtualAddress: registeredPublicID, identitySecrets: identityClaim.secrets}, { getEncryptionKey: this._getEncryptionKey }));
         // await this._payIDClaim.setPasscode(passcode)
         await (this._payIDClaim as PayIDClaim).encrypt();
-        this._storage.setJSON("payIDClaim", (this._payIDClaim as PayIDClaim).toJSON());
+        await (this._payIDClaim as PayIDClaim).save(this._storage);
 
         // TODO: Setup public addresses
         if (newAddressMap) {
