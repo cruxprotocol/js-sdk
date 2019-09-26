@@ -4,7 +4,6 @@ export class PackageError extends Error {
     constructor(message?: string, code?: number) {
         super(message);
         this.message = message || "";
-        this.name = "ClientError";
         this.error_code = code || 1000;
         Object.setPrototypeOf(this, new.target.prototype);
     }
@@ -34,7 +33,6 @@ class AddressNotAvailable extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 1103;
         super(message, code);
-        this.name = "AddressNotAvailable";
     }
 }
 
@@ -42,7 +40,6 @@ class UserDoesNotExist extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 1037;
         super(message, code);
-        this.name = "UserDoesNotExist";
     }
 }
 
@@ -52,7 +49,6 @@ class BnsResolutionFailed extends PackageError {
         let code = error_code || 1004;
         super(message, code);
         this.nodeUrl = nodeUrl;
-        this.name = "BnsResolutionFailed";
     }
 }
 
@@ -60,7 +56,6 @@ class NameIntegrityCheckFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 1100;
         super(message, code);
-        this.name = "NameIntegrityCheckFailed";
     }
 }
 
@@ -68,7 +63,6 @@ class GaiaUploadFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 2005;
         super(message, code);
-        this.name = "GaiaUploadFailed";
     }
 }
 
@@ -76,7 +70,6 @@ class GaiaGetFileFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 2105;
         super(message, code);
-        this.name = "GaiaGetFileFailed";
     }
 }
 
@@ -84,7 +77,6 @@ class TokenVerificationFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 2016;
         super(message, code);
-        this.name = "TokenVerificationFailed";
     }
 }
 
@@ -92,7 +84,6 @@ class RegisterSubdomainFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 3001;
         super(message, code);
-        this.name = "RegisterSubdomainFailed";
     }
 }
 
@@ -100,7 +91,6 @@ class AssetIDNotAvailable extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 1200;
         super(message, code);
-        this.name = 'AssetIDNotAvailable';
     }
 }
 
@@ -108,7 +98,6 @@ class DecryptionFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 1300;
         super(message, code);
-        this.name = "DecryptionFailed";
     }
 }
 
