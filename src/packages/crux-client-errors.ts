@@ -1,6 +1,6 @@
 import {PackageError} from "./errors"
 
-export class CruxClientError extends Error {
+class CruxClientError extends Error {
 
     public static FALLBACK_ERROR_CODE: number = 9000;
     public static FALLBACK_ERROR_NAME: string = "CruxClientError";
@@ -128,13 +128,13 @@ class FailedUpdatePasswordError extends CruxClientError {
     }
 }
 
-export class CruxClientErrors {
-    public static FailedToCheckCruxIDAvailableError = FailedToCheckCruxIDAvailableError;
-    public static FailedToRegisterCruxIDError = FailedToRegisterCruxIDError;
-    public static FailedToResolveCurrencyAddressForCruxIDError = FailedToResolveCurrencyAddressForCruxIDError;
-    public static FailedToGetAddressMapError = FailedToGetAddressMapError;
-    public static FailedToPutAddressMapError = FailedToPutAddressMapError;
-    public static FailedToGetCruxIDStateError = FailedToGetCruxIDStateError;
-    public static FailedUpdatePasswordError = FailedUpdatePasswordError;
-    public static CruxClientError = CruxClientError;
+export {
+    FailedToCheckCruxIDAvailableError,
+    FailedToRegisterCruxIDError,
+    FailedToResolveCurrencyAddressForCruxIDError,
+    FailedToGetAddressMapError,
+    FailedToPutAddressMapError,
+    FailedToGetCruxIDStateError,
+    FailedUpdatePasswordError,
+    CruxClientError,
 }
