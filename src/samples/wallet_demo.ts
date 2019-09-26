@@ -30,7 +30,7 @@ walletClientName = url.searchParams.get("walletClientName") || walletClientName;
 
 doc.getElementById('encryptionKey').textContent = `'${encryptionKey}'`;
 [].forEach.call(doc.getElementsByClassName('walletClientName'), (el: HTMLElement) => { el.textContent = walletClientName })
-doc.getElementById('userAddresses').textContent = Object.keys(sampleAddressMap).map((currency) => { console.log(sampleAddressMap); let address = sampleAddressMap[currency].addressHash; return `${currency.toUpperCase()} - ${address}` }).join('\n')
+doc.getElementById('userAddresses').textContent = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; return `${currency.toUpperCase()} - ${address}` }).join('\n')
 
 
 
