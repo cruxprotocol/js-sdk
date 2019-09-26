@@ -10,6 +10,7 @@ import { async } from "q";
 import * as blockstack from "blockstack";
 import { resolve } from "path";
 import { object } from "@mojotech/json-type-validation";
+import {CruxClientErrors} from "../packages"
 interface Global {
 	crypto: any;
 	TextEncoder: any;
