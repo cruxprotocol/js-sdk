@@ -195,55 +195,60 @@ class OpenPayPeer extends EventEmitter {
         return (this._payIDClaim as PayIDClaim);
     }
 
-    public registerCruxID = async (virtualAddress: string): Promise<void> => {
-        this._setPayIDClaim(new PayIDClaim({virtualAddress}, { getEncryptionKey: this._getEncryptionKey }));
-        // await this._payIDClaim.setPasscode(passcode)
-        await (this._payIDClaim as PayIDClaim).encrypt();
-        await (this._payIDClaim as PayIDClaim).save(this._storage);
-        await this._restoreIdentity();
-    }
+    public registerCruxID = async (virtualAddress: string): Promise<void> => {}
 
     public updatePassword = async (oldEncryptionKey: string, newEncryptionKey: string): Promise<boolean> => {
-        if (this._hasPayIDClaimStored()) {
-            await (this._payIDClaim as PayIDClaim).decrypt(oldEncryptionKey);
-            await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
-            await (this._payIDClaim as PayIDClaim).save(this._storage);
-            return true;
-        } else {
-            return false;
+        try {
+            if (this._hasPayIDClaimStored()) {
+                await (this._payIDClaim as PayIDClaim).decrypt(oldEncryptionKey);
+                await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
+                await (this._payIDClaim as PayIDClaim).save(this._storage);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            throw FailedUpdatePasswordError.fromError(error);
         }
     }
 
     public isCruxIDAvailable = (cruxIDSubdomain: string): Promise<boolean> => {
-        //Subdomain validation 
-        identityUtils.CruxId.validateSubdomain(cruxIDSubdomain)
-        return (this._nameservice as nameservice.NameService).getNameAvailability(cruxIDSubdomain);
+        try {
+            identityUtils.CruxId.validateSubdomain(cruxIDSubdomain)
+            return (this._nameservice as nameservice.NameService).getNameAvailability(cruxIDSubdomain);
+        } catch (error) {
+            throw FailedUpdatePasswordError.fromError(error);
+        }
     }
 
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
-        console.groupCollapsed("Resolving address");
-        let correspondingAssetId: string = "";
-        for (const i in this._clientMapping) {
-            if (i === walletCurrencySymbol) {
-                // @ts-ignore
-                correspondingAssetId = this._clientMapping[i];
+        try {
+            console.groupCollapsed("Resolving address");
+            let correspondingAssetId: string = "";
+            for (const i in this._clientMapping) {
+                if (i === walletCurrencySymbol) {
+                    // @ts-ignore
+                    correspondingAssetId = this._clientMapping[i];
+                }
             }
-        }
-        if (!correspondingAssetId) {
-            console.groupEnd();
-            throw new Errors.PackageErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping")
-        }
+            if (!correspondingAssetId) {
+                console.groupEnd();
+                throw new Errors.PackageErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping")
+            }
 
-        const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);
-        log.debug(`Address map: `, addressMap);
-        if (!addressMap[correspondingAssetId]) {
+            const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);
+            log.debug(`Address map: `, addressMap);
+            if (!addressMap[correspondingAssetId]) {
+                console.groupEnd();
+                throw new Errors.PackageErrors.AddressNotAvailable("Currency address not available for user");
+            }
+            const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
+            log.debug(`Address:`, address);
             console.groupEnd();
-            throw new Errors.PackageErrors.AddressNotAvailable("Currency address not available for user");
+            return address;
+        } catch (error) {
+            throw FailedToResolveCurrencyAddressForCruxIDError.fromError(error);
         }
-        const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
-        log.debug(`Address:`, address);
-        console.groupEnd();
-        return address;
     }
 
     protected _setPayIDClaim = (payIDClaim: PayIDClaim): void => {
@@ -275,27 +280,33 @@ class OpenPayPeer extends EventEmitter {
 
 }
 
-
 export namespace CruxClientErrorNames {
-    export const FAILED_TO_GET_ADDRESSMAP: string = 'NOT_FOUND';
+    export const FAILED_TO_REGISTER_CRUX_ID: string = 'FAILED_TO_REGISTER_CRUX_ID';
+    export const FAILED_TO_CHECK_CRUX_ID_AVAILABLE: string = 'FAILED_TO_CHECK_CRUX_ID_AVAILABLE';
+    export const FAILED_TO_RESOLVE_CURRENCY_ADDRESS_FOR_CRUX_ID: string = 'FAILED_TO_RESOLVE_CURRENCY_ADDRESS_FOR_CRUX_ID';
+    export const FAILED_TO_GET_ADDRESS_MAP: string = 'FAILED_TO_GET_ADDRESS_MAP';
+    export const FAILED_TO_PUT_ADDRESS_MAP: string = 'FAILED_TO_PUT_ADDRESS_MAP';
+    export const FAILED_TO_GET_CRUX_ID_STATE: string = 'FAILED_TO_GET_CRUX_ID_STATE';
+    export const FAILED_TO_UPDATE_PASSWORD: string = 'FAILED_TO_UPDATE_PASSWORD';
 }
 
 export class CruxClientError extends Error {
 
-    public static FALLBACK_ERROR_CODE: number = 9999;
+    public static FALLBACK_ERROR_CODE: number = 9000;
+    public static FALLBACK_ERROR_NAME: string = "CruxClientError";
     public error_code: number;
 
-    constructor(error_message: string, name?: string | undefined, error_code?: number | undefined) {
+    constructor(error_message: string, error_code?: number | undefined) {
         let message = error_message || "";
         super(message);
-        this.name = name || "CruxClientError";
+        this.name = CruxClientError.FALLBACK_ERROR_NAME;
         this.error_code = error_code || CruxClientError.FALLBACK_ERROR_CODE;
         Object.setPrototypeOf(this, new.target.prototype);
     }
 
-    public static fromError(error: CruxClientError | Errors.PackageError | string, messagePrefix?: string): CruxClientError {
+    public static fromError(error: CruxClientError | Errors.PackageError | Error | string, messagePrefix?: string): CruxClientError {
 
-        const msgPrefix: string = messagePrefix === undefined ? '' : messagePrefix;
+        const msgPrefix: string = messagePrefix === undefined ? '' : messagePrefix + ' : ';
         if (error instanceof CruxClientError ) {
             if (error.message !== undefined) {
                 error.message = msgPrefix + error.message;
@@ -303,11 +314,97 @@ export class CruxClientError extends Error {
             return error;
         } else if (typeof(error) === 'string') {
             return new CruxClientError( msgPrefix + error);
-        } else if (error instanceof Errors.PackageError) {
-            return new CruxClientError(msgPrefix + error.message, undefined, error.error_code);
+        }  else if (error instanceof Errors.PackageError) {
+            return new CruxClientError(msgPrefix + error.message, error.error_code);
+        } else if (error instanceof Error) {
+            return new CruxClientError(msgPrefix + error.message);
         } else {
             throw new Error(`Wrong instance type: ${typeof(error)}`);
         }
+    }
+}
+
+class FailedToCheckCruxIDAvailableError extends CruxClientError {
+
+    public static FALLBACK_ERROR_CODE: number = 9001;
+    public static FALLBACK_ERROR_NAME: string = CruxClientErrorNames.FAILED_TO_CHECK_CRUX_ID_AVAILABLE;
+
+    constructor(error_message: string, error_code?: number | undefined) {
+        super(error_message, error_code);
+        this.name = FailedToCheckCruxIDAvailableError.FALLBACK_ERROR_NAME;
+        this.error_code = FailedToCheckCruxIDAvailableError.FALLBACK_ERROR_CODE;
+    }
+}
+
+class FailedToRegisterCruxIDError extends CruxClientError {
+
+    public static FALLBACK_ERROR_CODE: number = 9002;
+    public static FALLBACK_ERROR_NAME: string = CruxClientErrorNames.FAILED_TO_REGISTER_CRUX_ID;
+
+    constructor(error_message: string, error_code?: number | undefined) {
+        super(error_message, error_code);
+        this.name = FailedToRegisterCruxIDError.FALLBACK_ERROR_NAME;
+        this.error_code = FailedToRegisterCruxIDError.FALLBACK_ERROR_CODE;
+    }
+}
+
+class FailedToResolveCurrencyAddressForCruxIDError extends CruxClientError {
+
+    public static FALLBACK_ERROR_CODE: number = 9003;
+    public static FALLBACK_ERROR_NAME: string = CruxClientErrorNames.FAILED_TO_RESOLVE_CURRENCY_ADDRESS_FOR_CRUX_ID;
+
+    constructor(error_message: string, error_code?: number | undefined) {
+        super(error_message, error_code);
+        this.name = FailedToResolveCurrencyAddressForCruxIDError.FALLBACK_ERROR_NAME;
+        this.error_code = FailedToResolveCurrencyAddressForCruxIDError.FALLBACK_ERROR_CODE;
+    }
+}
+
+class FailedToGetAddressMapError extends CruxClientError {
+
+    public static FALLBACK_ERROR_CODE: number = 9004;
+    public static FALLBACK_ERROR_NAME: string = CruxClientErrorNames.FAILED_TO_GET_ADDRESS_MAP;
+
+    constructor(error_message: string, error_code?: number | undefined) {
+        super(error_message, error_code);
+        this.name = FailedToGetAddressMapError.FALLBACK_ERROR_NAME;
+        this.error_code = FailedToGetAddressMapError.FALLBACK_ERROR_CODE;
+    }
+}
+
+class FailedToPutAddressMapError extends CruxClientError {
+
+    public static FALLBACK_ERROR_CODE: number = 9005;
+    public static FALLBACK_ERROR_NAME: string = CruxClientErrorNames.FAILED_TO_PUT_ADDRESS_MAP;
+
+    constructor(error_message: string, error_code?: number | undefined) {
+        super(error_message, error_code);
+        this.name = FailedToPutAddressMapError.FALLBACK_ERROR_NAME;
+        this.error_code = FailedToPutAddressMapError.FALLBACK_ERROR_CODE;
+    }
+}
+
+class FailedToGetCruxIDStateError extends CruxClientError {
+
+    public static FALLBACK_ERROR_CODE: number = 9006;
+    public static FALLBACK_ERROR_NAME: string = CruxClientErrorNames.FAILED_TO_GET_CRUX_ID_STATE;
+
+    constructor(error_message: string, error_code?: number | undefined) {
+        super(error_message, error_code);
+        this.name = FailedToGetCruxIDStateError.FALLBACK_ERROR_NAME;
+        this.error_code = FailedToGetCruxIDStateError.FALLBACK_ERROR_CODE;
+    }
+}
+
+class FailedUpdatePasswordError extends CruxClientError {
+
+    public static FALLBACK_ERROR_CODE: number = 9007;
+    public static FALLBACK_ERROR_NAME: string = CruxClientErrorNames.FAILED_TO_UPDATE_PASSWORD;
+
+    constructor(error_message: string, error_code?: number | undefined) {
+        super(error_message, error_code);
+        this.name = FailedUpdatePasswordError.FALLBACK_ERROR_NAME;
+        this.error_code = FailedUpdatePasswordError.FALLBACK_ERROR_CODE;
     }
 }
 
@@ -315,17 +412,19 @@ export class CruxClientError extends Error {
 export class CruxClient extends OpenPayPeer {
     // NameService specific methods
     public getCruxIDState = async (): Promise<ICruxIDState> => {
-
-        // TODO: handle reject cases ?
-        const fullCruxID = this.hasPayIDClaim() ? this.getPayIDClaim().virtualAddress : undefined;
-        const status = await this.getIDStatus();
-        return {
-            cruxID: fullCruxID,
-            status,
-        };
+        try {
+            const fullCruxID = this.hasPayIDClaim() ? this.getPayIDClaim().virtualAddress : undefined;
+            const status = await this.getIDStatus();
+            return {
+                cruxID: fullCruxID,
+                status,
+            };
+        } catch (error) {
+            throw FailedUpdatePasswordError.fromError(error);
+        }
     }
 
-    public getIDStatus = async (): Promise<nameservice.CruxIDRegistrationStatus> => {
+    private getIDStatus = async (): Promise<nameservice.CruxIDRegistrationStatus> => {
         await (this._payIDClaim as PayIDClaim).decrypt();
         const result = (this._nameservice as nameservice.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
         await (this._payIDClaim as PayIDClaim).encrypt();
@@ -334,66 +433,76 @@ export class CruxClient extends OpenPayPeer {
 
     public registerCruxID = async (cruxIDSubdomain: string, newAddressMap?: IAddressMapping): Promise<void> => {
         // TODO: add isCruxIDAvailable check before
-        
-        //Subdomain validation 
-        identityUtils.CruxId.validateSubdomain(cruxIDSubdomain)
+        try {
+            //Subdomain validation
+            identityUtils.CruxId.validateSubdomain(cruxIDSubdomain)
 
-        // Generating the identityClaim
-        await (this._payIDClaim as PayIDClaim).decrypt();
-        const identityClaim = this._payIDClaim ? {secrets: this._payIDClaim.identitySecrets} : await (this._nameservice as nameservice.NameService).generateIdentity();
-        const registeredPublicID = await (this._nameservice as nameservice.NameService).registerName(identityClaim, cruxIDSubdomain);
+            // Generating the identityClaim
+            await (this._payIDClaim as PayIDClaim).decrypt();
+            const identityClaim = this._payIDClaim ? {secrets: this._payIDClaim.identitySecrets} : await (this._nameservice as nameservice.NameService).generateIdentity();
+            const registeredPublicID = await (this._nameservice as nameservice.NameService).registerName(identityClaim, cruxIDSubdomain);
 
-        // Setup the payIDClaim locally
-        this._setPayIDClaim(new PayIDClaim({virtualAddress: registeredPublicID, identitySecrets: identityClaim.secrets}, { getEncryptionKey: this._getEncryptionKey }));
-        // await this._payIDClaim.setPasscode(passcode)
-        await (this._payIDClaim as PayIDClaim).encrypt();
-        await (this._payIDClaim as PayIDClaim).save(this._storage);
+            // Setup the payIDClaim locally
+            this._setPayIDClaim(new PayIDClaim({virtualAddress: registeredPublicID, identitySecrets: identityClaim.secrets}, { getEncryptionKey: this._getEncryptionKey }));
+            // await this._payIDClaim.setPasscode(passcode)
+            await (this._payIDClaim as PayIDClaim).encrypt();
+            await (this._payIDClaim as PayIDClaim).save(this._storage);
 
-        // TODO: Setup public addresses
-        if (newAddressMap) {
-            log.debug(`Selected addresses for resolving via your ID: ${
-                Object.keys(newAddressMap).map((currency) => {
-                    return `\n${newAddressMap[currency].addressHash}`;
-                })
-            }`);
-            await this.putAddressMap(newAddressMap);
+            // TODO: Setup public addresses
+            if (newAddressMap) {
+                log.debug(`Selected addresses for resolving via your ID: ${
+                    Object.keys(newAddressMap).map((currency) => {
+                        return `\n${newAddressMap[currency].addressHash}`;
+                    })
+                }`);
+                await this.putAddressMap(newAddressMap);
+            }
+        } catch (error) {
+            throw FailedUpdatePasswordError.fromError(error);
         }
-
     }
 
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<boolean> => {
-        const clientMapping: any = this._clientMapping;
-        const csAddressMap: any = {};
-        for (const key of Object.keys(newAddressMap)) {
-            csAddressMap[clientMapping[key]] = newAddressMap[key];
+        try {
+            const clientMapping: any = this._clientMapping;
+            const csAddressMap: any = {};
+            for (const key of Object.keys(newAddressMap)) {
+                csAddressMap[clientMapping[key]] = newAddressMap[key];
+            }
+
+            await (this._payIDClaim as PayIDClaim).decrypt();
+            const acknowledgement = await (this._nameservice as nameservice.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, csAddressMap);
+            await (this._payIDClaim as PayIDClaim).encrypt();
+
+            if (!acknowledgement) { throw new CruxClientError(`Could not update the addressMap`); }
+            return acknowledgement;
+        } catch (error) {
+            throw FailedUpdatePasswordError.fromError(error);
         }
-
-        await (this._payIDClaim as PayIDClaim).decrypt();
-        const acknowledgement = await (this._nameservice as nameservice.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, csAddressMap);
-        await (this._payIDClaim as PayIDClaim).encrypt();
-
-        if (!acknowledgement) { throw new CruxClientError(`Could not update the addressMap`); }
-        return acknowledgement;
     }
 
     public getAddressMap = async (): Promise<IAddressMapping> => {
-        const clientMapping: any = this._clientMapping;
-        const clientIdToAssetIdMap: any = {};
-        for (const i of Object.keys(clientMapping)) {
-            clientIdToAssetIdMap[clientMapping[i]] = i;
-        }
-
-        const clientIdMap: any = {};
-        if (this._payIDClaim && this._payIDClaim.virtualAddress) {
-            const assetIdMap = await (this._nameservice as nameservice.NameService).getAddressMapping(this._payIDClaim.virtualAddress);
-
-            for (const key of Object.keys(assetIdMap)) {
-                clientIdMap[clientIdToAssetIdMap[key]] = assetIdMap[key];
+        try {
+            const clientMapping: any = this._clientMapping;
+            const clientIdToAssetIdMap: any = {};
+            for (const i of Object.keys(clientMapping)) {
+                clientIdToAssetIdMap[clientMapping[i]] = i;
             }
-            return clientIdMap;
 
-        } else {
-            return {};
+            const clientIdMap: any = {};
+            if (this._payIDClaim && this._payIDClaim.virtualAddress) {
+                const assetIdMap = await (this._nameservice as nameservice.NameService).getAddressMapping(this._payIDClaim.virtualAddress);
+
+                for (const key of Object.keys(assetIdMap)) {
+                    clientIdMap[clientIdToAssetIdMap[key]] = assetIdMap[key];
+                }
+                return clientIdMap;
+
+            } else {
+                return {};
+            }
+        } catch (e) {
+            throw FailedUpdatePasswordError.fromError(error);
         }
     }
 
