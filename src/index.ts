@@ -231,14 +231,14 @@ class OpenPayPeer extends EventEmitter {
         }
         if (!correspondingAssetId) {
             console.groupEnd();
-            throw new Errors.ClientErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping")
+            throw new Errors.PackageErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping")
         }
 
         const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);
         log.debug(`Address map: `, addressMap);
         if (!addressMap[correspondingAssetId]) {
             console.groupEnd();
-            throw new Errors.ClientErrors.AddressNotAvailable("Currency address not available for user");
+            throw new Errors.PackageErrors.AddressNotAvailable("Currency address not available for user");
         }
         const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
         log.debug(`Address:`, address);
@@ -273,6 +273,42 @@ class OpenPayPeer extends EventEmitter {
         return Boolean(payIDClaim);
     }
 
+}
+
+
+export namespace CruxClientErrorNames {
+    export const FAILED_TO_GET_ADDRESSMAP: string = 'NOT_FOUND';
+}
+
+export class CruxClientError extends Error {
+
+    public static FALLBACK_ERROR_CODE: number = 9999;
+    public error_code: number;
+
+    constructor(error_message: string, name?: string | undefined, error_code?: number | undefined) {
+        let message = error_message || "";
+        super(message);
+        this.name = name || "CruxClientError";
+        this.error_code = error_code || CruxClientError.FALLBACK_ERROR_CODE;
+        Object.setPrototypeOf(this, new.target.prototype);
+    }
+
+    public static fromError(error: CruxClientError | Errors.PackageError | string, messagePrefix?: string): CruxClientError {
+
+        const msgPrefix: string = messagePrefix === undefined ? '' : messagePrefix;
+        if (error instanceof CruxClientError ) {
+            if (error.message !== undefined) {
+                error.message = msgPrefix + error.message;
+            }
+            return error;
+        } else if (typeof(error) === 'string') {
+            return new CruxClientError( msgPrefix + error);
+        } else if (error instanceof Errors.PackageError) {
+            return new CruxClientError(msgPrefix + error.message, undefined, error.error_code);
+        } else {
+            throw new Error(`Wrong instance type: ${typeof(error)}`);
+        }
+    }
 }
 
 // Wallets specific SDK code
@@ -336,7 +372,7 @@ export class CruxClient extends OpenPayPeer {
         const acknowledgement = await (this._nameservice as nameservice.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, csAddressMap);
         await (this._payIDClaim as PayIDClaim).encrypt();
 
-        if (!acknowledgement) { throw new Error((`Could not update the addressMap`)); }
+        if (!acknowledgement) { throw new CruxClientError(`Could not update the addressMap`); }
         return acknowledgement;
     }
 

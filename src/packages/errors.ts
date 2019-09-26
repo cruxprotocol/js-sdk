@@ -1,5 +1,5 @@
 
-export class ClientError extends Error {
+export class PackageError extends Error {
     public error_code: number;
     constructor(message?: string, code?: number) {
         super(message);
@@ -30,7 +30,7 @@ export class ClientError extends Error {
 3000s: Subdomain registrar errors
 3001 - Subdomain registration failed
 */
-class AddressNotAvailable extends ClientError {
+class AddressNotAvailable extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 1103;
         super(message, code);
@@ -38,7 +38,7 @@ class AddressNotAvailable extends ClientError {
     }
 }
 
-class UserDoesNotExist extends ClientError {
+class UserDoesNotExist extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 1037;
         super(message, code);
@@ -46,7 +46,7 @@ class UserDoesNotExist extends ClientError {
     }
 }
 
-class BnsResolutionFailed extends ClientError {
+class BnsResolutionFailed extends PackageError {
     public nodeUrl: string;
     constructor(nodeUrl: string, message?: string, error_code?: number) {
         let code = error_code || 1004;
@@ -56,7 +56,7 @@ class BnsResolutionFailed extends ClientError {
     }
 }
 
-class NameIntegrityCheckFailed extends ClientError {
+class NameIntegrityCheckFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 1100;
         super(message, code);
@@ -64,7 +64,7 @@ class NameIntegrityCheckFailed extends ClientError {
     }
 }
 
-class GaiaUploadFailed extends ClientError {
+class GaiaUploadFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 2005;
         super(message, code);
@@ -72,7 +72,7 @@ class GaiaUploadFailed extends ClientError {
     }
 }
 
-class GaiaGetFileFailed extends ClientError {
+class GaiaGetFileFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 2105;
         super(message, code);
@@ -80,7 +80,7 @@ class GaiaGetFileFailed extends ClientError {
     }
 }
 
-class TokenVerificationFailed extends ClientError {
+class TokenVerificationFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 2016;
         super(message, code);
@@ -88,7 +88,7 @@ class TokenVerificationFailed extends ClientError {
     }
 }
 
-class RegisterSubdomainFailed extends ClientError {
+class RegisterSubdomainFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 3001;
         super(message, code);
@@ -96,7 +96,7 @@ class RegisterSubdomainFailed extends ClientError {
     }
 }
 
-class AssetIDNotAvailable extends ClientError {
+class AssetIDNotAvailable extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 1200;
         super(message, code);
@@ -104,7 +104,7 @@ class AssetIDNotAvailable extends ClientError {
     }
 }
 
-class DecryptionFailed extends ClientError {
+class DecryptionFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
         let code = error_code || 1300;
         super(message, code);
@@ -112,7 +112,7 @@ class DecryptionFailed extends ClientError {
     }
 }
 
-export class ClientErrors {
+export class PackageErrors {
     public static AddressNotAvailable = AddressNotAvailable;
     public static UserDoesNotExist = UserDoesNotExist;
     public static BnsResolutionFailed = BnsResolutionFailed;

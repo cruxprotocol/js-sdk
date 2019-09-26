@@ -200,7 +200,7 @@ export class BlockstackService extends NameService {
             log.debug(`finalUrl is ${finalURL}`);
         } catch (error) {
             console.groupEnd();
-            throw new Errors.ClientErrors.GaiaUploadFailed(`unable to upload ${filename} to gaiahub, ${error}`);
+            throw new Errors.PackageErrors.GaiaUploadFailed(`unable to upload ${filename} to gaiahub, ${error}`);
         }
         console.groupEnd();
         return finalURL;
@@ -218,7 +218,7 @@ export class BlockstackService extends NameService {
             const gaiaReadURL = responseBody.read_url_prefix;
             return gaiaReadURL;
         } catch (err) {
-            throw new Errors.ClientErrors.GaiaGetFileFailed(`Unable to get gaia read url prefix: ${err}`);
+            throw new Errors.PackageErrors.GaiaGetFileFailed(`Unable to get gaia read url prefix: ${err}`);
         }
     }
 
@@ -238,7 +238,7 @@ export class BlockstackService extends NameService {
         }
         if (!nameData.address) {
             console.groupEnd();
-            throw new Errors.ClientErrors.UserDoesNotExist("ID does not exist", 1037);
+            throw new Errors.PackageErrors.UserDoesNotExist("ID does not exist", 1037);
         }
         const bitcoinAddress = nameData.address;
         log.debug(`ID owner: ${bitcoinAddress}`);
@@ -287,7 +287,7 @@ export class BlockstackService extends NameService {
                 // TODO: validate the token properly after publishing the subject
                 log.error(e);
                 console.groupEnd();
-                throw new Errors.ClientErrors.TokenVerificationFailed(`Token Verification failed for ${profileUrl}`, 2016);
+                throw new Errors.PackageErrors.TokenVerificationFailed(`Token Verification failed for ${profileUrl}`, 2016);
             }
 
             if (addressFromPub === bitcoinAddress) {
@@ -499,7 +499,7 @@ export class BlockstackService extends NameService {
             const finalUrl = await blockstack.uploadToGaiaHub("profile.json", JSON.stringify(tokenFile), hubConfig, "application/json");
             log.debug(finalUrl);
         } catch (e) {
-            throw new Errors.ClientErrors.GaiaUploadFailed(`Unable to upload profile.json to gaiahub, ${e}`, 2006);
+            throw new Errors.PackageErrors.GaiaUploadFailed(`Unable to upload profile.json to gaiahub, ${e}`, 2006);
         }
         return true;
     }
@@ -539,7 +539,7 @@ export class BlockstackService extends NameService {
         try {
             registrationAcknowledgement = await httpJSONRequest(options);
         } catch (err) {
-            throw new Errors.ClientErrors.RegisterSubdomainFailed("Register call to regsitrar failed", 3001);
+            throw new Errors.PackageErrors.RegisterSubdomainFailed("Register call to regsitrar failed", 3001);
         }
 
         log.debug(`Subdomain registration acknowledgement:`, registrationAcknowledgement);
@@ -605,7 +605,7 @@ export class BlockstackService extends NameService {
                     deepStrictEqual(prev_res, res);
                 } catch (e) {
                     if (e instanceof AssertionError) {
-                        throw new Errors.ClientErrors.NameIntegrityCheckFailed("Name resolution integrity check failed.", 1100);
+                        throw new Errors.PackageErrors.NameIntegrityCheckFailed("Name resolution integrity check failed.", 1100);
                     } else {
                         log.error(e);
                         throw e;
@@ -632,7 +632,7 @@ export class BlockstackService extends NameService {
         try {
             nameData = await httpJSONRequest(options);
         } catch (e) {
-            throw new Errors.ClientErrors.BnsResolutionFailed(baseUrl, `${baseUrl} node not available because ${e}`, 1004);
+            throw new Errors.PackageErrors.BnsResolutionFailed(baseUrl, `${baseUrl} node not available because ${e}`, 1004);
         }
         return nameData;
     }

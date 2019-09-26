@@ -61,7 +61,7 @@ export class Encryption {
                 ptBuffer = await crypto.subtle.decrypt(alg, key, ctBuffer);
             } catch (err) {
                 if (err instanceof DOMException) {
-                    throw new Errors.ClientErrors.DecryptionFailed("Decryption Failed.");
+                    throw new Errors.PackageErrors.DecryptionFailed("Decryption Failed.");
                 }
                 throw err;
             }
