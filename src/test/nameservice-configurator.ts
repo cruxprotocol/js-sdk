@@ -33,7 +33,7 @@ describe("Configuration Tests", () => {
 
             // name here refers to blockstack domain (cruxpay.id)
 
-            it("valid name asset list", async () => {
+            it("positive case, valid name asset list", async () => {
               let gotData = sinon.spy(nsService, "getContentFromGaiaHub")
               let globalAssetList = await nsConfigService.getGlobalAssetList()
               expect(gotData.callCount).to.equal(1)
@@ -101,6 +101,13 @@ describe("Configuration Tests", () => {
                 expect(raiseError).to.be.true
                 stubbedDomainName.restore()
               }
+            })
+          })
+
+          describe('virtual address tests', () => {
+            it("get virtual address for client name", () => {
+              let vAdd = nsConfigService.getVirtualAddressFromClientName('scatter')
+              expect(vAdd).to.be.string
             })
           })
     });
