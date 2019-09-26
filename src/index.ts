@@ -501,7 +501,7 @@ export class CruxClient extends OpenPayPeer {
             } else {
                 return {};
             }
-        } catch (e) {
+        } catch (error) {
             throw FailedUpdatePasswordError.fromError(error);
         }
     }
