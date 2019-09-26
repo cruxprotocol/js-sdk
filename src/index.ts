@@ -3,9 +3,6 @@ import Logger from "js-logger";
 import path from "path";
 import "regenerator-runtime/runtime";
 import config from "./config";
-// Importing packages
-import {BlockstackConfigurationService, encryption, Errors, identityUtils, nameservice, storage} from "./packages";
-import {CruxClientError, CruxClientErrors} from "./packages/crux-client-errors"
 
 // Setup logging configuration
 Logger.useDefaults();
@@ -14,6 +11,9 @@ export function getLogger(filename: string) {
     return Logger.get("OpenPay: " + filename.slice(filename.lastIndexOf(path.sep) + 1, filename.length - 3));
 }
 const log = getLogger(__filename);
+
+// Importing packages
+import {BlockstackConfigurationService, CruxClientErrors, encryption, Errors, identityUtils, nameservice, storage} from "./packages";
 
 // TODO: Implement classes enforcing the interfaces
 export interface IAddress {
@@ -346,7 +346,7 @@ export class CruxClient extends OpenPayPeer {
             const acknowledgement = await (this._nameservice as nameservice.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, csAddressMap);
             await (this._payIDClaim as PayIDClaim).encrypt();
 
-            if (!acknowledgement) { throw new CruxClientError(`Could not update the addressMap`); }
+            if (!acknowledgement) { throw new CruxClientErrors.CruxClientError(`Could not update the addressMap`); }
             return acknowledgement;
         } catch (error) {
             throw CruxClientErrors.FailedUpdatePasswordError.fromError(error);

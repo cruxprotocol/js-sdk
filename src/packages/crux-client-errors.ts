@@ -136,4 +136,5 @@ export class CruxClientErrors {
     public static FailedToPutAddressMapError = FailedToPutAddressMapError;
     public static FailedToGetCruxIDStateError = FailedToGetCruxIDStateError;
     public static FailedUpdatePasswordError = FailedUpdatePasswordError;
+    public static CruxClientError = CruxClientError;
 }
