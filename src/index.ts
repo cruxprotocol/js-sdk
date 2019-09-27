@@ -116,10 +116,10 @@ export class PayIDClaim implements IOpenPayClaim {
         return json;
     }
 
-    public save = async (storage: storage.StorageService): Promise<void> => {
+    public save = async (storageService: storage.StorageService): Promise<void> => {
         const json = await this.toJSON();
         // log.debug(`PayIDClaim being stored to storage:`, json)
-        storage.setJSON("payIDClaim", json);
+        storageService.setJSON("payIDClaim", json);
     }
 
     private _isEncrypted = (): boolean => {
@@ -195,7 +195,7 @@ class OpenPayPeer extends EventEmitter {
         return (this._payIDClaim as PayIDClaim);
     }
 
-    public registerCruxID = async (virtualAddress: string): Promise<void> => {}
+    public registerCruxID = async (virtualAddress: string): Promise<void> => {/**/};
 
     public updatePassword = async (oldEncryptionKey: string, newEncryptionKey: string): Promise<boolean> => {
         try {
@@ -214,7 +214,7 @@ class OpenPayPeer extends EventEmitter {
 
     public isCruxIDAvailable = (cruxIDSubdomain: string): Promise<boolean> => {
         try {
-            identityUtils.CruxId.validateSubdomain(cruxIDSubdomain)
+            identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
             return (this._nameservice as nameservice.NameService).getNameAvailability(cruxIDSubdomain);
         } catch (error) {
             throw CruxClientErrors.FailedUpdatePasswordError.fromError(error);
@@ -233,7 +233,7 @@ class OpenPayPeer extends EventEmitter {
             }
             if (!correspondingAssetId) {
                 console.groupEnd();
-                throw new Errors.PackageErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping")
+                throw new Errors.PackageErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping");
             }
 
             const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);
@@ -296,18 +296,11 @@ export class CruxClient extends OpenPayPeer {
         }
     }
 
-    private getIDStatus = async (): Promise<nameservice.CruxIDRegistrationStatus> => {
-        await (this._payIDClaim as PayIDClaim).decrypt();
-        const result = (this._nameservice as nameservice.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
-        await (this._payIDClaim as PayIDClaim).encrypt();
-        return result;
-    }
-
     public registerCruxID = async (cruxIDSubdomain: string, newAddressMap?: IAddressMapping): Promise<void> => {
         // TODO: add isCruxIDAvailable check before
         try {
-            //Subdomain validation
-            identityUtils.CruxId.validateSubdomain(cruxIDSubdomain)
+            // Subdomain validation
+            identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
 
             // Generating the identityClaim
             await (this._payIDClaim as PayIDClaim).decrypt();
@@ -376,6 +369,13 @@ export class CruxClient extends OpenPayPeer {
         } catch (error) {
             throw CruxClientErrors.FailedUpdatePasswordError.fromError(error);
         }
+    }
+
+    private getIDStatus = async (): Promise<nameservice.CruxIDRegistrationStatus> => {
+        await (this._payIDClaim as PayIDClaim).decrypt();
+        const result = (this._nameservice as nameservice.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
+        await (this._payIDClaim as PayIDClaim).encrypt();
+        return result;
     }
 
 }

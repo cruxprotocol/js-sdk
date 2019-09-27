@@ -1,28 +1,19 @@
-import {PackageError} from "./errors"
+import {PackageError} from "./errors";
 
 class CruxClientError extends Error {
 
     public static FALLBACK_ERROR_CODE: number = 9000;
     public static FALLBACK_ERROR_NAME: string = "CruxClientError";
-    public error_code: number;
-
-    constructor(error_message: string, error_code?: number | undefined) {
-        let message = error_message || "";
-        super(message);
-        this.name = CruxClientError.FALLBACK_ERROR_NAME;
-        this.error_code = error_code || CruxClientError.FALLBACK_ERROR_CODE;
-        Object.setPrototypeOf(this, new.target.prototype);
-    }
 
     public static fromError(error: CruxClientError | PackageError | Error | string, messagePrefix?: string): CruxClientError {
 
-        const msgPrefix: string = messagePrefix === undefined ? '' : messagePrefix + ' : ';
+        const msgPrefix: string = messagePrefix === undefined ? "" : messagePrefix + " : ";
         if (error instanceof CruxClientError) {
             if (error.message !== undefined) {
                 error.message = msgPrefix + error.message;
             }
             return error;
-        } else if (typeof (error) === 'string') {
+        } else if (typeof (error) === "string") {
             return new CruxClientError(msgPrefix + error);
         } else if (error instanceof PackageError) {
             return new CruxClientError(msgPrefix + error.message, error.error_code);
@@ -32,16 +23,25 @@ class CruxClientError extends Error {
             throw new Error(`Wrong instance type: ${typeof (error)}`);
         }
     }
+    public error_code: number;
+
+    constructor(error_message: string, error_code?: number | undefined) {
+        const message = error_message || "";
+        super(message);
+        this.name = CruxClientError.FALLBACK_ERROR_NAME;
+        this.error_code = error_code || CruxClientError.FALLBACK_ERROR_CODE;
+        Object.setPrototypeOf(this, new.target.prototype);
+    }
 }
 
-export namespace CruxClientErrorNames {
-    export const FAILED_TO_REGISTER_CRUX_ID: string = 'FAILED_TO_REGISTER_CRUX_ID';
-    export const FAILED_TO_CHECK_CRUX_ID_AVAILABLE: string = 'FAILED_TO_CHECK_CRUX_ID_AVAILABLE';
-    export const FAILED_TO_RESOLVE_CURRENCY_ADDRESS_FOR_CRUX_ID: string = 'FAILED_TO_RESOLVE_CURRENCY_ADDRESS_FOR_CRUX_ID';
-    export const FAILED_TO_GET_ADDRESS_MAP: string = 'FAILED_TO_GET_ADDRESS_MAP';
-    export const FAILED_TO_PUT_ADDRESS_MAP: string = 'FAILED_TO_PUT_ADDRESS_MAP';
-    export const FAILED_TO_GET_CRUX_ID_STATE: string = 'FAILED_TO_GET_CRUX_ID_STATE';
-    export const FAILED_TO_UPDATE_PASSWORD: string = 'FAILED_TO_UPDATE_PASSWORD';
+export enum CruxClientErrorNames {
+    FAILED_TO_REGISTER_CRUX_ID = "FAILED_TO_REGISTER_CRUX_ID",
+    FAILED_TO_CHECK_CRUX_ID_AVAILABLE = "FAILED_TO_CHECK_CRUX_ID_AVAILABLE",
+    FAILED_TO_RESOLVE_CURRENCY_ADDRESS_FOR_CRUX_ID = "FAILED_TO_RESOLVE_CURRENCY_ADDRESS_FOR_CRUX_ID",
+    FAILED_TO_GET_ADDRESS_MAP = "FAILED_TO_GET_ADDRESS_MAP",
+    FAILED_TO_PUT_ADDRESS_MAP = "FAILED_TO_PUT_ADDRESS_MAP",
+    FAILED_TO_GET_CRUX_ID_STATE = "FAILED_TO_GET_CRUX_ID_STATE",
+    FAILED_TO_UPDATE_PASSWORD = "FAILED_TO_UPDATE_PASSWORD",
 }
 
 class FailedToCheckCruxIDAvailableError extends CruxClientError {
@@ -137,4 +137,4 @@ export {
     FailedToGetCruxIDStateError,
     FailedUpdatePasswordError,
     CruxClientError,
-}
+};
