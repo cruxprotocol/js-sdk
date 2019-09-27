@@ -58,7 +58,7 @@ describe("Configuration Tests", () => {
             it("default nameservice client for empty override settings", async () => {
               let getConfigStub = sinon.stub(nsConfigService, 'getClientConfig').resolves({})
               await nsConfigService.init()
-              let nsClient = await nsConfigService.getBlockstackServiceForConfig('scatter_dev')
+              let nsClient = await nsConfigService.getBlockstackServiceForConfig()
               assert.instanceOf(nsClient, BlockstackService)
               getConfigStub.restore()
             })
@@ -67,7 +67,7 @@ describe("Configuration Tests", () => {
               let mockedClientConfig = {nameserviceConfiguration: {subdomainRegistrar: "mocked_subdomain_registrar"}}
               let getConfigStub = sinon.stub(nsConfigService, 'getClientConfig').resolves(mockedClientConfig)
               await nsConfigService.init()
-              let nsClient = await nsConfigService.getBlockstackServiceForConfig('scatter_dev')
+              let nsClient = await nsConfigService.getBlockstackServiceForConfig()
               assert.instanceOf(nsClient, BlockstackService)
               expect(nsClient._subdomainRegistrar).to.equal('mocked_subdomain_registrar')
               getConfigStub.restore()
@@ -80,7 +80,7 @@ describe("Configuration Tests", () => {
               let configPromise = new Promise<any>(async(resolve, reject) => {resolve({assetMapping: {EOS: "9dbdc727-de68-4f2a-8956-04a38ed71ca6",}, })})
               let getConfigStub = sinon.stub(nsConfigService, 'getClientConfig').returns(configPromise)
               await nsConfigService.init()
-              let mockedClientAsssetMapping = await nsConfigService.getClientAssetMapping('scatter_dev')
+              let mockedClientAsssetMapping = await nsConfigService.getClientAssetMapping()
               expect(mockedClientAsssetMapping).to.deep.include({EOS: "9dbdc727-de68-4f2a-8956-04a38ed71ca6"})
               getConfigStub.restore()
             })

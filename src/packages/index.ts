@@ -3,6 +3,7 @@ import * as encryption from "./encryption";
 import * as CruxClientErrors from "./error/crux-client-error";
 import { ErrorHelper } from "./error/error-helper";
 import { PackageErrorCode } from "./error/package-error-code";
+import { PackageErrors } from "./error/package-error";
 import * as identityUtils from "./identity-utils";
 import * as nameservice from "./nameservice";
 import * as storage from "./storage";
@@ -18,4 +19,5 @@ export {
     ErrorHelper,
     PackageErrorCode,
     utils,
+    PackageErrors,
 };

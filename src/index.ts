@@ -21,6 +21,7 @@ import {
     identityUtils,
     nameservice,
     PackageErrorCode,
+    PackageErrors,
     storage,
     utils,
 } from "./packages";
@@ -82,7 +83,7 @@ export class PayIDClaim implements ICruxPayClaim {
     private _encryption: typeof encryption.Encryption = encryption.Encryption;
 
     constructor(cruxPayObj: ICruxPayClaim = {} as ICruxPayClaim, options: cruxPayOptions) {
-        if (!options.getEncryptionKey) { throw new Error((`Missing encryptionKey method!`)); }
+        if (!options.getEncryptionKey) { throw ErrorHelper.getPackageError(PackageErrorCode.ExpectedEncryptionKeyValue); }
         this._getEncryptionKey = options.getEncryptionKey;
         if (options.encryption) { this._encryption = options.encryption; }
 
@@ -175,7 +176,7 @@ class CruxPayPeer extends EventEmitter {
         const configService = new BlockstackConfigurationService(this.walletClientName);
         await configService.init();
         if (!this._nameservice) {
-            this._nameservice = await configService.getBlockstackServiceForConfig(this.walletClientName);
+            this._nameservice = await configService.getBlockstackServiceForConfig();
         }
 
         if (this._hasPayIDClaimStored()) {
@@ -190,7 +191,7 @@ class CruxPayPeer extends EventEmitter {
             log.debug(`Allocated temporary identitySecrets and payIDClaim`);
         }
         this._assetList = await configService.getGlobalAssetList();
-        this._clientMapping = await configService.getClientAssetMapping(this.walletClientName);
+        this._clientMapping = await configService.getClientAssetMapping();
 
         log.debug(`global asset list is:- `, this._assetList);
         log.debug(`client asset mapping is:- `, this._clientMapping);
@@ -242,7 +243,7 @@ class CruxPayPeer extends EventEmitter {
                 }
             }
             if (!correspondingAssetId) {
-                throw new Errors.PackageErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping");
+                throw new PackageErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping");
             }
 
             const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);

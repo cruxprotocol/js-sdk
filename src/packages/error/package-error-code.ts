@@ -18,9 +18,11 @@
 */
 
 export enum PackageErrorCode {
+    // BNS errors
     BnsResolutionFailed = 1004,
     UserDoesNotExist = 1037,
     NameIntegrityCheckFailed = 1100,
+    BnsEmptyData = 1101,
     AddressNotAvailable = 1103,
     AssetIDNotAvailable = 1200,
     DecryptionFailed = 1300,
@@ -28,6 +30,18 @@ export enum PackageErrorCode {
     GaiaUploadFailed = 2005,
     GaiaGetFileFailed = 2105,
     TokenVerificationFailed = 2106,
-    // 3000s: Subdomain registrar errors
+    GaiaEmptyResponse = 2107,
+    // 3000s: Registry errors
     SubdomainRegistrationFailed = 3001,
+    SubdomainRegistrationAcknowledgementFailed = 3002,
+    // Validating user input errors
+    ExpectedEncryptionKeyValue = 4001,
+    SubdomainRegexMatchFailure = 4002,
+    SubdomainLengthCheckFailure = 4003,
+    AddressMappingDecodingFailure = 4004,
+    // Activation errors
+    CouldNotFindBlockstackConfigurationServiceClientConfig = 5001,
+    CouldNotFindMnemonicToRestoreIdentity = 5002,
+    CouldNotValidateZoneFile = 5003,
+    CouldNotFindIdentityKeyPairToPutAddressMapping = 5004,
 }

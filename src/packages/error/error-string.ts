@@ -11,4 +11,13 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.BnsResolutionFailed]: "'{0}' node not available because '{1}'",
     [PackageErrorCode.UserDoesNotExist]: "ID does not exist",
     [PackageErrorCode.AddressNotAvailable]: "Currency address not available for user",
+    [PackageErrorCode.ExpectedEncryptionKeyValue]: "Missing encryptionKey method",
+    [PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig]: "Missing client-config for: '{0}'",
+    [PackageErrorCode.SubdomainRegexMatchFailure]: "Validation failed: Subdomain should start with alphabet and end with alphabet or number. Allowed characters are lowercase alphabets, numbers, - and _",
+    [PackageErrorCode.SubdomainLengthCheckFailure]: "Validation failed: Subdomain length must be between 4 to 20",
+    [PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity]: "Require mnemonic for restoring the identity",
+    [PackageErrorCode.BnsEmptyData]: "No name data available",
+    [PackageErrorCode.CouldNotValidateZoneFile]: "Invalid zonefile",
+    [PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping]: "Missing IdentityKeyPair",
+    [PackageErrorCode.SubdomainRegistrationAcknowledgementFailed]: "Register call to registrar failed: '{0}'",
 };
