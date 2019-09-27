@@ -13,7 +13,7 @@ export function getLogger(filename: string) {
 const log = getLogger(__filename);
 
 // Importing packages
-import { BlockstackConfigurationService, encryption, Errors, nameservice, storage, identityUtils } from "./packages";
+import { BlockstackConfigurationService, encryption, Errors, identityUtils, nameservice, storage } from "./packages";
 
 // TODO: Implement classes enforcing the interfaces
 export interface IAddress {
@@ -219,7 +219,8 @@ class CruxPayPeer extends EventEmitter {
 
     public isCruxIDAvailable = (cruxIDSubdomain: string): Promise<boolean> => {
         // Subdomain validation
-        identityUtils.CruxId.validateSubdomain(cruxIDSubdomain)
+        const foo: any = "bar";
+        identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
         return (this._nameservice as nameservice.NameService).getNameAvailability(cruxIDSubdomain);
     }
 
@@ -234,7 +235,7 @@ class CruxPayPeer extends EventEmitter {
         }
         if (!correspondingAssetId) {
             console.groupEnd();
-            throw new Errors.ClientErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping", 1200)
+            throw new Errors.ClientErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping", 1200);
         }
 
         const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);
@@ -303,7 +304,7 @@ export class CruxClient extends CruxPayPeer {
         // TODO: add isCruxIDAvailable check before
 
         // Subdomain validation
-        identityUtils.CruxId.validateSubdomain(cruxIDSubdomain)
+        identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
 
         // Generating the identityClaim
         await (this._payIDClaim as PayIDClaim).decrypt();
