@@ -12,8 +12,7 @@ export class Encryption {
         const encryptedString = new Buffer(value, "hex");
         // let encryptedString = Buffer.from(value, 'hex');
         const buffer = ecies.decrypt(privateKey, encryptedString);
-        const converted = buffer.toString("utf-8");
-        return converted;
+        return buffer.toString("utf-8");
     }
 
     public static digest = async (str: string): Promise<string> => {

@@ -1,9 +1,8 @@
 import { BlockstackConfigurationService } from "./configuration-service";
 import * as encryption from "./encryption";
-import * as CruxClientErrors from "./error/crux-client-error";
+import { CruxClientError } from "./error/crux-client-error";
 import { ErrorHelper } from "./error/error-helper";
 import { PackageErrorCode } from "./error/package-error-code";
-import { PackageErrors } from "./error/package-error";
 import * as identityUtils from "./identity-utils";
 import * as nameservice from "./nameservice";
 import * as storage from "./storage";
@@ -15,9 +14,8 @@ export {
     nameservice,
     identityUtils,
     BlockstackConfigurationService,
-    CruxClientErrors,
+    CruxClientError,
     ErrorHelper,
     PackageErrorCode,
     utils,
-    PackageErrors,
 };

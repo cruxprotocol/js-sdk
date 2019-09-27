@@ -464,8 +464,7 @@ export class BlockstackService extends NameService {
             subject: { publicKey },
         };
         const token = tokenSigner.sign(payload);
-        const tokenFile = [blockstack.wrapProfileToken(token)];
-        return tokenFile;
+        return [blockstack.wrapProfileToken(token)];
     }
 
     private _registerSubdomain = async (name: string, bitcoinAddress: string): Promise<string> => {

@@ -1,10 +1,10 @@
 import { getLogger } from "..";
 import config from "../config";
 import * as identityUtils from "./identity-utils";
+import {ErrorHelper, PackageErrorCode} from "./index";
 import * as nameservice from "./nameservice";
-import * as utils from "./utils";
 import {BlockstackService} from "./nameservice";
-import {ErrorHelper, PackageError, PackageErrorCode} from "./index";
+import * as utils from "./utils";
 
 const log = getLogger(__filename);
 
