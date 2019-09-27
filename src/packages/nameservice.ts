@@ -6,9 +6,10 @@ import { SECP256K1Client, TokenSigner } from "jsontokens";
 import { AddressMapping, getLogger, IAddress, IAddressMapping } from "..";
 import config from "../config";
 
-import * as Errors from "./errors";
 import {BlockstackId, CruxId, IdTranslator} from "./identity-utils";
 import * as utils from "./utils";
+import { httpJSONRequest } from "./utils";
+import {ErrorHelper, PackageErrorCode} from "./index";
 
 const log = getLogger(__filename);
 
@@ -193,7 +194,7 @@ export class BlockstackService extends NameService {
             finalURL = await blockstack.uploadToGaiaHub(filename, contentToUpload, hubConfig, type);
             log.debug(`finalUrl is ${finalURL}`);
         } catch (error) {
-            throw new Errors.PackageErrors.GaiaUploadFailed(`unable to upload to gaiahub, ${error}`, 2005);
+            throw ErrorHelper.getPackageError(PackageErrorCode.GaiaUploadFailed, filename, error);
         }
         return finalURL;
     }
@@ -210,7 +211,8 @@ export class BlockstackService extends NameService {
             const gaiaReadURL = responseBody.read_url_prefix;
             return gaiaReadURL;
         } catch (err) {
-            throw new Errors.PackageErrors.GaiaGetFileFailed(`Unable to get gaia read url prefix: ${err}`);
+            throw ErrorHelper.getPackageError(PackageErrorCode.GaiaGetFileFailed, err);
+
         }
     }
 
@@ -227,7 +229,7 @@ export class BlockstackService extends NameService {
             throw new Error((`No name data availabe!`));
         }
         if (!nameData.address) {
-            throw new Errors.PackageErrors.UserDoesNotExist("ID does not exist", 1037);
+            throw ErrorHelper.getPackageError(PackageErrorCode.UserDoesNotExist);
         }
         const bitcoinAddress = nameData.address;
         log.debug(`ID owner: ${bitcoinAddress}`);
@@ -273,7 +275,7 @@ export class BlockstackService extends NameService {
             } catch (e) {
                 // TODO: validate the token properly after publishing the subject
                 log.error(e);
-                throw new Errors.PackageErrors.TokenVerificationFailed(`Token Verification failed for ${profileUrl}`, 2016);
+                throw ErrorHelper.getPackageError(PackageErrorCode.TokenVerificationFailed, profileUrl);
             }
 
             if (addressFromPub === bitcoinAddress) {
@@ -463,16 +465,17 @@ export class BlockstackService extends NameService {
             "@context": "http://schema.org/",
             "@type": "Person",
         };
+        const filename = "profile.json";
         const person = new blockstack.Person(profileObj);
         const token = person.toToken(privKey);
         log.debug(token);
         const tokenFile = [blockstack.wrapProfileToken(token)];
         log.debug(tokenFile);
         try {
-            const finalUrl = await blockstack.uploadToGaiaHub("profile.json", JSON.stringify(tokenFile), hubConfig, "application/json");
+            const finalUrl = await blockstack.uploadToGaiaHub(filename, JSON.stringify(tokenFile), hubConfig, "application/json");
             log.debug(finalUrl);
-        } catch (e) {
-            throw new Errors.PackageErrors.GaiaUploadFailed(`Unable to upload profile.json to gaiahub, ${e}`, 2006);
+        } catch (error) {
+            throw ErrorHelper.getPackageError(PackageErrorCode.GaiaUploadFailed, filename, error);
         }
         return true;
     }
@@ -512,7 +515,7 @@ export class BlockstackService extends NameService {
         try {
             registrationAcknowledgement = await utils.httpJSONRequest(options);
         } catch (err) {
-            throw new Errors.PackageErrors.RegisterSubdomainFailed("Register call to regsitrar failed", 3001);
+            throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainRegistrationFailed);
         }
 
         log.debug(`Subdomain registration acknowledgement:`, registrationAcknowledgement);
@@ -578,7 +581,7 @@ export class BlockstackService extends NameService {
                     deepStrictEqual(prev_res, res);
                 } catch (e) {
                     if (e instanceof AssertionError) {
-                        throw new Errors.PackageErrors.NameIntegrityCheckFailed("Name resolution integrity check failed.", 1100);
+                        throw ErrorHelper.getPackageError(PackageErrorCode.NameIntegrityCheckFailed, filename, error);
                     } else {
                         log.error(e);
                         throw e;
@@ -604,8 +607,8 @@ export class BlockstackService extends NameService {
         let nameData;
         try {
             nameData = await utils.httpJSONRequest(options);
-        } catch (e) {
-            throw new Errors.PackageErrors.BnsResolutionFailed(baseUrl, `${baseUrl} node not available because ${e}`, 1004);
+        } catch (error) {
+            throw ErrorHelper.getPackageError(PackageErrorCode.BnsResolutionFailed, baseUrl, error);
         }
         return nameData;
     }

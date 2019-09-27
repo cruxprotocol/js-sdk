@@ -183,7 +183,7 @@ describe('CruxClient tests', () => {
 				try {
 					await cruxClient.registerCruxID(sampleUser['cruxIDSubdomain'])
 				} catch(e) {
-					expect(e.error_code).to.equal(3001)
+					expect(e.errorCode).to.equal(3001)
 					raisedException = true
 				} finally {
 					expect(updateProfileStub.callCount).to.equal(1)
@@ -228,7 +228,7 @@ describe('CruxClient tests', () => {
 					await cruxClient.resolveCurrencyAddressForCruxID(sampleUser['cruxID'], "ETH")
 				} catch(e) {
 					raisedException = true
-					expect(e.error_code).to.equal(1200)
+					expect(e.errorCode).to.equal(1200)
 				} finally {
 					expect(raisedException).to.equal(true)
 					clientMappingStub.restore()
@@ -252,7 +252,7 @@ describe('CruxClient tests', () => {
 					await cruxClient.resolveCurrencyAddressForCruxID(sampleUser['cruxID'], "BTC")
 				} catch(e) {
 					raisedException = true
-					expect(e.error_code).to.equal(1103)
+					expect(e.errorCode).to.equal(1103)
 				} finally {
 					expect(raisedException).to.equal(true)
 					clientMappingStub.restore()
@@ -297,7 +297,7 @@ describe('CruxClient tests', () => {
 					await cruxClient.putAddressMap(sampleAddressMap)
 				} catch(e) {
 					raisesException = true
-					expect(e.error_code).to.equal(2005)
+					expect(e.errorCode).to.equal(2005)
 				} finally {
 					expect(raisesException).to.be.true
 					updateProfileStub.restore()

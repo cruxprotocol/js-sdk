@@ -46,7 +46,7 @@ describe("Configuration Tests", () => {
               try{
                 await nsConfigService.getGlobalAssetList()
               }catch(e){
-                expect(e.error_code).to.equal(1037)
+                expect(e.errorCode).to.equal(1037)
               }finally{
                 stubbedDomainName.restore()
               }
@@ -95,7 +95,7 @@ describe("Configuration Tests", () => {
                 await nsConfigService.init()
               }catch(e){
                 raiseError = true
-                expect(e.error_code).to.equal(1037)
+                expect(e.errorCode).to.equal(1037)
               }
               finally{
                 expect(raiseError).to.be.true

@@ -1,5 +1,5 @@
 import ecies from "eciesjs";
-import {Errors} from "./index";
+import {ErrorHelper, PackageErrorCode} from "./index";
 
 export class Encryption {
 
@@ -61,7 +61,7 @@ export class Encryption {
                 ptBuffer = await crypto.subtle.decrypt(alg, key, ctBuffer);
             } catch (err) {
                 if (err instanceof DOMException) {
-                    throw new Errors.PackageErrors.DecryptionFailed("Decryption Failed.");
+                    throw ErrorHelper.getPackageError(PackageErrorCode.DecryptionFailed);
                 }
                 throw err;
             }

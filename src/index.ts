@@ -13,7 +13,17 @@ export function getLogger(filename: string) {
 const log = getLogger(__filename);
 
 // Importing packages
-import {BlockstackConfigurationService, CruxClientErrors, encryption, Errors, identityUtils, nameservice, storage, utils } from "./packages";
+import {
+    BlockstackConfigurationService,
+    CruxClientErrors,
+    encryption,
+    ErrorHelper,
+    identityUtils,
+    nameservice,
+    PackageErrorCode,
+    storage,
+    utils,
+} from "./packages";
 
 // TODO: Implement classes enforcing the interfaces
 export interface IAddress {
@@ -208,7 +218,7 @@ class CruxPayPeer extends EventEmitter {
                 return false;
             }
         } catch (error) {
-            throw CruxClientErrors.FailedUpdatePasswordError.fromError(error);
+            throw CruxClientErrors.CruxClientError.fromError(error);
         }
     }
 
@@ -217,7 +227,7 @@ class CruxPayPeer extends EventEmitter {
             identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
             return (this._nameservice as nameservice.NameService).getNameAvailability(cruxIDSubdomain);
         } catch (error) {
-            throw CruxClientErrors.FailedUpdatePasswordError.fromError(error);
+            throw CruxClientErrors.CruxClientError.fromError(error);
         }
     }
 
@@ -238,14 +248,13 @@ class CruxPayPeer extends EventEmitter {
             const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);
             log.debug(`Address map: `, addressMap);
             if (!addressMap[correspondingAssetId]) {
-                console.groupEnd();
-                throw new Errors.PackageErrors.AddressNotAvailable("Currency address not available for user", 1103);
+                throw new PackageErrors.AddressNotAvailable("Currency address not available for user", 1103);
             }
             const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
             log.debug(`Address:`, address);
             return address;
         } catch (error) {
-            throw CruxClientErrors.FailedToResolveCurrencyAddressForCruxIDError.fromError(error);
+            throw CruxClientErrors.CruxClientError.fromError(error);
         }
     }
 
@@ -290,7 +299,7 @@ export class CruxClient extends CruxPayPeer {
                 status,
             };
         } catch (error) {
-            throw CruxClientErrors.FailedUpdatePasswordError.fromError(error);
+            throw CruxClientErrors.CruxClientError.fromError(error);
         }
     }
 
@@ -321,7 +330,7 @@ export class CruxClient extends CruxPayPeer {
                 await this.putAddressMap(newAddressMap);
             }
         } catch (error) {
-            throw CruxClientErrors.FailedUpdatePasswordError.fromError(error);
+            throw CruxClientErrors.CruxClientError.fromError(error);
         }
     }
 
@@ -340,7 +349,7 @@ export class CruxClient extends CruxPayPeer {
             if (!acknowledgement) { throw new CruxClientErrors.CruxClientError(`Could not update the addressMap`); }
             return acknowledgement;
         } catch (error) {
-            throw CruxClientErrors.FailedUpdatePasswordError.fromError(error);
+            throw CruxClientErrors.CruxClientError.fromError(error);
         }
     }
 
@@ -365,7 +374,7 @@ export class CruxClient extends CruxPayPeer {
                 return {};
             }
         } catch (error) {
-            throw CruxClientErrors.FailedUpdatePasswordError.fromError(error);
+            throw CruxClientErrors.CruxClientError.fromError(error);
         }
     }
 
@@ -379,7 +388,6 @@ export class CruxClient extends CruxPayPeer {
 }
 
 export {
-    Errors,
     encryption,
     storage,
     nameservice,
