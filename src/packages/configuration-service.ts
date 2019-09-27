@@ -1,9 +1,9 @@
 import { getLogger } from "..";
 import config from "../config";
+import {PackageError} from "./error/package-error";
 import * as identityUtils from "./identity-utils";
 import * as nameservice from "./nameservice";
 import * as utils from "./utils";
-import {PackageError} from "./error/package-error"
 
 const log = getLogger(__filename);
 
@@ -43,7 +43,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         try {
             assetList  =  await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, "asset-list.json", "application/json");
         } catch (error) {
-            if(error instanceof PackageError){throw error}
+            if (error instanceof PackageError) {throw error; }
             throw new Error(`Unable to decode address mapping, ${error}`);
         }
         return assetList;
@@ -59,7 +59,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
                 throw new Error(`invalid client config`);
             }
         } catch (error) {
-            if(error instanceof PackageError) throw error
+            if (error instanceof PackageError) { throw error; }
             throw new Error(`failed to get client config from gaiahub, error is:- ${error}`);
         }
         return clientConfig;

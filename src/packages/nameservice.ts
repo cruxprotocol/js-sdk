@@ -7,9 +7,9 @@ import { AddressMapping, getLogger, IAddress, IAddressMapping } from "..";
 import config from "../config";
 
 import {BlockstackId, CruxId, IdTranslator} from "./identity-utils";
+import {ErrorHelper, PackageErrorCode} from "./index";
 import * as utils from "./utils";
 import { httpJSONRequest } from "./utils";
-import {ErrorHelper, PackageErrorCode} from "./index";
 
 const log = getLogger(__filename);
 
