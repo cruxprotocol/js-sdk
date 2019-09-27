@@ -31,14 +31,14 @@ export class PackageError extends Error {
 */
 class AddressNotAvailable extends PackageError {
     constructor(message?: string, error_code?: number) {
-        let code = error_code || 1103;
+        const code = error_code || 1103;
         super(message, code);
     }
 }
 
 class UserDoesNotExist extends PackageError {
     constructor(message?: string, error_code?: number) {
-        let code = error_code || 1037;
+        const code = error_code || 1037;
         super(message, code);
     }
 }
@@ -46,7 +46,7 @@ class UserDoesNotExist extends PackageError {
 class BnsResolutionFailed extends PackageError {
     public nodeUrl: string;
     constructor(nodeUrl: string, message?: string, error_code?: number) {
-        let code = error_code || 1004;
+        const code = error_code || 1004;
         super(message, code);
         this.nodeUrl = nodeUrl;
     }
@@ -54,49 +54,49 @@ class BnsResolutionFailed extends PackageError {
 
 class NameIntegrityCheckFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
-        let code = error_code || 1100;
+        const code = error_code || 1100;
         super(message, code);
     }
 }
 
 class GaiaUploadFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
-        let code = error_code || 2005;
+        const code = error_code || 2005;
         super(message, code);
     }
 }
 
 class GaiaGetFileFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
-        let code = error_code || 2105;
+        const code = error_code || 2105;
         super(message, code);
     }
 }
 
 class TokenVerificationFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
-        let code = error_code || 2016;
+        const code = error_code || 2016;
         super(message, code);
     }
 }
 
 class RegisterSubdomainFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
-        let code = error_code || 3001;
+        const code = error_code || 3001;
         super(message, code);
     }
 }
 
 class AssetIDNotAvailable extends PackageError {
     constructor(message?: string, error_code?: number) {
-        let code = error_code || 1200;
+        const code = error_code || 1200;
         super(message, code);
     }
 }
 
 class DecryptionFailed extends PackageError {
     constructor(message?: string, error_code?: number) {
-        let code = error_code || 1300;
+        const code = error_code || 1300;
         super(message, code);
     }
 }
