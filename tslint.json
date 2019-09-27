@@ -16,7 +16,7 @@
   "linterOptions": {
     "exclude": [
       "src/samples/*.ts",
-      "src/test/*.ts"
+      "src/test/**/*.ts"
     ]
   },
   "rulesDirectory": []
