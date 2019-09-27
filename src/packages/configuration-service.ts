@@ -35,13 +35,13 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     public getGlobalAssetList = async (): Promise<object> => {
         console.groupCollapsed("Resolving globalAssetlist from gaiaHub");
         const blockstackId = `${this.settingsDomain}.id`;
-        let assetList: object
+        let assetList: object;
         try {
             assetList  =  await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, "asset-list.json", "application/json");
-            
+
         } catch (error) {
             console.groupEnd();
-            throw `Unable to decode address mapping, ${error}`;
+            throw new Error(`Unable to decode address mapping, ${error}`);
         }
         console.groupEnd();
         return assetList;
@@ -50,7 +50,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     public getClientConfig = async (clientName: string): Promise<any> => {
         console.groupCollapsed("Resolving clientAssetMapping from gaiaHub");
         const bsid = new identityUtils.BlockstackId({domain: this.settingsDomain, subdomain: clientName});
-        let clientConfig: any
+        let clientConfig: any;
         try {
             clientConfig  =  await this.blockstackNameservice.getContentFromGaiaHub(bsid.toString(), "client-config.json", "application/json");
             if (!clientConfig) {

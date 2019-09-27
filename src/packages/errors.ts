@@ -106,8 +106,8 @@ class RegisterSubdomainFailed extends ClientError {
 class AssetIDNotAvailable extends ClientError {
     constructor(message?: string, error_code?: number) {
         super(message);
-        this.message = message || '';
-        this.name = 'AssetIDNotAvailable';
+        this.message = message || "";
+        this.name = "AssetIDNotAvailable";
         this.error_code = error_code || 1200;
     }
 }
