@@ -15,8 +15,14 @@ interface GenericIDComponents {
 export class CruxId {
 
     public static validateSubdomain = (subDomain: string) => {
-        if (!subDomain.match(new RegExp("[a-z]([a-z]|\d|-|_)*([a-z]|\d)"))) {
-            throw new Error("Validation failed, should start with alphabet and end with alphabet or number. Allowed characters - lowercase alphabets, numbers, - and _")
+        const subdomainRegex: string = "[a-z]([a-z]|\d|-|_)*([a-z]|\d)";
+        const subdomainMinLength: number = 4;
+        const subdomainMaxLength: number = 20;
+        if (!subDomain.match(new RegExp(subdomainRegex))) {
+            throw new Error("Validation failed, should start with alphabet and end with alphabet or number. Allowed characters - lowercase alphabets, numbers, - and _");
+        }
+        if (subDomain.length < subdomainMinLength || subDomain.length > subdomainMaxLength) {
+            throw new Error("Subdomain length must be between 4 to 20");
         }
     }
     public static fromString = (stringRepresentation: string) => {

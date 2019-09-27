@@ -42,7 +42,7 @@ describe("Configuration Tests", () => {
               try{
                 await nsConfigService.getGlobalAssetList()
               }catch(e){
-                expect(e.toString()).to.equal('Unable to decode address mapping, UserDoesNotExist: ID does not exist')
+                expect(e.toString()).to.equal('Error: Unable to decode address mapping, UserDoesNotExist: ID does not exist')
               }finally{
                 stubbedDomainName.restore()
               }
