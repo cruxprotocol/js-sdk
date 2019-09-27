@@ -218,7 +218,7 @@ class OpenPayPeer extends EventEmitter {
     }
 
     public isCruxIDAvailable = (cruxIDSubdomain: string): Promise<boolean> => {
-        //Subdomain validation 
+        // Subdomain validation
         identityUtils.CruxId.validateSubdomain(cruxIDSubdomain)
         return (this._nameservice as nameservice.NameService).getNameAvailability(cruxIDSubdomain);
     }
@@ -301,8 +301,8 @@ export class CruxClient extends OpenPayPeer {
 
     public registerCruxID = async (cruxIDSubdomain: string, newAddressMap?: IAddressMapping): Promise<void> => {
         // TODO: add isCruxIDAvailable check before
-        
-        //Subdomain validation 
+
+        // Subdomain validation
         identityUtils.CruxId.validateSubdomain(cruxIDSubdomain)
 
         // Generating the identityClaim
