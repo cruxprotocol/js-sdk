@@ -8,12 +8,12 @@ import config from "./config";
 Logger.useDefaults();
 Logger.setLevel(config.CONFIG_MODE === "prod" ? Logger.INFO : Logger.DEBUG);
 export function getLogger(filename: string) {
-    return Logger.get("OpenPay: " + filename.slice(filename.lastIndexOf(path.sep) + 1, filename.length - 3));
+    return Logger.get("CruxPay: " + filename.slice(filename.lastIndexOf(path.sep) + 1, filename.length - 3));
 }
 const log = getLogger(__filename);
 
 // Importing packages
-import {BlockstackConfigurationService, CruxClientErrors, encryption, Errors, identityUtils, nameservice, storage} from "./packages";
+import {BlockstackConfigurationService, CruxClientErrors, encryption, Errors, identityUtils, nameservice, storage, utils } from "./packages";
 
 // TODO: Implement classes enforcing the interfaces
 export interface IAddress {
@@ -36,7 +36,7 @@ export class AddressMapping {
 
 // SDK core class
 
-interface IOpenPayPeerOptions {
+interface ICruxPayPeerOptions {
     getEncryptionKey: () => string;
     storage?: storage.StorageService;
     encryption?: typeof encryption.Encryption;
@@ -48,7 +48,7 @@ interface IIdentitySecrets {
     [nameservice: string]: nameservice.IIdentityClaim;
 }
 
-interface IOpenPayClaim {
+interface ICruxPayClaim {
     virtualAddress?: string;
     identitySecrets?: string | nameservice.IIdentityClaim;
 }
@@ -58,27 +58,27 @@ export interface ICruxIDState {
     status: nameservice.CruxIDRegistrationStatus;
 }
 
-interface openPayOptions {
+interface cruxPayOptions {
     getEncryptionKey: () => string;
     encryption?: typeof encryption.Encryption;
     storage?: storage.StorageService;
 }
 
-export class PayIDClaim implements IOpenPayClaim {
+export class PayIDClaim implements ICruxPayClaim {
 
     public virtualAddress: string | undefined;
     public identitySecrets: string | nameservice.IIdentityClaim | undefined;
     private _getEncryptionKey: () => string;
     private _encryption: typeof encryption.Encryption = encryption.Encryption;
 
-    constructor(openPayObj: IOpenPayClaim = {} as IOpenPayClaim, options: openPayOptions) {
+    constructor(cruxPayObj: ICruxPayClaim = {} as ICruxPayClaim, options: cruxPayOptions) {
         if (!options.getEncryptionKey) { throw new Error((`Missing encryptionKey method!`)); }
         this._getEncryptionKey = options.getEncryptionKey;
         if (options.encryption) { this._encryption = options.encryption; }
 
-        // log.debug(`OpenPayObj provided:`, openPayObj)
-        this.virtualAddress = openPayObj.virtualAddress || undefined;
-        this.identitySecrets = openPayObj.identitySecrets || undefined;
+        // log.debug(`CruxPayObj provided:`, cruxPayObj)
+        this.virtualAddress = cruxPayObj.virtualAddress || undefined;
+        this.identitySecrets = cruxPayObj.identitySecrets || undefined;
 
         log.info(`PayIDClaim initialised`);
     }
@@ -107,7 +107,7 @@ export class PayIDClaim implements IOpenPayClaim {
         }
     }
 
-    public toJSON = (): IOpenPayClaim => {
+    public toJSON = (): ICruxPayClaim => {
         // await this.encrypt()
         const json = JSON.parse(JSON.stringify({
             identitySecrets: this.identitySecrets,
@@ -128,9 +128,9 @@ export class PayIDClaim implements IOpenPayClaim {
 
 }
 
-class OpenPayPeer extends EventEmitter {
+class CruxPayPeer extends EventEmitter {
     public walletClientName: string;
-    protected _options: IOpenPayPeerOptions;
+    protected _options: ICruxPayPeerOptions;
     protected _getEncryptionKey: () => string;
 
     protected _storage: storage.StorageService;
@@ -140,7 +140,7 @@ class OpenPayPeer extends EventEmitter {
     protected _clientMapping: object | undefined;
     protected _payIDClaim: PayIDClaim | undefined;
 
-    constructor(_options: IOpenPayPeerOptions) {
+    constructor(_options: ICruxPayPeerOptions) {
         super();
 
         this._options = Object.assign({}, _options);
@@ -156,11 +156,12 @@ class OpenPayPeer extends EventEmitter {
         this.walletClientName = this._options.walletClientName;
 
         log.info(`Config mode:`, config.CONFIG_MODE);
-        log.info(`OpenPayPeer Initialised`);
+        log.info(`CruxPayPeer Initialised`);
     }
 
+    @utils.groupLogs("Initialising OpenPayPeer")
     public async init() {
-        console.group("Initialising OpenPayPeer");
+        console.group("Initialising CruxPayPeer");
         const configService = new BlockstackConfigurationService(this.walletClientName);
         await configService.init();
         if (!this._nameservice) {
@@ -170,12 +171,12 @@ class OpenPayPeer extends EventEmitter {
         if (this._hasPayIDClaimStored()) {
             const payIDClaim = this._storage.getJSON("payIDClaim");
             // log.debug(`Local payIDClaim:`, payIDClaim)
-            this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }));
+            this._setPayIDClaim(new PayIDClaim(payIDClaim as ICruxPayClaim, { getEncryptionKey: this._getEncryptionKey }));
             await this._restoreIdentity();
         } else {
             const identityClaim = await (this._nameservice as nameservice.NameService).generateIdentity();
             const payIDClaim = {identitySecrets: identityClaim.secrets};
-            this._setPayIDClaim(new PayIDClaim(payIDClaim as IOpenPayClaim, { getEncryptionKey: this._getEncryptionKey }));
+            this._setPayIDClaim(new PayIDClaim(payIDClaim as ICruxPayClaim, { getEncryptionKey: this._getEncryptionKey }));
             log.debug(`Allocated temporary identitySecrets and payIDClaim`);
         }
         this._assetList = await configService.getGlobalAssetList();
@@ -183,8 +184,7 @@ class OpenPayPeer extends EventEmitter {
 
         log.debug(`global asset list is:- `, this._assetList);
         log.debug(`client asset mapping is:- `, this._clientMapping);
-        console.groupEnd();
-        log.info(`OpenPayPeer: Done init`);
+        log.info(`CruxPayPeer: Done init`);
     }
 
     public hasPayIDClaim = (): boolean =>  {
@@ -221,9 +221,9 @@ class OpenPayPeer extends EventEmitter {
         }
     }
 
+    @utils.groupLogs("Resolving currency address for cruxID")
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
         try {
-            console.groupCollapsed("Resolving address");
             let correspondingAssetId: string = "";
             for (const i in this._clientMapping) {
                 if (i === walletCurrencySymbol) {
@@ -232,7 +232,6 @@ class OpenPayPeer extends EventEmitter {
                 }
             }
             if (!correspondingAssetId) {
-                console.groupEnd();
                 throw new Errors.PackageErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping");
             }
 
@@ -240,11 +239,10 @@ class OpenPayPeer extends EventEmitter {
             log.debug(`Address map: `, addressMap);
             if (!addressMap[correspondingAssetId]) {
                 console.groupEnd();
-                throw new Errors.PackageErrors.AddressNotAvailable("Currency address not available for user");
+                throw new Errors.PackageErrors.AddressNotAvailable("Currency address not available for user", 1103);
             }
             const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
             log.debug(`Address:`, address);
-            console.groupEnd();
             return address;
         } catch (error) {
             throw CruxClientErrors.FailedToResolveCurrencyAddressForCruxIDError.fromError(error);
@@ -281,7 +279,7 @@ class OpenPayPeer extends EventEmitter {
 }
 
 // Wallets specific SDK code
-export class CruxClient extends OpenPayPeer {
+export class CruxClient extends CruxPayPeer {
     // NameService specific methods
     public getCruxIDState = async (): Promise<ICruxIDState> => {
         try {

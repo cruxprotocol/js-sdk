@@ -1,5 +1,5 @@
 import ecies from "eciesjs";
-import {Errors} from "./index"
+import {Errors} from "./index";
 
 export class Encryption {
 
