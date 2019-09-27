@@ -219,7 +219,6 @@ class CruxPayPeer extends EventEmitter {
 
     public isCruxIDAvailable = (cruxIDSubdomain: string): Promise<boolean> => {
         // Subdomain validation
-        const foo: any = "bar";
         identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
         return (this._nameservice as nameservice.NameService).getNameAvailability(cruxIDSubdomain);
     }
