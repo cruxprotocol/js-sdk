@@ -13,7 +13,7 @@ export function getLogger(filename: string) {
 const log = getLogger(__filename);
 
 // Importing packages
-import { BlockstackConfigurationService, encryption, Errors, nameservice, storage, identityUtils } from "./packages";
+import { BlockstackConfigurationService, encryption, Errors, identityUtils, nameservice, storage, utils } from "./packages";
 
 // TODO: Implement classes enforcing the interfaces
 export interface IAddress {
@@ -162,8 +162,8 @@ class OpenPayPeer extends EventEmitter {
         log.info(`OpenPayPeer Initialised`);
     }
 
+    @utils.groupLogs("Initialising OpenPayPeer")
     public async init() {
-        console.group("Initialising OpenPayPeer");
         const configService = new BlockstackConfigurationService(this.walletClientName);
         await configService.init();
         if (!this._nameservice) {
@@ -186,7 +186,6 @@ class OpenPayPeer extends EventEmitter {
 
         log.debug(`global asset list is:- `, this._assetList);
         log.debug(`client asset mapping is:- `, this._clientMapping);
-        console.groupEnd();
         log.info(`OpenPayPeer: Done init`);
     }
 
@@ -218,13 +217,13 @@ class OpenPayPeer extends EventEmitter {
     }
 
     public isCruxIDAvailable = (cruxIDSubdomain: string): Promise<boolean> => {
-        //Subdomain validation 
+        // Subdomain validation
         identityUtils.CruxId.validateSubdomain(cruxIDSubdomain)
         return (this._nameservice as nameservice.NameService).getNameAvailability(cruxIDSubdomain);
     }
 
+    @utils.groupLogs("Resolving currency address for cruxID")
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
-        console.groupCollapsed("Resolving address");
         let correspondingAssetId: string = "";
         for (const i in this._clientMapping) {
             if (i === walletCurrencySymbol) {
@@ -233,19 +232,16 @@ class OpenPayPeer extends EventEmitter {
             }
         }
         if (!correspondingAssetId) {
-            console.groupEnd();
             throw new Errors.ClientErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping", 1200)
         }
 
         const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);
         log.debug(`Address map: `, addressMap);
         if (!addressMap[correspondingAssetId]) {
-            console.groupEnd();
             throw new Errors.ClientErrors.AddressNotAvailable("Currency address not available for user", 1103);
         }
         const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
         log.debug(`Address:`, address);
-        console.groupEnd();
         return address;
     }
 
@@ -294,16 +290,15 @@ export class CruxClient extends OpenPayPeer {
 
     public getIDStatus = async (): Promise<nameservice.CruxIDRegistrationStatus> => {
         await (this._payIDClaim as PayIDClaim).decrypt();
-        const result = (this._nameservice as nameservice.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
+        const result = await (this._nameservice as nameservice.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
         await (this._payIDClaim as PayIDClaim).encrypt();
         return result;
     }
 
     public registerCruxID = async (cruxIDSubdomain: string, newAddressMap?: IAddressMapping): Promise<void> => {
         // TODO: add isCruxIDAvailable check before
-        
-        //Subdomain validation 
-        identityUtils.CruxId.validateSubdomain(cruxIDSubdomain)
+        // Subdomain validation
+        identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
 
         // Generating the identityClaim
         await (this._payIDClaim as PayIDClaim).decrypt();
