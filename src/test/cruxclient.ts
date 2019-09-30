@@ -6,6 +6,7 @@ import sinon from "sinon";
 import WebCrypto from "node-webcrypto-ossl";
 import { expect } from 'chai';
 import {CruxClient, PayIDClaim} from "../index";
+import { ErrorHelper, PackageErrorCode } from '../packages/error';
 
 interface Global {
 	crypto: any;
@@ -32,7 +33,7 @@ describe('CruxClient tests', () => {
 	};
 	let mockedAddressMapping = {"1d6e1a99-1e77-41e1-9ebb-0e216faa166a": {addressHash: "19m51F8YkjzK625csaNtKnM9pgByeMJRU3"}}
 	let sampleUser = {
-		'payIDClaim': {"virtualAddress":"syedhassanashraf@cruxdev.crux","identitySecrets":"{\"iv\":\"XJmOCWeHzU4HfsYI\",\"encBuffer\":\"ss20WCh7PW64wWswkRUu/dxMkPro2KmD1rCGLKdtew82cPuJwZTqcdrfz9GBJOYqsHrzE4lOoUmODHeWor3ebC6vHCU8tQdg17Rlpdj3hx2FU0XTY1PsmJft4wZOvb9uThk6estvQgnj5/7quw9Be6oGt6gyCtOYsxtfSQysH0kfgRauCEOx4tTjSXO2GAufeEK4hubCC7bJ6iQCr9uAeMWRSxFknK8I+M62RnE8iINVp2yQ+5I3M7Z8oFRSzwi0nJAVps/rTMfZOw2mXYtgEgY59aSXItr+hHSGGF0pWHqlRNzcCbV11MdBCIrEHWhOnU/hK5PWSxJMRytIwEaYspXqWEu+KaftkKIxr/CU/rnCd8w/ML0lS7hMXljMG95BN66M8k5vXHkAmdmMRZdQN4Y4nD5vhxY0q69+37fH0LmsMG0tKdm3d4H8PVpu\"}"},
+		'payIDClaim': {"virtualAddress":"yadunandan@cruxdev.crux","identitySecrets":"{\"iv\":\"XJmOCWeHzU4HfsYI\",\"encBuffer\":\"ss20WCh7PW64wWswkRUu/dxMkPro2KmD1rCGLKdtew82cPuJwZTqcdrfz9GBJOYqsHrzE4lOoUmODHeWor3ebC6vHCU8tQdg17Rlpdj3hx2FU0XTY1PsmJft4wZOvb9uThk6estvQgnj5/7quw9Be6oGt6gyCtOYsxtfSQysH0kfgRauCEOx4tTjSXO2GAufeEK4hubCC7bJ6iQCr9uAeMWRSxFknK8I+M62RnE8iINVp2yQ+5I3M7Z8oFRSzwi0nJAVps/rTMfZOw2mXYtgEgY59aSXItr+hHSGGF0pWHqlRNzcCbV11MdBCIrEHWhOnU/hK5PWSxJMRytIwEaYspXqWEu+KaftkKIxr/CU/rnCd8w/ML0lS7hMXljMG95BN66M8k5vXHkAmdmMRZdQN4Y4nD5vhxY0q69+37fH0LmsMG0tKdm3d4H8PVpu\"}"},
 		'cruxID': 'syedhassanashraf@cruxdev.crux',
 		'blockStackID': 'syedhassanashraf.crux.id',
 		'cruxIDSubdomain': 'syedhassanashraf',
@@ -145,11 +146,7 @@ describe('CruxClient tests', () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
-				let updateProfileStub = sinon.stub(cruxClient._nameservice, '_uploadProfileInfo').resolves(true)
-
-				let registerSubdomainPromise = new Promise<any>(async(resolve, reject) => {resolve(sampleUser['blockStackID'])})
-				let registerSubdomainStub = sinon.stub(cruxClient._nameservice, '_registerSubdomain').returns(registerSubdomainPromise)
-				let stubbedPutAddressMap = sinon.stub(cruxClient, 'putAddressMap').resolves()
+				let registerNameStub = sinon.stub(cruxClient._nameservice, 'registerName').resolves('hassan@cruxdev.crux')
 				let raisedException = false
 				try {
 					await cruxClient.registerCruxID(sampleUser['cruxIDSubdomain'], sampleAddressMap)
@@ -157,12 +154,8 @@ describe('CruxClient tests', () => {
 					raisedException = true
 				}
 				// registering subdomain on blockchain and uploading profile information
-				expect(registerSubdomainStub.callCount).to.equal(1)
-				expect(updateProfileStub.callCount).to.equal(1)
-
 				expect(raisedException).to.equal(false)
-				updateProfileStub.restore()
-				registerSubdomainStub.restore()
+				registerNameStub.restore()
 			})
 
 			it("valid subdomain registration, call to registrar failed", async () => {
@@ -170,18 +163,17 @@ describe('CruxClient tests', () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
-				let updateProfileStub = sinon.stub(cruxClient._nameservice, '_uploadProfileInfo').resolves(true)
 
+				let registerNameStub = sinon.stub(cruxClient._nameservice, 'registerName').rejects(ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed))
 				let raisedException = false
 				try {
 					await cruxClient.registerCruxID(sampleUser['cruxIDSubdomain'])
 				} catch(e) {
-					expect(e.errorCode).to.equal(3001)
+					expect(e.errorCode).to.equal(2004)
 					raisedException = true
 				} finally {
-					expect(updateProfileStub.callCount).to.equal(1)
 					expect(raisedException).to.equal(true)
-					updateProfileStub.restore()
+					registerNameStub.restore()
 				}
 			})
 		})
@@ -282,12 +274,12 @@ describe('CruxClient tests', () => {
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
 				let raisesException = false
-				let updateProfileStub = sinon.stub(blockstack, 'uploadToGaiaHub').throws('network error')
+				let updateProfileStub = sinon.stub(cruxClient._nameservice, 'putAddressMapping').rejects(ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed))
 				try {
 					await cruxClient.putAddressMap(sampleAddressMap)
 				} catch(e) {
 					raisesException = true
-					expect(e.errorCode).to.equal(2002)
+					expect(e.errorCode).to.equal(2004)
 				} finally {
 					expect(raisesException).to.be.true
 					updateProfileStub.restore()
