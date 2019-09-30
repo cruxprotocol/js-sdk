@@ -1,6 +1,7 @@
 import { getLogger } from "..";
 import config from "../config";
 import {ErrorHelper, PackageErrorCode} from "./error";
+import { getGaiaHubUrlsFromBlockstackID } from "./gaia-utils";
 import * as identityUtils from "./identity-utils";
 import * as nameservice from "./nameservice";
 
@@ -23,10 +24,14 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     private blockstackNameservice: nameservice.BlockstackService;
     private clientName: string;
     private clientConfig: any;
+    private blockstackID: string | undefined;
 
-    constructor(clientName: string) {
+    constructor(clientName: string, cruxID?: string) {
         super();
         this.clientName = clientName;
+        if (cruxID) {
+            this.blockstackID = identityUtils.IdTranslator.cruxToBlockstack(identityUtils.CruxId.fromString(cruxID)).toString();
+        }
         this.blockstackNameservice = new nameservice.BlockstackService();
         log.info(`BlockstackConfigurationService initialised with default configs`);
     }
@@ -60,6 +65,12 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     public getBlockstackServiceForConfig = async (): Promise<nameservice.BlockstackService> => {
         if (!this.clientConfig) { throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig); }
         let ns: nameservice.BlockstackService;
+        if (this.blockstackID) {
+            const gaiaUrls = getGaiaHubUrlsFromBlockstackID(this.blockstackID);
+            if (gaiaUrls.gaiaWriteUrl !== "") {
+                this.clientConfig.nameserviceConfiguration.gaiaHub = gaiaUrls.gaiaWriteUrl;
+            }
+        }
         if (this.clientConfig.nameserviceConfiguration) {
             ns = new nameservice.BlockstackService(this.clientConfig.nameserviceConfiguration);
         } else {

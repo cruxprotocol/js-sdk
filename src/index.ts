@@ -166,7 +166,14 @@ class CruxPayPeer extends EventEmitter {
     }
 
     public async init() {
-        const configService = new BlockstackConfigurationService(this.walletClientName);
+        let configService;
+        if (this._hasPayIDClaimStored()) {
+            const ns: nameservice.BlockstackService = new nameservice.BlockstackService();
+            const status = ns.getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
+            configService = new BlockstackConfigurationService(this.walletClientName, (this._payIDClaim as PayIDClaim).virtualAddress);
+        } else {
+            configService = new BlockstackConfigurationService(this.walletClientName);
+        }
         await configService.init();
         if (!this._nameservice) {
             this._nameservice = await configService.getBlockstackServiceForConfig();
@@ -176,6 +183,13 @@ class CruxPayPeer extends EventEmitter {
             const payIDClaim = this._storage.getJSON("payIDClaim");
             // log.debug(`Local payIDClaim:`, payIDClaim)
             this._setPayIDClaim(new PayIDClaim(payIDClaim as ICruxPayClaim, { getEncryptionKey: this._getEncryptionKey }));
+            const ns: nameservice.BlockstackService = new nameservice.BlockstackService();
+            const status = await ns.getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
+            if (status.status === nameservice.SubdomainRegistrationStatus.DONE) {
+                configService = new BlockstackConfigurationService(this.walletClientName, "");
+            } else {
+                configService = new BlockstackConfigurationService(this.walletClientName);
+            }
             await this._restoreIdentity();
         } else {
             const identityClaim = await (this._nameservice as nameservice.NameService).generateIdentity();
