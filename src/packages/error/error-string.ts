@@ -9,6 +9,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.BlockstackIdNamespaceValidation]: "Invalid Blockstack ID",
     [PackageErrorCode.BnsEmptyData]: "No name data available",
     [PackageErrorCode.BnsResolutionFailed]: "'{0}' node not available because '{1}'",
+    [PackageErrorCode.CouldNotFindAssetListInClientConfig]: "Missing global asset list",
     [PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig]: "Missing client-config for: '{0}'",
     [PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping]: "Missing IdentityKeyPair",
     [PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity]: "Require mnemonic for restoring the identity",

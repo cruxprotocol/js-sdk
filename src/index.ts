@@ -184,7 +184,7 @@ class CruxPayPeer extends EventEmitter {
             log.debug(`Allocated temporary identitySecrets and payIDClaim`);
         }
 
-        this._clientMapping = await configService.getClientAssetMapping(this.walletClientName);
+        this._clientMapping = await configService.getClientAssetMapping();
         this._assetList = await configService.getGlobalAssetList();
 
         log.debug(`global asset list is:- `, this._assetList);
