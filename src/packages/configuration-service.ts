@@ -1,7 +1,7 @@
 import { getLogger } from "..";
 import config from "../config";
+import {ErrorHelper, PackageErrorCode} from "./error";
 import * as identityUtils from "./identity-utils";
-import {ErrorHelper, PackageErrorCode} from "./index";
 import * as nameservice from "./nameservice";
 import {BlockstackService, UPLOADABLE_JSON_FILES} from "./nameservice";
 

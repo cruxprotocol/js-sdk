@@ -1,16 +1,12 @@
-
-import WebCrypto from "node-webcrypto-ossl";
 import 'mocha';
-import {CruxClient, IAddressMapping, PayIDClaim} from "../index";
-import sinon from "sinon";
+import * as blockstack from "blockstack";
 import * as utils from "../packages/utils";
 import requestFixtures from './requestMocks/cruxclient-reqmocks';
+import sinon from "sinon";
+import WebCrypto from "node-webcrypto-ossl";
 import { expect } from 'chai';
-import { async } from "q";
-import * as blockstack from "blockstack";
-import { resolve } from "path";
-import { object } from "@mojotech/json-type-validation";
-import {CruxClientErrors} from "../packages"
+import {CruxClient, PayIDClaim} from "../index";
+
 interface Global {
 	crypto: any;
 	TextEncoder: any;

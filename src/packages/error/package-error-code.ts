@@ -23,6 +23,11 @@ export enum PackageErrorCode {
     SubdomainRegexMatchFailure = 4002,
     SubdomainLengthCheckFailure = 4003,
     AddressMappingDecodingFailure = 4004,
+    CruxIdNamespaceValidation = 4005,
+    CruxIdLengthValidation = 4006,
+    BlockstackIdNamespaceValidation = 4007,
+    BlockstackIdLengthValidation = 4008,
+    BlockstackIdInvalidSubdomain = 4009,
     // Internal errors
     CouldNotFindBlockstackConfigurationServiceClientConfig = 5001,
     CouldNotFindMnemonicToRestoreIdentity = 5002,

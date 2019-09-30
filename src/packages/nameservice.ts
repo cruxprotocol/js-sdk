@@ -6,7 +6,7 @@ import {getLogger, IAddress, IAddressMapping} from "..";
 import config from "../config";
 
 import {BlockstackId, CruxId, IdTranslator} from "./identity-utils";
-import {ErrorHelper, PackageErrorCode} from "./index";
+import {ErrorHelper, PackageErrorCode} from "./error";
 import * as utils from "./utils";
 
 const log = getLogger(__filename);

@@ -15,14 +15,11 @@ const log = getLogger(__filename);
 // Importing packages
 import {
     BlockstackConfigurationService,
-    CruxClientError,
     encryption,
-    ErrorHelper,
+    error,
     identityUtils,
     nameservice,
-    PackageErrorCode,
     storage,
-    utils,
 } from "./packages";
 
 // TODO: Implement classes enforcing the interfaces
@@ -82,7 +79,7 @@ export class PayIDClaim implements ICruxPayClaim {
     private _encryption: typeof encryption.Encryption = encryption.Encryption;
 
     constructor(cruxPayObj: ICruxPayClaim = {} as ICruxPayClaim, options: cruxPayOptions) {
-        if (!options.getEncryptionKey) { throw ErrorHelper.getPackageError(PackageErrorCode.ExpectedEncryptionKeyValue); }
+        if (!options.getEncryptionKey) { throw error.ErrorHelper.getPackageError(error.PackageErrorCode.ExpectedEncryptionKeyValue); }
         this._getEncryptionKey = options.getEncryptionKey;
         if (options.encryption) { this._encryption = options.encryption; }
 
@@ -217,7 +214,7 @@ class CruxPayPeer extends EventEmitter {
                 return false;
             }
         } catch (error) {
-            throw CruxClientError.fromError(error);
+            throw error.CruxClientError.fromError(error);
         }
     }
 
@@ -226,7 +223,7 @@ class CruxPayPeer extends EventEmitter {
             identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
             return (this._nameservice as nameservice.NameService).getNameAvailability(cruxIDSubdomain);
         } catch (error) {
-            throw CruxClientError.fromError(error);
+            throw error.CruxClientError.fromError(error);
         }
     }
 
@@ -240,19 +237,19 @@ class CruxPayPeer extends EventEmitter {
                 }
             }
             if (!correspondingAssetId) {
-                throw ErrorHelper.getPackageError(PackageErrorCode.AssetIDNotAvailable);
+                throw error.ErrorHelper.getPackageError(error.PackageErrorCode.AssetIDNotAvailable);
             }
 
             const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);
             log.debug(`Address map: `, addressMap);
             if (!addressMap[correspondingAssetId]) {
-                throw ErrorHelper.getPackageError(PackageErrorCode.AddressNotAvailable);
+                throw error.ErrorHelper.getPackageError(error.PackageErrorCode.AddressNotAvailable);
             }
             const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
             log.debug(`Address:`, address);
             return address;
         } catch (error) {
-            throw CruxClientError.fromError(error);
+            throw error.CruxClientError.fromError(error);
         }
     }
 
@@ -297,7 +294,7 @@ export class CruxClient extends CruxPayPeer {
                 status,
             };
         } catch (error) {
-            throw CruxClientError.fromError(error);
+            throw error.CruxClientError.fromError(error);
         }
     }
 
@@ -328,7 +325,7 @@ export class CruxClient extends CruxPayPeer {
                 await this.putAddressMap(newAddressMap);
             }
         } catch (error) {
-            throw CruxClientError.fromError(error);
+            throw error.CruxClientError.fromError(error);
         }
     }
 
@@ -345,7 +342,7 @@ export class CruxClient extends CruxPayPeer {
             await (this._payIDClaim as PayIDClaim).encrypt();
             return acknowledgement;
         } catch (error) {
-            throw CruxClientError.fromError(error);
+            throw error.CruxClientError.fromError(error);
         }
     }
 
@@ -370,7 +367,7 @@ export class CruxClient extends CruxPayPeer {
                 return {};
             }
         } catch (error) {
-            throw CruxClientError.fromError(error);
+            throw error.CruxClientError.fromError(error);
         }
     }
 
