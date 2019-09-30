@@ -153,9 +153,12 @@ describe('CruxClient tests', () => {
 				} catch(e) {
 					raisedException = true
 				}
-				// registering subdomain on blockchain and uploading profile information
-				expect(raisedException).to.equal(false)
-				registerNameStub.restore()
+				finally{
+					// registering subdomain on blockchain and uploading profile information
+					expect(raisedException).to.equal(false)
+					registerNameStub.restore()
+
+				}
 			})
 
 			it("valid subdomain registration, call to registrar failed", async () => {
@@ -173,6 +176,7 @@ describe('CruxClient tests', () => {
 					raisedException = true
 				} finally {
 					expect(raisedException).to.equal(true)
+					expect(registerNameStub.callCount).to.equal(1)
 					registerNameStub.restore()
 				}
 			})
