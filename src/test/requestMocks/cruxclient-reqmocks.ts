@@ -84,69 +84,41 @@ let requestResponseArray: { request: object, response: object }[] = [
     },
     response: [
       {
-        token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJpc3N1ZXIiOnsicHVibGljS2V5IjoiMDI2MGNhYzY5ZjNjY2VmZmE5MDY4ZjRjYTI5MzMyOWNhNjQ4ZTMxODFjZWU3ZjI5NWIwMzRlMWNmNTdiZGNiMWY4In0sInN1YmplY3QiOnsicHVibGljS2V5IjoiMDI2MGNhYzY5ZjNjY2VmZmE5MDY4ZjRjYTI5MzMyOWNhNjQ4ZTMxODFjZWU3ZjI5NWIwMzRlMWNmNTdiZGNiMWY4In0sImNsYWltIjp7ImFzc2V0TWFwcGluZyI6eyJFT1MiOiI5ZGJkYzcyNy1kZTY4LTRmMmEtODk1Ni0wNGEzOGVkNzFjYTYiLCJFVEgiOiI1MDhiOGY3My00YjA2LTQ1M2UtODE1MS03OGNiOGNmYzNiYzkiLCJUUlgiOiI5ZGJkYzcyNy1kZTY4LTRmMmEtODk1Ni0wNGEzOGVkNzFjYTUiLCJCVEMiOiIxZDZlMWE5OS0xZTc3LTQxZTEtOWViYi0wZTIxNmZhYTE2NmEifSwibmFtZXNlcnZpY2VDb25maWd1cmF0aW9uIjp7ImRvbWFpbiI6InNjYXR0ZXJfZGV2Iiwic3ViZG9tYWluUmVnaXN0cmFyIjoiaHR0cHM6Ly9yZWdpc3RyYXIuY29pbnN3aXRjaC5jbzo0MDAwIn19fQ.DFagF5T3py2FY6cS0tms_eY7pU6gGdI4HuMLJWrft-LGqseYN-drZm0dJoH9hzC2NDJV9ycATvRABZEPLewEKQ",
-        decodedToken: {
-          header: {
-            typ: "JWT",
-            alg: "ES256K"
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJjbGFpbSI6eyJhc3NldE1hcHBpbmciOnsiRU9TIjoiOWRiZGM3MjctZGU2OC00ZjJhLTg5NTYtMDRhMzhlZDcxY2E2IiwiRVRIIjoiNTA4YjhmNzMtNGIwNi00NTNlLTgxNTEtNzhjYjhjZmMzYmM5IiwiVFJYIjoiOWRiZGM3MjctZGU2OC00ZjJhLTg5NTYtMDRhMzhlZDcxY2E1IiwiQlRDIjoiMWQ2ZTFhOTktMWU3Ny00MWUxLTllYmItMGUyMTZmYWExNjZhIn0sIm5hbWVzZXJ2aWNlQ29uZmlndXJhdGlvbiI6eyJkb21haW4iOiJzY2F0dGVyX2RldiIsInN1YmRvbWFpblJlZ2lzdHJhciI6Imh0dHBzOi8vcmVnaXN0cmFyLmNvaW5zd2l0Y2guY286NDAwMCJ9LCJhc3NldExpc3QiOlt7ImFzc2V0X2lkIjoiOGRkOTM5ZWYtYjlkMi00NmYwLTg3OTYtNGJkOGRiYWVlZjFiIiwibmFtZSI6IkxpdGVjb2luIiwic3ltYm9sIjoibHRjIiwiaW1hZ2Vfc21fdXJsIjoiaHR0cHM6Ly9zMy5hcC1zb3V0aC0xLmFtYXpvbmF3cy5jb20vY3J5cHRvLWV4Y2hhbmdlL2NvaW5zLXNtL2xpdGVjb2luLnBuZyJ9LHsiYXNzZXRfaWQiOiI1MDhiOGY3My00YjA2LTQ1M2UtODE1MS03OGNiOGNmYzNiYzkiLCJuYW1lIjoiRXRoZXJldW0iLCJzeW1ib2wiOiJldGgiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL2ZpbGVzLmNvaW5zd2l0Y2guY28vcHVibGljL2NvaW5zL2V0aC5wbmcifSx7ImFzc2V0X2lkIjoiOWEyNjdjYzMtMGU3Mi00ZGI1LTkzMGMtYzYwYTc0ZDY0YzU1IiwibmFtZSI6IkJhc2ljIEF0dGVudGlvbiBUb2tlbiIsInN5bWJvbCI6ImJhdCIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vczMuYXAtc291dGgtMS5hbWF6b25hd3MuY29tL2NyeXB0by1leGNoYW5nZS9jb2lucy1zbS9iYXQucG5nIn0seyJhc3NldF9pZCI6IjQ5MGY3NjQ4LTdmYzEtNGYwZC1hYTIzLWUwODE4NWRhZjhhNSIsIm5hbWUiOiJEaWdpQnl0ZSIsInN5bWJvbCI6ImRnYiIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vczMuYXAtc291dGgtMS5hbWF6b25hd3MuY29tL2NyeXB0by1leGNoYW5nZS9jb2lucy1zbS9kaWdpYnl0ZS5wbmcifSx7ImFzc2V0X2lkIjoiNzdhODgwYTAtMzQ0My00ZWVmLTg1MDAtYmRjOGRjZGQzMzcwIiwibmFtZSI6IkRhaSIsInN5bWJvbCI6ImRhaSIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vczMuYXAtc291dGgtMS5hbWF6b25hd3MuY29tL2NyeXB0by1leGNoYW5nZS9jb2lucy1zbS9kYWkucG5nIn0seyJhc3NldF9pZCI6IjkwMmQ0YmRlLWY4NzctNDg2ZS04MTNlLTEzNTkyMGNjN2YzMyIsIm5hbWUiOiIweCIsInN5bWJvbCI6InpyeCIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vczMuYXAtc291dGgtMS5hbWF6b25hd3MuY29tL2NyeXB0by1leGNoYW5nZS9jb2lucy8weC5wbmcifSx7ImFzc2V0X2lkIjoiMDk5OWM5NTktZjY5MS00NTUzLWI0NjEtYjg4ZWE1MDMyZTBjIiwibmFtZSI6Ik1vbmFjbyIsInN5bWJvbCI6Im1jbyIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vczMuYXAtc291dGgtMS5hbWF6b25hd3MuY29tL2NyeXB0by1leGNoYW5nZS9jb2lucy1zbS9tb25hY28ucG5nIn0seyJhc3NldF9pZCI6ImZlY2ZlYjI2LWU2MTItNGRmNC1hZWQ3LWJkNGFkMDE5NDkzNiIsIm5hbWUiOiJDaXZpYyIsInN5bWJvbCI6ImN2YyIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vczMuYXAtc291dGgtMS5hbWF6b25hd3MuY29tL2NyeXB0by1leGNoYW5nZS9jb2lucy1zbS9jaXZpYy5wbmcifSx7ImFzc2V0X2lkIjoiMjBkNTdkN2QtM2NjMS00MjhhLWFlOTAtMDlmYjljNTE2OGY1IiwibmFtZSI6IkRlY3JlZCIsInN5bWJvbCI6ImRjciIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vczMuYXAtc291dGgtMS5hbWF6b25hd3MuY29tL2NyeXB0by1leGNoYW5nZS9jb2lucy1zbS9kZWNyZWQucG5nIn0seyJhc3NldF9pZCI6IjlkNzk2NTY5LTBmYWYtNGU0YS1iNTgxLTY3NmZhYjM0MzNkOSIsIm5hbWUiOiJEaWdpeERBTyIsInN5bWJvbCI6ImRnZCIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vczMuYXAtc291dGgtMS5hbWF6b25hd3MuY29tL2NyeXB0by1leGNoYW5nZS9jb2lucy1zbS9kaWdpeGRhby5wbmcifSx7ImFzc2V0X2lkIjoiZDEzM2RkMTMtYTc5MS00YzJiLTljMTQtYjRjODUzMmY2YjkxIiwibmFtZSI6ImRpc3RyaWN0MHgiLCJzeW1ib2wiOiJkbnQiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL3MzLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbS9jcnlwdG8tZXhjaGFuZ2UvY29pbnMtc20vZGlzdHJpY3QweC5wbmcifSx7ImFzc2V0X2lkIjoiOWRiZGM3MjctZGU2OC00ZjJhLTg5NTYtMDRhMzhlZDcxY2E1IiwibmFtZSI6IlRyb24iLCJzeW1ib2wiOiJ0cngiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL2ZpbGVzLmNvaW5zd2l0Y2guY28vcHVibGljL2NvaW5zL3RyeC5wbmcifSx7ImFzc2V0X2lkIjoiOWRiZGM3MjctZGU2OC00ZjJhLTg5NTYtMDRhMzhlZDcxY2E2IiwibmFtZSI6IkVPUyIsInN5bWJvbCI6ImVvcyIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vZmlsZXMuY29pbnN3aXRjaC5jby9wdWJsaWMvY29pbnMvZW9zLnBuZyJ9LHsiYXNzZXRfaWQiOiIxZDZlMWE5OS0xZTc3LTQxZTEtOWViYi0wZTIxNmZhYTE2NmEiLCJuYW1lIjoiQml0Y29pbiIsInN5bWJvbCI6ImJ0YyIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vZmlsZXMuY29pbnN3aXRjaC5jby9wdWJsaWMvY29pbnMvYnRjLnBuZyJ9LHsiYXNzZXRfaWQiOiJiMzNhZGM3YS1iZWI5LTQyMWYtOTVkNi1kNDk1ZGM1NDlmNzkiLCJuYW1lIjoiTGlzayIsInN5bWJvbCI6ImxzayIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vczMuYXAtc291dGgtMS5hbWF6b25hd3MuY29tL2NyeXB0by1leGNoYW5nZS9jb2lucy1zbS9saXNrX3YyLnBuZyJ9LHsiYXNzZXRfaWQiOiIzZTkyZjFiNi02OTNjLTQ2NTQtOWI5Yi05Mzg1ODJkNjRlNGYiLCJuYW1lIjoiV2F2ZXMiLCJzeW1ib2wiOiJ3YXZlcyIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vczMuYXAtc291dGgtMS5hbWF6b25hd3MuY29tL2NyeXB0by1leGNoYW5nZS9jb2lucy1zbS93YXZlcy5wbmcifSx7ImFzc2V0X2lkIjoiMjc5NGU0YzYtNmJlYy00NWRhLWI0YTYtNzQ5OTZjZGFkNzlhIiwibmFtZSI6IkdvbGVtIiwic3ltYm9sIjoiZ250IiwiaW1hZ2Vfc21fdXJsIjoiaHR0cHM6Ly9zMy5hcC1zb3V0aC0xLmFtYXpvbmF3cy5jb20vY3J5cHRvLWV4Y2hhbmdlL2NvaW5zLXNtL2dvbGVtLnBuZyJ9LHsiYXNzZXRfaWQiOiI4NmEzZjNmYS1kNjE2LTRmNDAtYjQ2Yy0wOWM0OWMwMTg3ZTEiLCJuYW1lIjoiT21pc2VHTyIsInN5bWJvbCI6Im9tZyIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vczMuYXAtc291dGgtMS5hbWF6b25hd3MuY29tL2NyeXB0by1leGNoYW5nZS9jb2lucy1zbS9vbWlzZWdvLnBuZyJ9LHsiYXNzZXRfaWQiOiI4OTYwYzNlNy1jOTUzLTRkYjEtODQ5Ny0zNGI4MmQ5Y2UzMjIiLCJuYW1lIjoiQXVndXIiLCJzeW1ib2wiOiJyZXAiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL3MzLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbS9jcnlwdG8tZXhjaGFuZ2UvY29pbnMtc20vYXVndXIucG5nIn1dfSwiaXNzdWVyIjp7InB1YmxpY0tleSI6IjAyNjBjYWM2OWYzY2NlZmZhOTA2OGY0Y2EyOTMzMjljYTY0OGUzMTgxY2VlN2YyOTViMDM0ZTFjZjU3YmRjYjFmOCJ9LCJzdWJqZWN0Ijp7InB1YmxpY0tleSI6IjAyNjBjYWM2OWYzY2NlZmZhOTA2OGY0Y2EyOTMzMjljYTY0OGUzMTgxY2VlN2YyOTViMDM0ZTFjZjU3YmRjYjFmOCJ9fQ.LhpMEDHdAjiiXTGP8VBVTfDn5JEYor4cLWAWGC1y3kEdyWkfnQ3jx0nC_b9vDiz-IBQfAUekK9QueW3jzyE0wQ",
+        "decodedToken": {
+          "header": {
+            "typ": "JWT",
+            "alg": "ES256K"
           },
-          payload: {
-            issuer: {
-              publicKey: "0260cac69f3cceffa9068f4ca293329ca648e3181cee7f295b034e1cf57bdcb1f8"
-            },
-            subject: {
-              publicKey: "0260cac69f3cceffa9068f4ca293329ca648e3181cee7f295b034e1cf57bdcb1f8"
-            },
-            claim: {
-              assetMapping: {
-                EOS: "9dbdc727-de68-4f2a-8956-04a38ed71ca6",
-                ETH: "508b8f73-4b06-453e-8151-78cb8cfc3bc9",
-                TRX: "9dbdc727-de68-4f2a-8956-04a38ed71ca5",
-                BTC: "1d6e1a99-1e77-41e1-9ebb-0e216faa166a"
+          "payload": {
+            "claim": {
+              "assetMapping": {
+                "EOS": "9dbdc727-de68-4f2a-8956-04a38ed71ca6",
+                "ETH": "508b8f73-4b06-453e-8151-78cb8cfc3bc9",
+                "TRX": "9dbdc727-de68-4f2a-8956-04a38ed71ca5",
+                "BTC": "1d6e1a99-1e77-41e1-9ebb-0e216faa166a"
               },
-              nameserviceConfiguration: {
-                domain: "scatter_dev",
-                subdomainRegistrar: "https://registrar.coinswitch.co:4000"
-              }
+              "nameserviceConfiguration": {
+                "domain": "scatter_dev",
+                "subdomainRegistrar": "https://registrar.coinswitch.co:4000"
+              },
+              "assetList": [
+                {
+                  "asset_id": "8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b",
+                  "name": "Litecoin",
+                  "symbol": "ltc",
+                  "image_sm_url": "https://s3.ap-south-1.amazonaws.com/crypto-exchange/coins-sm/litecoin.png"
+                }
+              ]
+            },
+            "issuer": {
+              "publicKey": "0260cac69f3cceffa9068f4ca293329ca648e3181cee7f295b034e1cf57bdcb1f8"
+            },
+            "subject": {
+              "publicKey": "0260cac69f3cceffa9068f4ca293329ca648e3181cee7f295b034e1cf57bdcb1f8"
             }
           },
-          signature: "DFagF5T3py2FY6cS0tms_eY7pU6gGdI4HuMLJWrft-LGqseYN-drZm0dJoH9hzC2NDJV9ycATvRABZEPLewEKQ"
-        }
-    }]
-  },
-
-
-  {
-    request: {
-      method: 'GET',
-      url: 'https://gaia.blockstack.org/hub/18izR7sjo7Nn3pb5LrnHWKdV7P42cqricA/asset-list.json',
-      json: true
-    },
-    response: [
-      {
-        token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJpc3N1ZXIiOnsicHVibGljS2V5IjoiMDJiMjQ5ODllMzI0ZmRjMDE5NWUxY2ZkOTAwNmJkYWRkNjE3NjQ2ZDQ5ODVmOTZjYjM0YmJlMjYxYmU2ZmZiZDE2In0sInN1YmplY3QiOnsicHVibGljS2V5IjoiMDJiMjQ5ODllMzI0ZmRjMDE5NWUxY2ZkOTAwNmJkYWRkNjE3NjQ2ZDQ5ODVmOTZjYjM0YmJlMjYxYmU2ZmZiZDE2In0sImNsYWltIjpbeyJhc3NldF9pZCI6IjhkZDkzOWVmLWI5ZDItNDZmMC04Nzk2LTRiZDhkYmFlZWYxYiIsIm5hbWUiOiJMaXRlY29pbiIsInN5bWJvbCI6Imx0YyIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vczMuYXAtc291dGgtMS5hbWF6b25hd3MuY29tL2NyeXB0by1leGNoYW5nZS9jb2lucy1zbS9saXRlY29pbi5wbmcifSx7ImFzc2V0X2lkIjoiNTA4YjhmNzMtNGIwNi00NTNlLTgxNTEtNzhjYjhjZmMzYmM5IiwibmFtZSI6IkV0aGVyZXVtIiwic3ltYm9sIjoiZXRoIiwiaW1hZ2Vfc21fdXJsIjoiaHR0cHM6Ly9maWxlcy5jb2luc3dpdGNoLmNvL3B1YmxpYy9jb2lucy9ldGgucG5nIn0seyJhc3NldF9pZCI6IjlhMjY3Y2MzLTBlNzItNGRiNS05MzBjLWM2MGE3NGQ2NGM1NSIsIm5hbWUiOiJCYXNpYyBBdHRlbnRpb24gVG9rZW4iLCJzeW1ib2wiOiJiYXQiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL3MzLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbS9jcnlwdG8tZXhjaGFuZ2UvY29pbnMtc20vYmF0LnBuZyJ9LHsiYXNzZXRfaWQiOiI0OTBmNzY0OC03ZmMxLTRmMGQtYWEyMy1lMDgxODVkYWY4YTUiLCJuYW1lIjoiRGlnaUJ5dGUiLCJzeW1ib2wiOiJkZ2IiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL3MzLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbS9jcnlwdG8tZXhjaGFuZ2UvY29pbnMtc20vZGlnaWJ5dGUucG5nIn0seyJhc3NldF9pZCI6Ijc3YTg4MGEwLTM0NDMtNGVlZi04NTAwLWJkYzhkY2RkMzM3MCIsIm5hbWUiOiJEYWkiLCJzeW1ib2wiOiJkYWkiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL3MzLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbS9jcnlwdG8tZXhjaGFuZ2UvY29pbnMtc20vZGFpLnBuZyJ9LHsiYXNzZXRfaWQiOiI5MDJkNGJkZS1mODc3LTQ4NmUtODEzZS0xMzU5MjBjYzdmMzMiLCJuYW1lIjoiMHgiLCJzeW1ib2wiOiJ6cngiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL3MzLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbS9jcnlwdG8tZXhjaGFuZ2UvY29pbnMvMHgucG5nIn0seyJhc3NldF9pZCI6IjA5OTljOTU5LWY2OTEtNDU1My1iNDYxLWI4OGVhNTAzMmUwYyIsIm5hbWUiOiJNb25hY28iLCJzeW1ib2wiOiJtY28iLCJpbWFnZV9zbV91cmwiOiJodHRwczovL3MzLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbS9jcnlwdG8tZXhjaGFuZ2UvY29pbnMtc20vbW9uYWNvLnBuZyJ9LHsiYXNzZXRfaWQiOiJmZWNmZWIyNi1lNjEyLTRkZjQtYWVkNy1iZDRhZDAxOTQ5MzYiLCJuYW1lIjoiQ2l2aWMiLCJzeW1ib2wiOiJjdmMiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL3MzLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbS9jcnlwdG8tZXhjaGFuZ2UvY29pbnMtc20vY2l2aWMucG5nIn0seyJhc3NldF9pZCI6IjIwZDU3ZDdkLTNjYzEtNDI4YS1hZTkwLTA5ZmI5YzUxNjhmNSIsIm5hbWUiOiJEZWNyZWQiLCJzeW1ib2wiOiJkY3IiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL3MzLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbS9jcnlwdG8tZXhjaGFuZ2UvY29pbnMtc20vZGVjcmVkLnBuZyJ9LHsiYXNzZXRfaWQiOiI5ZDc5NjU2OS0wZmFmLTRlNGEtYjU4MS02NzZmYWIzNDMzZDkiLCJuYW1lIjoiRGlnaXhEQU8iLCJzeW1ib2wiOiJkZ2QiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL3MzLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbS9jcnlwdG8tZXhjaGFuZ2UvY29pbnMtc20vZGlnaXhkYW8ucG5nIn0seyJhc3NldF9pZCI6ImQxMzNkZDEzLWE3OTEtNGMyYi05YzE0LWI0Yzg1MzJmNmI5MSIsIm5hbWUiOiJkaXN0cmljdDB4Iiwic3ltYm9sIjoiZG50IiwiaW1hZ2Vfc21fdXJsIjoiaHR0cHM6Ly9zMy5hcC1zb3V0aC0xLmFtYXpvbmF3cy5jb20vY3J5cHRvLWV4Y2hhbmdlL2NvaW5zLXNtL2Rpc3RyaWN0MHgucG5nIn0seyJhc3NldF9pZCI6IjlkYmRjNzI3LWRlNjgtNGYyYS04OTU2LTA0YTM4ZWQ3MWNhNSIsIm5hbWUiOiJUcm9uIiwic3ltYm9sIjoidHJ4IiwiaW1hZ2Vfc21fdXJsIjoiaHR0cHM6Ly9maWxlcy5jb2luc3dpdGNoLmNvL3B1YmxpYy9jb2lucy90cngucG5nIn0seyJhc3NldF9pZCI6IjlkYmRjNzI3LWRlNjgtNGYyYS04OTU2LTA0YTM4ZWQ3MWNhNiIsIm5hbWUiOiJFT1MiLCJzeW1ib2wiOiJlb3MiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL2ZpbGVzLmNvaW5zd2l0Y2guY28vcHVibGljL2NvaW5zL2Vvcy5wbmcifSx7ImFzc2V0X2lkIjoiMWQ2ZTFhOTktMWU3Ny00MWUxLTllYmItMGUyMTZmYWExNjZhIiwibmFtZSI6IkJpdGNvaW4iLCJzeW1ib2wiOiJidGMiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL2ZpbGVzLmNvaW5zd2l0Y2guY28vcHVibGljL2NvaW5zL2J0Yy5wbmcifSx7ImFzc2V0X2lkIjoiYjMzYWRjN2EtYmViOS00MjFmLTk1ZDYtZDQ5NWRjNTQ5Zjc5IiwibmFtZSI6Ikxpc2siLCJzeW1ib2wiOiJsc2siLCJpbWFnZV9zbV91cmwiOiJodHRwczovL3MzLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbS9jcnlwdG8tZXhjaGFuZ2UvY29pbnMtc20vbGlza192Mi5wbmcifSx7ImFzc2V0X2lkIjoiM2U5MmYxYjYtNjkzYy00NjU0LTliOWItOTM4NTgyZDY0ZTRmIiwibmFtZSI6IldhdmVzIiwic3ltYm9sIjoid2F2ZXMiLCJpbWFnZV9zbV91cmwiOiJodHRwczovL3MzLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbS9jcnlwdG8tZXhjaGFuZ2UvY29pbnMtc20vd2F2ZXMucG5nIn0seyJhc3NldF9pZCI6IjI3OTRlNGM2LTZiZWMtNDVkYS1iNGE2LTc0OTk2Y2RhZDc5YSIsIm5hbWUiOiJHb2xlbSIsInN5bWJvbCI6ImdudCIsImltYWdlX3NtX3VybCI6Imh0dHBzOi8vczMuYXAtc291dGgtMS5hbWF6b25hd3MuY29tL2NyeXB0by1leGNoYW5nZS9jb2lucy1zbS9nb2xlbS5wbmcifSx7ImFzc2V0X2lkIjoiODZhM2YzZmEtZDYxNi00ZjQwLWI0NmMtMDljNDljMDE4N2UxIiwibmFtZSI6Ik9taXNlR08iLCJzeW1ib2wiOiJvbWciLCJpbWFnZV9zbV91cmwiOiJodHRwczovL3MzLmFwLXNvdXRoLTEuYW1hem9uYXdzLmNvbS9jcnlwdG8tZXhjaGFuZ2UvY29pbnMtc20vb21pc2Vnby5wbmcifSx7ImFzc2V0X2lkIjoiODk2MGMzZTctYzk1My00ZGIxLTg0OTctMzRiODJkOWNlMzIyIiwibmFtZSI6IkF1Z3VyIiwic3ltYm9sIjoicmVwIiwiaW1hZ2Vfc21fdXJsIjoiaHR0cHM6Ly9zMy5hcC1zb3V0aC0xLmFtYXpvbmF3cy5jb20vY3J5cHRvLWV4Y2hhbmdlL2NvaW5zLXNtL2F1Z3VyLnBuZyJ9XX0.tn0JZZPF6lIERN6zLYHOelD5wU_dm6CuIS4FIURld_WR2CXacJ3cdvRsS5ZQ7ywVlBjPlt1fNBUk8EiRTWLzDA",
-        decodedToken: {
-          header: {
-            typ: "JWT",
-            alg: "ES256K"
-          },
-          payload: {
-            issuer: {
-              publicKey: "02b24989e324fdc0195e1cfd9006bdadd617646d4985f96cb34bbe261be6ffbd16"
-            },
-            subject: {
-              publicKey: "02b24989e324fdc0195e1cfd9006bdadd617646d4985f96cb34bbe261be6ffbd16"
-            },
-            claim: [
-              {
-                asset_id: "8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b",
-                name: "Litecoin",
-                symbol: "ltc",
-                image_sm_url: "https://s3.ap-south-1.amazonaws.com/crypto-exchange/coins-sm/litecoin.png"
-              },
-            ]
-          },
-          signature: "tn0JZZPF6lIERN6zLYHOelD5wU_dm6CuIS4FIURld_WR2CXacJ3cdvRsS5ZQ7ywVlBjPlt1fNBUk8EiRTWLzDA"
+          "signature": "LhpMEDHdAjiiXTGP8VBVTfDn5JEYor4cLWAWGC1y3kEdyWkfnQ3jx0nC_b9vDiz-IBQfAUekK9QueW3jzyE0wQ"
         }
       }
       ]

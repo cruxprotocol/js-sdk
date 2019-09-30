@@ -29,16 +29,11 @@ describe("Configuration Tests", () => {
             httpJSONRequestStub.restore()
           });
 
-          describe("global asset list tests", () => {
-
-            // name here refers to blockstack domain (cruxpay.id)
-
-            it("positive case, valid name asset list", async () => {
-              let gotData = sinon.spy(nsService, "getContentFromGaiaHub")
+          describe("Global Asset List Tests", () => {
+            it("Owner List Translates To List Object", async () => {
+              await nsConfigService.init()
               let globalAssetList = await nsConfigService.getGlobalAssetList()
-              expect(gotData.callCount).to.equal(1)
               expect(globalAssetList).to.eql([{"asset_id":"8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b","name":"Litecoin","symbol":"ltc","image_sm_url":"https://s3.ap-south-1.amazonaws.com/crypto-exchange/coins-sm/litecoin.png"}])
-              gotData.restore()
             })
 
             it("invalid name asset list", async () => {
@@ -46,7 +41,7 @@ describe("Configuration Tests", () => {
               try{
                 await nsConfigService.getGlobalAssetList()
               }catch(e){
-                expect(e.errorCode).to.equal(1002)
+                expect(e.errorCode).to.equal(5005);
               }finally{
                 stubbedDomainName.restore()
               }
