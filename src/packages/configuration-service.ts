@@ -4,7 +4,6 @@ import * as identityUtils from "./identity-utils";
 import {ErrorHelper, PackageErrorCode} from "./index";
 import * as nameservice from "./nameservice";
 import {BlockstackService, UPLOADABLE_JSON_FILES} from "./nameservice";
-import * as utils from "./utils";
 
 const log = getLogger(__filename);
 
@@ -37,13 +36,11 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         this.clientConfig = await this.getClientConfig(this.clientName);
     }
 
-    @utils.groupLogs("Resolving globalAssetlist from gaiaHub")
     public getGlobalAssetList = async (): Promise<object> => {
         const blockstackId = `${this.settingsDomain}.id`;
         return await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, UPLOADABLE_JSON_FILES.ASSET_LIST);
     }
 
-    @utils.groupLogs("Resolving clientAssetMapping from gaiaHub")
     public getClientConfig = async (clientName: string): Promise<any> => {
         const blockstackId = new identityUtils.BlockstackId({
             domain: this.settingsDomain,

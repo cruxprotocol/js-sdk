@@ -132,7 +132,6 @@ export class BlockstackService extends NameService {
         this._bnsNodes = [...new Set([...config.BLOCKSTACK.BNS_NODES, ..._options.bnsNodes])];   // always append the extra configured BNS nodes (needs `downlevelIteration` flag enabled in tsconfig.json)
     }
 
-    @utils.groupLogs("Retrieving decryptionKey")
     public getDecryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {
         let identityKeyPair: IBitcoinKeyPair;
 
@@ -146,7 +145,6 @@ export class BlockstackService extends NameService {
         return decryptionKey;
     }
 
-    @utils.groupLogs("Retrieving encryptionKey")
     public getEncryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {
         let identityKeyPair: IBitcoinKeyPair;
 
@@ -160,7 +158,6 @@ export class BlockstackService extends NameService {
         return encryptionKey;
     }
 
-    @utils.groupLogs("Restoring identity secrets")
     public restoreIdentity = async (fullCruxId: string, options?: any): Promise<IIdentityClaim> => {
         if (!options || !options.identitySecrets) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity);
@@ -185,7 +182,6 @@ export class BlockstackService extends NameService {
 
     }
 
-    @utils.groupLogs("Generating identity secrets")
     public generateIdentity = async (): Promise<IIdentityClaim> => {
         const newMnemonic = this._generateMnemonic();
         // log.debug(newMnemonic)
@@ -199,7 +195,6 @@ export class BlockstackService extends NameService {
         };
     }
 
-    @utils.groupLogs("Uploading content to gaiaHub")
     public uploadContentToGaiaHub = async (filename: UPLOADABLE_JSON_FILES, privKey: string, content: any): Promise<string> => {
         const sanitizedPrivKey = this._sanitizePrivKey(privKey);
         const hubURL = this._gaiaHub;
@@ -235,7 +230,6 @@ export class BlockstackService extends NameService {
         }
     }
 
-    @utils.groupLogs("Resolving content from gaiaHub")
     public getContentFromGaiaHub = async (blockstackId: string, filename: UPLOADABLE_JSON_FILES): Promise<any> => {
         let nameData: any;
         nameData = await this._fetchNameDetails(blockstackId);
@@ -291,7 +285,6 @@ export class BlockstackService extends NameService {
 
     }
 
-    @utils.groupLogs("Registering name on blockstack")
     public registerName = async (identityClaim: IIdentityClaim, subdomain: string): Promise<string> => {
         const mnemonic = identityClaim.secrets.mnemonic;
         let identityKeyPair = identityClaim.secrets.identityKeyPair;
@@ -315,7 +308,6 @@ export class BlockstackService extends NameService {
         return this._identityCouple.cruxId.toString();
     }
 
-    @utils.groupLogs("Get name registration status")
     public getRegistrationStatus = async (identityClaim: IIdentityClaim): Promise<CruxIDRegistrationStatus> => {
         log.debug("====getRegistrationStatus====");
         if (!this._identityCouple) {
@@ -351,7 +343,6 @@ export class BlockstackService extends NameService {
         return registrationStatus;
     }
 
-    @utils.groupLogs("Get name availability")
     public getNameAvailability = async (subdomain: string): Promise<boolean> => {
         const options = {
             baseUrl: this._subdomainRegistrar,
@@ -386,7 +377,6 @@ export class BlockstackService extends NameService {
         }
     }
 
-    @utils.groupLogs("Update address mapping to gaiaHub")
     public putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {
         if (!identityClaim.secrets.identityKeyPair) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping);
@@ -407,7 +397,6 @@ export class BlockstackService extends NameService {
         return true;
     }
 
-    @utils.groupLogs("Resolving address mapping from gaiaHub")
     public getAddressMapping = async (fullCruxId: string, options = {}): Promise<IAddressMapping> => {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();

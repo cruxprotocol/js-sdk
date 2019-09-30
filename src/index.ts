@@ -169,7 +169,6 @@ class CruxPayPeer extends EventEmitter {
         log.info(`CruxPayPeer Initialised`);
     }
 
-    @utils.groupLogs("Initialising OpenPayPeer")
     public async init() {
         console.group("Initialising CruxPayPeer");
         const configService = new BlockstackConfigurationService(this.walletClientName);
@@ -205,7 +204,7 @@ class CruxPayPeer extends EventEmitter {
         return (this._payIDClaim as PayIDClaim);
     }
 
-    public registerCruxID = async (virtualAddress: string): Promise<void> => {/**/};
+    public registerCruxID = async (cruxIDSubdomain: string): Promise<void> => {/**/};
 
     public updatePassword = async (oldEncryptionKey: string, newEncryptionKey: string): Promise<boolean> => {
         try {
@@ -231,7 +230,6 @@ class CruxPayPeer extends EventEmitter {
         }
     }
 
-    @utils.groupLogs("Resolving currency address for cruxID")
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
         try {
             let correspondingAssetId: string = "";

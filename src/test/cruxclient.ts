@@ -297,7 +297,7 @@ describe('CruxClient tests', () => {
 					await cruxClient.putAddressMap(sampleAddressMap)
 				} catch(e) {
 					raisesException = true
-					expect(e.errorCode).to.equal(2005)
+					expect(e.errorCode).to.equal(2002)
 				} finally {
 					expect(raisesException).to.be.true
 					updateProfileStub.restore()
