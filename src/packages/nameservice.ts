@@ -142,7 +142,7 @@ export class BlockstackService extends NameService {
             identityKeyPair = identityClaim.secrets.identityKeyPair;
         }
 
-        const decryptionKey = (identityKeyPair.privKey.substr(-2) === "01" && identityKeyPair.privKey.length >= 66) ? identityKeyPair.privKey.slice(0, -2) : identityKeyPair.privKey;
+        const decryptionKey = this._sanitizePrivKey(identityKeyPair.privKey);
         return decryptionKey;
     }
 
