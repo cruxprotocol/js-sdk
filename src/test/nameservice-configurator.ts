@@ -30,11 +30,9 @@ describe("Configuration Tests", () => {
 
           describe("Global Asset List Tests", () => {
             it("Owner List Translates To List Object", async () => {
-              let gotData = sinon.spy(nsService, "getContentFromGaiaHub")
+              await nsConfigService.init()
               let globalAssetList = await nsConfigService.getGlobalAssetList()
-              expect(gotData.callCount).to.equal(1)
               expect(globalAssetList).to.eql([{"asset_id":"8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b","name":"Litecoin","symbol":"ltc","image_sm_url":"https://s3.ap-south-1.amazonaws.com/crypto-exchange/coins-sm/litecoin.png"}])
-              gotData.restore()
             })
 
             it("Trying To Get Global Asset List From Incorrect Domain", async () => {
@@ -42,7 +40,7 @@ describe("Configuration Tests", () => {
               try{
                 await nsConfigService.getGlobalAssetList()
               }catch(e){
-                expect(e.toString()).to.equal('Error: Unable to decode address mapping, UserDoesNotExist: ID does not exist')
+                expect(e.toString()).to.equal('Error: assetList not present in clientConfig')
               }finally{
                 stubbedDomainName.restore()
               }
