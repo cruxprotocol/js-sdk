@@ -22,7 +22,7 @@ describe('BlockstackService tests', () => {
 
   // sample identity claim for 'cs1'
   let sampleSubdomain = 'cs1'
-  let sampleCruxId = 'cs1@devcoinswitch.crux'
+  let sampleCruxId = 'cs1@cruxdev.crux'
   let sampleIdentityClaim = {
     secrets: {
       mnemonic: "jelly level auction pluck system record unique huge text fold galaxy home",
@@ -80,12 +80,12 @@ describe('BlockstackService tests', () => {
     let registeredSubdomain = 'cs1'
     let unregisteredSubdomain = 'example'
 
-    it(`${registeredSubdomain}@devcoinswitch.crux should be unavailable`, async () => {
+    it(`${registeredSubdomain}@cruxdev.crux should be unavailable`, async () => {
       let resolvedPublicKey = await blockstackService.getNameAvailability(registeredSubdomain)
       console.log(resolvedPublicKey)
       expect(resolvedPublicKey).is.false
     })
-    it(`${unregisteredSubdomain}@devcoinswitch.crux should be available`, async () => {
+    it(`${unregisteredSubdomain}@cruxdev.crux should be available`, async () => {
       let resolvedPublicKey = await blockstackService.getNameAvailability(unregisteredSubdomain)
       console.log(resolvedPublicKey)
       expect(resolvedPublicKey).is.true
@@ -94,10 +94,10 @@ describe('BlockstackService tests', () => {
   })
 
   describe('getRegistrationStatus tests', () => {
-    it(`registration status for cs1@devcoinswitch.crux is DONE`, async () => {
+    it(`registration status for cs1@cruxdev.crux is DONE`, async () => {
       let bs = new nameservice.BlockstackService();
       let name = 'cs1'
-      let walletClientName = 'devcoinswitch'
+      let domain = 'cruxdev'
       let registrationStatus = {
         'status': 'DONE',
         'status_detail': 'Subdomain propagated.'
@@ -109,11 +109,11 @@ describe('BlockstackService tests', () => {
       bs._identityCouple = {
         cruxId: new identityUtils.CruxId({
           subdomain: name,
-          domain: walletClientName
+          domain: domain
         }),
         bsId: new identityUtils.BlockstackId({
           subdomain: name,
-          domain: walletClientName
+          domain: domain
         })
       }
 
@@ -125,9 +125,9 @@ describe('BlockstackService tests', () => {
   })
 
   describe('registerName tests', () => {
-    it('register a new cruxID bob@devcoinswitch.crux', async () => {
+    it('register a new cruxID bob@cruxdev.crux', async () => {
       let desiredName = 'bob'
-      let expectedRegisteredName = 'bob@devcoinswitch.crux'
+      let expectedRegisteredName = 'bob@cruxdev.crux'
 
       let registeredName = await blockstackService.registerName(sampleIdentityClaim, desiredName)
       expect(registeredName).is.equal(expectedRegisteredName)
@@ -135,7 +135,7 @@ describe('BlockstackService tests', () => {
   })
 
   describe('putAddressMapping tests', () => {
-    it(`upload sample address map for cs1@devcoinswitch.crux`, async () => {
+    it(`upload sample address map for cs1@cruxdev.crux`, async () => {
       // mocked values
       connectToGaiaHubStub.resolves({ "url_prefix": "https://gaia.cruxpay.com/", "address": "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ", "token": "v1:eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJnYWlhQ2hhbGxlbmdlIjoiW1wiZ2FpYWh1YlwiLFwiMFwiLFwic3RvcmFnZTIuYmxvY2tzdGFjay5vcmdcIixcImJsb2Nrc3RhY2tfc3RvcmFnZV9wbGVhc2Vfc2lnblwiXSIsImh1YlVybCI6Imh0dHBzOi8vaHViLmJsb2Nrc3RhY2sub3JnIiwiaXNzIjoiMDJiYzljM2Y4ZTkyNGI3ZGU5MjEyY2ViZDAxMjlmMWJlMmU2YzNmMjkwNGU5MTFiMzA2OThiZGU3N2JlNDg3OGI4Iiwic2FsdCI6ImE0ODk1ZWE1ZjdjZjI2N2VhNDEwMjg2ZjRjNzk4MTY3In0.QFuEEVijDYMKHjERaPA_YXwnwWoBq8iVg4pzEusP0S_u5jSmmxqeJcumyMK8cqT4NTmOYgnMUC4u4-9OAUWOIQ", "server": "https://hub.cruxpay.com" })
       uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json")
@@ -150,7 +150,7 @@ describe('BlockstackService tests', () => {
   })
 
   describe('getAddressMapping tests', () => {
-    it(`resolve sample address map from cs1@devcoinswitch.crux`, async () => {
+    it(`resolve sample address map from cs1@cruxdev.crux`, async () => {
       let resolvedAddressMap: IAddressMapping = await blockstackService.getAddressMapping(sampleCruxId)
       console.log(resolvedAddressMap)
       expect(resolvedAddressMap).is.eql(sampleAddressMap)

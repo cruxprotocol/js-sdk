@@ -15,7 +15,7 @@ declare global {
 
 window.blockstackservice = new nameservice.BlockstackService();
 
-window.wallet = new CruxClient({walletClientName: "devcoinswitch", getEncryptionKey: () => "fookey"});
+window.wallet = new CruxClient({walletClientName: "scatter_dev", getEncryptionKey: () => "fookey"});
 
 const putClientCurrencyMapping = async () => {
     console.log("putClientCurrencyMapping called...")
