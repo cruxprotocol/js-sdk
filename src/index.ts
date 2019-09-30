@@ -181,8 +181,9 @@ class CruxPayPeer extends EventEmitter {
             this._setPayIDClaim(new PayIDClaim(payIDClaim as ICruxPayClaim, { getEncryptionKey: this._getEncryptionKey }));
             log.debug(`Allocated temporary identitySecrets and payIDClaim`);
         }
-        this._assetList = await configService.getGlobalAssetList();
+
         this._clientMapping = await configService.getClientAssetMapping(this.walletClientName);
+        this._assetList = await configService.getGlobalAssetList();
 
         log.debug(`global asset list is:- `, this._assetList);
         log.debug(`client asset mapping is:- `, this._clientMapping);

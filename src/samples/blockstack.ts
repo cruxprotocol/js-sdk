@@ -8,7 +8,6 @@ declare global {
       putClientCurrencyMapping: Function;
       getContentFromGaiaHub: Function;
       uploadGlobalAssetList: Function;
-      getAssetListEssentials: Function;
       _uploadProfileInfo: Function;
   }
 }
@@ -25,7 +24,7 @@ const putClientCurrencyMapping = async () => {
         subdomainRegistrar: 'https://registrar.coinswitch.co:4000'
     }
     let clientConfig = {"assetMapping": content, "nameserviceConfiguration": nameserviceConfig}
-    let response = await window.blockstackservice.uploadContentToGaiaHub('client-config.json', 'c031a66231fdd53dc5b6b75299af05ff098d0a48eada2ba18b7024e835d20462', clientConfig);
+    let response = await window.blockstackservice.uploadContentToGaiaHub('client-config.json', '', clientConfig);
     console.log(`content upload response is:- ${response}`)
 }
 
@@ -161,14 +160,6 @@ const uploadGlobalAssetList = async () => {
     console.log(`content upload response is:- ${response}`)
 }
 
-const getAssetListEssentials = async () => {
-    // let assetList = await window.blockstackservice.getGlobalAssetList()
-    // let clientMapping = await window.blockstackservice.getClientAssetMapping('', '')
-    // console.log(`global asset list is:- `, assetList);
-    // console.log(`client mapping is:- `, clientMapping);
-
-}
-
 
 const addPayIDClaim = async () => {
     // await window.wallet.addPayIDClaim("", "", null)
@@ -185,5 +176,4 @@ window.addPayIDClaim = addPayIDClaim
 window.putClientCurrencyMapping = putClientCurrencyMapping
 window.getContentFromGaiaHub = getContentFromGaiaHub
 window.uploadGlobalAssetList = uploadGlobalAssetList
-window.getAssetListEssentials = getAssetListEssentials
 window._uploadProfileInfo = _uploadProfileInfo
