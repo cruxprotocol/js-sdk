@@ -5,8 +5,8 @@ import {SECP256K1Client, TokenSigner} from "jsontokens";
 import {getLogger, IAddress, IAddressMapping} from "..";
 import config from "../config";
 
-import {BlockstackId, CruxId, IdTranslator} from "./identity-utils";
 import {ErrorHelper, PackageErrorCode} from "./error";
+import {BlockstackId, CruxId, IdTranslator} from "./identity-utils";
 import * as utils from "./utils";
 
 const log = getLogger(__filename);

@@ -213,8 +213,8 @@ class CruxPayPeer extends EventEmitter {
             } else {
                 return false;
             }
-        } catch (error) {
-            throw error.CruxClientError.fromError(error);
+        } catch (err) {
+            throw error.CruxClientError.fromError(err);
         }
     }
 
@@ -222,8 +222,8 @@ class CruxPayPeer extends EventEmitter {
         try {
             identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
             return (this._nameservice as nameservice.NameService).getNameAvailability(cruxIDSubdomain);
-        } catch (error) {
-            throw error.CruxClientError.fromError(error);
+        } catch (err) {
+            throw error.CruxClientError.fromError(err);
         }
     }
 
@@ -248,8 +248,8 @@ class CruxPayPeer extends EventEmitter {
             const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
             log.debug(`Address:`, address);
             return address;
-        } catch (error) {
-            throw error.CruxClientError.fromError(error);
+        } catch (err) {
+            throw error.CruxClientError.fromError(err);
         }
     }
 
@@ -293,8 +293,8 @@ export class CruxClient extends CruxPayPeer {
                 cruxID: fullCruxID,
                 status,
             };
-        } catch (error) {
-            throw error.CruxClientError.fromError(error);
+        } catch (err) {
+            throw error.CruxClientError.fromError(err);
         }
     }
 
@@ -324,8 +324,8 @@ export class CruxClient extends CruxPayPeer {
                 }`);
                 await this.putAddressMap(newAddressMap);
             }
-        } catch (error) {
-            throw error.CruxClientError.fromError(error);
+        } catch (err) {
+            throw error.CruxClientError.fromError(err);
         }
     }
 
@@ -341,8 +341,8 @@ export class CruxClient extends CruxPayPeer {
             const acknowledgement = await (this._nameservice as nameservice.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, csAddressMap);
             await (this._payIDClaim as PayIDClaim).encrypt();
             return acknowledgement;
-        } catch (error) {
-            throw error.CruxClientError.fromError(error);
+        } catch (err) {
+            throw error.CruxClientError.fromError(err);
         }
     }
 
@@ -366,8 +366,8 @@ export class CruxClient extends CruxPayPeer {
             } else {
                 return {};
             }
-        } catch (error) {
-            throw error.CruxClientError.fromError(error);
+        } catch (err) {
+            throw error.CruxClientError.fromError(err);
         }
     }
 
