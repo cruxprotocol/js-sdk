@@ -1,5 +1,6 @@
 import { CruxClient, nameservice } from "../index";
 
+
 declare global {
   interface Window {
       wallet: CruxClient;
@@ -24,19 +25,16 @@ const putClientCurrencyMapping = async () => {
         subdomainRegistrar: 'https://registrar.coinswitch.co:4000'
     }
     let clientConfig = {"assetMapping": content, "nameserviceConfiguration": nameserviceConfig}
-    let response = await window.blockstackservice.uploadContentToGaiaHub('client-config.json', '', clientConfig);
+    let response = await window.blockstackservice.uploadContentToGaiaHub(nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, '', clientConfig);
     console.log(`content upload response is:- ${response}`)
 }
-
 
 const getContentFromGaiaHub = async () => {
     console.log("getContentFromGaiaHub called...")
     let name = ''
-    let filename = 'client-mapping.json'
-    let response = await window.blockstackservice.getContentFromGaiaHub(name, filename);
+    let response = await window.blockstackservice.getContentFromGaiaHub(name, nameservice.UPLOADABLE_JSON_FILES.CLIENT_MAPPING);
     console.log(`content upload response is:- ${response}`)
 }
-
 
 const uploadGlobalAssetList = async () => {
     let identityClaim = {}
@@ -156,7 +154,7 @@ const uploadGlobalAssetList = async () => {
           "image_sm_url": "https://s3.ap-south-1.amazonaws.com/crypto-exchange/coins-sm/augur.png"
         }
       ]
-    let response = await window.blockstackservice.uploadContentToGaiaHub('asset-list.json', '', content);
+    let response = await window.blockstackservice.uploadContentToGaiaHub(nameservice.UPLOADABLE_JSON_FILES.ASSET_LIST, '', content);
     console.log(`content upload response is:- ${response}`)
 }
 

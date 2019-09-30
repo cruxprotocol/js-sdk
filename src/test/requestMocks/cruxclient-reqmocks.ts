@@ -121,8 +121,21 @@ let requestResponseArray: { request: object, response: object }[] = [
           "signature": "LhpMEDHdAjiiXTGP8VBVTfDn5JEYor4cLWAWGC1y3kEdyWkfnQ3jx0nC_b9vDiz-IBQfAUekK9QueW3jzyE0wQ"
         }
       }
-    ]
-  }
+      ]
+  },
+  {
+    request: {
+      method: 'GET',
+      url: 'https://hub.cruxpay.com/hub_info',
+      json: true
+    },
+    response: {
+      challenge_text: "['gaiahub','0','hub.cruxpay.com','blockstack_storage_please_sign']",
+      latest_auth_version: "v1",
+      read_url_prefix: "https://gaia.cruxpay.com/"
+    }
+  },
+
 ]
   
 export default requestResponseArray

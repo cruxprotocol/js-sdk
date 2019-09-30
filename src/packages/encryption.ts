@@ -1,5 +1,5 @@
 import ecies from "eciesjs";
-import {Errors} from "./index";
+import {ErrorHelper, PackageErrorCode} from "./error";
 
 export class Encryption {
 
@@ -12,8 +12,7 @@ export class Encryption {
         const encryptedString = new Buffer(value, "hex");
         // let encryptedString = Buffer.from(value, 'hex');
         const buffer = ecies.decrypt(privateKey, encryptedString);
-        const converted = buffer.toString("utf-8");
-        return converted;
+        return buffer.toString("utf-8");
     }
 
     public static digest = async (str: string): Promise<string> => {
@@ -61,7 +60,7 @@ export class Encryption {
                 ptBuffer = await crypto.subtle.decrypt(alg, key, ctBuffer);
             } catch (err) {
                 if (err instanceof DOMException) {
-                    throw new Errors.ClientErrors.DecryptionFailed("Decryption Failed.");
+                    throw ErrorHelper.getPackageError(PackageErrorCode.DecryptionFailed);
                 }
                 throw err;
             }

@@ -143,6 +143,29 @@ let requestResponseArray: { request: object, response: object }[] = [
     response: {
       status: "available"
     }
+  },
+
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://bns.cruxpay.com',
+      url: '/v1/names/mocked_subdomain.mocked_domain.id',
+      json: true
+    },
+    response: {
+      status: "available",
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://core.blockstack.org',
+      url: '/v1/names/mocked_subdomain.mocked_domain.id',
+      json: true
+    },
+    response: {
+      status: "available"
+    }
   }
 ]
   
