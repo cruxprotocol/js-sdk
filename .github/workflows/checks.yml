@@ -1,15 +1,9 @@
-name: NPMJS prod publishing
+name: NPM Checks
 
-on:
-  pull_request:
-    branches:
-      - master
-  push:
-    branches:
-      - master
+on: [push]
 
 jobs:
-  publish-npm:
+  npm-checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -19,6 +13,3 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm ci
       - run: npm run checks
-      - run: npm run publish:prod
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
