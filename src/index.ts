@@ -259,7 +259,7 @@ class CruxPayPeer extends EventEmitter {
         if ( this._payIDClaim && this._payIDClaim.identitySecrets ) {
             await this._payIDClaim.decrypt();
             try {
-                const identityClaim = await (this._nameservice as nameservice.NameService).restoreIdentity(this._payIDClaim.virtualAddress as string, {identitySecrets: this._payIDClaim.identitySecrets});
+                const identityClaim = await (this._nameservice as nameservice.NameService).restoreIdentity(this._payIDClaim.virtualAddress as string, {secrets: this._payIDClaim.identitySecrets});
                 (this._payIDClaim as PayIDClaim).identitySecrets = identityClaim.secrets;
                 log.info(`Identity restored`);
             } finally {

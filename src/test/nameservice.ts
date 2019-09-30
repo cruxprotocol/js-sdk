@@ -71,6 +71,19 @@ describe('BlockstackService tests', () => {
     })
   })
 
+  describe('restoreIdentity tests', () => {
+    it('given cruxID and identityClaim with mnemonic, should return the corresponding full identityClaim', async () => {
+      let restoredIdentityClaim = await blockstackService.restoreIdentity(sampleCruxId, sampleIdentityClaim)
+      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('mnemonic').to.be.a('string')
+      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('pubKey').to.be.a('string')
+      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
+      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
+    })
+    it('given curxID without identityClaim, should throw "CouldNotFindMnemonicToRestoreIdentity"')
+    it('given identityClaim with mnemonic with invalid cruxID, should throw "CruxIdLengthValidation" | "CruxIdNamespaceValidation"')
+    it('given identityClaim with mnemonic and non-corresponding cruxID, should throw error')
+  })
+
   describe('PrivateKey sanitization tests', () => {
     let uncompressedKey = "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f01"
     let compressedKey = "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f"

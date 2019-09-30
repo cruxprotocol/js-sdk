@@ -20,7 +20,7 @@ export interface IIdentityClaim {
 export abstract class NameService {
     // TODO: Make CHILD CLASS implement instead of extend
     public abstract generateIdentity = async (): Promise<IIdentityClaim> => ({ secrets: null });
-    public abstract restoreIdentity = async (name: string, options?: any): Promise<IIdentityClaim> => ({ secrets: null });
+    public abstract restoreIdentity = async (name: string, identityClaim: IIdentityClaim): Promise<IIdentityClaim> => ({ secrets: null });
     public abstract getDecryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => "";
     public abstract getEncryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => "";
     public abstract getNameAvailability = async (name: string): Promise<boolean> => false;
@@ -159,19 +159,20 @@ export class BlockstackService extends NameService {
         return encryptionKey;
     }
 
-    public restoreIdentity = async (fullCruxId: string, options?: any): Promise<IIdentityClaim> => {
-        if (!options || !options.identitySecrets) {
+    public restoreIdentity = async (fullCruxId: string, identityClaim: IIdentityClaim): Promise<IIdentityClaim> => {
+        if (!identityClaim.secrets || !identityClaim.secrets.mnemonic) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity);
         }
 
-        const mnemonic = options.identitySecrets.mnemonic;
-        let identityKeyPair = options.identitySecrets.identityKeyPair || undefined;
+        const mnemonic = identityClaim.secrets.mnemonic;
+        let identityKeyPair = identityClaim.secrets.identityKeyPair || undefined;
 
         // If identityKeypair is not stored locally, generate them using the mnemonic
         if (!identityKeyPair) {
             identityKeyPair = await this._generateIdentityKeyPair(mnemonic);
         }
 
+        // TODO: validate the correspondance of cruxID with the identityClaim
         const cruxId = CruxId.fromString(fullCruxId);
         this._identityCouple = getIdentityCoupleFromCruxId(cruxId);
         return {
