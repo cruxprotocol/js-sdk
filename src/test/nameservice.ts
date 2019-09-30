@@ -61,6 +61,16 @@ describe('BlockstackService tests', () => {
 
   // Test cases
 
+  describe('generateIdentity tests', () => {
+    it('always generates a proper identity claim (mnemonic and a keypair)', async () => {
+      let generatedIdentityClaim = await blockstackService.generateIdentity()
+      expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('mnemonic').to.be.a('string')
+      expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('pubKey').to.be.a('string')
+      expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
+      expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
+    })
+  })
+
   describe('PrivateKey sanitization tests', () => {
     let uncompressedKey = "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f01"
     let compressedKey = "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f"
