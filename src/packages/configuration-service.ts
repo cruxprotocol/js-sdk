@@ -3,7 +3,7 @@ import config from "../config";
 import * as identityUtils from "./identity-utils";
 import {ErrorHelper, PackageErrorCode} from "./index";
 import * as nameservice from "./nameservice";
-import {BlockstackService} from "./nameservice";
+import {BlockstackService, UPLOADABLE_JSON_FILES} from "./nameservice";
 import * as utils from "./utils";
 
 const log = getLogger(__filename);
@@ -40,7 +40,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     @utils.groupLogs("Resolving globalAssetlist from gaiaHub")
     public getGlobalAssetList = async (): Promise<object> => {
         const blockstackId = `${this.settingsDomain}.id`;
-        return await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, "asset-list.json");
+        return await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, UPLOADABLE_JSON_FILES.ASSET_LIST);
     }
 
     @utils.groupLogs("Resolving clientAssetMapping from gaiaHub")
@@ -49,7 +49,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             domain: this.settingsDomain,
             subdomain: clientName,
         }).toString();
-        return await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, "client-config.json");
+        return await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, UPLOADABLE_JSON_FILES.CLIENT_CONFIG);
     }
 
     public getClientAssetMapping = async (): Promise<object> => {

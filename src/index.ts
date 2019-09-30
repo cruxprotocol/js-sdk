@@ -345,8 +345,6 @@ export class CruxClient extends CruxPayPeer {
             await (this._payIDClaim as PayIDClaim).decrypt();
             const acknowledgement = await (this._nameservice as nameservice.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, csAddressMap);
             await (this._payIDClaim as PayIDClaim).encrypt();
-
-            if (!acknowledgement) { throw new CruxClientError(`Could not update the addressMap`); }
             return acknowledgement;
         } catch (error) {
             throw CruxClientError.fromError(error);

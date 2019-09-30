@@ -85,14 +85,38 @@ const defaultBNSConfig: IBlockstackServiceOptions = {
     subdomainRegistrar: config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
 };
 
+export enum UPLOADABLE_JSON_FILES {
+    CRUXPAY = "cruxpay.json",
+    CLIENT_CONFIG = "client-config.json",
+    CLIENT_MAPPING = "client-mapping.json",
+    ASSET_LIST = "asset-list.json",
+}
+
 export class BlockstackService extends NameService {
+
+    public static getUploadPackageErrorCodeForFilename = (filename: UPLOADABLE_JSON_FILES) => {
+        let packageErrorCode;
+        switch (filename) {
+            case UPLOADABLE_JSON_FILES.CRUXPAY:
+                packageErrorCode = PackageErrorCode.GaiaCruxPayUploadFailed;
+                break;
+            case UPLOADABLE_JSON_FILES.CLIENT_CONFIG:
+                packageErrorCode = PackageErrorCode.GaiaClientConfigUploadFailed;
+                break;
+            case UPLOADABLE_JSON_FILES.ASSET_LIST:
+                packageErrorCode = PackageErrorCode.GaiaAssetListUploadFailed;
+                break;
+            default:
+                packageErrorCode = PackageErrorCode.GaiaUploadFailed;
+        }
+        return packageErrorCode;
+    }
+
     public readonly type = "blockstack";
 
     private _domain: string;
     private _gaiaHub: string;
     private _subdomainRegistrar: string;
-
-    private _subdomain: string | undefined;
     private _bnsNodes: string[];
     private _identityCouple: IdentityCouple | undefined;
 
@@ -176,7 +200,7 @@ export class BlockstackService extends NameService {
     }
 
     @utils.groupLogs("Uploading content to gaiaHub")
-    public uploadContentToGaiaHub = async (filename: string, privKey: string, content: any): Promise<string> => {
+    public uploadContentToGaiaHub = async (filename: UPLOADABLE_JSON_FILES, privKey: string, content: any): Promise<string> => {
         const sanitizedPrivKey = this._sanitizePrivKey(privKey);
         const hubURL = this._gaiaHub;
         const hubConfig = await blockstack.connectToGaiaHub(hubURL, sanitizedPrivKey);
@@ -188,7 +212,8 @@ export class BlockstackService extends NameService {
             finalURL = await blockstack.uploadToGaiaHub(filename, contentToUpload, hubConfig, "application/json");
             log.debug(`finalUrl is ${finalURL}`);
         } catch (error) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.GaiaUploadFailed, filename, error);
+            const packageErrorCode = BlockstackService.getUploadPackageErrorCodeForFilename(filename);
+            throw ErrorHelper.getPackageError(packageErrorCode, filename, error);
         }
         return finalURL;
     }
@@ -211,7 +236,7 @@ export class BlockstackService extends NameService {
     }
 
     @utils.groupLogs("Resolving content from gaiaHub")
-    public getContentFromGaiaHub = async (blockstackId: string, filename: string): Promise<any> => {
+    public getContentFromGaiaHub = async (blockstackId: string, filename: UPLOADABLE_JSON_FILES): Promise<any> => {
         let nameData: any;
         nameData = await this._fetchNameDetails(blockstackId);
         log.debug(nameData);
@@ -377,7 +402,7 @@ export class BlockstackService extends NameService {
         } catch (error) {
             throw ErrorHelper.getPackageError(PackageErrorCode.AddressMappingDecodingFailure);
         }
-        await this.uploadContentToGaiaHub("cruxpay.json", identityClaim.secrets.identityKeyPair.privKey, addressMapping);
+        await this.uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping);
         // TODO: need to validate the final uploaded URL is corresponding to the identityClaim provided
         return true;
     }
@@ -386,7 +411,7 @@ export class BlockstackService extends NameService {
     public getAddressMapping = async (fullCruxId: string, options = {}): Promise<IAddressMapping> => {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
-        return await this.getContentFromGaiaHub(blockstackIdString, "cruxpay.json");
+        return await this.getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY);
     }
 
     private _generateMnemonic = (): string => {

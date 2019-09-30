@@ -23,13 +23,13 @@ export class CruxClientError extends Error {
             throw new Error(`Wrong instance type: ${typeof (error)}`);
         }
     }
-    public error_code: number;
+    public errorCode: number;
 
-    constructor(error_message: string, error_code?: number | undefined) {
-        const message = error_message || "";
+    constructor(errorMessage: string, errorCode?: number | undefined) {
+        const message = errorMessage || "";
         super(message);
         this.name = CruxClientError.FALLBACK_ERROR_NAME;
-        this.error_code = error_code || CruxClientError.FALLBACK_ERROR_CODE;
+        this.errorCode = errorCode || CruxClientError.FALLBACK_ERROR_CODE;
         Object.setPrototypeOf(this, new.target.prototype);
     }
 }

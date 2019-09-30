@@ -8,7 +8,10 @@ export enum PackageErrorCode {
     AssetIDNotAvailable = 1200,
     DecryptionFailed = 1300,
     // 2000s: Gaia errors
-    GaiaUploadFailed = 2005,
+    GaiaUploadFailed = 2001,
+    GaiaCruxPayUploadFailed = 2002,
+    GaiaClientConfigUploadFailed = 2003,
+    GaiaAssetListUploadFailed = 2004,
     GaiaGetFileFailed = 2105,
     TokenVerificationFailed = 2106,
     GaiaEmptyResponse = 2107,
