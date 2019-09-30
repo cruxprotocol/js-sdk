@@ -1,4 +1,4 @@
-import { EventEmitter } from "eventemitter3";
+import {EventEmitter} from "eventemitter3";
 import Logger from "js-logger";
 import path from "path";
 import "regenerator-runtime/runtime";
@@ -13,7 +13,14 @@ export function getLogger(filename: string) {
 const log = getLogger(__filename);
 
 // Importing packages
-import { BlockstackConfigurationService, encryption, Errors, identityUtils, nameservice, storage } from "./packages";
+import {
+    BlockstackConfigurationService,
+    encryption,
+    errors,
+    identityUtils,
+    nameservice,
+    storage,
+} from "./packages";
 
 // TODO: Implement classes enforcing the interfaces
 export interface IAddress {
@@ -53,15 +60,14 @@ interface ICruxPayClaim {
     identitySecrets?: string | nameservice.IIdentityClaim;
 }
 
-interface ICruxIDState {
+export interface ICruxIDState {
     cruxID?: string;
     status: nameservice.CruxIDRegistrationStatus;
 }
 
-interface cruxPayOptions {
+interface payIDClaimOptions {
     getEncryptionKey: () => string;
     encryption?: typeof encryption.Encryption;
-    storage?: storage.StorageService;
 }
 
 export class PayIDClaim implements ICruxPayClaim {
@@ -70,14 +76,11 @@ export class PayIDClaim implements ICruxPayClaim {
     public identitySecrets: string | nameservice.IIdentityClaim | undefined;
     private _getEncryptionKey: () => string;
     private _encryption: typeof encryption.Encryption = encryption.Encryption;
-    private _storage: storage.StorageService = new storage.LocalStorage();
 
-    constructor(cruxPayObj: ICruxPayClaim = {} as ICruxPayClaim, options: cruxPayOptions) {
-        if (!options.getEncryptionKey) { throw new Error((`Missing encryptionKey method!`)); }
+    constructor(cruxPayObj: ICruxPayClaim = {} as ICruxPayClaim, options: payIDClaimOptions) {
+        if (!options.getEncryptionKey) { throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ExpectedEncryptionKeyValue); }
         this._getEncryptionKey = options.getEncryptionKey;
-
         if (options.encryption) { this._encryption = options.encryption; }
-        if (options.storage) { this._storage = options.storage; }
 
         // log.debug(`CruxPayObj provided:`, cruxPayObj)
         this.virtualAddress = cruxPayObj.virtualAddress || undefined;
@@ -119,10 +122,10 @@ export class PayIDClaim implements ICruxPayClaim {
         return json;
     }
 
-    public save = async (): Promise<void> => {
-        const json = await this.toJSON();
+    public save = async (storageService: storage.StorageService): Promise<void> => {
+        const json = this.toJSON();
         // log.debug(`PayIDClaim being stored to storage:`, json)
-        this._storage.setJSON("payIDClaim", json);
+        storageService.setJSON("payIDClaim", json);
     }
 
     private _isEncrypted = (): boolean => {
@@ -163,11 +166,10 @@ class CruxPayPeer extends EventEmitter {
     }
 
     public async init() {
-        console.group("Initialising CruxPayPeer");
         const configService = new BlockstackConfigurationService(this.walletClientName);
         await configService.init();
         if (!this._nameservice) {
-            this._nameservice = await configService.getBlockstackServiceForConfig(this.walletClientName);
+            this._nameservice = await configService.getBlockstackServiceForConfig();
         }
 
         if (this._hasPayIDClaimStored()) {
@@ -182,11 +184,10 @@ class CruxPayPeer extends EventEmitter {
             log.debug(`Allocated temporary identitySecrets and payIDClaim`);
         }
         this._assetList = await configService.getGlobalAssetList();
-        this._clientMapping = await configService.getClientAssetMapping(this.walletClientName);
+        this._clientMapping = await configService.getClientAssetMapping();
 
         log.debug(`global asset list is:- `, this._assetList);
         log.debug(`client asset mapping is:- `, this._clientMapping);
-        console.groupEnd();
         log.info(`CruxPayPeer: Done init`);
     }
 
@@ -198,55 +199,54 @@ class CruxPayPeer extends EventEmitter {
         return (this._payIDClaim as PayIDClaim);
     }
 
-    public registerCruxID = async (virtualAddress: string): Promise<void> => {
-        this._setPayIDClaim(new PayIDClaim({virtualAddress}, { getEncryptionKey: this._getEncryptionKey }));
-        // await this._payIDClaim.setPasscode(passcode)
-        await (this._payIDClaim as PayIDClaim).encrypt();
-        this._storage.setJSON("payIDClaim", (this._payIDClaim as PayIDClaim).toJSON());
-        await this._restoreIdentity();
-    }
-
     public updatePassword = async (oldEncryptionKey: string, newEncryptionKey: string): Promise<boolean> => {
-        if (this._hasPayIDClaimStored()) {
-            await (this._payIDClaim as PayIDClaim).decrypt(oldEncryptionKey);
-            await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
-            this._storage.setJSON("payIDClaim", (this._payIDClaim as PayIDClaim).toJSON());
-            return true;
-        } else {
-            return false;
+        try {
+            if (this._hasPayIDClaimStored()) {
+                await (this._payIDClaim as PayIDClaim).decrypt(oldEncryptionKey);
+                await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
+                await (this._payIDClaim as PayIDClaim).save(this._storage);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (err) {
+            throw errors.CruxClientError.fromError(err);
         }
     }
 
     public isCruxIDAvailable = (cruxIDSubdomain: string): Promise<boolean> => {
-        // Subdomain validation
-        identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
-        return (this._nameservice as nameservice.NameService).getNameAvailability(cruxIDSubdomain);
+        try {
+            identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
+            return (this._nameservice as nameservice.NameService).getNameAvailability(cruxIDSubdomain);
+        } catch (err) {
+            throw errors.CruxClientError.fromError(err);
+        }
     }
 
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
-        console.groupCollapsed("Resolving address");
-        let correspondingAssetId: string = "";
-        for (const i in this._clientMapping) {
-            if (i === walletCurrencySymbol) {
-                // @ts-ignore
-                correspondingAssetId = this._clientMapping[i];
+        try {
+            let correspondingAssetId: string = "";
+            for (const i in this._clientMapping) {
+                if (i === walletCurrencySymbol) {
+                    // @ts-ignore
+                    correspondingAssetId = this._clientMapping[i];
+                }
             }
-        }
-        if (!correspondingAssetId) {
-            console.groupEnd();
-            throw new Errors.ClientErrors.AssetIDNotAvailable("Asset ID doesn\'t exist in client mapping", 1200);
-        }
+            if (!correspondingAssetId) {
+                throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.AssetIDNotAvailable);
+            }
 
-        const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);
-        log.debug(`Address map: `, addressMap);
-        if (!addressMap[correspondingAssetId]) {
-            console.groupEnd();
-            throw new Errors.ClientErrors.AddressNotAvailable("Currency address not available for user", 1103);
+            const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);
+            log.debug(`Address map: `, addressMap);
+            if (!addressMap[correspondingAssetId]) {
+                throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.AddressNotAvailable);
+            }
+            const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
+            log.debug(`Address:`, address);
+            return address;
+        } catch (err) {
+            throw errors.CruxClientError.fromError(err);
         }
-        const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
-        log.debug(`Address:`, address);
-        console.groupEnd();
-        return address;
     }
 
     protected _setPayIDClaim = (payIDClaim: PayIDClaim): void => {
@@ -264,7 +264,7 @@ class CruxPayPeer extends EventEmitter {
             } finally {
                 log.debug("finally block");
                 await (this._payIDClaim as PayIDClaim).encrypt();
-                this._storage.setJSON("payIDClaim", (this._payIDClaim as PayIDClaim).toJSON());
+                await (this._payIDClaim as PayIDClaim).save(this._storage);
             }
         } else {
             log.info(`payIDClaim or identitySecrets not available! Identity restoration skipped`);
@@ -282,93 +282,103 @@ class CruxPayPeer extends EventEmitter {
 export class CruxClient extends CruxPayPeer {
     // NameService specific methods
     public getCruxIDState = async (): Promise<ICruxIDState> => {
-
-        // TODO: handle reject cases ?
-        const fullCruxID = this.hasPayIDClaim() ? this.getPayIDClaim().virtualAddress : undefined;
-        const status = await this.getIDStatus();
-        return {
-            cruxID: fullCruxID,
-            status,
-        };
-    }
-
-    public getIDStatus = async (): Promise<nameservice.CruxIDRegistrationStatus> => {
-        await (this._payIDClaim as PayIDClaim).decrypt();
-        const result = (this._nameservice as nameservice.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
-        await (this._payIDClaim as PayIDClaim).encrypt();
-        return result;
+        try {
+            const fullCruxID = this.hasPayIDClaim() ? this.getPayIDClaim().virtualAddress : undefined;
+            const status = await this.getIDStatus();
+            return {
+                cruxID: fullCruxID,
+                status,
+            };
+        } catch (err) {
+            throw errors.CruxClientError.fromError(err);
+        }
     }
 
     public registerCruxID = async (cruxIDSubdomain: string, newAddressMap?: IAddressMapping): Promise<void> => {
         // TODO: add isCruxIDAvailable check before
+        try {
+            // Subdomain validation
+            identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
 
-        // Subdomain validation
-        identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
+            // Generating the identityClaim
+            await (this._payIDClaim as PayIDClaim).decrypt();
+            const identityClaim = this._payIDClaim ? {secrets: this._payIDClaim.identitySecrets} : await (this._nameservice as nameservice.NameService).generateIdentity();
+            const registeredPublicID = await (this._nameservice as nameservice.NameService).registerName(identityClaim, cruxIDSubdomain);
 
-        // Generating the identityClaim
-        await (this._payIDClaim as PayIDClaim).decrypt();
-        const identityClaim = this._payIDClaim ? {secrets: this._payIDClaim.identitySecrets} : await (this._nameservice as nameservice.NameService).generateIdentity();
-        const registeredPublicID = await (this._nameservice as nameservice.NameService).registerName(identityClaim, cruxIDSubdomain);
+            // Setup the payIDClaim locally
+            this._setPayIDClaim(new PayIDClaim({virtualAddress: registeredPublicID, identitySecrets: identityClaim.secrets}, { getEncryptionKey: this._getEncryptionKey }));
+            // await this._payIDClaim.setPasscode(passcode)
+            await (this._payIDClaim as PayIDClaim).encrypt();
+            await (this._payIDClaim as PayIDClaim).save(this._storage);
 
-        // Setup the payIDClaim locally
-        this._setPayIDClaim(new PayIDClaim({virtualAddress: registeredPublicID, identitySecrets: identityClaim.secrets}, { getEncryptionKey: this._getEncryptionKey }));
-        // await this._payIDClaim.setPasscode(passcode)
-        await (this._payIDClaim as PayIDClaim).encrypt();
-        this._storage.setJSON("payIDClaim", (this._payIDClaim as PayIDClaim).toJSON());
-
-        // TODO: Setup public addresses
-        if (newAddressMap) {
-            log.debug(`Selected addresses for resolving via your ID: ${
-                Object.keys(newAddressMap).map((currency) => {
-                    return `\n${newAddressMap[currency].addressHash}`;
-                })
-            }`);
-            await this.putAddressMap(newAddressMap);
+            // TODO: Setup public addresses
+            if (newAddressMap) {
+                log.debug(`Selected addresses for resolving via your ID: ${
+                    Object.keys(newAddressMap).map((currency) => {
+                        return `\n${newAddressMap[currency].addressHash}`;
+                    })
+                }`);
+                await this.putAddressMap(newAddressMap);
+            }
+        } catch (err) {
+            throw errors.CruxClientError.fromError(err);
         }
-
     }
 
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<boolean> => {
-        const clientMapping: any = this._clientMapping;
-        const csAddressMap: any = {};
-        for (const key of Object.keys(newAddressMap)) {
-            csAddressMap[clientMapping[key]] = newAddressMap[key];
+        try {
+            const clientMapping: any = this._clientMapping;
+            const csAddressMap: any = {};
+            for (const key of Object.keys(newAddressMap)) {
+                csAddressMap[clientMapping[key]] = newAddressMap[key];
+            }
+
+            await (this._payIDClaim as PayIDClaim).decrypt();
+            const acknowledgement = await (this._nameservice as nameservice.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, csAddressMap);
+            await (this._payIDClaim as PayIDClaim).encrypt();
+            return acknowledgement;
+        } catch (err) {
+            throw errors.CruxClientError.fromError(err);
         }
-
-        await (this._payIDClaim as PayIDClaim).decrypt();
-        const acknowledgement = await (this._nameservice as nameservice.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, csAddressMap);
-        await (this._payIDClaim as PayIDClaim).encrypt();
-
-        if (!acknowledgement) { throw new Error((`Could not update the addressMap`)); }
-        return acknowledgement;
     }
 
     public getAddressMap = async (): Promise<IAddressMapping> => {
-        const clientMapping: any = this._clientMapping;
-        const clientIdToAssetIdMap: any = {};
-        for (const i of Object.keys(clientMapping)) {
-            clientIdToAssetIdMap[clientMapping[i]] = i;
-        }
-
-        const clientIdMap: any = {};
-        if (this._payIDClaim && this._payIDClaim.virtualAddress) {
-            const assetIdMap = await (this._nameservice as nameservice.NameService).getAddressMapping(this._payIDClaim.virtualAddress);
-
-            for (const key of Object.keys(assetIdMap)) {
-                clientIdMap[clientIdToAssetIdMap[key]] = assetIdMap[key];
+        try {
+            const clientMapping: any = this._clientMapping;
+            const clientIdToAssetIdMap: any = {};
+            for (const i of Object.keys(clientMapping)) {
+                clientIdToAssetIdMap[clientMapping[i]] = i;
             }
-            return clientIdMap;
 
-        } else {
-            return {};
+            const clientIdMap: any = {};
+            if (this._payIDClaim && this._payIDClaim.virtualAddress) {
+                const assetIdMap = await (this._nameservice as nameservice.NameService).getAddressMapping(this._payIDClaim.virtualAddress);
+
+                for (const key of Object.keys(assetIdMap)) {
+                    clientIdMap[clientIdToAssetIdMap[key]] = assetIdMap[key];
+                }
+                return clientIdMap;
+
+            } else {
+                return {};
+            }
+        } catch (err) {
+            throw errors.CruxClientError.fromError(err);
         }
+    }
+
+    private getIDStatus = async (): Promise<nameservice.CruxIDRegistrationStatus> => {
+        await (this._payIDClaim as PayIDClaim).decrypt();
+        const result = await (this._nameservice as nameservice.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
+        await (this._payIDClaim as PayIDClaim).encrypt();
+        return result;
     }
 
 }
 
 export {
-    Errors,
     encryption,
+    errors,
     storage,
     nameservice,
 };

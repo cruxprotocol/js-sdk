@@ -1,3 +1,5 @@
+import {ErrorHelper, PackageErrorCode} from "./error";
+
 const DEFAULT_CRUX_NAMESPACE = "crux";
 const DEFAULT_BLOCKSTACK_NAMESPACE = "id";
 
@@ -19,10 +21,10 @@ export class CruxId {
         const subdomainMinLength: number = 4;
         const subdomainMaxLength: number = 20;
         if (!subDomain.match(new RegExp(subdomainRegex))) {
-            throw new Error("Validation failed, should start with alphabet and end with alphabet or number. Allowed characters - lowercase alphabets, numbers, - and _");
+            throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainRegexMatchFailure);
         }
         if (subDomain.length < subdomainMinLength || subDomain.length > subdomainMaxLength) {
-            throw new Error("Subdomain length must be between 4 to 20");
+            throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainLengthCheckFailure);
         }
     }
     public static fromString = (stringRepresentation: string) => {
@@ -34,18 +36,17 @@ export class CruxId {
             [cruxSubdomain, cruxDomain, cruxNamespace] = arrayCruxId; // foo@exodus.crux
         } else if (arrayCruxId.length === 2) {
             if (arrayCruxId[1] !== "crux") {
-                throw Error("Invalid Crux ID");
+                throw ErrorHelper.getPackageError(PackageErrorCode.CruxIdNamespaceValidation, arrayCruxId[1]);
             } else {
                 [cruxSubdomain, cruxDomain] = arrayCruxId; // eg. foo@crux
                 cruxNamespace = "crux";
             }
-
         } else {
-            throw Error("Invalid Crux ID");
+            throw ErrorHelper.getPackageError(PackageErrorCode.CruxIdLengthValidation);
         }
 
         if (cruxNamespace !== DEFAULT_CRUX_NAMESPACE) {
-            throw Error(`Only .${DEFAULT_CRUX_NAMESPACE} namespace is supported in CruxID`);
+            throw ErrorHelper.getPackageError(PackageErrorCode.CruxIdNamespaceValidation, cruxNamespace);
         }
 
         return new CruxId({domain: cruxDomain, subdomain: cruxSubdomain});
@@ -84,11 +85,11 @@ export class BlockstackId {
         } else if (arrayBsId.length === 2) {
             [bsDomain, bsNamespace] = arrayBsId;
         } else {
-            throw Error("Invalid Blockstack ID");
+            throw ErrorHelper.getPackageError(PackageErrorCode.BlockstackIdLengthValidation);
         }
 
         if (bsNamespace !== DEFAULT_BLOCKSTACK_NAMESPACE) {
-            throw Error(`Only .${DEFAULT_BLOCKSTACK_NAMESPACE} namespace is supported in BlockstackId`);
+            throw ErrorHelper.getPackageError(PackageErrorCode.BlockstackIdNamespaceValidation, bsNamespace);
         }
 
         return new BlockstackId({domain: bsDomain, subdomain: bsSubdomain});
@@ -110,7 +111,7 @@ export class BlockstackId {
 export class IdTranslator {
     public static cruxToBlockstack = (cruxId: CruxId): BlockstackId => {
         if (cruxId.components.namespace !== DEFAULT_CRUX_NAMESPACE) {
-            throw Error("Crux Namespace must be .crux");
+            throw ErrorHelper.getPackageError(PackageErrorCode.CruxIdNamespaceValidation, cruxId.components.namespace);
         }
         return new BlockstackId({
             domain: cruxId.components.domain,
@@ -119,10 +120,10 @@ export class IdTranslator {
     }
     public static blockstackToCrux = (bsId: BlockstackId): CruxId => {
         if (!bsId.components.subdomain) {
-            throw Error(`Subdomain must be non null to be translated`);
+            throw ErrorHelper.getPackageError(PackageErrorCode.BlockstackIdInvalidSubdomain);
         }
         if (bsId.components.namespace !== DEFAULT_BLOCKSTACK_NAMESPACE) {
-            throw Error(`Blockstack Namespace must be .id, not ${bsId.components.namespace}`);
+            throw ErrorHelper.getPackageError(PackageErrorCode.BlockstackIdNamespaceValidation, bsId.components.namespace);
         }
         return new CruxId({
             domain: bsId.components.domain,

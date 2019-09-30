@@ -7,6 +7,7 @@
   "types": "lib/exports.d.ts",
   "scripts": {
     "test": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 5000 src/test/*.ts",
+    "coverage": "./node_modules/.bin/nyc npm run test",
     "wallet_demo": "./node_modules/.bin/parcel src/samples/wallet_demo.html --https",
     "blockstack": "node_modules/.bin/parcel src/samples/blockstack.html --https",
     "typecheck": "./node_modules/.bin/tsc --noEmit",
@@ -22,6 +23,28 @@
     "version-bump": "((./node_modules/.bin/git-branch-is release/dev || ./node_modules/.bin/git-branch-is master) && npm version patch) || true",
     "publish:dev": "npm run build && npm run transpile && cross-env NODE_ENV=dev gulp config && npm publish --registry http://138.197.216.253:4873",
     "publish:prod": "npm run build-prod && npm run transpile && cross-env NODE_ENV=prod gulp config && npm publish --access public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "exclude": [
+      "coverage",
+      "dist",
+      "gulpfile.js",
+      "lib",
+      "src/config.ts",
+      "src/exports.ts",
+      "src/test",
+      "src/samples",
+      "**/*.d.ts"
+    ],
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "all": true
   },
   "pre-push": [
     "version-bump"

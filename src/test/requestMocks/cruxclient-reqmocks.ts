@@ -150,8 +150,19 @@ let requestResponseArray: { request: object, response: object }[] = [
         }
       }
       ]
-  }
-
+  },
+  {
+    request: {
+      method: 'GET',
+      url: 'https://hub.cruxpay.com/hub_info',
+      json: true
+    },
+    response: {
+      challenge_text: "['gaiahub','0','hub.cruxpay.com','blockstack_storage_please_sign']",
+      latest_auth_version: "v1",
+      read_url_prefix: "https://gaia.cruxpay.com/"
+    }
+  },
 
 ]
   
