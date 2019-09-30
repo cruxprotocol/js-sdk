@@ -21,8 +21,6 @@ export abstract class NameService {
     // TODO: Make CHILD CLASS implement instead of extend
     public abstract generateIdentity = async (): Promise<IIdentityClaim> => ({ secrets: null });
     public abstract restoreIdentity = async (name: string, identityClaim: IIdentityClaim): Promise<IIdentityClaim> => ({ secrets: null });
-    public abstract getDecryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => "";
-    public abstract getEncryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => "";
     public abstract getNameAvailability = async (name: string): Promise<boolean> => false;
     public abstract registerName = async (identityClaim: IIdentityClaim, name: string): Promise<string> => "";
     // TODO: need to respond with boolean
@@ -131,32 +129,6 @@ export class BlockstackService extends NameService {
         this._subdomainRegistrar = _options.subdomainRegistrar;
         // @ts-ignore
         this._bnsNodes = [...new Set([...config.BLOCKSTACK.BNS_NODES, ..._options.bnsNodes])];   // always append the extra configured BNS nodes (needs `downlevelIteration` flag enabled in tsconfig.json)
-    }
-
-    public getDecryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {
-        let identityKeyPair: IBitcoinKeyPair;
-
-        if (!identityClaim.secrets.identityKeyPair) {
-            identityKeyPair = await this._generateIdentityKeyPair(identityClaim.secrets.mnemonic);
-        } else {
-            identityKeyPair = identityClaim.secrets.identityKeyPair;
-        }
-
-        const decryptionKey = this._sanitizePrivKey(identityKeyPair.privKey);
-        return decryptionKey;
-    }
-
-    public getEncryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {
-        let identityKeyPair: IBitcoinKeyPair;
-
-        if (!identityClaim.secrets.identityKeyPair) {
-            identityKeyPair = await this._generateIdentityKeyPair(identityClaim.secrets.mnemonic);
-        } else {
-            identityKeyPair = identityClaim.secrets.identityKeyPair;
-        }
-
-        const encryptionKey = identityKeyPair.pubKey;
-        return encryptionKey;
     }
 
     public restoreIdentity = async (fullCruxId: string, identityClaim: IIdentityClaim): Promise<IIdentityClaim> => {

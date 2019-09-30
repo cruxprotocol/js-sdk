@@ -84,17 +84,6 @@ describe('BlockstackService tests', () => {
     it('given identityClaim with mnemonic and non-corresponding cruxID, should throw error')
   })
 
-  describe('getDecryptionKey tests', () => {
-    it('given partial identityClaim (only mnemonic), returns expected private key', async () => {
-      let decryptionKey = await blockstackService.getDecryptionKey({secrets: {mnemonic: sampleIdentityClaim.secrets.mnemonic}})
-      expect(decryptionKey).to.be.equal(sampleIdentityClaim.secrets.identityKeyPair.privKey)
-    })
-    it('given full identityClaim (mnemonic and keypair), returns expected private key', async () => {
-      let decryptionKey = await blockstackService.getDecryptionKey(sampleIdentityClaim)
-      expect(decryptionKey).to.be.equal(sampleIdentityClaim.secrets.identityKeyPair.privKey)
-    })
-  })
-
   describe('PrivateKey sanitization tests', () => {
     let uncompressedKey = "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f01"
     let compressedKey = "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f"
