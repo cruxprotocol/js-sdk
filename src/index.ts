@@ -16,7 +16,7 @@ const log = getLogger(__filename);
 import {
     BlockstackConfigurationService,
     encryption,
-    error,
+    errors,
     identityUtils,
     nameservice,
     storage,
@@ -65,10 +65,9 @@ export interface ICruxIDState {
     status: nameservice.CruxIDRegistrationStatus;
 }
 
-interface cruxPayOptions {
+interface payIDClaimOptions {
     getEncryptionKey: () => string;
     encryption?: typeof encryption.Encryption;
-    storage?: storage.StorageService;
 }
 
 export class PayIDClaim implements ICruxPayClaim {
@@ -78,8 +77,8 @@ export class PayIDClaim implements ICruxPayClaim {
     private _getEncryptionKey: () => string;
     private _encryption: typeof encryption.Encryption = encryption.Encryption;
 
-    constructor(cruxPayObj: ICruxPayClaim = {} as ICruxPayClaim, options: cruxPayOptions) {
-        if (!options.getEncryptionKey) { throw error.ErrorHelper.getPackageError(error.PackageErrorCode.ExpectedEncryptionKeyValue); }
+    constructor(cruxPayObj: ICruxPayClaim = {} as ICruxPayClaim, options: payIDClaimOptions) {
+        if (!options.getEncryptionKey) { throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ExpectedEncryptionKeyValue); }
         this._getEncryptionKey = options.getEncryptionKey;
         if (options.encryption) { this._encryption = options.encryption; }
 
@@ -124,7 +123,7 @@ export class PayIDClaim implements ICruxPayClaim {
     }
 
     public save = async (storageService: storage.StorageService): Promise<void> => {
-        const json = await this.toJSON();
+        const json = this.toJSON();
         // log.debug(`PayIDClaim being stored to storage:`, json)
         storageService.setJSON("payIDClaim", json);
     }
@@ -167,7 +166,6 @@ class CruxPayPeer extends EventEmitter {
     }
 
     public async init() {
-        console.group("Initialising CruxPayPeer");
         const configService = new BlockstackConfigurationService(this.walletClientName);
         await configService.init();
         if (!this._nameservice) {
@@ -201,8 +199,6 @@ class CruxPayPeer extends EventEmitter {
         return (this._payIDClaim as PayIDClaim);
     }
 
-    public registerCruxID = async (cruxIDSubdomain: string): Promise<void> => {/**/};
-
     public updatePassword = async (oldEncryptionKey: string, newEncryptionKey: string): Promise<boolean> => {
         try {
             if (this._hasPayIDClaimStored()) {
@@ -214,7 +210,7 @@ class CruxPayPeer extends EventEmitter {
                 return false;
             }
         } catch (err) {
-            throw error.CruxClientError.fromError(err);
+            throw errors.CruxClientError.fromError(err);
         }
     }
 
@@ -223,7 +219,7 @@ class CruxPayPeer extends EventEmitter {
             identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
             return (this._nameservice as nameservice.NameService).getNameAvailability(cruxIDSubdomain);
         } catch (err) {
-            throw error.CruxClientError.fromError(err);
+            throw errors.CruxClientError.fromError(err);
         }
     }
 
@@ -237,19 +233,19 @@ class CruxPayPeer extends EventEmitter {
                 }
             }
             if (!correspondingAssetId) {
-                throw error.ErrorHelper.getPackageError(error.PackageErrorCode.AssetIDNotAvailable);
+                throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.AssetIDNotAvailable);
             }
 
             const addressMap = await (this._nameservice as nameservice.NameService).getAddressMapping(fullCruxID);
             log.debug(`Address map: `, addressMap);
             if (!addressMap[correspondingAssetId]) {
-                throw error.ErrorHelper.getPackageError(error.PackageErrorCode.AddressNotAvailable);
+                throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.AddressNotAvailable);
             }
             const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
             log.debug(`Address:`, address);
             return address;
         } catch (err) {
-            throw error.CruxClientError.fromError(err);
+            throw errors.CruxClientError.fromError(err);
         }
     }
 
@@ -294,7 +290,7 @@ export class CruxClient extends CruxPayPeer {
                 status,
             };
         } catch (err) {
-            throw error.CruxClientError.fromError(err);
+            throw errors.CruxClientError.fromError(err);
         }
     }
 
@@ -325,7 +321,7 @@ export class CruxClient extends CruxPayPeer {
                 await this.putAddressMap(newAddressMap);
             }
         } catch (err) {
-            throw error.CruxClientError.fromError(err);
+            throw errors.CruxClientError.fromError(err);
         }
     }
 
@@ -342,7 +338,7 @@ export class CruxClient extends CruxPayPeer {
             await (this._payIDClaim as PayIDClaim).encrypt();
             return acknowledgement;
         } catch (err) {
-            throw error.CruxClientError.fromError(err);
+            throw errors.CruxClientError.fromError(err);
         }
     }
 
@@ -367,13 +363,13 @@ export class CruxClient extends CruxPayPeer {
                 return {};
             }
         } catch (err) {
-            throw error.CruxClientError.fromError(err);
+            throw errors.CruxClientError.fromError(err);
         }
     }
 
     private getIDStatus = async (): Promise<nameservice.CruxIDRegistrationStatus> => {
         await (this._payIDClaim as PayIDClaim).decrypt();
-        const result = (this._nameservice as nameservice.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
+        const result = await (this._nameservice as nameservice.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
         await (this._payIDClaim as PayIDClaim).encrypt();
         return result;
     }
@@ -382,6 +378,7 @@ export class CruxClient extends CruxPayPeer {
 
 export {
     encryption,
+    errors,
     storage,
     nameservice,
 };

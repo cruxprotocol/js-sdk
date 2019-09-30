@@ -43,8 +43,6 @@ describe('CruxClient tests', () => {
 		walletClientName: 'scatter_dev'
 	}
 
-	let alwaysTruePromise = new Promise<any>(async(resolve, reject) => {resolve(true)})
-
 	describe('after init tests', () => {
 
 		let httpJSONRequestStub: sinon.SinonStub
@@ -147,7 +145,7 @@ describe('CruxClient tests', () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
-				let updateProfileStub = sinon.stub(cruxClient._nameservice, '_uploadProfileInfo').returns(alwaysTruePromise)
+				let updateProfileStub = sinon.stub(cruxClient._nameservice, '_uploadProfileInfo').resolves(true)
 
 				let registerSubdomainPromise = new Promise<any>(async(resolve, reject) => {resolve(sampleUser['blockStackID'])})
 				let registerSubdomainStub = sinon.stub(cruxClient._nameservice, '_registerSubdomain').returns(registerSubdomainPromise)
@@ -172,8 +170,7 @@ describe('CruxClient tests', () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
-				let alwaysTruePromise = new Promise<any>(async(resolve, reject) => {resolve(true)})
-				let updateProfileStub = sinon.stub(cruxClient._nameservice, '_uploadProfileInfo').returns(alwaysTruePromise)
+				let updateProfileStub = sinon.stub(cruxClient._nameservice, '_uploadProfileInfo').resolves(true)
 
 				let raisedException = false
 				try {
@@ -224,7 +221,7 @@ describe('CruxClient tests', () => {
 					await cruxClient.resolveCurrencyAddressForCruxID(sampleUser['cruxID'], "ETH")
 				} catch(e) {
 					raisedException = true
-					expect(e.errorCode).to.equal(1200)
+					expect(e.errorCode).to.equal(1006)
 				} finally {
 					expect(raisedException).to.equal(true)
 					clientMappingStub.restore()
@@ -248,7 +245,7 @@ describe('CruxClient tests', () => {
 					await cruxClient.resolveCurrencyAddressForCruxID(sampleUser['cruxID'], "BTC")
 				} catch(e) {
 					raisedException = true
-					expect(e.errorCode).to.equal(1103)
+					expect(e.errorCode).to.equal(1005)
 				} finally {
 					expect(raisedException).to.equal(true)
 					clientMappingStub.restore()
@@ -262,7 +259,7 @@ describe('CruxClient tests', () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
-				let addressMappingStub = sinon.stub(cruxClient._nameservice, 'putAddressMapping').returns(alwaysTruePromise)
+				let addressMappingStub = sinon.stub(cruxClient._nameservice, 'putAddressMapping').resolves(true)
 				expect(await cruxClient.putAddressMap(sampleAddressMap)).to.be.true
 				addressMappingStub.restore()
 			})

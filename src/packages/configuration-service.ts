@@ -3,7 +3,6 @@ import config from "../config";
 import {ErrorHelper, PackageErrorCode} from "./error";
 import * as identityUtils from "./identity-utils";
 import * as nameservice from "./nameservice";
-import {BlockstackService, UPLOADABLE_JSON_FILES} from "./nameservice";
 
 const log = getLogger(__filename);
 
@@ -38,7 +37,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
 
     public getGlobalAssetList = async (): Promise<object> => {
         const blockstackId = `${this.settingsDomain}.id`;
-        return await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, UPLOADABLE_JSON_FILES.ASSET_LIST);
+        return await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.ASSET_LIST);
     }
 
     public getClientConfig = async (clientName: string): Promise<any> => {
@@ -46,7 +45,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             domain: this.settingsDomain,
             subdomain: clientName,
         }).toString();
-        return await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, UPLOADABLE_JSON_FILES.CLIENT_CONFIG);
+        return await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG);
     }
 
     public getClientAssetMapping = async (): Promise<object> => {
@@ -58,7 +57,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         }
     }
 
-    public getBlockstackServiceForConfig = async (): Promise<BlockstackService> => {
+    public getBlockstackServiceForConfig = async (): Promise<nameservice.BlockstackService> => {
         if (!this.clientConfig) { throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig); }
         let ns: nameservice.BlockstackService;
         if (this.clientConfig.nameserviceConfiguration) {

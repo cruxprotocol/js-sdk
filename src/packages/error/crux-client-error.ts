@@ -3,7 +3,6 @@ import {PackageError} from "./package-error";
 export class CruxClientError extends Error {
 
     public static FALLBACK_ERROR_CODE: number = 9000;
-    public static FALLBACK_ERROR_NAME: string = "CruxClientError";
 
     public static fromError(error: CruxClientError | PackageError | Error | string, messagePrefix?: string): CruxClientError {
 
@@ -13,10 +12,10 @@ export class CruxClientError extends Error {
                 error.message = msgPrefix + error.message;
             }
             return error;
+        }  else if (error instanceof PackageError) {
+            return new CruxClientError(msgPrefix + error.message, error.errorCode);
         } else if (typeof (error) === "string") {
             return new CruxClientError(msgPrefix + error);
-        } else if (error instanceof PackageError) {
-            return new CruxClientError(msgPrefix + error.message, error.errorCode);
         } else if (error instanceof Error) {
             return new CruxClientError(msgPrefix + error.message);
         } else {
@@ -28,7 +27,6 @@ export class CruxClientError extends Error {
     constructor(errorMessage: string, errorCode?: number | undefined) {
         const message = errorMessage || "";
         super(message);
-        this.name = CruxClientError.FALLBACK_ERROR_NAME;
         this.errorCode = errorCode || CruxClientError.FALLBACK_ERROR_CODE;
         Object.setPrototypeOf(this, new.target.prototype);
     }

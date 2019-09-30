@@ -90,6 +90,7 @@ export enum UPLOADABLE_JSON_FILES {
     CLIENT_CONFIG = "client-config.json",
     CLIENT_MAPPING = "client-mapping.json",
     ASSET_LIST = "asset-list.json",
+    PROFILE = "profile.json",
 }
 
 export class BlockstackService extends NameService {
@@ -454,7 +455,7 @@ export class BlockstackService extends NameService {
             "@context": "http://schema.org/",
             "@type": "Person",
         };
-        const filename = "profile.json";
+        const filename = UPLOADABLE_JSON_FILES.PROFILE;
         const person = new blockstack.Person(profileObj);
         const token = person.toToken(privKey);
         log.debug(token);
@@ -464,7 +465,7 @@ export class BlockstackService extends NameService {
             const finalUrl = await blockstack.uploadToGaiaHub(filename, JSON.stringify(tokenFile), hubConfig, "application/json");
             log.debug(finalUrl);
         } catch (error) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.GaiaUploadFailed, filename, error);
+            throw ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed, filename, error);
         }
         return true;
     }

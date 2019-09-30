@@ -22,6 +22,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.GaiaCruxPayUploadFailed]: "Unable to upload '{0}' to gaia: '{1}'",
     [PackageErrorCode.GaiaEmptyResponse]: "Gaia sent empty response",
     [PackageErrorCode.GaiaGetFileFailed]: "Unable to get gaia read url prefix: '{0}'",
+    [PackageErrorCode.GaiaProfileUploadFailed]: "Unable to upload '{0}' to gaia: '{1}'",
     [PackageErrorCode.GaiaUploadFailed]: "Unable to upload '{0}' to gaia: '{1}'",
     [PackageErrorCode.NameIntegrityCheckFailed]: "Name resolution integrity check failed",
     [PackageErrorCode.SubdomainLengthCheckFailure]: "Validation failed: Subdomain length must be between 4 to 20",
