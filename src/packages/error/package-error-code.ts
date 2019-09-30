@@ -34,4 +34,5 @@ export enum PackageErrorCode {
     CouldNotFindMnemonicToRestoreIdentity = 5002,
     CouldNotValidateZoneFile = 5003,
     CouldNotFindIdentityKeyPairToPutAddressMapping = 5004,
+    CouldNotFindAssetListInClientConfig = 5005,
 }

@@ -41,8 +41,12 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     }
 
     public getGlobalAssetList = async (): Promise<object> => {
-        const blockstackId = `${this.settingsDomain}.id`;
-        return await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.ASSET_LIST);
+        const clientConfig = await this.clientConfig;
+        if (clientConfig && clientConfig.assetList) {
+            return clientConfig.assetList;
+        } else {
+            { throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindAssetListInClientConfig); }
+        }
     }
 
     public getClientConfig = async (clientName: string): Promise<any> => {
