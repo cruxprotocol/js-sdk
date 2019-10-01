@@ -174,18 +174,20 @@ class CruxPayPeer extends EventEmitter {
             // log.debug(`Local payIDClaim:`, payIDClaim)
             this._setPayIDClaim(new PayIDClaim(payIDClaim as ICruxPayClaim, { getEncryptionKey: this._getEncryptionKey }));
             const ns: blockstackService.BlockstackService = new blockstackService.BlockstackService();
-            await ns.restoreIdentity((this._payIDClaim as PayIDClaim).virtualAddress as string);
-            const status = await ns.getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
+            await this.getPayIDClaim().decrypt();
+            await ns.restoreIdentity(this.getPayIDClaim().virtualAddress as string, {identitySecrets: (this._payIDClaim as PayIDClaim).identitySecrets});
+            const status = await ns.getRegistrationStatus({secrets: this.getPayIDClaim().identitySecrets});
+            await this.getPayIDClaim().encrypt();
             if (status.status === blockstackService.SubdomainRegistrationStatus.DONE) {
                 configService = new BlockstackConfigurationService(this.walletClientName, (this._payIDClaim as PayIDClaim).virtualAddress);
             } else {
                 configService = new BlockstackConfigurationService(this.walletClientName);
             }
-            await this._initializeNameservice(configService);
+            await this._initializeNameService(configService);
             await this._restoreIdentity();
         } else {
             configService = new BlockstackConfigurationService(this.walletClientName);
-            await this._initializeNameservice(configService);
+            await this._initializeNameService(configService);
             const identityClaim = await (this._nameService as nameService.NameService).generateIdentity();
             const payIDClaim = {identitySecrets: identityClaim.secrets};
             this._setPayIDClaim(new PayIDClaim(payIDClaim as ICruxPayClaim, { getEncryptionKey: this._getEncryptionKey }));
@@ -261,7 +263,7 @@ class CruxPayPeer extends EventEmitter {
         this._payIDClaim = payIDClaim;
     }
 
-    private _initializeNameservice = async (configService: BlockstackConfigurationService) => {
+    private _initializeNameService = async (configService: BlockstackConfigurationService) => {
         await configService.init();
         if (!this._nameService) {
             this._nameService = await configService.getBlockstackServiceForConfig();
