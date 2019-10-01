@@ -8,9 +8,15 @@ import { httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
 
+interface gaiaData {
+    gaiaReadUrl: string;
+    gaiaWriteUrl: string | undefined;
+    ownerAddress: string;
+}
+
 export let getContentFromGaiaHub = async (blockstackId: string, filename: UPLOADABLE_JSON_FILES, type= "application/json"): Promise<any> => {
     let fileUrl: string;
-    const gaiaDetails = await getGaiaHubUrlsFromBlockstackID(blockstackId);
+    const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackId);
     fileUrl = gaiaDetails.gaiaReadUrl + filename;
     const options = {
         json: true,
@@ -47,7 +53,7 @@ export let getContentFromGaiaHub = async (blockstackId: string, filename: UPLOAD
     return finalContent;
 };
 
-export let getGaiaHubUrlsFromBlockstackID = async (blockstackId: string) => {
+export let getGaiaDataFromBlockstackID = async (blockstackId: string): Promise<gaiaData> => {
     let nameData: any;
     const bnsNodes: string[] = config.BLOCKSTACK.BNS_NODES;
     nameData = await fetchNameDetails(blockstackId, bnsNodes);
@@ -68,11 +74,12 @@ export let getGaiaHubUrlsFromBlockstackID = async (blockstackId: string) => {
         gaiaHub = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1);
         gaiaRead = await getGaiaReadUrl(gaiaHub as string);
     }
-    return {
+    const gaiaDetails: gaiaData = {
         gaiaReadUrl: gaiaRead,
         gaiaWriteUrl: gaiaHub,
         ownerAddress: bitcoinAddress,
     };
+    return gaiaDetails;
 };
 
 export const getGaiaReadUrl = async (gaiaHubURL: string): Promise<string> => {

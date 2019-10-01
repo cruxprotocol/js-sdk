@@ -1,7 +1,7 @@
 import { getLogger } from "..";
 import config from "../config";
 import {ErrorHelper, PackageErrorCode} from "./error";
-import { getContentFromGaiaHub, getGaiaHubUrlsFromBlockstackID } from "./gaia-service/utils";
+import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "./gaia-service/utils";
 import * as identityUtils from "./identity-utils";
 import * as nameservice from "./name-service/blockstack-service";
 
@@ -71,7 +71,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         let ns: nameservice.BlockstackService;
         let gaiaHub: string | undefined;
         if (this.blockstackID) {
-            const gaiaUrls = await getGaiaHubUrlsFromBlockstackID(this.blockstackID);
+            const gaiaUrls = await getGaiaDataFromBlockstackID(this.blockstackID);
             if (gaiaUrls.gaiaWriteUrl) {
                 gaiaHub = gaiaUrls.gaiaWriteUrl;
             }
