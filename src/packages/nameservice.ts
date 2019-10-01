@@ -264,8 +264,7 @@ export class BlockstackService extends NameService {
         let identityKeyPair = identityClaim.secrets.identityKeyPair;
         // Check for existing mnemonic
         if (!mnemonic) {
-            // Generate new mnemonic if not available
-            await this.generateIdentity();
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRegisterName);
         }
         // Generate the Identity key pair
         if (!identityKeyPair) {
@@ -418,7 +417,7 @@ export class BlockstackService extends NameService {
         return privKey;
     }
 
-    private _uploadProfileInfo = async (privKey: string): Promise<boolean> => {
+    private _uploadProfileInfo = async (privKey: string): Promise<void> => {
         // TODO: validate the privateKey format and convert
         privKey = this._sanitizePrivKey(privKey);
 
@@ -440,7 +439,7 @@ export class BlockstackService extends NameService {
         } catch (error) {
             throw ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed, filename, error);
         }
-        return true;
+        return;
     }
 
     private _generateTokenFileForContent(privateKey: string, content: any) {
