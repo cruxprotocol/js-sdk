@@ -274,7 +274,7 @@ export class BlockstackService extends NameService {
 
         await this._uploadProfileInfo(identityKeyPair.privKey);
 
-        const registeredSubdomain = await this._registerSubdomain(subdomain, identityClaim.secrets.identityKeyPair.address);
+        const registeredSubdomain = await this._registerSubdomain(subdomain, identityKeyPair.address);
         this._identityCouple = getIdentityCoupleFromCruxId(new CruxId({
             domain: this._domain,
             subdomain,
@@ -369,7 +369,7 @@ export class BlockstackService extends NameService {
         const { address, key, keyID} = wallet.getIdentityKeyPair(0);
         const identityKeyPair: IBitcoinKeyPair = {
             address,
-            privKey: key,
+            privKey: this._sanitizePrivKey(key),
             pubKey: keyID,
         };
         return identityKeyPair;
@@ -441,7 +441,7 @@ export class BlockstackService extends NameService {
         try {
             registrationAcknowledgement = await utils.httpJSONRequest(options);
         } catch (err) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainRegistrationFailed);
+            throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainRegistrationFailed, err);
         }
 
         log.debug(`Subdomain registration acknowledgement:`, registrationAcknowledgement);
