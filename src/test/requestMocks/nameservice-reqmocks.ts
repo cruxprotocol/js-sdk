@@ -7,17 +7,17 @@ let requestResponseArray: { request: object, response: object }[] = [
       json: true
     },
     response: {
-        status: "registered",
-        expire_block: 694987,
-        resolver: null,
-        address: "18izR7sjo7Nn3pb5LrnHWKdV7P42cqricA",
-        zonefile_hash: "a9094d07226c7b9263928f07d03681a9f90db560",
-        renewal_deadline: 699987,
-        grace_period: false,
-        zonefile: "$ORIGIN devcoinswitch.id\n$TTL 3600\nbob\tIN\tTXT\t\"owner=1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiBib2IKJFRUTCAzNjAwCl9odHRwcy5fdGNwIFVSSSAxMCAxICJodHRwczovL2dhaWEuYmxvY2tzdGFjay5vcmcvaHViLzFIdEZrYlhGV0hGVzVLZDRHTGZpUnFrZmZTNUtMWjkxZUovcHJvZmlsZS5qc29uIgo=\"\n_http._tcp\tIN\tURI\t10\t1\t\"https://gaia.blockstack.org/hub/18izR7sjo7Nn3pb5LrnHWKdV7P42cqricA/profile.json\"\n",
-        blockchain: "bitcoin",
-        last_txid: "7e4ae9eb23d90eb45c8c258ff462e0e25cce257695f822e44818b047008ccb7f",
-        did: "did:stack:v0:1Ce8JHUyodWwi6kQxg3c1wXoiYmLibZe8y-0"
+      status: "registered",
+      expire_block: 694987,
+      resolver: null,
+      address: "18izR7sjo7Nn3pb5LrnHWKdV7P42cqricA",
+      zonefile_hash: "a9094d07226c7b9263928f07d03681a9f90db560",
+      renewal_deadline: 699987,
+      grace_period: false,
+      zonefile: "$ORIGIN devcoinswitch.id\n$TTL 3600\nbob\tIN\tTXT\t\"owner=1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiBib2IKJFRUTCAzNjAwCl9odHRwcy5fdGNwIFVSSSAxMCAxICJodHRwczovL2dhaWEuYmxvY2tzdGFjay5vcmcvaHViLzFIdEZrYlhGV0hGVzVLZDRHTGZpUnFrZmZTNUtMWjkxZUovcHJvZmlsZS5qc29uIgo=\"\n_http._tcp\tIN\tURI\t10\t1\t\"https://gaia.blockstack.org/hub/18izR7sjo7Nn3pb5LrnHWKdV7P42cqricA/profile.json\"\n",
+      blockchain: "bitcoin",
+      last_txid: "7e4ae9eb23d90eb45c8c258ff462e0e25cce257695f822e44818b047008ccb7f",
+      did: "did:stack:v0:1Ce8JHUyodWwi6kQxg3c1wXoiYmLibZe8y-0"
     }
   },
   {
@@ -159,15 +159,50 @@ let requestResponseArray: { request: object, response: object }[] = [
     }
   },
   {
-    request: { 
+    request: {
       method: 'GET',
-      url: "https://hub.cruxpay.com/hub_info" ,
+      url: "https://hub.cruxpay.com/hub_info",
       json: true
     },
     response: {
       "challenge_text": "[\"gaiahub\",\"0\",\"hub.cruxpay.com\",\"blockstack_storage_please_sign\"]",
       "latest_auth_version": "v1",
       "read_url_prefix": "https://gaia.cruxpay.com/"
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://core.blockstack.org',
+      url: '/v1/names/carol.devcoinswitch.id',
+      json: true
+    },
+    response: {
+      more: 'failed to find parent domain\'s resolver',
+      status: 'available'
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://bns.cruxpay.com',
+      url: '/v1/names/carol.devcoinswitch.id',
+      json: true
+    },
+    response: {
+      status: 'available',
+      more: 'failed to find parent domain\'s resolver'
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://registrar.coinswitch.co:3000',
+      url: '/status/carol',
+      json: true
+    },
+    response: {
+      status: "Your subdomain was registered in transaction"
     }
   }
 ]

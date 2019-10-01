@@ -132,32 +132,83 @@ describe('BlockstackService tests', () => {
   })
 
   describe('getRegistrationStatus tests', () => {
-    it(`registration status for cs1@devcoinswitch.crux is DONE`, async () => {
-      let bs = new nameservice.BlockstackService();
-      let name = 'cs1'
-      let walletClientName = 'devcoinswitch'
-      let registrationStatus = {
-        'status': 'DONE',
-        'status_detail': 'Subdomain propagated.'
-      };
-
-      // @ts-ignore
-      bs._subdomain = name;
-      // @ts-ignore
-      bs._identityCouple = {
-        cruxId: new identityUtils.CruxId({
-          subdomain: name,
-          domain: walletClientName
-        }),
-        bsId: new identityUtils.BlockstackId({
-          subdomain: name,
-          domain: walletClientName
-        })
+    let unavailableStatus = {
+      'status': 'NONE', 
+      'status_detail': ''
+    }
+    let pendingStatus = {
+      'status': 'PENDING',
+      'status_detail': 'Subdomain registration pending on registrar.'
+    };
+    let registeredStatus = {
+      'status': 'DONE',
+      'status_detail': 'Subdomain propagated.'
+    };
+    it('given identityClaim, without restoring identity, should return NONE', async () => {
+      // initialise the nameservice
+      let bs = new nameservice.BlockstackService()
+      // fetch registrationStatus
+      let resolvedStatus = await bs.getRegistrationStatus(sampleIdentityClaim);
+      expect(httpJSONRequestStub.notCalled).is.true
+      expect(resolvedStatus).to.eql(unavailableStatus)
+    })
+    it('given pending identityClaim (carol@devcoinswitch.crux), after restoring the identity, should return PENDING', async () => {
+      let pendingCruxId = "carol@devcoinswitch.crux";
+      let pendingIdentityClaim = {"secrets":{"identityKeyPair":{"address":"1FnntbZKRLB7rZFvng9PDgvMMEXMek1jrv","privKey":"d4f1d65bbe0a89a91506828f4e62639b99558aeffda06b6f66961dccec5e301b01","pubKey":"03d2b5b73bd06b624ccd24d05d0ffc259e7b9180d85b29f61e16404866fe344e60"},"mnemonic":"minute furnace room favorite hunt auto scrap angry tribe wait foam drive"}}
+      let bnsRequestOptions1 = {
+        baseUrl: 'https://core.blockstack.org',
+        json: true,
+        method: "GET",
+        url: `/v1/names/carol.devcoinswitch.id`,
+      }
+      let bnsRequestOptions2 = {
+        baseUrl: 'https://bns.cruxpay.com',
+        json: true,
+        method: "GET",
+        url: `/v1/names/carol.devcoinswitch.id`,
+      }
+      let registrarRequestOptions = {
+        baseUrl: "https://registrar.coinswitch.co:3000",
+        json: true,
+        method: "GET",
+        url: `/status/carol`,
+      }
+      // initialise the nameservice
+      let bs = new nameservice.BlockstackService()
+      // restore identity
+      await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
+      // fetch registrationStatus
+      let resolvedStatus = await bs.getRegistrationStatus(pendingIdentityClaim)
+      expect(httpJSONRequestStub.calledThrice).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
+      expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
+      expect(resolvedStatus).to.eql(pendingStatus)
+    })
+    it(`given registered identityClaim (cs1@devcoinswitch.crux), after restoring the identity, should return DONE`, async () => {
+      let bnsRequestOptions1 = {
+        baseUrl: 'https://core.blockstack.org',
+        json: true,
+        method: "GET",
+        url: `/v1/names/cs1.devcoinswitch.id`,
+      }
+      let bnsRequestOptions2 = {
+        baseUrl: 'https://bns.cruxpay.com',
+        json: true,
+        method: "GET",
+        url: `/v1/names/cs1.devcoinswitch.id`,
       }
 
+      // initialise the nameservice
+      let bs = new nameservice.BlockstackService();
+      // restore the identity using identityClaim
+      await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
+      // fetch registrationStatus
       let resolvedStatus = await bs.getRegistrationStatus(sampleIdentityClaim);
-      console.log(resolvedStatus == registrationStatus);
-      expect(resolvedStatus).to.eql(registrationStatus);
+      expect(httpJSONRequestStub.calledTwice).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
+      expect(resolvedStatus).to.eql(registeredStatus);
     })
 
   })
