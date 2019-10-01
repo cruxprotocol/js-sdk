@@ -7,6 +7,7 @@ import * as utils from "../packages/utils";
 import requestFixtures from "./requestMocks/nameservice-reqmocks";
 import * as blockstack from 'blockstack';
 import { IAddressMapping } from '../index';
+import { config } from 'blockstack';
 
 
 // TODO: registration of already registered names and error handling
@@ -39,7 +40,7 @@ describe('BlockstackService tests', () => {
     }
   }
 
-  before(() => {
+  beforeEach(() => {
     // Handling mock stubs
 
     httpJSONRequestStub = sinon.stub(utils, 'httpJSONRequest').throws('unhandled in mocks')
@@ -53,7 +54,7 @@ describe('BlockstackService tests', () => {
 
   })
 
-  after(() => {
+  afterEach(() => {
     httpJSONRequestStub.restore()
     connectToGaiaHubStub.restore()
     uploadToGaiaHubStub.restore()
@@ -105,12 +106,26 @@ describe('BlockstackService tests', () => {
 
     it(`${registeredSubdomain}@devcoinswitch.crux should be unavailable`, async () => {
       let resolvedPublicKey = await blockstackService.getNameAvailability(registeredSubdomain)
-      console.log(resolvedPublicKey)
+      let options = {
+        baseUrl: "https://registrar.coinswitch.co:3000",
+        json: true,
+        method: "GET",
+        url: `/status/${registeredSubdomain}`,
+      }
+      expect(httpJSONRequestStub.calledOnce).is.true
+      expect(httpJSONRequestStub.calledWith(options)).is.true
       expect(resolvedPublicKey).is.false
     })
     it(`${unregisteredSubdomain}@devcoinswitch.crux should be available`, async () => {
       let resolvedPublicKey = await blockstackService.getNameAvailability(unregisteredSubdomain)
-      console.log(resolvedPublicKey)
+      let options = {
+        baseUrl: "https://registrar.coinswitch.co:3000",
+        json: true,
+        method: "GET",
+        url: `/status/${unregisteredSubdomain}`,
+      }
+      expect(httpJSONRequestStub.calledOnce).is.true
+      expect(httpJSONRequestStub.calledWith(options)).is.true
       expect(resolvedPublicKey).is.true
     })
 
