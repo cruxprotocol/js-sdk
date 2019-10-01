@@ -1,14 +1,14 @@
 import {Decoder, object, optional, string} from "@mojotech/json-type-validation";
 import * as blockstack from "blockstack";
-import { getLogger, IAddress, IAddressMapping } from "..";
-import config from "../config";
+import { getLogger, IAddress, IAddressMapping } from "../..";
+import config from "../../config";
 
-import {ErrorHelper, PackageErrorCode} from "./error";
-import { getContentFromGaiaHub } from "./gaia-utils";
-import { GaiaService } from "./gaiaservice";
-import {BlockstackId, CruxId, IdTranslator} from "./identity-utils";
+import {ErrorHelper, PackageErrorCode} from "../error";
+import { GaiaService } from "../gaiaservice/gaiaservice";
+import { getContentFromGaiaHub } from "../gaiaservice/gaiaservice-utils";
+import {BlockstackId, CruxId, IdTranslator} from "../identity-utils";
+import * as utils from "../utils";
 import { fetchNameDetails } from "./nameservice-utils";
-import * as utils from "./utils";
 
 const log = getLogger(__filename);
 

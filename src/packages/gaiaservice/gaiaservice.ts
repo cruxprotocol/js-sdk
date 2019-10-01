@@ -1,9 +1,10 @@
 import * as blockstack from "blockstack";
 import { SECP256K1Client, TokenSigner } from "jsontokens";
-import { getLogger } from "..";
-import { ErrorHelper, PackageErrorCode } from "./error";
-import * as nameservice from "./nameservice";
-import { UPLOADABLE_JSON_FILES } from "./nameservice";
+import { getLogger } from "../..";
+import { ErrorHelper, PackageErrorCode } from "../error";
+import * as nameservice from "../nameservice/nameservice";
+import { UPLOADABLE_JSON_FILES } from "../nameservice/nameservice";
+import { sanitizePrivKey } from "../utils";
 
 const log = getLogger(__filename);
 
@@ -15,7 +16,7 @@ export class GaiaService {
     }
 
     public uploadContentToGaiaHub = async (filename: UPLOADABLE_JSON_FILES, privKey: string, content: any, type= "application/json"): Promise<string> => {
-        const sanitizedPrivKey = this._sanitizePrivKey(privKey);
+        const sanitizedPrivKey = sanitizePrivKey(privKey);
         const hubURL = this.gaiaWriteUrl;
         const hubConfig = await blockstack.connectToGaiaHub(hubURL, sanitizedPrivKey);
         const tokenFile = this._generateTokenFileForContent(sanitizedPrivKey, content);
@@ -34,7 +35,7 @@ export class GaiaService {
 
     public uploadProfileInfo = async (privKey: string): Promise<boolean> => {
         // TODO: validate the privateKey format and convert
-        privKey = this._sanitizePrivKey(privKey);
+        privKey = sanitizePrivKey(privKey);
 
         const hubUrl = this.gaiaWriteUrl;
         const hubConfig = await blockstack.connectToGaiaHub(hubUrl, privKey);
@@ -67,12 +68,5 @@ export class GaiaService {
         };
         const token = tokenSigner.sign(payload);
         return [blockstack.wrapProfileToken(token)];
-    }
-
-    private _sanitizePrivKey = (privKey: string): string => {
-        if (privKey.length === 66 && privKey.slice(64) === "01") {
-            privKey = privKey.slice(0, 64);
-        }
-        return privKey;
     }
 }

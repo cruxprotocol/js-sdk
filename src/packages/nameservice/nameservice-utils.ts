@@ -1,7 +1,7 @@
 import { AssertionError, deepStrictEqual } from "assert";
-import { getLogger } from "..";
-import { ErrorHelper, PackageErrorCode } from "./error";
-import { httpJSONRequest } from "./utils";
+import { getLogger } from "../..";
+import { ErrorHelper, PackageErrorCode } from "../error";
+import { httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
 

@@ -1,9 +1,9 @@
 import { getLogger } from "..";
 import config from "../config";
 import {ErrorHelper, PackageErrorCode} from "./error";
-import { getContentFromGaiaHub, getGaiaHubUrlsFromBlockstackID } from "./gaia-utils";
+import { getContentFromGaiaHub, getGaiaHubUrlsFromBlockstackID } from "./gaiaservice/gaiaservice-utils";
 import * as identityUtils from "./identity-utils";
-import * as nameservice from "./nameservice";
+import * as nameservice from "./nameservice/nameservice";
 
 const log = getLogger(__filename);
 

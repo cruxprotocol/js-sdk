@@ -15,6 +15,14 @@ const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (
     return promise;
 };
 
+const sanitizePrivKey = (privKey: string): string => {
+    if (privKey.length === 66 && privKey.slice(64) === "01") {
+        privKey = privKey.slice(0, 64);
+    }
+    return privKey;
+};
+
 export {
     httpJSONRequest,
+    sanitizePrivKey,
 };
