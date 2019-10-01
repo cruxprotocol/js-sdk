@@ -3,6 +3,7 @@ import { getLogger } from "..";
 const log = getLogger(__filename);
 
 // Storage service abstraction
+/* istanbul ignore next */
 export abstract class StorageService {
     public abstract getJSON = (key: string): object | null => null;
     public abstract setJSON = (key: string, jsonObj: object): void => {return; };

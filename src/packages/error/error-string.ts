@@ -13,6 +13,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig]: "Missing client-config for: '{0}'",
     [PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping]: "Missing IdentityKeyPair",
     [PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity]: "Require mnemonic for restoring the identity",
+    [PackageErrorCode.CouldNotFindMnemonicToRegisterName]: "Require mnemonic for registering name/subdomain",
     [PackageErrorCode.CouldNotValidateZoneFile]: "Invalid zonefile",
     [PackageErrorCode.CruxIdNamespaceValidation]: "Invalid Crux ID namespace: '{0}', should end with .crux",
     [PackageErrorCode.CruxIdLengthValidation]: "Invalid Crux ID",
@@ -29,7 +30,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.SubdomainLengthCheckFailure]: "Validation failed: Subdomain length must be between 4 to 20",
     [PackageErrorCode.SubdomainRegexMatchFailure]: "Validation failed: Subdomain should start with alphabet and end with alphabet or number. Allowed characters are lowercase alphabets, numbers, - and _",
     [PackageErrorCode.SubdomainRegistrationAcknowledgementFailed]: "Register call to registrar failed: '{0}'",
-    [PackageErrorCode.SubdomainRegistrationFailed]: "Register call to registrar failed",
+    [PackageErrorCode.SubdomainRegistrationFailed]: "Register call to registrar failed: '{0}'",
     [PackageErrorCode.TokenVerificationFailed]: "Token verification failed for '{0}'",
     [PackageErrorCode.UserDoesNotExist]: "ID does not exist",
 };

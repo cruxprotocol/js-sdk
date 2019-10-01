@@ -17,17 +17,16 @@ export interface IIdentityClaim {
     secrets: any;
 }
 
+/* istanbul ignore next */
 export abstract class NameService {
     // TODO: Make CHILD CLASS implement instead of extend
     public abstract generateIdentity = async (): Promise<IIdentityClaim> => ({ secrets: null });
-    public abstract restoreIdentity = async (name: string, options?: any): Promise<IIdentityClaim> => ({ secrets: null });
-    public abstract getDecryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => "";
-    public abstract getEncryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => "";
+    public abstract restoreIdentity = async (name: string, identityClaim: IIdentityClaim): Promise<IIdentityClaim> => ({ secrets: null });
     public abstract getNameAvailability = async (name: string): Promise<boolean> => false;
     public abstract registerName = async (identityClaim: IIdentityClaim, name: string): Promise<string> => "";
     // TODO: need to respond with boolean
     public abstract getRegistrationStatus = async (identityClaim: IIdentityClaim): Promise<CruxIDRegistrationStatus> => ({status: "", status_detail: ""});
-    public abstract getAddressMapping = async (name: string, options?: JSON): Promise<IAddressMapping> => ({});
+    public abstract getAddressMapping = async (name: string): Promise<IAddressMapping> => ({});
     public abstract putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => false;
     // TODO: Implement methods to add/update address mapping (Gamma usecase)
 
@@ -133,45 +132,20 @@ export class BlockstackService extends NameService {
         this._bnsNodes = [...new Set([...config.BLOCKSTACK.BNS_NODES, ..._options.bnsNodes])];   // always append the extra configured BNS nodes (needs `downlevelIteration` flag enabled in tsconfig.json)
     }
 
-    public getDecryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {
-        let identityKeyPair: IBitcoinKeyPair;
-
-        if (!identityClaim.secrets.identityKeyPair) {
-            identityKeyPair = await this._generateIdentityKeyPair(identityClaim.secrets.mnemonic);
-        } else {
-            identityKeyPair = identityClaim.secrets.identityKeyPair;
-        }
-
-        const decryptionKey = (identityKeyPair.privKey.substr(-2) === "01" && identityKeyPair.privKey.length >= 66) ? identityKeyPair.privKey.slice(0, -2) : identityKeyPair.privKey;
-        return decryptionKey;
-    }
-
-    public getEncryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {
-        let identityKeyPair: IBitcoinKeyPair;
-
-        if (!identityClaim.secrets.identityKeyPair) {
-            identityKeyPair = await this._generateIdentityKeyPair(identityClaim.secrets.mnemonic);
-        } else {
-            identityKeyPair = identityClaim.secrets.identityKeyPair;
-        }
-
-        const encryptionKey = identityKeyPair.pubKey;
-        return encryptionKey;
-    }
-
-    public restoreIdentity = async (fullCruxId: string, options?: any): Promise<IIdentityClaim> => {
-        if (!options || !options.identitySecrets) {
+    public restoreIdentity = async (fullCruxId: string, identityClaim: IIdentityClaim): Promise<IIdentityClaim> => {
+        if (!identityClaim.secrets || !identityClaim.secrets.mnemonic) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity);
         }
 
-        const mnemonic = options.identitySecrets.mnemonic;
-        let identityKeyPair = options.identitySecrets.identityKeyPair || undefined;
+        const mnemonic = identityClaim.secrets.mnemonic;
+        let identityKeyPair = identityClaim.secrets.identityKeyPair || undefined;
 
         // If identityKeypair is not stored locally, generate them using the mnemonic
         if (!identityKeyPair) {
             identityKeyPair = await this._generateIdentityKeyPair(mnemonic);
         }
 
+        // TODO: validate the correspondance of cruxID with the identityClaim
         const cruxId = CruxId.fromString(fullCruxId);
         this._identityCouple = getIdentityCoupleFromCruxId(cruxId);
         return {
@@ -291,8 +265,7 @@ export class BlockstackService extends NameService {
         let identityKeyPair = identityClaim.secrets.identityKeyPair;
         // Check for existing mnemonic
         if (!mnemonic) {
-            // Generate new mnemonic if not available
-            await this.generateIdentity();
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRegisterName);
         }
         // Generate the Identity key pair
         if (!identityKeyPair) {
@@ -301,7 +274,7 @@ export class BlockstackService extends NameService {
 
         await this._uploadProfileInfo(identityKeyPair.privKey);
 
-        const registeredSubdomain = await this._registerSubdomain(subdomain, identityClaim.secrets.identityKeyPair.address);
+        const registeredSubdomain = await this._registerSubdomain(subdomain, identityKeyPair.address);
         this._identityCouple = getIdentityCoupleFromCruxId(new CruxId({
             domain: this._domain,
             subdomain,
@@ -357,27 +330,6 @@ export class BlockstackService extends NameService {
 
     }
 
-    public _getNamespaceArray = (name: string, domainFallback?: string): [string, string?, string?] => {
-        log.debug(`_getNamespaceArray for ${name}`);
-        let subdomain: string, domain: string, namespace: string;
-        namespace = "id";
-        if (name.substr(-3) === ".id") {
-            const idArray = name.split(".").reverse();
-            log.debug(idArray);
-            domain = idArray[1];
-            subdomain = idArray[2];
-        } else {
-            subdomain = name;
-            domain = domainFallback ? domainFallback.split(".").reverse()[1] : this._domain.split(".")[0];
-        }
-        if (subdomain) {
-            return [namespace, domain, subdomain];
-        } else {
-            // while trying to get public key of domain owner
-            return [namespace, domain];
-        }
-    }
-
     public putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {
         if (!identityClaim.secrets.identityKeyPair) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping);
@@ -398,7 +350,7 @@ export class BlockstackService extends NameService {
         return true;
     }
 
-    public getAddressMapping = async (fullCruxId: string, options = {}): Promise<IAddressMapping> => {
+    public getAddressMapping = async (fullCruxId: string): Promise<IAddressMapping> => {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
         return await this.getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY);
@@ -417,25 +369,10 @@ export class BlockstackService extends NameService {
         const { address, key, keyID} = wallet.getIdentityKeyPair(0);
         const identityKeyPair: IBitcoinKeyPair = {
             address,
-            privKey: key,
+            privKey: this._sanitizePrivKey(key),
             pubKey: keyID,
         };
         return identityKeyPair;
-    }
-
-    private _generateKeyPair = (): IBitcoinKeyPair => {
-
-        const privKey = blockstack.makeECPrivateKey();
-        const pubKey = blockstack.getPublicKeyFromPrivate(privKey);
-        const address = blockstack.publicKeyToAddress(pubKey);
-
-        const bitcoinKeyPair: IBitcoinKeyPair = {privKey, pubKey, address};
-
-        return bitcoinKeyPair;
-    }
-
-    private _getPubKey = (privKey: string): string => {
-        return blockstack.getPublicKeyFromPrivate(privKey);
     }
 
     private _sanitizePrivKey = (privKey: string): string => {
@@ -445,7 +382,7 @@ export class BlockstackService extends NameService {
         return privKey;
     }
 
-    private _uploadProfileInfo = async (privKey: string): Promise<boolean> => {
+    private _uploadProfileInfo = async (privKey: string): Promise<void> => {
         // TODO: validate the privateKey format and convert
         privKey = this._sanitizePrivKey(privKey);
 
@@ -467,7 +404,7 @@ export class BlockstackService extends NameService {
         } catch (error) {
             throw ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed, filename, error);
         }
-        return true;
+        return;
     }
 
     private _generateTokenFileForContent(privateKey: string, content: any) {
@@ -504,7 +441,7 @@ export class BlockstackService extends NameService {
         try {
             registrationAcknowledgement = await utils.httpJSONRequest(options);
         } catch (err) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainRegistrationFailed);
+            throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainRegistrationFailed, err);
         }
 
         log.debug(`Subdomain registration acknowledgement:`, registrationAcknowledgement);
@@ -593,7 +530,7 @@ export class BlockstackService extends NameService {
             method: "GET",
             url: `/v1/names/${blockstackId}`,
         };
-        let nameData;
+        let nameData: any;
         try {
             nameData = await utils.httpJSONRequest(options);
         } catch (error) {
