@@ -1,13 +1,12 @@
 import { AssertionError, deepStrictEqual } from "assert";
 import { getLogger } from "..";
-import * as Errors from "./errors";
+import { ErrorHelper, PackageErrorCode } from "./error";
+import { httpJSONRequest } from "./utils";
 
 const log = getLogger(__filename);
 
-export let fetchNameDetails = async (blockstackId: string): Promise<object|undefined> => {
-    const bnsNodes = this._bnsNodes;
-
-    const nodeResponses = bnsNodes.map((baseUrl) => this._bnsResolveName(baseUrl, blockstackId));
+export let fetchNameDetails = async (blockstackId: string, bnsNodes: string[]): Promise<object|undefined> => {
+    const nodeResponses = bnsNodes.map((baseUrl) => _bnsResolveName(baseUrl, blockstackId));
     log.debug(`BNS node responses:`, nodeResponses);
 
     const responsesArr: object[] = await Promise.all(nodeResponses);
@@ -23,7 +22,7 @@ export let fetchNameDetails = async (blockstackId: string): Promise<object|undef
                 deepStrictEqual(prev_res, res);
             } catch (e) {
                 if (e instanceof AssertionError) {
-                    throw new Errors.ClientErrors.NameIntegrityCheckFailed("Name resolution integrity check failed.", 1100);
+                    throw ErrorHelper.getPackageError(PackageErrorCode.NameIntegrityCheckFailed);
                 } else {
                     log.error(e);
                     throw e;
@@ -37,4 +36,20 @@ export let fetchNameDetails = async (blockstackId: string): Promise<object|undef
     }
     // @ts-ignore
     return response;
+};
+
+const _bnsResolveName = async (baseUrl: string, blockstackId: string): Promise<object> => {
+    const options = {
+        baseUrl,
+        json: true,
+        method: "GET",
+        url: `/v1/names/${blockstackId}`,
+    };
+    let nameData;
+    try {
+        nameData = await httpJSONRequest(options);
+    } catch (error) {
+        throw ErrorHelper.getPackageError(PackageErrorCode.BnsResolutionFailed, baseUrl, error);
+    }
+    return nameData;
 };

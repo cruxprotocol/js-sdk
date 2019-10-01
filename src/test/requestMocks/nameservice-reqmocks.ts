@@ -128,7 +128,7 @@ let requestResponseArray: { request: object, response: object }[] = [
       body:
       {
         zonefile:
-          '$ORIGIN bob\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/profile.json"\n',
+          '$ORIGIN bob\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',
         name: 'bob',
         owner_address: '1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ'
       },

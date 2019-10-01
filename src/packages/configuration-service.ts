@@ -1,7 +1,7 @@
 import { getLogger } from "..";
 import config from "../config";
 import {ErrorHelper, PackageErrorCode} from "./error";
-import { getGaiaHubUrlsFromBlockstackID } from "./gaia-utils";
+import { getContentFromGaiaHub, getGaiaHubUrlsFromBlockstackID } from "./gaia-utils";
 import * as identityUtils from "./identity-utils";
 import * as nameservice from "./nameservice";
 
@@ -54,7 +54,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             domain: this.settingsDomain,
             subdomain: clientName,
         }).toString();
-        return await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG);
+        return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG);
     }
 
     public getClientAssetMapping = async (): Promise<object> => {
@@ -69,16 +69,27 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     public getBlockstackServiceForConfig = async (): Promise<nameservice.BlockstackService> => {
         if (!this.clientConfig) { throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig); }
         let ns: nameservice.BlockstackService;
+        let gaiaHub: string | undefined;
         if (this.blockstackID) {
-            const gaiaUrls = getGaiaHubUrlsFromBlockstackID(this.blockstackID);
-            if (gaiaUrls.gaiaWriteUrl !== "") {
-                this.clientConfig.nameserviceConfiguration.gaiaHub = gaiaUrls.gaiaWriteUrl;
+            const gaiaUrls = await getGaiaHubUrlsFromBlockstackID(this.blockstackID);
+            if (gaiaUrls.gaiaWriteUrl) {
+                gaiaHub = gaiaUrls.gaiaWriteUrl;
             }
         }
         if (this.clientConfig.nameserviceConfiguration) {
-            ns = new nameservice.BlockstackService(this.clientConfig.nameserviceConfiguration);
+            const nsConfiguration = {
+                bnsNodes: this.clientConfig.nameserviceConfiguration.bnsNodes || config.BLOCKSTACK.BNS_NODES,
+                domain: this.clientConfig.nameserviceConfiguration.domain || config.BLOCKSTACK.IDENTITY_DOMAIN,
+                gaiaHub: gaiaHub || this.clientConfig.nameserviceConfiguration.gaiaHub || config.BLOCKSTACK.GAIA_HUB,
+                subdomainRegistrar: this.clientConfig.nameserviceConfiguration.subdomainRegistrar || config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
+            };
+            ns = new nameservice.BlockstackService(nsConfiguration);
         } else {
-            ns = new nameservice.BlockstackService();
+            if (gaiaHub) {
+                ns = new nameservice.BlockstackService({gaiaHub});
+            } else {
+                ns = new nameservice.BlockstackService();
+            }
         }
         return ns;
     }

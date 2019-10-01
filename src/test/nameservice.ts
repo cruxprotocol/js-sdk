@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import sinon from "sinon";
 import 'mocha';
 
-import { nameservice, identityUtils } from "../packages";
+import { nameservice, identityUtils, gaiaservice } from "../packages";
 import * as utils from "../packages/utils";
 import requestFixtures from "./requestMocks/nameservice-reqmocks";
 import * as blockstack from 'blockstack';
@@ -15,7 +15,7 @@ import { IAddressMapping } from '../index';
 
 describe('BlockstackService tests', () => {
   let blockstackService = new nameservice.BlockstackService()
-
+  let gaiaService = new gaiaservice.GaiaService("https://hub.cruxpay.com")
   let httpJSONRequestStub: sinon.SinonStub
   let connectToGaiaHubStub: sinon.SinonStub
   let uploadToGaiaHubStub: sinon.SinonStub
@@ -67,12 +67,12 @@ describe('BlockstackService tests', () => {
 
     it('given an uncompressed key returns compressed key', () => {
       // @ts-ignore
-      expect(blockstackService._sanitizePrivKey(uncompressedKey)).to.equal(compressedKey)
+      expect(gaiaService._sanitizePrivKey(uncompressedKey)).to.equal(compressedKey)
     })
 
     it('given an compressed key returns compressed key', () => {
       // @ts-ignore
-      expect(blockstackService._sanitizePrivKey(compressedKey)).to.equal(compressedKey)
+      expect(gaiaService._sanitizePrivKey(compressedKey)).to.equal(compressedKey)
     })
   })
 

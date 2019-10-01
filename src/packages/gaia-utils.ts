@@ -1,20 +1,17 @@
 import * as blockstack from "blockstack";
 import { getLogger } from "..";
-import * as Errors from "./error";
+import config from "../config";
+import { ErrorHelper, PackageErrorCode } from "./error";
+import { UPLOADABLE_JSON_FILES } from "./nameservice";
 import { fetchNameDetails } from "./nameservice-utils";
 import { httpJSONRequest } from "./utils";
 
 const log = getLogger(__filename);
 
-export let getContentFromGaiaHub = async (blockstackId: string, filename: string, type= "application/json"): Promise<any> => {
-    console.groupCollapsed("Resolving content from gaiaHub");
+export let getContentFromGaiaHub = async (blockstackId: string, filename: UPLOADABLE_JSON_FILES, type= "application/json"): Promise<any> => {
     let fileUrl: string;
     const gaiaDetails = await getGaiaHubUrlsFromBlockstackID(blockstackId);
-    if (gaiaDetails.gaiaWriteUrl) {
-        fileUrl = _getGaiaReadUrl(gaiaDetails.gaiaWriteUrl as string) + filename;
-    } else {
-        throw new Error("No backward compaitability!");
-    }
+    fileUrl = gaiaDetails.gaiaReadUrl + filename;
     const options = {
         json: true,
         method: "GET",
@@ -24,25 +21,11 @@ export let getContentFromGaiaHub = async (blockstackId: string, filename: string
     let finalContent: any;
     const responseBody: any = await httpJSONRequest(options);
     log.debug(`Response from ${filename}`, responseBody);
-    let content: string;
 
     if (responseBody.indexOf("BlobNotFound") > 0) {
-        finalContent = "";
+        throw ErrorHelper.getPackageError(PackageErrorCode.GaiaEmptyResponse);
     } else {
-        try {
-            content = responseBody[0].decodedToken.payload.claim;
-            if (!(type === "application/json")) {
-                log.error(`unhandled content type`);
-                console.groupEnd();
-                throw new Error("invalid content type");
-            }
-            log.debug(`Content:- `, content);
-        } catch (e) {
-            log.error(e);
-            console.groupEnd();
-            throw new Error((`Probably this id resolves to a domain registrar`));
-        }
-
+        const content = responseBody[0].decodedToken.payload.claim;
         const pubKey = responseBody[0].decodedToken.payload.subject.publicKey;
         const addressFromPub = blockstack.publicKeyToAddress(pubKey);
 
@@ -52,53 +35,47 @@ export let getContentFromGaiaHub = async (blockstackId: string, filename: string
         } catch (e) {
             // TODO: validate the token properly after publishing the subject
             log.error(e);
-            console.groupEnd();
-            throw new Errors.ClientErrors.TokenVerificationFailed(`Token Verification failed for ${fileUrl}`, 2016);
+            throw ErrorHelper.getPackageError(PackageErrorCode.TokenVerificationFailed, fileUrl);
         }
 
         if (addressFromPub === gaiaDetails.ownerAddress) {
             finalContent = content;
         } else {
-            console.groupEnd();
-            throw new Error(`Invalid zonefile`);
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotValidateZoneFile);
         }
     }
-    console.groupEnd();
     return finalContent;
 };
 
 export let getGaiaHubUrlsFromBlockstackID = async (blockstackId: string) => {
-    console.groupCollapsed("Resolving gaiaHubUrls from BlockstackID");
     let nameData: any;
-    try {
-        nameData = fetchNameDetails(blockstackId);
-    } catch (error) {
-        console.groupEnd();
-        throw error;
-    }
+    const bnsNodes: string[] = config.BLOCKSTACK.BNS_NODES;
+    nameData = await fetchNameDetails(blockstackId, bnsNodes);
     log.debug(nameData);
     if (!nameData) {
-        console.groupEnd();
-        throw new Error((`No name data availabe!`));
+        throw ErrorHelper.getPackageError(PackageErrorCode.BnsEmptyData);
     }
     if (!nameData.address) {
-        console.groupEnd();
-        throw new Errors.ClientErrors.UserDoesNotExist("ID does not exist", 1037);
+        throw ErrorHelper.getPackageError(PackageErrorCode.UserDoesNotExist);
     }
     const bitcoinAddress = nameData.address;
     log.debug(`ID owner: ${bitcoinAddress}`);
+    let gaiaRead: string;
     let gaiaHub: string | undefined;
-    if (!nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json"))) {
+    if (nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json"))) {
+        gaiaRead = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json", "s"))[2] + "/";
+    } else {
         gaiaHub = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1);
-        // gaiaRead = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json", "s"))[2] + "/";
+        gaiaRead = await getGaiaReadUrl(gaiaHub as string);
     }
     return {
+        gaiaReadUrl: gaiaRead,
         gaiaWriteUrl: gaiaHub,
         ownerAddress: bitcoinAddress,
     };
 };
 
-const _getGaiaReadUrl = async (gaiaHubURL: string): Promise<string> => {
+export const getGaiaReadUrl = async (gaiaHubURL: string): Promise<string> => {
     const options = {
         json: true,
         method: "GET",
@@ -109,6 +86,6 @@ const _getGaiaReadUrl = async (gaiaHubURL: string): Promise<string> => {
         const gaiaReadURL = responseBody.read_url_prefix;
         return gaiaReadURL;
     } catch (err) {
-        throw new Errors.ClientErrors.GaiaGetFileFailed(`Unable to get gaia read url prefix: ${err}`, 2105);
+        throw ErrorHelper.getPackageError(PackageErrorCode.GaiaGetFileFailed, err);
     }
 };

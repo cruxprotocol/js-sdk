@@ -145,7 +145,7 @@ describe('CruxClient tests', () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
-				let updateProfileStub = sinon.stub(cruxClient._nameservice, '_uploadProfileInfo').resolves(true)
+				let updateProfileStub = sinon.stub(cruxClient._nameservice._gaiaService, 'uploadProfileInfo').resolves(true)
 
 				let registerSubdomainPromise = new Promise<any>(async(resolve, reject) => {resolve(sampleUser['blockStackID'])})
 				let registerSubdomainStub = sinon.stub(cruxClient._nameservice, '_registerSubdomain').returns(registerSubdomainPromise)
@@ -170,7 +170,7 @@ describe('CruxClient tests', () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
-				let updateProfileStub = sinon.stub(cruxClient._nameservice, '_uploadProfileInfo').resolves(true)
+				let updateProfileStub = sinon.stub(cruxClient._nameservice._gaiaService, 'uploadProfileInfo').resolves(true)
 
 				let raisedException = false
 				try {

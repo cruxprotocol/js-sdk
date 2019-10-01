@@ -1,48 +1,34 @@
 import * as blockstack from "blockstack";
 import { SECP256K1Client, TokenSigner } from "jsontokens";
 import { getLogger } from "..";
-import * as Errors from "./errors";
+import { ErrorHelper, PackageErrorCode } from "./error";
 import * as nameservice from "./nameservice";
-import { httpJSONRequest } from "./utils";
+import { UPLOADABLE_JSON_FILES } from "./nameservice";
 
 const log = getLogger(__filename);
 
-// export let getGaiaHubInstance = async (writeUrl: string) => {
-//     const myGaiaHub = new GaiaService(writeUrl);
-//     await myGaiaHub.init();
-//     return myGaiaHub;
-// };
-
 export class GaiaService {
-    private _gaiaWriteUrl: string;
-    private _gaiaReadUrl: string | undefined;
+    public gaiaWriteUrl: string;
 
     constructor(gaiaWriteUrl: string) {
-        this._gaiaWriteUrl = gaiaWriteUrl;
+        this.gaiaWriteUrl = gaiaWriteUrl;
     }
 
-    public uploadContentToGaiaHub = async (filename: string, privKey: string, content: any, type= "application/json"): Promise<string> => {
-        console.groupCollapsed("Uploading content to gaiaHub");
+    public uploadContentToGaiaHub = async (filename: UPLOADABLE_JSON_FILES, privKey: string, content: any, type= "application/json"): Promise<string> => {
         const sanitizedPrivKey = this._sanitizePrivKey(privKey);
-        const hubURL = this._gaiaWriteUrl;
+        const hubURL = this.gaiaWriteUrl;
         const hubConfig = await blockstack.connectToGaiaHub(hubURL, sanitizedPrivKey);
         const tokenFile = this._generateTokenFileForContent(sanitizedPrivKey, content);
-        let contentToUpload: any = null;
-        if (type === "application/json") {
-            contentToUpload = JSON.stringify(tokenFile);
-        } else {
-            console.groupEnd();
-            throw new Error(`Unhandled content-type ${type}`);
-        }
+        let contentToUpload: any;
+        contentToUpload = JSON.stringify(tokenFile);
         let finalURL: string;
         try {
             finalURL = await blockstack.uploadToGaiaHub(filename, contentToUpload, hubConfig, type);
             log.debug(`finalUrl is ${finalURL}`);
         } catch (error) {
-            console.groupEnd();
-            throw new Errors.ClientErrors.GaiaUploadFailed(`unable to upload to gaiahub, ${error}`, 2005);
+            const packageErrorCode = nameservice.BlockstackService.getUploadPackageErrorCodeForFilename(filename);
+            throw ErrorHelper.getPackageError(packageErrorCode, filename, error);
         }
-        console.groupEnd();
         return finalURL;
     }
 
@@ -50,22 +36,23 @@ export class GaiaService {
         // TODO: validate the privateKey format and convert
         privKey = this._sanitizePrivKey(privKey);
 
-        const hubUrl = this._gaiaWriteUrl;
+        const hubUrl = this.gaiaWriteUrl;
         const hubConfig = await blockstack.connectToGaiaHub(hubUrl, privKey);
         const profileObj = {
             "@context": "http://schema.org/",
             "@type": "Person",
         };
+        const filename = UPLOADABLE_JSON_FILES.PROFILE;
         const person = new blockstack.Person(profileObj);
         const token = person.toToken(privKey);
         log.debug(token);
         const tokenFile = [blockstack.wrapProfileToken(token)];
         log.debug(tokenFile);
         try {
-            const finalUrl = await blockstack.uploadToGaiaHub("profile.json", JSON.stringify(tokenFile), hubConfig, "application/json");
+            const finalUrl = await blockstack.uploadToGaiaHub(filename, JSON.stringify(tokenFile), hubConfig, "application/json");
             log.debug(finalUrl);
-        } catch (e) {
-            throw new Errors.ClientErrors.GaiaUploadFailed(`Unable to upload profile.json to gaiahub, ${e}`, 2006);
+        } catch (error) {
+            throw ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed, filename, error);
         }
         return true;
     }
@@ -79,8 +66,7 @@ export class GaiaService {
             subject: { publicKey },
         };
         const token = tokenSigner.sign(payload);
-        const tokenFile = [blockstack.wrapProfileToken(token)];
-        return tokenFile;
+        return [blockstack.wrapProfileToken(token)];
     }
 
     private _sanitizePrivKey = (privKey: string): string => {
@@ -88,36 +74,5 @@ export class GaiaService {
             privKey = privKey.slice(0, 64);
         }
         return privKey;
-    }
-
-    private _getGaiaHubUrlsFromBlockstackID = async (blockstackId: string) => {
-        console.groupCollapsed("Resolving gaiaHubUrls from BlockstackID");
-        let nameData: any;
-        try {
-            nameData = await new nameservice.BlockstackService().fetchNameDetails(blockstackId);
-        } catch (error) {
-            console.groupEnd();
-            throw error;
-        }
-        log.debug(nameData);
-        if (!nameData) {
-            console.groupEnd();
-            throw new Error((`No name data availabe!`));
-        }
-        if (!nameData.address) {
-            console.groupEnd();
-            throw new Errors.ClientErrors.UserDoesNotExist("ID does not exist", 1037);
-        }
-        const bitcoinAddress = nameData.address;
-        log.debug(`ID owner: ${bitcoinAddress}`);
-        let gaiaHub: string | undefined;
-        if (!nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json"))) {
-            // gaiaRead = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json", "s"))[2] + "/";
-            gaiaHub = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1);
-        }
-        return {
-            gaiaWriteUrl: gaiaHub,
-            ownerAddress: bitcoinAddress,
-        };
     }
 }
