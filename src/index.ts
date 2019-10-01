@@ -204,11 +204,16 @@ class CruxPayPeer extends EventEmitter {
         try {
             if (this._hasPayIDClaimStored()) {
                 await (this._payIDClaim as PayIDClaim).decrypt(oldEncryptionKey);
-                await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
+                try {
+                    await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
+                } catch (err) {
+                    await (this._payIDClaim as PayIDClaim).encrypt(oldEncryptionKey);
+                    return false;
+                }
                 await (this._payIDClaim as PayIDClaim).save(this._storage);
                 return true;
             } else {
-                return false;
+                return true;
             }
         } catch (err) {
             throw errors.CruxClientError.fromError(err);
@@ -259,7 +264,7 @@ class CruxPayPeer extends EventEmitter {
         if ( this._payIDClaim && this._payIDClaim.identitySecrets ) {
             await this._payIDClaim.decrypt();
             try {
-                const identityClaim = await (this._nameservice as nameservice.NameService).restoreIdentity(this._payIDClaim.virtualAddress as string, {identitySecrets: this._payIDClaim.identitySecrets});
+                const identityClaim = await (this._nameservice as nameservice.NameService).restoreIdentity(this._payIDClaim.virtualAddress as string, {secrets: this._payIDClaim.identitySecrets});
                 (this._payIDClaim as PayIDClaim).identitySecrets = identityClaim.secrets;
                 log.info(`Identity restored`);
             } finally {
