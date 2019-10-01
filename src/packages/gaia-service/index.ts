@@ -2,8 +2,8 @@ import * as blockstack from "blockstack";
 import { SECP256K1Client, TokenSigner } from "jsontokens";
 import { getLogger } from "../..";
 import { ErrorHelper, PackageErrorCode } from "../error";
-import * as nameservice from "../nameservice/nameservice";
-import { UPLOADABLE_JSON_FILES } from "../nameservice/nameservice";
+import * as nameservice from "../name-service/blockstack-service";
+import { UPLOADABLE_JSON_FILES } from "../name-service/blockstack-service";
 import { sanitizePrivKey } from "../utils";
 
 const log = getLogger(__filename);

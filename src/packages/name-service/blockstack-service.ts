@@ -4,35 +4,14 @@ import { getLogger, IAddress, IAddressMapping } from "../..";
 import config from "../../config";
 
 import {ErrorHelper, PackageErrorCode} from "../error";
-import { GaiaService } from "../gaiaservice/gaiaservice";
-import { getContentFromGaiaHub } from "../gaiaservice/gaiaservice-utils";
+import { GaiaService } from "../gaia-service";
+import { getContentFromGaiaHub } from "../gaia-service/utils";
 import {BlockstackId, CruxId, IdTranslator} from "../identity-utils";
 import * as utils from "../utils";
-import { fetchNameDetails } from "./nameservice-utils";
+import * as nameservice from "./index";
+import { fetchNameDetails } from "./utils";
 
 const log = getLogger(__filename);
-
-// NameService abstraction
-
-export interface IIdentityClaim {
-    secrets: any;
-}
-
-export abstract class NameService {
-    // TODO: Make CHILD CLASS implement instead of extend
-    public abstract generateIdentity = async (): Promise<IIdentityClaim> => ({ secrets: null });
-    public abstract restoreIdentity = async (name: string, options?: any): Promise<IIdentityClaim> => ({ secrets: null });
-    public abstract getDecryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => "";
-    public abstract getEncryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => "";
-    public abstract getNameAvailability = async (name: string): Promise<boolean> => false;
-    public abstract registerName = async (identityClaim: IIdentityClaim, name: string): Promise<string> => "";
-    // TODO: need to respond with boolean
-    public abstract getRegistrationStatus = async (identityClaim: IIdentityClaim): Promise<CruxIDRegistrationStatus> => ({status: "", status_detail: ""});
-    public abstract getAddressMapping = async (name: string, options?: JSON): Promise<IAddressMapping> => ({});
-    public abstract putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => false;
-    // TODO: Implement methods to add/update address mapping (Gamma usecase)
-
-}
 
 // Blockstack Nameservice implementation
 export interface IBitcoinKeyPair {
@@ -62,11 +41,6 @@ enum SubdomainRegistrationStatusDetail {
     DONE = "Subdomain propagated.",
 }
 
-export interface CruxIDRegistrationStatus {
-    status: string;
-    status_detail: string;
-}
-
 interface IdentityCouple {
     cruxId: CruxId;
     bsId: BlockstackId;
@@ -94,7 +68,7 @@ export enum UPLOADABLE_JSON_FILES {
     PROFILE = "profile.json",
 }
 
-export class BlockstackService extends NameService {
+export class BlockstackService extends nameservice.NameService {
 
     public static getUploadPackageErrorCodeForFilename = (filename: UPLOADABLE_JSON_FILES) => {
         let packageErrorCode;
@@ -137,7 +111,7 @@ export class BlockstackService extends NameService {
 
     }
 
-    public getDecryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {
+    public getDecryptionKey = async (identityClaim: nameservice.IIdentityClaim): Promise<string> => {
         let identityKeyPair: IBitcoinKeyPair;
 
         if (!identityClaim.secrets.identityKeyPair) {
@@ -150,7 +124,7 @@ export class BlockstackService extends NameService {
         return decryptionKey;
     }
 
-    public getEncryptionKey = async (identityClaim: IIdentityClaim): Promise<string> => {
+    public getEncryptionKey = async (identityClaim: nameservice.IIdentityClaim): Promise<string> => {
         let identityKeyPair: IBitcoinKeyPair;
 
         if (!identityClaim.secrets.identityKeyPair) {
@@ -163,7 +137,7 @@ export class BlockstackService extends NameService {
         return encryptionKey;
     }
 
-    public restoreIdentity = async (fullCruxId: string, options?: any): Promise<IIdentityClaim> => {
+    public restoreIdentity = async (fullCruxId: string, options?: any): Promise<nameservice.IIdentityClaim> => {
         if (!options || !options.identitySecrets) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity);
         }
@@ -187,7 +161,7 @@ export class BlockstackService extends NameService {
 
     }
 
-    public generateIdentity = async (): Promise<IIdentityClaim> => {
+    public generateIdentity = async (): Promise<nameservice.IIdentityClaim> => {
         const newMnemonic = this._generateMnemonic();
         log.warn(`Your new mnemonic backing your identity is: \n${newMnemonic}`);
         const identityKeyPair = await this._generateIdentityKeyPair(newMnemonic);
@@ -199,7 +173,7 @@ export class BlockstackService extends NameService {
         };
     }
 
-    public registerName = async (identityClaim: IIdentityClaim, subdomain: string): Promise<string> => {
+    public registerName = async (identityClaim: nameservice.IIdentityClaim, subdomain: string): Promise<string> => {
         const mnemonic = identityClaim.secrets.mnemonic;
         let identityKeyPair = identityClaim.secrets.identityKeyPair;
         // Check for existing mnemonic
@@ -222,7 +196,7 @@ export class BlockstackService extends NameService {
         return this._identityCouple.cruxId.toString();
     }
 
-    public getRegistrationStatus = async (identityClaim: IIdentityClaim): Promise<CruxIDRegistrationStatus> => {
+    public getRegistrationStatus = async (identityClaim: nameservice.IIdentityClaim): Promise<nameservice.CruxIDRegistrationStatus> => {
         log.debug("====getRegistrationStatus====");
         if (!this._identityCouple) {
             return {
@@ -291,7 +265,7 @@ export class BlockstackService extends NameService {
         }
     }
 
-    public putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {
+    public putAddressMapping = async (identityClaim: nameservice.IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {
         if (!identityClaim.secrets.identityKeyPair) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping);
         }
@@ -383,8 +357,8 @@ export class BlockstackService extends NameService {
         }
     }
 
-    private getCruxIdRegistrationStatus = (body: any): CruxIDRegistrationStatus =>  {
-        let status: CruxIDRegistrationStatus;
+    private getCruxIdRegistrationStatus = (body: any): nameservice.CruxIDRegistrationStatus =>  {
+        let status: nameservice.CruxIDRegistrationStatus;
         const rawStatus = body.status;
         log.info(body);
         if (rawStatus && rawStatus.includes("Your subdomain was registered in transaction")) {

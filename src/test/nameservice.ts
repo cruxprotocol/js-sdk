@@ -2,11 +2,12 @@ import { expect } from 'chai';
 import sinon from "sinon";
 import 'mocha';
 
-import { nameservice, identityUtils, gaiaservice } from "../packages";
+import { identityUtils, gaiaservice, blockstackService } from "../packages";
 import * as utils from "../packages/utils";
 import requestFixtures from "./requestMocks/nameservice-reqmocks";
 import * as blockstack from 'blockstack';
 import { IAddressMapping } from '../index';
+import { sanitizePrivKey } from "../packages/utils";
 
 
 // TODO: registration of already registered names and error handling
@@ -14,8 +15,7 @@ import { IAddressMapping } from '../index';
 
 
 describe('BlockstackService tests', () => {
-  let blockstackService = new nameservice.BlockstackService()
-  let gaiaService = new gaiaservice.GaiaService("https://hub.cruxpay.com")
+  let blkstkService = new blockstackService.BlockstackService()
   let httpJSONRequestStub: sinon.SinonStub
   let connectToGaiaHubStub: sinon.SinonStub
   let uploadToGaiaHubStub: sinon.SinonStub
@@ -67,12 +67,12 @@ describe('BlockstackService tests', () => {
 
     it('given an uncompressed key returns compressed key', () => {
       // @ts-ignore
-      expect(gaiaService._sanitizePrivKey(uncompressedKey)).to.equal(compressedKey)
+      expect(sanitizePrivKey(uncompressedKey)).to.equal(compressedKey)
     })
 
     it('given an compressed key returns compressed key', () => {
       // @ts-ignore
-      expect(gaiaService._sanitizePrivKey(compressedKey)).to.equal(compressedKey)
+      expect(sanitizePrivKey(compressedKey)).to.equal(compressedKey)
     })
   })
 
@@ -81,12 +81,12 @@ describe('BlockstackService tests', () => {
     let unregisteredSubdomain = 'example'
 
     it(`${registeredSubdomain}@devcoinswitch.crux should be unavailable`, async () => {
-      let resolvedPublicKey = await blockstackService.getNameAvailability(registeredSubdomain)
+      let resolvedPublicKey = await blkstkService.getNameAvailability(registeredSubdomain)
       console.log(resolvedPublicKey)
       expect(resolvedPublicKey).is.false
     })
     it(`${unregisteredSubdomain}@devcoinswitch.crux should be available`, async () => {
-      let resolvedPublicKey = await blockstackService.getNameAvailability(unregisteredSubdomain)
+      let resolvedPublicKey = await blkstkService.getNameAvailability(unregisteredSubdomain)
       console.log(resolvedPublicKey)
       expect(resolvedPublicKey).is.true
     })
@@ -95,7 +95,7 @@ describe('BlockstackService tests', () => {
 
   describe('getRegistrationStatus tests', () => {
     it(`registration status for cs1@devcoinswitch.crux is DONE`, async () => {
-      let bs = new nameservice.BlockstackService();
+      let bs = new blockstackService.BlockstackService();
       let name = 'cs1'
       let walletClientName = 'devcoinswitch'
       let registrationStatus = {
@@ -129,7 +129,7 @@ describe('BlockstackService tests', () => {
       let desiredName = 'bob'
       let expectedRegisteredName = 'bob@devcoinswitch.crux'
 
-      let registeredName = await blockstackService.registerName(sampleIdentityClaim, desiredName)
+      let registeredName = await blkstkService.registerName(sampleIdentityClaim, desiredName)
       expect(registeredName).is.equal(expectedRegisteredName)
     })
   })
@@ -140,10 +140,10 @@ describe('BlockstackService tests', () => {
       connectToGaiaHubStub.resolves({ "url_prefix": "https://gaia.cruxpay.com/", "address": "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ", "token": "v1:eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJnYWlhQ2hhbGxlbmdlIjoiW1wiZ2FpYWh1YlwiLFwiMFwiLFwic3RvcmFnZTIuYmxvY2tzdGFjay5vcmdcIixcImJsb2Nrc3RhY2tfc3RvcmFnZV9wbGVhc2Vfc2lnblwiXSIsImh1YlVybCI6Imh0dHBzOi8vaHViLmJsb2Nrc3RhY2sub3JnIiwiaXNzIjoiMDJiYzljM2Y4ZTkyNGI3ZGU5MjEyY2ViZDAxMjlmMWJlMmU2YzNmMjkwNGU5MTFiMzA2OThiZGU3N2JlNDg3OGI4Iiwic2FsdCI6ImE0ODk1ZWE1ZjdjZjI2N2VhNDEwMjg2ZjRjNzk4MTY3In0.QFuEEVijDYMKHjERaPA_YXwnwWoBq8iVg4pzEusP0S_u5jSmmxqeJcumyMK8cqT4NTmOYgnMUC4u4-9OAUWOIQ", "server": "https://hub.cruxpay.com" })
       uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json")
 
-      let bs = new nameservice.BlockstackService()
+      let bs = new blockstackService.BlockstackService()
       // @ts-ignore
       bs._subdomain = sampleSubdomain
-      let acknowledgement = await blockstackService.putAddressMapping(sampleIdentityClaim, sampleAddressMap)
+      let acknowledgement = await blkstkService.putAddressMapping(sampleIdentityClaim, sampleAddressMap)
       console.log(acknowledgement)
       expect(acknowledgement).is.true
     })
@@ -151,7 +151,7 @@ describe('BlockstackService tests', () => {
 
   describe('getAddressMapping tests', () => {
     it(`resolve sample address map from cs1@devcoinswitch.crux`, async () => {
-      let resolvedAddressMap: IAddressMapping = await blockstackService.getAddressMapping(sampleCruxId)
+      let resolvedAddressMap: IAddressMapping = await blkstkService.getAddressMapping(sampleCruxId)
       console.log(resolvedAddressMap)
       expect(resolvedAddressMap).is.eql(sampleAddressMap)
     })

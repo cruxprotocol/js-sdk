@@ -2,8 +2,8 @@ import * as blockstack from "blockstack";
 import { getLogger } from "../..";
 import config from "../../config";
 import { ErrorHelper, PackageErrorCode } from "../error";
-import { UPLOADABLE_JSON_FILES } from "../nameservice/nameservice";
-import { fetchNameDetails } from "../nameservice/nameservice-utils";
+import { UPLOADABLE_JSON_FILES } from "../name-service/blockstack-service";
+import { fetchNameDetails } from "../name-service/utils";
 import { httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
