@@ -13,6 +13,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig]: "Missing client-config for: '{0}'",
     [PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping]: "Missing IdentityKeyPair",
     [PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity]: "Require mnemonic for restoring the identity",
+    [PackageErrorCode.CouldNotFindMnemonicToRegisterName]: "Require mnemonic for registering name/subdomain",
     [PackageErrorCode.CouldNotValidateZoneFile]: "Invalid zonefile",
     [PackageErrorCode.CruxIdNamespaceValidation]: "Invalid Crux ID namespace: '{0}', should end with .crux",
     [PackageErrorCode.CruxIdLengthValidation]: "Invalid Crux ID",
