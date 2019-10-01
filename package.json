@@ -8,7 +8,7 @@
   "scripts": {
     "test": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 5000 src/test/*.ts",
     "coverage": "./node_modules/.bin/nyc npm run test",
-    "wallet_demo": "./node_modules/.bin/parcel src/samples/wallet_demo.html --https",
+    "wallet_demo": "cross-env NODE_ENV=prod ./node_modules/.bin/parcel src/samples/wallet_demo.html --https",
     "blockstack": "node_modules/.bin/parcel src/samples/blockstack.html --https",
     "typecheck": "./node_modules/.bin/tsc --noEmit",
     "transpile": "./node_modules/.bin/tsc || true",
@@ -47,7 +47,8 @@
     "all": true
   },
   "pre-push": [
-    "version-bump"
+    "version-bump",
+    "checks"
   ],
   "keywords": [
     "cruxpay",
