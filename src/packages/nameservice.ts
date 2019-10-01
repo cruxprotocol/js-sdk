@@ -26,7 +26,7 @@ export abstract class NameService {
     public abstract registerName = async (identityClaim: IIdentityClaim, name: string): Promise<string> => "";
     // TODO: need to respond with boolean
     public abstract getRegistrationStatus = async (identityClaim: IIdentityClaim): Promise<CruxIDRegistrationStatus> => ({status: "", status_detail: ""});
-    public abstract getAddressMapping = async (name: string, options?: JSON): Promise<IAddressMapping> => ({});
+    public abstract getAddressMapping = async (name: string): Promise<IAddressMapping> => ({});
     public abstract putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => false;
     // TODO: Implement methods to add/update address mapping (Gamma usecase)
 
@@ -350,7 +350,7 @@ export class BlockstackService extends NameService {
         return true;
     }
 
-    public getAddressMapping = async (fullCruxId: string, options = {}): Promise<IAddressMapping> => {
+    public getAddressMapping = async (fullCruxId: string): Promise<IAddressMapping> => {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
         return await this.getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY);
@@ -530,7 +530,7 @@ export class BlockstackService extends NameService {
             method: "GET",
             url: `/v1/names/${blockstackId}`,
         };
-        let nameData;
+        let nameData: any;
         try {
             nameData = await utils.httpJSONRequest(options);
         } catch (error) {

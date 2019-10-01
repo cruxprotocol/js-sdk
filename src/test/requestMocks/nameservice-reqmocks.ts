@@ -1,4 +1,4 @@
-let requestResponseArray: { request: object, response: object }[] = [
+let requestResponseArray: { request: object, response: any }[] = [
   {
     request: {
       method: 'GET',
@@ -41,7 +41,6 @@ let requestResponseArray: { request: object, response: object }[] = [
       did: "did:stack:v0:1Ce8JHUyodWwi6kQxg3c1wXoiYmLibZe8y-0"
     }
   },
-
   {
     request: {
       method: 'GET',

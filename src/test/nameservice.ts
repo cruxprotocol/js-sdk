@@ -282,28 +282,85 @@ describe('BlockstackService tests', () => {
   })
 
   describe('putAddressMapping tests', () => {
-    it('given valid identityClaim and valid addressMap, should resolve the promise without errors')
-    it('given ')
-    it(`upload sample address map for cs1@devcoinswitch.crux`, async () => {
+    it('given valid identityClaim and valid addressMap, should resolve the promise without errors', async () => {
       // mocked values
       connectToGaiaHubStub.resolves({ "url_prefix": "https://gaia.cruxpay.com/", "address": "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ", "token": "v1:eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJnYWlhQ2hhbGxlbmdlIjoiW1wiZ2FpYWh1YlwiLFwiMFwiLFwic3RvcmFnZTIuYmxvY2tzdGFjay5vcmdcIixcImJsb2Nrc3RhY2tfc3RvcmFnZV9wbGVhc2Vfc2lnblwiXSIsImh1YlVybCI6Imh0dHBzOi8vaHViLmJsb2Nrc3RhY2sub3JnIiwiaXNzIjoiMDJiYzljM2Y4ZTkyNGI3ZGU5MjEyY2ViZDAxMjlmMWJlMmU2YzNmMjkwNGU5MTFiMzA2OThiZGU3N2JlNDg3OGI4Iiwic2FsdCI6ImE0ODk1ZWE1ZjdjZjI2N2VhNDEwMjg2ZjRjNzk4MTY3In0.QFuEEVijDYMKHjERaPA_YXwnwWoBq8iVg4pzEusP0S_u5jSmmxqeJcumyMK8cqT4NTmOYgnMUC4u4-9OAUWOIQ", "server": "https://hub.cruxpay.com" })
       uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json")
 
+      // initialising the nameservice
       let bs = new nameservice.BlockstackService()
-      // @ts-ignore
-      bs._subdomain = sampleSubdomain
-      let acknowledgement = await blockstackService.putAddressMapping(sampleIdentityClaim, sampleAddressMap)
-      console.log(acknowledgement)
+      // restoring identity
+      await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
+      let acknowledgement = await bs.putAddressMapping(sampleIdentityClaim, sampleAddressMap)
+
+      expect(connectToGaiaHubStub.calledOnce).is.true
+      expect(uploadToGaiaHubStub.calledOnce).is.true
       expect(acknowledgement).is.true
+    })
+    it('given valid identityClaim and invalid addressMap, should throw "AddressMappingDecodingFailure"', async () => {
+      // initialising the nameservice
+      let bs = new nameservice.BlockstackService()
+      // restoring identity
+      await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
+
+      let raisedError
+      try {
+        let acknowledgement = await bs.putAddressMapping(sampleIdentityClaim, { invalidKey: "invalidAddress" })
+      } catch (error) {
+        raisedError = error
+      }
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.AddressMappingDecodingFailure)
+    })
+    it('given invalid identityClaim (only mnemonic) and valid addressMap, should throw "CouldNotFindIdentityKeyPairToPutAddressMapping"', async () => {
+      // initialising the nameservice
+      let bs = new nameservice.BlockstackService()
+      // restoring identity
+      await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
+
+      let raisedError
+      try {
+        let acknowledgement = await bs.putAddressMapping({secrets: {mnemonic: sampleIdentityClaim.secrets.mnemonic}}, sampleAddressMap)
+      } catch (error) {
+        raisedError = error
+      }
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping)
     })
   })
 
   describe('getAddressMapping tests', () => {
-    it(`resolve sample address map from cs1@devcoinswitch.crux`, async () => {
+    let bnsRequestOptions1 = {
+      method: 'GET',
+      baseUrl: 'https://core.blockstack.org',
+      url: '/v1/names/cs1.devcoinswitch.id',
+      json: true
+    }
+    let bnsRequestOptions2 = {
+      method: 'GET',
+      baseUrl: 'https://bns.cruxpay.com',
+      url: '/v1/names/cs1.devcoinswitch.id',
+      json: true
+    }
+    let gaiaRequestOptions = { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json", json: true }
+
+    it('given registered cruxId (sanchay@devcoinswitch.crux), which does not have pulic addressMap should throw "GaiaEmptyResponse"')
+    it('given registered cruxId (cs1@devcoinswitch.crux), which have public addressMap should resolve the addressMap', async () => {
       let resolvedAddressMap: IAddressMapping = await blockstackService.getAddressMapping(sampleCruxId)
-      console.log(resolvedAddressMap)
+      expect(httpJSONRequestStub.calledThrice).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
+      expect(httpJSONRequestStub.calledWith(gaiaRequestOptions)).is.true
       expect(resolvedAddressMap).is.eql(sampleAddressMap)
     })
+    it('given unregistered cruxId, should throw "UserDoesNotExist"', async () => {
+      let raisedError
+      try {
+        let resolvedAddressMap: IAddressMapping = await blockstackService.getAddressMapping("example@devcoinswitch.crux")
+      } catch (error) {
+        raisedError = error
+      }
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.UserDoesNotExist)
+    })
+
   })
 
 })
