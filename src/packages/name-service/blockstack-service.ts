@@ -111,45 +111,20 @@ export class BlockstackService extends nameservice.NameService {
 
     }
 
-    public getDecryptionKey = async (identityClaim: nameservice.IIdentityClaim): Promise<string> => {
-        let identityKeyPair: IBitcoinKeyPair;
-
-        if (!identityClaim.secrets.identityKeyPair) {
-            identityKeyPair = await this._generateIdentityKeyPair(identityClaim.secrets.mnemonic);
-        } else {
-            identityKeyPair = identityClaim.secrets.identityKeyPair;
-        }
-
-        const decryptionKey = (identityKeyPair.privKey.substr(-2) === "01" && identityKeyPair.privKey.length >= 66) ? identityKeyPair.privKey.slice(0, -2) : identityKeyPair.privKey;
-        return decryptionKey;
-    }
-
-    public getEncryptionKey = async (identityClaim: nameservice.IIdentityClaim): Promise<string> => {
-        let identityKeyPair: IBitcoinKeyPair;
-
-        if (!identityClaim.secrets.identityKeyPair) {
-            identityKeyPair = await this._generateIdentityKeyPair(identityClaim.secrets.mnemonic);
-        } else {
-            identityKeyPair = identityClaim.secrets.identityKeyPair;
-        }
-
-        const encryptionKey = identityKeyPair.pubKey;
-        return encryptionKey;
-    }
-
-    public restoreIdentity = async (fullCruxId: string, options?: any): Promise<nameservice.IIdentityClaim> => {
-        if (!options || !options.identitySecrets) {
+    public restoreIdentity = async (fullCruxId: string, identityClaim: nameservice.IIdentityClaim): Promise<nameservice.IIdentityClaim> => {
+        if (!identityClaim.secrets || !identityClaim.secrets.mnemonic) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity);
         }
 
-        const mnemonic = options.identitySecrets.mnemonic;
-        let identityKeyPair = options.identitySecrets.identityKeyPair || undefined;
+        const mnemonic = identityClaim.secrets.mnemonic;
+        let identityKeyPair = identityClaim.secrets.identityKeyPair || undefined;
 
         // If identityKeypair is not stored locally, generate them using the mnemonic
         if (!identityKeyPair) {
             identityKeyPair = await this._generateIdentityKeyPair(mnemonic);
         }
 
+        // TODO: validate the correspondance of cruxID with the identityClaim
         const cruxId = CruxId.fromString(fullCruxId);
         this._identityCouple = getIdentityCoupleFromCruxId(cruxId);
         return {
@@ -178,8 +153,7 @@ export class BlockstackService extends nameservice.NameService {
         let identityKeyPair = identityClaim.secrets.identityKeyPair;
         // Check for existing mnemonic
         if (!mnemonic) {
-            // Generate new mnemonic if not available
-            await this.generateIdentity();
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRegisterName);
         }
         // Generate the Identity key pair
         if (!identityKeyPair) {
@@ -188,7 +162,7 @@ export class BlockstackService extends nameservice.NameService {
 
         await this._gaiaService.uploadProfileInfo(identityKeyPair.privKey);
 
-        const registeredSubdomain = await this._registerSubdomain(subdomain, identityClaim.secrets.identityKeyPair.address);
+        const registeredSubdomain = await this._registerSubdomain(subdomain, identityKeyPair.address);
         this._identityCouple = getIdentityCoupleFromCruxId(new CruxId({
             domain: this._domain,
             subdomain,
@@ -244,27 +218,6 @@ export class BlockstackService extends nameservice.NameService {
 
     }
 
-    public _getNamespaceArray = (name: string, domainFallback?: string): [string, string?, string?] => {
-        log.debug(`_getNamespaceArray for ${name}`);
-        let subdomain: string, domain: string, namespace: string;
-        namespace = "id";
-        if (name.substr(-3) === ".id") {
-            const idArray = name.split(".").reverse();
-            log.debug(idArray);
-            domain = idArray[1];
-            subdomain = idArray[2];
-        } else {
-            subdomain = name;
-            domain = domainFallback ? domainFallback.split(".").reverse()[1] : this._domain.split(".")[0];
-        }
-        if (subdomain) {
-            return [namespace, domain, subdomain];
-        } else {
-            // while trying to get public key of domain owner
-            return [namespace, domain];
-        }
-    }
-
     public putAddressMapping = async (identityClaim: nameservice.IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {
         if (!identityClaim.secrets.identityKeyPair) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping);
@@ -285,7 +238,7 @@ export class BlockstackService extends nameservice.NameService {
         return true;
     }
 
-    public getAddressMapping = async (fullCruxId: string, options = {}): Promise<IAddressMapping> => {
+    public getAddressMapping = async (fullCruxId: string): Promise<IAddressMapping> => {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
         return await getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY);
@@ -304,25 +257,10 @@ export class BlockstackService extends nameservice.NameService {
         const { address, key, keyID} = wallet.getIdentityKeyPair(0);
         const identityKeyPair: IBitcoinKeyPair = {
             address,
-            privKey: key,
+            privKey: utils.sanitizePrivKey(key),
             pubKey: keyID,
         };
         return identityKeyPair;
-    }
-
-    private _generateKeyPair = (): IBitcoinKeyPair => {
-
-        const privKey = blockstack.makeECPrivateKey();
-        const pubKey = blockstack.getPublicKeyFromPrivate(privKey);
-        const address = blockstack.publicKeyToAddress(pubKey);
-
-        const bitcoinKeyPair: IBitcoinKeyPair = {privKey, pubKey, address};
-
-        return bitcoinKeyPair;
-    }
-
-    private _getPubKey = (privKey: string): string => {
-        return blockstack.getPublicKeyFromPrivate(privKey);
     }
 
     private _registerSubdomain = async (name: string, bitcoinAddress: string): Promise<string> => {
@@ -346,7 +284,7 @@ export class BlockstackService extends nameservice.NameService {
         try {
             registrationAcknowledgement = await utils.httpJSONRequest(options);
         } catch (err) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainRegistrationFailed);
+            throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainRegistrationFailed, err);
         }
 
         log.debug(`Subdomain registration acknowledgement:`, registrationAcknowledgement);

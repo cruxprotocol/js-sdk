@@ -35,4 +35,5 @@ export enum PackageErrorCode {
     CouldNotValidateZoneFile = 5003,
     CouldNotFindIdentityKeyPairToPutAddressMapping = 5004,
     CouldNotFindAssetListInClientConfig = 5005,
+    CouldNotFindMnemonicToRegisterName = 5006,
 }

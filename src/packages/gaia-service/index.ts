@@ -33,7 +33,7 @@ export class GaiaService {
         return finalURL;
     }
 
-    public uploadProfileInfo = async (privKey: string): Promise<boolean> => {
+    public uploadProfileInfo = async (privKey: string): Promise<void> => {
         // TODO: validate the privateKey format and convert
         privKey = sanitizePrivKey(privKey);
 
@@ -55,7 +55,7 @@ export class GaiaService {
         } catch (error) {
             throw ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed, filename, error);
         }
-        return true;
+        return;
     }
 
     private _generateTokenFileForContent(privateKey: string, content: any) {

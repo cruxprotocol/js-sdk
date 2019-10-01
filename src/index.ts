@@ -175,7 +175,7 @@ class CruxPayPeer extends EventEmitter {
             this._setPayIDClaim(new PayIDClaim(payIDClaim as ICruxPayClaim, { getEncryptionKey: this._getEncryptionKey }));
             const ns: blockstackService.BlockstackService = new blockstackService.BlockstackService();
             await this.getPayIDClaim().decrypt();
-            await ns.restoreIdentity(this.getPayIDClaim().virtualAddress as string, {identitySecrets: (this._payIDClaim as PayIDClaim).identitySecrets});
+            await ns.restoreIdentity(this.getPayIDClaim().virtualAddress as string, {secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
             const status = await ns.getRegistrationStatus({secrets: this.getPayIDClaim().identitySecrets});
             await this.getPayIDClaim().encrypt();
             if (status.status === blockstackService.SubdomainRegistrationStatus.DONE) {
@@ -213,11 +213,16 @@ class CruxPayPeer extends EventEmitter {
         try {
             if (this._hasPayIDClaimStored()) {
                 await (this._payIDClaim as PayIDClaim).decrypt(oldEncryptionKey);
-                await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
+                try {
+                    await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
+                } catch (err) {
+                    await (this._payIDClaim as PayIDClaim).encrypt(oldEncryptionKey);
+                    return false;
+                }
                 await (this._payIDClaim as PayIDClaim).save(this._storage);
                 return true;
             } else {
-                return false;
+                return true;
             }
         } catch (err) {
             throw errors.CruxClientError.fromError(err);
@@ -275,7 +280,7 @@ class CruxPayPeer extends EventEmitter {
         if ( this._payIDClaim && this._payIDClaim.identitySecrets ) {
             await this._payIDClaim.decrypt();
             try {
-                const identityClaim = await (this._nameService as nameService.NameService).restoreIdentity(this._payIDClaim.virtualAddress as string, {identitySecrets: this._payIDClaim.identitySecrets});
+                const identityClaim = await (this._nameService as nameService.NameService).restoreIdentity(this._payIDClaim.virtualAddress as string, {secrets: this._payIDClaim.identitySecrets});
                 (this._payIDClaim as PayIDClaim).identitySecrets = identityClaim.secrets;
                 log.info(`Identity restored`);
             } finally {
