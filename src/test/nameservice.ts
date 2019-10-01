@@ -143,7 +143,7 @@ describe('BlockstackService tests', () => {
       let bs = new blockstackService.BlockstackService()
       // @ts-ignore
       bs._subdomain = sampleSubdomain
-      let acknowledgement = await blkstkService.putAddressMapping(sampleIdentityClaim, sampleAddressMap)
+      let acknowledgement = await bs.putAddressMapping(sampleIdentityClaim, sampleAddressMap)
       console.log(acknowledgement)
       expect(acknowledgement).is.true
     })
