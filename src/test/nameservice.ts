@@ -227,7 +227,7 @@ describe('BlockstackService tests', () => {
       headers: { 'Content-Type': 'application/json' },
       body: {
         zonefile:
-          '$ORIGIN bob\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/profile.json"\n',
+          '$ORIGIN bob\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',
         name: 'bob',
         owner_address: '1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ'
       },
@@ -242,7 +242,7 @@ describe('BlockstackService tests', () => {
       body:
       {
         zonefile:
-          '$ORIGIN cs1\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/profile.json"\n',
+          '$ORIGIN cs1\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',
         name: 'cs1',
         owner_address: '1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ'
       },
@@ -251,15 +251,15 @@ describe('BlockstackService tests', () => {
     }
     it('given valid identityClaim (only mnemonic) and a non-registered cruxId, should successfully register and return the fullCruxId', async () => {
       let registeredName = await blkstkService.registerName({ secrets: { mnemonic: sampleIdentityClaim.secrets.mnemonic } }, desiredName)
-      expect(httpJSONRequestStub.calledTwice).is.true
-      expect(httpJSONRequestStub.calledWith(hubInfoRequestOptions)).is.true
+      expect(httpJSONRequestStub.calledOnce).is.true
+      // expect(httpJSONRequestStub.calledWith(hubInfoRequestOptions)).is.true
       expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
       expect(registeredName).is.equal(expectedRegisteredName)
     })
     it('given valid identityClaim and a non-registered cruxId (bob@devcoinswitch.crux), should successfully register and return the fullCruxId', async () => {
       let registeredName = await blkstkService.registerName(sampleIdentityClaim, desiredName)
-      expect(httpJSONRequestStub.calledTwice).is.true
-      expect(httpJSONRequestStub.calledWith(hubInfoRequestOptions)).is.true
+      expect(httpJSONRequestStub.calledOnce).is.true
+      // expect(httpJSONRequestStub.calledWith(hubInfoRequestOptions)).is.true
       expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
       expect(registeredName).is.equal(expectedRegisteredName)
     })

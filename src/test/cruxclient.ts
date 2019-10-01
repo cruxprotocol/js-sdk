@@ -170,7 +170,7 @@ describe('CruxClient tests', () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
-				let updateProfileStub = sinon.stub(cruxClient._nameservice._gaiaService, 'uploadProfileInfo').resolves()
+				let updateProfileStub = sinon.stub(cruxClient._nameService._gaiaService, 'uploadProfileInfo').resolves()
 
 				let raisedException = false
 				try {
