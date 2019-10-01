@@ -65,7 +65,6 @@ describe('CruxClient tests', () => {
 			it('after encryption is mnemonic and identityKeyPair are same', async () => {
 				localStorage.setItem('payIDClaim', JSON.stringify({"virtualAddress":"yadunandan.cruxdev.crux","identitySecrets":"{\"iv\":\"XJmOCWeHzU4HfsYI\",\"encBuffer\":\"ss20WCh7PW64wWswkRUu/dxMkPro2KmD1rCGLKdtew82cPuJwZTqcdrfz9GBJOYqsHrzE4lOoUmODHeWor3ebC6vHCU8tQdg17Rlpdj3hx2FU0XTY1PsmJft4wZOvb9uThk6estvQgnj5/7quw9Be6oGt6gyCtOYsxtfSQysH0kfgRauCEOx4tTjSXO2GAufeEK4hubCC7bJ6iQCr9uAeMWRSxFknK8I+M62RnE8iINVp2yQ+5I3M7Z8oFRSzwi0nJAVps/rTMfZOw2mXYtgEgY59aSXItr+hHSGGF0pWHqlRNzcCbV11MdBCIrEHWhOnU/hK5PWSxJMRytIwEaYspXqWEu+KaftkKIxr/CU/rnCd8w/ML0lS7hMXljMG95BN66M8k5vXHkAmdmMRZdQN4Y4nD5vhxY0q69+37fH0LmsMG0tKdm3d4H8PVpu\"}"}))
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init()
 				let oldEncryptionKey = "fookey"
 				let newEncryptionKey = "fookey1"
 				await cruxClient.init()
@@ -74,7 +73,8 @@ describe('CruxClient tests', () => {
 				await (cruxClient.getPayIDClaim()).encrypt(oldEncryptionKey)
 
 				// function being tested
-				await cruxClient.updatePassword(oldEncryptionKey, newEncryptionKey)
+				let return_value = await cruxClient.updatePassword(oldEncryptionKey, newEncryptionKey)
+				expect(return_value).is.true
 
 				await (cruxClient.getPayIDClaim()).decrypt(newEncryptionKey)
 				let decryptedAfterValue: PayIDClaim = cruxClient.getPayIDClaim()

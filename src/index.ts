@@ -204,11 +204,16 @@ class CruxPayPeer extends EventEmitter {
         try {
             if (this._hasPayIDClaimStored()) {
                 await (this._payIDClaim as PayIDClaim).decrypt(oldEncryptionKey);
-                await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
+                try {
+                    await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
+                } catch (err) {
+                    await (this._payIDClaim as PayIDClaim).encrypt(oldEncryptionKey);
+                    return false;
+                }
                 await (this._payIDClaim as PayIDClaim).save(this._storage);
                 return true;
             } else {
-                return false;
+                return true;
             }
         } catch (err) {
             throw errors.CruxClientError.fromError(err);

@@ -17,6 +17,7 @@ export interface IIdentityClaim {
     secrets: any;
 }
 
+/* istanbul ignore next */
 export abstract class NameService {
     // TODO: Make CHILD CLASS implement instead of extend
     public abstract generateIdentity = async (): Promise<IIdentityClaim> => ({ secrets: null });
@@ -357,27 +358,6 @@ export class BlockstackService extends NameService {
 
     }
 
-    public _getNamespaceArray = (name: string, domainFallback?: string): [string, string?, string?] => {
-        log.debug(`_getNamespaceArray for ${name}`);
-        let subdomain: string, domain: string, namespace: string;
-        namespace = "id";
-        if (name.substr(-3) === ".id") {
-            const idArray = name.split(".").reverse();
-            log.debug(idArray);
-            domain = idArray[1];
-            subdomain = idArray[2];
-        } else {
-            subdomain = name;
-            domain = domainFallback ? domainFallback.split(".").reverse()[1] : this._domain.split(".")[0];
-        }
-        if (subdomain) {
-            return [namespace, domain, subdomain];
-        } else {
-            // while trying to get public key of domain owner
-            return [namespace, domain];
-        }
-    }
-
     public putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {
         if (!identityClaim.secrets.identityKeyPair) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping);
@@ -421,21 +401,6 @@ export class BlockstackService extends NameService {
             pubKey: keyID,
         };
         return identityKeyPair;
-    }
-
-    private _generateKeyPair = (): IBitcoinKeyPair => {
-
-        const privKey = blockstack.makeECPrivateKey();
-        const pubKey = blockstack.getPublicKeyFromPrivate(privKey);
-        const address = blockstack.publicKeyToAddress(pubKey);
-
-        const bitcoinKeyPair: IBitcoinKeyPair = {privKey, pubKey, address};
-
-        return bitcoinKeyPair;
-    }
-
-    private _getPubKey = (privKey: string): string => {
-        return blockstack.getPublicKeyFromPrivate(privKey);
     }
 
     private _sanitizePrivKey = (privKey: string): string => {
