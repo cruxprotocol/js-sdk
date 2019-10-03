@@ -5,8 +5,8 @@ import { httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
 
-export let fetchNameDetails = async (blockstackId: string, bnsNodes: string[]): Promise<object|undefined> => {
-    const nodeResponses = bnsNodes.map((baseUrl) => _bnsResolveName(baseUrl, blockstackId));
+export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[]): Promise<object|undefined> => {
+    const nodeResponses = bnsNodes.map((baseUrl) => bnsResolveName(baseUrl, blockstackId));
     log.debug(`BNS node responses:`, nodeResponses);
 
     const responsesArr: object[] = await Promise.all(nodeResponses);
@@ -38,7 +38,7 @@ export let fetchNameDetails = async (blockstackId: string, bnsNodes: string[]): 
     return response;
 };
 
-const _bnsResolveName = async (baseUrl: string, blockstackId: string): Promise<object> => {
+const bnsResolveName = async (baseUrl: string, blockstackId: string): Promise<object> => {
     const options = {
         baseUrl,
         json: true,
