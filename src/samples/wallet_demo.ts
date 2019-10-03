@@ -49,8 +49,8 @@ let cruxClient = new CruxClient(cruxClientOptions)
 cruxClient.init().then(async () => {
     let cruxIDStatus = await getCruxIDState()
     if (cruxIDStatus.status.status === "DONE") {
-        [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
         [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => { el.style.display = "none" });
+        [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
     }
     // add hook to enable registered elements
     doc.getElementById('init').style.display = "none"
