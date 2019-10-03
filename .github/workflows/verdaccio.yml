@@ -1,9 +1,6 @@
 name: Verdaccio dev publishing
 
 on:
-  pull_request:
-    branches:
-      - release/dev
   push:
     branches:
       - release/dev
