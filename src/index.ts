@@ -176,8 +176,8 @@ class CruxPayPeer extends EventEmitter {
             const ns: blockstackService.BlockstackService = new blockstackService.BlockstackService();
             await (this._payIDClaim as PayIDClaim).decrypt();
             await ns.restoreIdentity((this._payIDClaim as PayIDClaim).virtualAddress as string, {secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
-            const status = await ns.getRegistrationStatus({secrets: this.(this._payIDClaim as PayIDClaim).identitySecrets});
-            await this.(this._payIDClaim as PayIDClaim).encrypt();
+            const status = await ns.getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
+            await (this._payIDClaim as PayIDClaim).encrypt();
             if (status.status === blockstackService.SubdomainRegistrationStatus.DONE) {
                 configService = new BlockstackConfigurationService(this.walletClientName, (this._payIDClaim as PayIDClaim).virtualAddress);
             } else {

@@ -8,7 +8,7 @@ import { GaiaService } from "../gaia-service";
 import { getContentFromGaiaHub } from "../gaia-service/utils";
 import {BlockstackId, CruxId, IdTranslator} from "../identity-utils";
 import * as utils from "../utils";
-import * as nameservice from "./index";
+import * as nameService from "./index";
 import { fetchNameDetails } from "./utils";
 
 const log = getLogger(__filename);
@@ -68,7 +68,7 @@ export enum UPLOADABLE_JSON_FILES {
     PROFILE = "profile.json",
 }
 
-export class BlockstackService extends nameservice.NameService {
+export class BlockstackService extends nameService.NameService {
 
     public static getUploadPackageErrorCodeForFilename = (filename: UPLOADABLE_JSON_FILES) => {
         let packageErrorCode;
@@ -111,7 +111,7 @@ export class BlockstackService extends nameservice.NameService {
 
     }
 
-    public restoreIdentity = async (fullCruxId: string, identityClaim: nameservice.IIdentityClaim): Promise<nameservice.IIdentityClaim> => {
+    public restoreIdentity = async (fullCruxId: string, identityClaim: nameService.IIdentityClaim): Promise<nameService.IIdentityClaim> => {
         if (!identityClaim.secrets || !identityClaim.secrets.mnemonic) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity);
         }
@@ -136,7 +136,7 @@ export class BlockstackService extends nameservice.NameService {
 
     }
 
-    public generateIdentity = async (): Promise<nameservice.IIdentityClaim> => {
+    public generateIdentity = async (): Promise<nameService.IIdentityClaim> => {
         const newMnemonic = this._generateMnemonic();
         log.warn(`Your new mnemonic backing your identity is: \n${newMnemonic}`);
         const identityKeyPair = await this._generateIdentityKeyPair(newMnemonic);
@@ -148,7 +148,7 @@ export class BlockstackService extends nameservice.NameService {
         };
     }
 
-    public registerName = async (identityClaim: nameservice.IIdentityClaim, subdomain: string): Promise<string> => {
+    public registerName = async (identityClaim: nameService.IIdentityClaim, subdomain: string): Promise<string> => {
         const mnemonic = identityClaim.secrets.mnemonic;
         let identityKeyPair = identityClaim.secrets.identityKeyPair;
         // Check for existing mnemonic
@@ -170,7 +170,7 @@ export class BlockstackService extends nameservice.NameService {
         return this._identityCouple.cruxId.toString();
     }
 
-    public getRegistrationStatus = async (identityClaim: nameservice.IIdentityClaim): Promise<nameservice.CruxIDRegistrationStatus> => {
+    public getRegistrationStatus = async (identityClaim: nameService.IIdentityClaim): Promise<nameService.CruxIDRegistrationStatus> => {
         log.debug("====getRegistrationStatus====");
         if (!this._identityCouple) {
             return {
@@ -218,7 +218,7 @@ export class BlockstackService extends nameservice.NameService {
 
     }
 
-    public putAddressMapping = async (identityClaim: nameservice.IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {
+    public putAddressMapping = async (identityClaim: nameService.IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {
         if (!identityClaim.secrets.identityKeyPair) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping);
         }
@@ -295,8 +295,8 @@ export class BlockstackService extends nameservice.NameService {
         }
     }
 
-    private getCruxIdRegistrationStatus = (body: any): nameservice.CruxIDRegistrationStatus =>  {
-        let status: nameservice.CruxIDRegistrationStatus;
+    private getCruxIdRegistrationStatus = (body: any): nameService.CruxIDRegistrationStatus =>  {
+        let status: nameService.CruxIDRegistrationStatus;
         const rawStatus = body.status;
         log.info(body);
         if (rawStatus && rawStatus.includes("Your subdomain was registered in transaction")) {
