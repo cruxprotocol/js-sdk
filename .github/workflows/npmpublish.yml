@@ -4,7 +4,8 @@ on:
   pull_request:
     branches:
       - master
-    types: [closed]
+    types: 
+      - closed
 
 jobs:
   publish-npm:
@@ -17,7 +18,13 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm ci
       - run: npm run checks
-      - run: npm run publish:prod
+      - name: Publishing to NPM registry
+        run: npm run publish:prod
         if: github.event.pull_request.merged
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - name: Notify on Slack
+        if: github.event.pull_request.merged && success()
+        uses: rtCamp/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{secrets.slack_webhook}}
