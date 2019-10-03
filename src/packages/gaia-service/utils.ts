@@ -67,26 +67,26 @@ export let getGaiaDataFromBlockstackID = async (blockstackId: string): Promise<g
     const bitcoinAddress = nameData.address;
     log.debug(`ID owner: ${bitcoinAddress}`);
     let gaiaRead: string;
-    let gaiaHub: string | undefined;
+    let gaiaWrite: string | undefined;
     if (nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json"))) {
         gaiaRead = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json", "s"))[2] + "/";
     } else {
-        gaiaHub = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1);
-        gaiaRead = await getGaiaReadUrl(gaiaHub as string);
+        gaiaWrite = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1);
+        gaiaRead = await getGaiaReadUrl(gaiaWrite as string);
     }
     const gaiaDetails: gaiaData = {
         gaiaReadUrl: gaiaRead,
-        gaiaWriteUrl: gaiaHub,
+        gaiaWriteUrl: gaiaWrite,
         ownerAddress: bitcoinAddress,
     };
     return gaiaDetails;
 };
 
-export const getGaiaReadUrl = async (gaiaHubURL: string): Promise<string> => {
+export const getGaiaReadUrl = async (gaiaWriteURL: string): Promise<string> => {
     const options = {
         json: true,
         method: "GET",
-        url: gaiaHubURL + "/hub_info" ,
+        url: gaiaWriteURL + "/hub_info" ,
     };
     try {
         const responseBody: any = await httpJSONRequest(options);

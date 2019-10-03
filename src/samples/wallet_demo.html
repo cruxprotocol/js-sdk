@@ -22,6 +22,12 @@
             width: 100vw;
             z-index: 1;
         }
+        .registered {
+            display: none;
+        }
+        .unregistered {
+            display: block;
+        }
     </style>
     
     <h4>Demo Wallet</h4>
@@ -37,47 +43,55 @@
     <div id="init">
         Initialising cruxClient...
     </div>
-
-    <br><span class="helper">cruxID status:</span><br>
-    <pre id="cruxIDStatus"></pre>
-
-
-    <br><span class="helper">cruxID availability:</span><br>
-    <input id="registrationId" placeholder="ankit" style="text-align: right;">@<span class="walletClientName"></span>.crux <button onclick="isCruxIDAvailable()">Check</button><br>
-    <pre id='availability'></pre>
-
     
-    <br><span class="helper">cruxID registration:</span><br>
-    <input id="newSubdomain" placeholder="ankit" style="text-align: right;">@<span class="walletClientName"></span>.crux <button onclick="registerCruxID()">Register</button>
-    <pre id='registrationAcknowledgement'></pre>    
+    <div class="registered unregistered">
+        <br><span class="helper">cruxID status:</span><br>
+        <pre id="cruxIDStatus"></pre>
+    </div>
 
+    <div class="unregistered">
+        <br><span class="helper">cruxID availability:</span><br>
+        <input id="registrationId" placeholder="ankit" style="text-align: right;">@<span class="walletClientName"></span>.crux <button onclick="isCruxIDAvailable()">Check</button><br>
+        <pre id='availability'></pre>
+    </div>
+    
+    <div class="unregistered">
+        <br><span class="helper">cruxID registration:</span><br>
+        <input id="newSubdomain" placeholder="ankit" style="text-align: right;">@<span class="walletClientName"></span>.crux <button onclick="registerCruxID()">Register</button>
+        <pre id='registrationAcknowledgement'></pre>
+    </div>
 
-    <br><span class="helper">resolving public addresses:</span><br>
-    <input id="receiverVirtualAddress" placeholder="ankit@scatter_dev.crux">
-    <select id="currency">
-        <option value="BTC">BTC</option>
-        <option value="ETH">ETH</option>
-        <option value="TRX">TRX</option>
-    </select>
-    <button onclick="resolveCurrencyAddressForCruxID()">Resolve Address</button><br>
-    <pre id='addresses'></pre>
+    <div class="registered unregistered">
+        <br><span class="helper">resolving public addresses:</span><br>
+        <input id="receiverVirtualAddress" placeholder="ankit@scatter_dev.crux">
+        <select id="currency">
+            <option value="BTC">BTC</option>
+            <option value="ETH">ETH</option>
+            <option value="TRX">TRX</option>
+        </select>
+        <button onclick="resolveCurrencyAddressForCruxID()">Resolve Address</button><br>
+        <pre id='addresses'></pre>
+    </div>
 
+    <div class="registered">
+        <br><span class="helper">fetch public address map:</span><br>
+        <button onclick="getAddressMap()">Get Public Addresses</button>
+        <pre id="addressMap"></pre>
+    </div>
+    
+    <div class="registered">
+        <br><span class="helper">publish address map:</span><br>
+        <button onclick="putAddressMap()">Publish Address</button>
+        <pre id="putAddressMapAcknowledgement"></pre>
+    </div>   
 
-    <br><span class="helper">fetch public address map:</span><br>
-    <button onclick="getAddressMap()">Get Public Addresses</button>
-    <pre id="addressMap"></pre>
-
-
-    <br><span class="helper">publish address map:</span><br>
-    <button onclick="putAddressMap()">Publish Address</button>
-    <pre id="putAddressMapAcknowledgement"></pre>
-
-
-    <br><span class="helper">change password (effectively encryptionKey):</span><br>
-    <input id="oldEncryptionKey" placeholder="old encryption key">
-    <input id="newEncryptionKey" placeholder="new encryption key">
-    <button onclick="updatePassword()">Change password</button>
-    <pre id="passwordUpdateAcknowledgement"></pre>
+    <div class="registered">
+        <br><span class="helper">change password (effectively encryptionKey):</span><br>
+        <input id="oldEncryptionKey" placeholder="old encryption key">
+        <input id="newEncryptionKey" placeholder="new encryption key">
+        <button onclick="updatePassword()">Change password</button>
+        <pre id="passwordUpdateAcknowledgement"></pre>
+    </div>
 
     ========================
 
