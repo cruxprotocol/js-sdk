@@ -64,11 +64,7 @@
     <div class="registered unregistered">
         <br><span class="helper">resolving public addresses:</span><br>
         <input id="receiverVirtualAddress" placeholder="ankit@scatter_dev.crux">
-        <select id="currency">
-            <option value="BTC">BTC</option>
-            <option value="ETH">ETH</option>
-            <option value="TRX">TRX</option>
-        </select>
+        <select id="currency"></select>
         <button onclick="resolveCurrencyAddressForCruxID()">Resolve Address</button><br>
         <pre id='addresses'></pre>
     </div>
@@ -81,6 +77,7 @@
     
     <div class="registered">
         <br><span class="helper">publish address map:</span><br>
+        <div id="publishAddresses"></div><br>
         <button onclick="putAddressMap()">Publish Address</button>
         <pre id="putAddressMapAcknowledgement"></pre>
     </div>   
