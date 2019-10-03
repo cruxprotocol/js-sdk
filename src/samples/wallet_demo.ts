@@ -3,6 +3,7 @@ import { CruxClient, IAddressMapping, ICruxIDState } from "../index";
 
 let doc = (document as {
     getElementById: Function,
+    getElementsByName: Function,
     getElementsByClassName: Function
 })
 
@@ -14,6 +15,9 @@ let walletClientName = "cruxdev"
 let encryptionKey = "fookey"
 const wallet_btc_address = "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V"
 const wallet_eth_address = "0x0a2311594059b468c9897338b027c8782398b481"
+const wallet_trx_address = "TG3iFaVvUs34SGpWq8RG9gnagDLTe1jdyz"
+const wallet_xrp_address = "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h"
+const wallet_xrp_sec_identifier = "12345"
 
 let sampleAddressMap: IAddressMapping = {
     BTC: {
@@ -21,6 +25,13 @@ let sampleAddressMap: IAddressMapping = {
     },
     ETH: {
         addressHash: wallet_eth_address
+    },
+    TRX: {
+        addressHash: wallet_trx_address
+    },
+    XRP: {
+        addressHash: wallet_xrp_address,
+        secIdentifier: wallet_xrp_sec_identifier
     }
 };
 
@@ -30,7 +41,9 @@ walletClientName = url.searchParams.get("walletClientName") || walletClientName;
 
 doc.getElementById('encryptionKey').textContent = `'${encryptionKey}'`;
 [].forEach.call(doc.getElementsByClassName('walletClientName'), (el: HTMLElement) => { el.textContent = walletClientName })
-doc.getElementById('userAddresses').textContent = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; return `${currency.toUpperCase()} - ${address}` }).join('\n')
+doc.getElementById('currency').innerHTML = Object.keys(sampleAddressMap).map((currency) => { return `<option value="${currency}">${currency}</option>` }).join('\n')
+doc.getElementById('userAddresses').textContent = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; let secIdentifier = sampleAddressMap[currency].secIdentifier; return `${currency.toUpperCase()} - ${address} ${secIdentifier ? `(${secIdentifier})` : '' }` }).join('\n')
+doc.getElementById('publishAddresses').innerHTML = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; let secIdentifier = sampleAddressMap[currency].secIdentifier; return `<input type="checkbox" name="publishAddressOption" currency="${currency.toUpperCase()}" addressHash="${address}" secIdentifier="${secIdentifier}" checked>${currency.toUpperCase()}` }).join('\n')
 
 
 
@@ -49,8 +62,8 @@ let cruxClient = new CruxClient(cruxClientOptions)
 cruxClient.init().then(async () => {
     let cruxIDStatus = await getCruxIDState()
     if (cruxIDStatus.status.status === "DONE") {
-        [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
         [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => { el.style.display = "none" });
+        [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
     }
     // add hook to enable registered elements
     doc.getElementById('init').style.display = "none"
@@ -117,8 +130,18 @@ const getAddressMap = async () => {
 }
 const putAddressMap = async () => {
     let UIResponse: string = ""
+    let addressMap: IAddressMapping = {};
+    [].forEach.call(doc.getElementsByName('publishAddressOption'), (el: HTMLInputElement) => { 
+        if (el.checked) {
+            addressMap[el.attributes['currency'].nodeValue] = {
+                addressHash: el.attributes['addressHash'].nodeValue,
+                secIdentifier: el.attributes['secIdentifier'].nodeValue === "undefined" ? undefined : el.attributes['secIdentifier'].nodeValue
+            }
+        }
+    });
     try {
-        let acknowledgement = await cruxClient.putAddressMap(sampleAddressMap)
+        doc.getElementById('putAddressMapAcknowledgement').textContent = "Publishing your selected addresses..."
+        let acknowledgement = await cruxClient.putAddressMap(addressMap)
         UIResponse = acknowledgement ? "successfully published addresses!" : acknowledgement.toString()
     } catch (e) {
         UIResponse = e
