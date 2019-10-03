@@ -20,7 +20,7 @@ export class GaiaService {
         const hubURL = this.gaiaWriteUrl;
         const hubConfig = await blockstack.connectToGaiaHub(hubURL, sanitizedPrivKey);
         const tokenFile = this._generateTokenFileForContent(sanitizedPrivKey, content);
-        const contentToUpload: any = JSON.stringify(tokenFile);
+        const contentToUpload: string = JSON.stringify(tokenFile);
         let finalURL: string;
         try {
             finalURL = await blockstack.uploadToGaiaHub(filename, contentToUpload, hubConfig, type);
