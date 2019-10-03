@@ -1,4 +1,4 @@
-import { CruxClient, IAddressMapping } from "../index";
+import { CruxClient, IAddressMapping, ICruxIDState } from "../index";
 // TODO: add optional import statement to use the build
 
 let doc = (document as {
@@ -30,7 +30,7 @@ walletClientName = url.searchParams.get("walletClientName") || walletClientName;
 
 doc.getElementById('encryptionKey').textContent = `'${encryptionKey}'`;
 [].forEach.call(doc.getElementsByClassName('walletClientName'), (el: HTMLElement) => { el.textContent = walletClientName })
-doc.getElementById('userAddresses').textContent = Object.keys(sampleAddressMap).map((currency) => { console.log(sampleAddressMap); let address = sampleAddressMap[currency].addressHash; return `${currency.toUpperCase()} - ${address}` }).join('\n')
+doc.getElementById('userAddresses').textContent = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; return `${currency.toUpperCase()} - ${address}` }).join('\n')
 
 
 
@@ -47,7 +47,12 @@ let cruxClientOptions = {
 // initialising the cruxClient
 let cruxClient = new CruxClient(cruxClientOptions)
 cruxClient.init().then(async () => {
-    await getCruxIDState()
+    let cruxIDStatus = await getCruxIDState()
+    if (cruxIDStatus.status.status === "DONE") {
+        [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
+        [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => { el.style.display = "none" });
+    }
+    // add hook to enable registered elements
     doc.getElementById('init').style.display = "none"
 }).catch((error) => {
     let message = "CruxClient Initialization Error: \n" + error
@@ -121,16 +126,18 @@ const putAddressMap = async () => {
         doc.getElementById('putAddressMapAcknowledgement').textContent = UIResponse
     }    
 }
-const getCruxIDState = async () => {
+const getCruxIDState = async (): Promise<ICruxIDState> => {
     let UIResponse: string = ""
+    let cruxIDStatus: ICruxIDState = {status: {status: "NONE", status_detail: ""}}
     try {
-        let cruxIDStatus = await cruxClient.getCruxIDState()
+        cruxIDStatus = await cruxClient.getCruxIDState()
         UIResponse = JSON.stringify(cruxIDStatus, undefined, 4)
     } catch (e) {
         UIResponse = e
     } finally {
         doc.getElementById('cruxIDStatus').textContent = UIResponse
-    }    
+    }
+    return cruxIDStatus
 }
 const updatePassword = async () => { 
     let UIResponse: string = ""

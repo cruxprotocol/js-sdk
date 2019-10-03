@@ -5,4 +5,7 @@ lib
 .cache/
 .DS_Store
 .idea/
+.editorconfig
+coverage
+.nyc_output
 #.vscode
