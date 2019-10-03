@@ -17,6 +17,5 @@ jobs:
       - run: npm ci
       - run: npm run checks
       - run: npm run publish:dev
-        if: github.event.pull_request.merged
         env:
           NODE_AUTH_TOKEN: ${{secrets.verdaccio_token}}
