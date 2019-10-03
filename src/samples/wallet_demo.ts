@@ -140,13 +140,9 @@ const putAddressMap = async () => {
         }
     });
     try {
-        if (Object.keys(addressMap).length === 0) {
-            UIResponse = "Please select atleast one address!!"
-        } else {
-            doc.getElementById('putAddressMapAcknowledgement').textContent = "Publishing your selected addresses..."
-            let acknowledgement = await cruxClient.putAddressMap(addressMap)
-            UIResponse = acknowledgement ? "successfully published addresses!" : acknowledgement.toString()
-        }
+        doc.getElementById('putAddressMapAcknowledgement').textContent = "Publishing your selected addresses..."
+        let acknowledgement = await cruxClient.putAddressMap(addressMap)
+        UIResponse = acknowledgement ? "successfully published addresses!" : acknowledgement.toString()
     } catch (e) {
         UIResponse = e
     } finally {
