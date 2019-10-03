@@ -4,9 +4,7 @@ on:
   pull_request:
     branches:
       - master
-  push:
-    branches:
-      - master
+    types: [closed]
 
 jobs:
   publish-npm:
@@ -20,5 +18,6 @@ jobs:
       - run: npm ci
       - run: npm run checks
       - run: npm run publish:prod
+        if: github.event.pull_request.merged
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
