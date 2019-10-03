@@ -2,13 +2,12 @@ import { expect } from 'chai';
 import sinon from "sinon";
 import 'mocha';
 
-import { nameservice, identityUtils, errors } from "../packages";
+import { identityUtils, blockstackService, errors } from "../packages";
 import * as utils from "../packages/utils";
 import requestFixtures from "./requestMocks/nameservice-reqmocks";
 import * as blockstack from 'blockstack';
 import { IAddressMapping } from '../index';
-import { config } from 'blockstack';
-import { ErrorHelper } from 'src/packages/error';
+import { sanitizePrivKey } from "../packages/utils";
 
 
 // TODO: registration of already registered names and error handling
@@ -16,8 +15,7 @@ import { ErrorHelper } from 'src/packages/error';
 
 
 describe('BlockstackService tests', () => {
-  let blockstackService = new nameservice.BlockstackService()
-
+  let blkstkService = new blockstackService.BlockstackService()
   let httpJSONRequestStub: sinon.SinonStub
   let connectToGaiaHubStub: sinon.SinonStub
   let uploadToGaiaHubStub: sinon.SinonStub
@@ -65,7 +63,7 @@ describe('BlockstackService tests', () => {
 
   describe('generateIdentity tests', () => {
     it('always generates a proper identity claim (mnemonic and a keypair)', async () => {
-      let generatedIdentityClaim = await blockstackService.generateIdentity()
+      let generatedIdentityClaim = await blkstkService.generateIdentity()
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('mnemonic').to.be.a('string')
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('pubKey').to.be.a('string')
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
@@ -75,7 +73,7 @@ describe('BlockstackService tests', () => {
 
   describe('restoreIdentity tests', () => {
     it('given cruxID and identityClaim with mnemonic, should return the corresponding full identityClaim', async () => {
-      let restoredIdentityClaim = await blockstackService.restoreIdentity(sampleCruxId, sampleIdentityClaim)
+      let restoredIdentityClaim = await blkstkService.restoreIdentity(sampleCruxId, sampleIdentityClaim)
       expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('mnemonic').to.be.a('string')
       expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('pubKey').to.be.a('string')
       expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
@@ -92,12 +90,12 @@ describe('BlockstackService tests', () => {
 
     it('given an uncompressed key returns compressed key', () => {
       // @ts-ignore
-      expect(blockstackService._sanitizePrivKey(uncompressedKey)).to.equal(compressedKey)
+      expect(sanitizePrivKey(uncompressedKey)).to.equal(compressedKey)
     })
 
     it('given an compressed key returns compressed key', () => {
       // @ts-ignore
-      expect(blockstackService._sanitizePrivKey(compressedKey)).to.equal(compressedKey)
+      expect(sanitizePrivKey(compressedKey)).to.equal(compressedKey)
     })
   })
 
@@ -106,7 +104,7 @@ describe('BlockstackService tests', () => {
     let unregisteredSubdomain = 'example'
 
     it(`${registeredSubdomain}@devcoinswitch.crux should be unavailable`, async () => {
-      let resolvedPublicKey = await blockstackService.getNameAvailability(registeredSubdomain)
+      let resolvedPublicKey = await blkstkService.getNameAvailability(registeredSubdomain)
       let options = {
         baseUrl: "https://registrar.coinswitch.co:3000",
         json: true,
@@ -118,7 +116,7 @@ describe('BlockstackService tests', () => {
       expect(resolvedPublicKey).is.false
     })
     it(`${unregisteredSubdomain}@devcoinswitch.crux should be available`, async () => {
-      let resolvedPublicKey = await blockstackService.getNameAvailability(unregisteredSubdomain)
+      let resolvedPublicKey = await blkstkService.getNameAvailability(unregisteredSubdomain)
       let options = {
         baseUrl: "https://registrar.coinswitch.co:3000",
         json: true,
@@ -147,7 +145,7 @@ describe('BlockstackService tests', () => {
     };
     it('given identityClaim, without restoring identity, should return NONE', async () => {
       // initialise the nameservice
-      let bs = new nameservice.BlockstackService()
+      let bs = new blockstackService.BlockstackService()
       // fetch registrationStatus
       let resolvedStatus = await bs.getRegistrationStatus(sampleIdentityClaim);
       expect(httpJSONRequestStub.notCalled).is.true
@@ -175,7 +173,7 @@ describe('BlockstackService tests', () => {
         url: `/status/carol`,
       }
       // initialise the nameservice
-      let bs = new nameservice.BlockstackService()
+      let bs = new blockstackService.BlockstackService()
       // restore identity
       await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
       // fetch registrationStatus
@@ -201,7 +199,7 @@ describe('BlockstackService tests', () => {
       }
 
       // initialise the nameservice
-      let bs = new nameservice.BlockstackService();
+      let bs = new blockstackService.BlockstackService();
       // restore the identity using identityClaim
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
       // fetch registrationStatus
@@ -229,7 +227,7 @@ describe('BlockstackService tests', () => {
       headers: { 'Content-Type': 'application/json' },
       body: {
         zonefile:
-          '$ORIGIN bob\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/profile.json"\n',
+          '$ORIGIN bob\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',
         name: 'bob',
         owner_address: '1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ'
       },
@@ -244,7 +242,7 @@ describe('BlockstackService tests', () => {
       body:
       {
         zonefile:
-          '$ORIGIN cs1\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/profile.json"\n',
+          '$ORIGIN cs1\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',
         name: 'cs1',
         owner_address: '1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ'
       },
@@ -252,16 +250,16 @@ describe('BlockstackService tests', () => {
       strictSSL: false
     }
     it('given valid identityClaim (only mnemonic) and a non-registered cruxId, should successfully register and return the fullCruxId', async () => {
-      let registeredName = await blockstackService.registerName({ secrets: { mnemonic: sampleIdentityClaim.secrets.mnemonic } }, desiredName)
-      expect(httpJSONRequestStub.calledTwice).is.true
-      expect(httpJSONRequestStub.calledWith(hubInfoRequestOptions)).is.true
+      let registeredName = await blkstkService.registerName({ secrets: { mnemonic: sampleIdentityClaim.secrets.mnemonic } }, desiredName)
+      expect(httpJSONRequestStub.calledOnce).is.true
+      // expect(httpJSONRequestStub.calledWith(hubInfoRequestOptions)).is.true
       expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
       expect(registeredName).is.equal(expectedRegisteredName)
     })
     it('given valid identityClaim and a non-registered cruxId (bob@devcoinswitch.crux), should successfully register and return the fullCruxId', async () => {
-      let registeredName = await blockstackService.registerName(sampleIdentityClaim, desiredName)
-      expect(httpJSONRequestStub.calledTwice).is.true
-      expect(httpJSONRequestStub.calledWith(hubInfoRequestOptions)).is.true
+      let registeredName = await blkstkService.registerName(sampleIdentityClaim, desiredName)
+      expect(httpJSONRequestStub.calledOnce).is.true
+      // expect(httpJSONRequestStub.calledWith(hubInfoRequestOptions)).is.true
       expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
       expect(registeredName).is.equal(expectedRegisteredName)
     })
@@ -269,7 +267,7 @@ describe('BlockstackService tests', () => {
       uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json")
       let raisedError
       try {
-        await blockstackService.registerName(sampleIdentityClaim, sampleSubdomain)
+        await blkstkService.registerName(sampleIdentityClaim, sampleSubdomain)
       } catch (error) {
         raisedError = error
       }
@@ -288,7 +286,7 @@ describe('BlockstackService tests', () => {
       uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json")
 
       // initialising the nameservice
-      let bs = new nameservice.BlockstackService()
+      let bs = new blockstackService.BlockstackService()
       // restoring identity
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
       let acknowledgement = await bs.putAddressMapping(sampleIdentityClaim, sampleAddressMap)
@@ -299,7 +297,7 @@ describe('BlockstackService tests', () => {
     })
     it('given valid identityClaim and invalid addressMap, should throw "AddressMappingDecodingFailure"', async () => {
       // initialising the nameservice
-      let bs = new nameservice.BlockstackService()
+      let bs = new blockstackService.BlockstackService()
       // restoring identity
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
 
@@ -313,7 +311,7 @@ describe('BlockstackService tests', () => {
     })
     it('given invalid identityClaim (only mnemonic) and valid addressMap, should throw "CouldNotFindIdentityKeyPairToPutAddressMapping"', async () => {
       // initialising the nameservice
-      let bs = new nameservice.BlockstackService()
+      let bs = new blockstackService.BlockstackService()
       // restoring identity
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
 
@@ -344,7 +342,7 @@ describe('BlockstackService tests', () => {
 
     it('given registered cruxId (sanchay@devcoinswitch.crux), which does not have pulic addressMap should throw "GaiaEmptyResponse"')
     it('given registered cruxId (cs1@devcoinswitch.crux), which have public addressMap should resolve the addressMap', async () => {
-      let resolvedAddressMap: IAddressMapping = await blockstackService.getAddressMapping(sampleCruxId)
+      let resolvedAddressMap: IAddressMapping = await blkstkService.getAddressMapping(sampleCruxId)
       expect(httpJSONRequestStub.calledThrice).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
@@ -354,7 +352,7 @@ describe('BlockstackService tests', () => {
     it('given unregistered cruxId, should throw "UserDoesNotExist"', async () => {
       let raisedError
       try {
-        let resolvedAddressMap: IAddressMapping = await blockstackService.getAddressMapping("example@devcoinswitch.crux")
+        let resolvedAddressMap: IAddressMapping = await blkstkService.getAddressMapping("example@devcoinswitch.crux")
       } catch (error) {
         raisedError = error
       }

@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import * as utils from "../packages/utils";
 import { BlockstackConfigurationService } from '../packages/configuration-service';
 import requestFixtures from './requestMocks/config-reqmocks';
-import { BlockstackService } from '../packages/nameservice';
+import { BlockstackService } from '../packages/name-service/blockstack-service';
 import { async } from 'q';
 var assert = require('chai').assert
 

@@ -17,7 +17,7 @@ interface GenericIDComponents {
 export class CruxId {
 
     public static validateSubdomain = (subDomain: string) => {
-        const subdomainRegex: string = "[a-z]([a-z]|\d|-|_)*([a-z]|\d)";
+        const subdomainRegex: string = "^[a-z]([a-z]|\d|-|_)*([a-z]|\d)$";
         const subdomainMinLength: number = 4;
         const subdomainMaxLength: number = 20;
         if (!subDomain.match(new RegExp(subdomainRegex))) {

@@ -1,8 +1,9 @@
 import { getLogger } from "..";
 import config from "../config";
 import {ErrorHelper, PackageErrorCode} from "./error";
+import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "./gaia-service/utils";
 import * as identityUtils from "./identity-utils";
-import * as nameservice from "./nameservice";
+import * as nameservice from "./name-service/blockstack-service";
 
 const log = getLogger(__filename);
 
@@ -23,10 +24,14 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     private blockstackNameservice: nameservice.BlockstackService;
     private clientName: string;
     private clientConfig: any;
+    private blockstackID: string | undefined;
 
-    constructor(clientName: string) {
+    constructor(clientName: string, cruxID?: string) {
         super();
         this.clientName = clientName;
+        if (cruxID) {
+            this.blockstackID = identityUtils.IdTranslator.cruxToBlockstack(identityUtils.CruxId.fromString(cruxID)).toString();
+        }
         this.blockstackNameservice = new nameservice.BlockstackService();
         log.info(`BlockstackConfigurationService initialised with default configs`);
     }
@@ -49,7 +54,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             domain: this.settingsDomain,
             subdomain: clientName,
         }).toString();
-        return await this.blockstackNameservice.getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG);
+        return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG);
     }
 
     public getClientAssetMapping = async (): Promise<object> => {
@@ -64,10 +69,27 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     public getBlockstackServiceForConfig = async (): Promise<nameservice.BlockstackService> => {
         if (!this.clientConfig) { throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig); }
         let ns: nameservice.BlockstackService;
+        let gaiaHub: string | undefined;
+        if (this.blockstackID) {
+            const gaiaUrls = await getGaiaDataFromBlockstackID(this.blockstackID);
+            if (gaiaUrls.gaiaWriteUrl) {
+                gaiaHub = gaiaUrls.gaiaWriteUrl;
+            }
+        }
         if (this.clientConfig.nameserviceConfiguration) {
-            ns = new nameservice.BlockstackService(this.clientConfig.nameserviceConfiguration);
+            const nsConfiguration = {
+                bnsNodes: this.clientConfig.nameserviceConfiguration.bnsNodes || config.BLOCKSTACK.BNS_NODES,
+                domain: this.clientConfig.nameserviceConfiguration.domain || config.BLOCKSTACK.IDENTITY_DOMAIN,
+                gaiaHub: gaiaHub || this.clientConfig.nameserviceConfiguration.gaiaHub || config.BLOCKSTACK.GAIA_HUB,
+                subdomainRegistrar: this.clientConfig.nameserviceConfiguration.subdomainRegistrar || config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
+            };
+            ns = new nameservice.BlockstackService(nsConfiguration);
         } else {
-            ns = new nameservice.BlockstackService();
+            if (gaiaHub) {
+                ns = new nameservice.BlockstackService({gaiaHub});
+            } else {
+                ns = new nameservice.BlockstackService();
+            }
         }
         return ns;
     }
