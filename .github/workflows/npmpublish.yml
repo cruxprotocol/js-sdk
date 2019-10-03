@@ -1,11 +1,9 @@
 name: NPMJS prod publishing
 
 on:
-  pull_request:
+  push:
     branches:
       - master
-    types: 
-      - closed
 
 jobs:
   publish-npm:
@@ -20,11 +18,9 @@ jobs:
       - run: npm run checks
       - name: Publishing to NPM registry
         run: npm run publish:prod
-        if: github.event.pull_request.merged
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
       - name: Notify on Slack
-        if: github.event.pull_request.merged && success()
         uses: rtCamp/action-slack-notify@master
         env:
           SLACK_WEBHOOK: ${{secrets.slack_webhook}}
