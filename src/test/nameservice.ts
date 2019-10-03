@@ -2,11 +2,12 @@ import { expect } from 'chai';
 import sinon from "sinon";
 import 'mocha';
 
-import { nameservice, identityUtils } from "../packages";
+import { identityUtils, blockstackService, errors } from "../packages";
 import * as utils from "../packages/utils";
 import requestFixtures from "./requestMocks/nameservice-reqmocks";
 import * as blockstack from 'blockstack';
 import { IAddressMapping } from '../index';
+import { sanitizePrivKey } from "../packages/utils";
 
 
 // TODO: registration of already registered names and error handling
@@ -14,8 +15,7 @@ import { IAddressMapping } from '../index';
 
 
 describe('BlockstackService tests', () => {
-  let blockstackService = new nameservice.BlockstackService()
-
+  let blkstkService = new blockstackService.BlockstackService()
   let httpJSONRequestStub: sinon.SinonStub
   let connectToGaiaHubStub: sinon.SinonStub
   let uploadToGaiaHubStub: sinon.SinonStub
@@ -39,7 +39,7 @@ describe('BlockstackService tests', () => {
     }
   }
 
-  before(() => {
+  beforeEach(() => {
     // Handling mock stubs
 
     httpJSONRequestStub = sinon.stub(utils, 'httpJSONRequest').throws('unhandled in mocks')
@@ -53,7 +53,7 @@ describe('BlockstackService tests', () => {
 
   })
 
-  after(() => {
+  afterEach(() => {
     httpJSONRequestStub.restore()
     connectToGaiaHubStub.restore()
     uploadToGaiaHubStub.restore()
@@ -61,18 +61,41 @@ describe('BlockstackService tests', () => {
 
   // Test cases
 
+  describe('generateIdentity tests', () => {
+    it('always generates a proper identity claim (mnemonic and a keypair)', async () => {
+      let generatedIdentityClaim = await blkstkService.generateIdentity()
+      expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('mnemonic').to.be.a('string')
+      expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('pubKey').to.be.a('string')
+      expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
+      expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
+    })
+  })
+
+  describe('restoreIdentity tests', () => {
+    it('given cruxID and identityClaim with mnemonic, should return the corresponding full identityClaim', async () => {
+      let restoredIdentityClaim = await blkstkService.restoreIdentity(sampleCruxId, sampleIdentityClaim)
+      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('mnemonic').to.be.a('string')
+      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('pubKey').to.be.a('string')
+      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
+      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
+    })
+    it('given curxID without identityClaim, should throw "CouldNotFindMnemonicToRestoreIdentity"')
+    it('given identityClaim with mnemonic with invalid cruxID, should throw "CruxIdLengthValidation" | "CruxIdNamespaceValidation"')
+    it('given identityClaim with mnemonic and non-corresponding cruxID, should throw error')
+  })
+
   describe('PrivateKey sanitization tests', () => {
     let uncompressedKey = "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f01"
     let compressedKey = "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f"
 
     it('given an uncompressed key returns compressed key', () => {
       // @ts-ignore
-      expect(blockstackService._sanitizePrivKey(uncompressedKey)).to.equal(compressedKey)
+      expect(sanitizePrivKey(uncompressedKey)).to.equal(compressedKey)
     })
 
     it('given an compressed key returns compressed key', () => {
       // @ts-ignore
-      expect(blockstackService._sanitizePrivKey(compressedKey)).to.equal(compressedKey)
+      expect(sanitizePrivKey(compressedKey)).to.equal(compressedKey)
     })
   })
 
@@ -81,80 +104,261 @@ describe('BlockstackService tests', () => {
     let unregisteredSubdomain = 'example'
 
     it(`${registeredSubdomain}@devcoinswitch.crux should be unavailable`, async () => {
-      let resolvedPublicKey = await blockstackService.getNameAvailability(registeredSubdomain)
-      console.log(resolvedPublicKey)
+      let resolvedPublicKey = await blkstkService.getNameAvailability(registeredSubdomain)
+      let options = {
+        baseUrl: "https://registrar.coinswitch.co:3000",
+        json: true,
+        method: "GET",
+        url: `/status/${registeredSubdomain}`,
+      }
+      expect(httpJSONRequestStub.calledOnce).is.true
+      expect(httpJSONRequestStub.calledWith(options)).is.true
       expect(resolvedPublicKey).is.false
     })
     it(`${unregisteredSubdomain}@devcoinswitch.crux should be available`, async () => {
-      let resolvedPublicKey = await blockstackService.getNameAvailability(unregisteredSubdomain)
-      console.log(resolvedPublicKey)
+      let resolvedPublicKey = await blkstkService.getNameAvailability(unregisteredSubdomain)
+      let options = {
+        baseUrl: "https://registrar.coinswitch.co:3000",
+        json: true,
+        method: "GET",
+        url: `/status/${unregisteredSubdomain}`,
+      }
+      expect(httpJSONRequestStub.calledOnce).is.true
+      expect(httpJSONRequestStub.calledWith(options)).is.true
       expect(resolvedPublicKey).is.true
     })
 
   })
 
   describe('getRegistrationStatus tests', () => {
-    it(`registration status for cs1@devcoinswitch.crux is DONE`, async () => {
-      let bs = new nameservice.BlockstackService();
-      let name = 'cs1'
-      let walletClientName = 'devcoinswitch'
-      let registrationStatus = {
-        'status': 'DONE',
-        'status_detail': 'Subdomain propagated.'
-      };
-
-      // @ts-ignore
-      bs._subdomain = name;
-      // @ts-ignore
-      bs._identityCouple = {
-        cruxId: new identityUtils.CruxId({
-          subdomain: name,
-          domain: walletClientName
-        }),
-        bsId: new identityUtils.BlockstackId({
-          subdomain: name,
-          domain: walletClientName
-        })
+    let unavailableStatus = {
+      'status': 'NONE',
+      'status_detail': ''
+    }
+    let pendingStatus = {
+      'status': 'PENDING',
+      'status_detail': 'Subdomain registration pending on registrar.'
+    };
+    let registeredStatus = {
+      'status': 'DONE',
+      'status_detail': 'Subdomain propagated.'
+    };
+    it('given identityClaim, without restoring identity, should return NONE', async () => {
+      // initialise the nameservice
+      let bs = new blockstackService.BlockstackService()
+      // fetch registrationStatus
+      let resolvedStatus = await bs.getRegistrationStatus(sampleIdentityClaim);
+      expect(httpJSONRequestStub.notCalled).is.true
+      expect(resolvedStatus).to.eql(unavailableStatus)
+    })
+    it('given pending identityClaim (carol@devcoinswitch.crux), after restoring the identity, should return PENDING', async () => {
+      let pendingCruxId = "carol@devcoinswitch.crux";
+      let pendingIdentityClaim = { "secrets": { "identityKeyPair": { "address": "1FnntbZKRLB7rZFvng9PDgvMMEXMek1jrv", "privKey": "d4f1d65bbe0a89a91506828f4e62639b99558aeffda06b6f66961dccec5e301b01", "pubKey": "03d2b5b73bd06b624ccd24d05d0ffc259e7b9180d85b29f61e16404866fe344e60" }, "mnemonic": "minute furnace room favorite hunt auto scrap angry tribe wait foam drive" } }
+      let bnsRequestOptions1 = {
+        baseUrl: 'https://core.blockstack.org',
+        json: true,
+        method: "GET",
+        url: `/v1/names/carol.devcoinswitch.id`,
+      }
+      let bnsRequestOptions2 = {
+        baseUrl: 'https://bns.cruxpay.com',
+        json: true,
+        method: "GET",
+        url: `/v1/names/carol.devcoinswitch.id`,
+      }
+      let registrarRequestOptions = {
+        baseUrl: "https://registrar.coinswitch.co:3000",
+        json: true,
+        method: "GET",
+        url: `/status/carol`,
+      }
+      // initialise the nameservice
+      let bs = new blockstackService.BlockstackService()
+      // restore identity
+      await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
+      // fetch registrationStatus
+      let resolvedStatus = await bs.getRegistrationStatus(pendingIdentityClaim)
+      expect(httpJSONRequestStub.calledThrice).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
+      expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
+      expect(resolvedStatus).to.eql(pendingStatus)
+    })
+    it(`given registered identityClaim (cs1@devcoinswitch.crux), after restoring the identity, should return DONE`, async () => {
+      let bnsRequestOptions1 = {
+        baseUrl: 'https://core.blockstack.org',
+        json: true,
+        method: "GET",
+        url: `/v1/names/cs1.devcoinswitch.id`,
+      }
+      let bnsRequestOptions2 = {
+        baseUrl: 'https://bns.cruxpay.com',
+        json: true,
+        method: "GET",
+        url: `/v1/names/cs1.devcoinswitch.id`,
       }
 
+      // initialise the nameservice
+      let bs = new blockstackService.BlockstackService();
+      // restore the identity using identityClaim
+      await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
+      // fetch registrationStatus
       let resolvedStatus = await bs.getRegistrationStatus(sampleIdentityClaim);
-      console.log(resolvedStatus == registrationStatus);
-      expect(resolvedStatus).to.eql(registrationStatus);
+      expect(httpJSONRequestStub.calledTwice).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
+      expect(resolvedStatus).to.eql(registeredStatus);
     })
 
   })
 
   describe('registerName tests', () => {
-    it('register a new cruxID bob@devcoinswitch.crux', async () => {
-      let desiredName = 'bob'
-      let expectedRegisteredName = 'bob@devcoinswitch.crux'
-
-      let registeredName = await blockstackService.registerName(sampleIdentityClaim, desiredName)
+    let desiredName = 'bob'
+    let expectedRegisteredName = 'bob@devcoinswitch.crux'
+    let hubInfoRequestOptions = {
+      method: 'GET',
+      url: "https://hub.cruxpay.com/hub_info",
+      json: true
+    }
+    let registrarRequestOptions = {
+      method: 'POST',
+      baseUrl: 'https://registrar.coinswitch.co:3000',
+      url: '/register',
+      headers: { 'Content-Type': 'application/json' },
+      body: {
+        zonefile:
+          '$ORIGIN bob\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',
+        name: 'bob',
+        owner_address: '1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ'
+      },
+      json: true,
+      strictSSL: false
+    }
+    let redundantRegistrarRequestOptions = {
+      method: 'POST',
+      baseUrl: 'https://registrar.coinswitch.co:3000',
+      url: '/register',
+      headers: { 'Content-Type': 'application/json' },
+      body:
+      {
+        zonefile:
+          '$ORIGIN cs1\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',
+        name: 'cs1',
+        owner_address: '1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ'
+      },
+      json: true,
+      strictSSL: false
+    }
+    it('given valid identityClaim (only mnemonic) and a non-registered cruxId, should successfully register and return the fullCruxId', async () => {
+      let registeredName = await blkstkService.registerName({ secrets: { mnemonic: sampleIdentityClaim.secrets.mnemonic } }, desiredName)
+      expect(httpJSONRequestStub.calledOnce).is.true
+      // expect(httpJSONRequestStub.calledWith(hubInfoRequestOptions)).is.true
+      expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
       expect(registeredName).is.equal(expectedRegisteredName)
+    })
+    it('given valid identityClaim and a non-registered cruxId (bob@devcoinswitch.crux), should successfully register and return the fullCruxId', async () => {
+      let registeredName = await blkstkService.registerName(sampleIdentityClaim, desiredName)
+      expect(httpJSONRequestStub.calledOnce).is.true
+      // expect(httpJSONRequestStub.calledWith(hubInfoRequestOptions)).is.true
+      expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
+      expect(registeredName).is.equal(expectedRegisteredName)
+    })
+    it('given valid identityClaim and a registered cruxId, should throw "SubdomainRegistrationFailed"', async () => {
+      uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json")
+      let raisedError
+      try {
+        await blkstkService.registerName(sampleIdentityClaim, sampleSubdomain)
+      } catch (error) {
+        raisedError = error
+      }
+      expect(uploadToGaiaHubStub.calledOnce).is.true
+      // expect(httpJSONRequestStub.calledOnce).is.true
+      expect(uploadToGaiaHubStub.calledWith('profile.json')).is.true
+      expect(httpJSONRequestStub.calledWith(redundantRegistrarRequestOptions)).is.true
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.SubdomainRegistrationFailed)
     })
   })
 
   describe('putAddressMapping tests', () => {
-    it(`upload sample address map for cs1@devcoinswitch.crux`, async () => {
+    it('given valid identityClaim and valid addressMap, should resolve the promise without errors', async () => {
       // mocked values
       connectToGaiaHubStub.resolves({ "url_prefix": "https://gaia.cruxpay.com/", "address": "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ", "token": "v1:eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJnYWlhQ2hhbGxlbmdlIjoiW1wiZ2FpYWh1YlwiLFwiMFwiLFwic3RvcmFnZTIuYmxvY2tzdGFjay5vcmdcIixcImJsb2Nrc3RhY2tfc3RvcmFnZV9wbGVhc2Vfc2lnblwiXSIsImh1YlVybCI6Imh0dHBzOi8vaHViLmJsb2Nrc3RhY2sub3JnIiwiaXNzIjoiMDJiYzljM2Y4ZTkyNGI3ZGU5MjEyY2ViZDAxMjlmMWJlMmU2YzNmMjkwNGU5MTFiMzA2OThiZGU3N2JlNDg3OGI4Iiwic2FsdCI6ImE0ODk1ZWE1ZjdjZjI2N2VhNDEwMjg2ZjRjNzk4MTY3In0.QFuEEVijDYMKHjERaPA_YXwnwWoBq8iVg4pzEusP0S_u5jSmmxqeJcumyMK8cqT4NTmOYgnMUC4u4-9OAUWOIQ", "server": "https://hub.cruxpay.com" })
       uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json")
 
-      let bs = new nameservice.BlockstackService()
-      // @ts-ignore
-      bs._subdomain = sampleSubdomain
-      let acknowledgement = await blockstackService.putAddressMapping(sampleIdentityClaim, sampleAddressMap)
-      console.log(acknowledgement)
+      // initialising the nameservice
+      let bs = new blockstackService.BlockstackService()
+      // restoring identity
+      await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
+      let acknowledgement = await bs.putAddressMapping(sampleIdentityClaim, sampleAddressMap)
+
+      expect(connectToGaiaHubStub.calledOnce).is.true
+      expect(uploadToGaiaHubStub.calledOnce).is.true
       expect(acknowledgement).is.true
+    })
+    it('given valid identityClaim and invalid addressMap, should throw "AddressMappingDecodingFailure"', async () => {
+      // initialising the nameservice
+      let bs = new blockstackService.BlockstackService()
+      // restoring identity
+      await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
+
+      let raisedError
+      try {
+        let acknowledgement = await bs.putAddressMapping(sampleIdentityClaim, { invalidKey: "invalidAddress" })
+      } catch (error) {
+        raisedError = error
+      }
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.AddressMappingDecodingFailure)
+    })
+    it('given invalid identityClaim (only mnemonic) and valid addressMap, should throw "CouldNotFindIdentityKeyPairToPutAddressMapping"', async () => {
+      // initialising the nameservice
+      let bs = new blockstackService.BlockstackService()
+      // restoring identity
+      await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
+
+      let raisedError
+      try {
+        let acknowledgement = await bs.putAddressMapping({secrets: {mnemonic: sampleIdentityClaim.secrets.mnemonic}}, sampleAddressMap)
+      } catch (error) {
+        raisedError = error
+      }
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping)
     })
   })
 
   describe('getAddressMapping tests', () => {
-    it(`resolve sample address map from cs1@devcoinswitch.crux`, async () => {
-      let resolvedAddressMap: IAddressMapping = await blockstackService.getAddressMapping(sampleCruxId)
-      console.log(resolvedAddressMap)
+    let bnsRequestOptions1 = {
+      method: 'GET',
+      baseUrl: 'https://core.blockstack.org',
+      url: '/v1/names/cs1.devcoinswitch.id',
+      json: true
+    }
+    let bnsRequestOptions2 = {
+      method: 'GET',
+      baseUrl: 'https://bns.cruxpay.com',
+      url: '/v1/names/cs1.devcoinswitch.id',
+      json: true
+    }
+    let gaiaRequestOptions = { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json", json: true }
+
+    it('given registered cruxId (sanchay@devcoinswitch.crux), which does not have pulic addressMap should throw "GaiaEmptyResponse"')
+    it('given registered cruxId (cs1@devcoinswitch.crux), which have public addressMap should resolve the addressMap', async () => {
+      let resolvedAddressMap: IAddressMapping = await blkstkService.getAddressMapping(sampleCruxId)
+      expect(httpJSONRequestStub.calledThrice).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
+      expect(httpJSONRequestStub.calledWith(gaiaRequestOptions)).is.true
       expect(resolvedAddressMap).is.eql(sampleAddressMap)
     })
+    it('given unregistered cruxId, should throw "UserDoesNotExist"', async () => {
+      let raisedError
+      try {
+        let resolvedAddressMap: IAddressMapping = await blkstkService.getAddressMapping("example@devcoinswitch.crux")
+      } catch (error) {
+        raisedError = error
+      }
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.UserDoesNotExist)
+    })
+
   })
 
 })
