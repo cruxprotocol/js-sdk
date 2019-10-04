@@ -127,6 +127,11 @@ export class BlockstackService extends nameService.NameService {
         // TODO: validate the correspondance of cruxID with the identityClaim
         const cruxId = CruxId.fromString(fullCruxId);
         this._identityCouple = getIdentityCoupleFromCruxId(cruxId);
+        const nameData: any = await fetchNameDetails(this._identityCouple.bsId.toString(), this._bnsNodes);
+        if ( nameData.address && (nameData.address !== identityKeyPair.address)) {
+            throw ErrorHelper.getPackageError(PackageErrorCode.IdentityMismatch);
+        }
+
         return {
             secrets: {
                 identityKeyPair,

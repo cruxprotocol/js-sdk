@@ -33,4 +33,5 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.SubdomainRegistrationFailed]: "Register call to registrar failed: '{0}'",
     [PackageErrorCode.TokenVerificationFailed]: "Token verification failed for '{0}'",
     [PackageErrorCode.UserDoesNotExist]: "ID does not exist",
+    [PackageErrorCode.IdentityMismatch]: "Identity mismatch",
 };

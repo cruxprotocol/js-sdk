@@ -178,7 +178,7 @@ describe('BlockstackService tests', () => {
       await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
       // fetch registrationStatus
       let resolvedStatus = await bs.getRegistrationStatus(pendingIdentityClaim)
-      expect(httpJSONRequestStub.calledThrice).is.true
+      expect(httpJSONRequestStub.callCount).to.equal(5)
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
       expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
@@ -204,7 +204,7 @@ describe('BlockstackService tests', () => {
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
       // fetch registrationStatus
       let resolvedStatus = await bs.getRegistrationStatus(sampleIdentityClaim);
-      expect(httpJSONRequestStub.calledTwice).is.true
+      expect(httpJSONRequestStub.callCount).to.equal(4)
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
       expect(resolvedStatus).to.eql(registeredStatus);
