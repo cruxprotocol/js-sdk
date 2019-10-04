@@ -79,7 +79,22 @@ describe('BlockstackService tests', () => {
       expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
       expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
     })
-    it('given curxID without identityClaim, should throw "CouldNotFindMnemonicToRestoreIdentity"')
+    it('given cruxID without identityClaim, should throw "CouldNotFindMnemonicToRestoreIdentity"', async () => {
+      let raisedError;
+      try {
+        let restoredIdentityClaim = await blkstkService.restoreIdentity(sampleCruxId, {secrets: {}})
+      } catch (error) {
+        raisedError = error
+      }
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity)
+    })
+    it('given cruxID with identityClaim (only mnemonic), should return the corresponding full identityClaim', async () => {
+      let restoredIdentityClaim = await blkstkService.restoreIdentity(sampleCruxId, {secrets: {mnemonic: sampleIdentityClaim.secrets.mnemonic}})
+      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('mnemonic').to.be.a('string')
+      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('pubKey').to.be.a('string')
+      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
+      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
+    })
     it('given identityClaim with mnemonic with invalid cruxID, should throw "CruxIdLengthValidation" | "CruxIdNamespaceValidation"')
     it('given identityClaim with mnemonic and non-corresponding cruxID, should throw error')
   })
