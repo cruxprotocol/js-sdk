@@ -172,7 +172,7 @@ describe('CruxClient tests', () => {
 				try {
 					await cruxClient.registerCruxID(sampleUser['cruxIDSubdomain'])
 				} catch(e) {
-					expect(e.errorCode).to.equal(2004)
+					expect(e.errorCode).to.equal(2005)
 					raisedException = true
 				} finally {
 					expect(raisedException).to.equal(true)
@@ -283,7 +283,7 @@ describe('CruxClient tests', () => {
 					await cruxClient.putAddressMap(sampleAddressMap)
 				} catch(e) {
 					raisesException = true
-					expect(e.errorCode).to.equal(2004)
+					expect(e.errorCode).to.equal(2005)
 				} finally {
 					expect(raisesException).to.be.true
 					updateProfileStub.restore()
