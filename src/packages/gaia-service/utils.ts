@@ -14,7 +14,7 @@ interface gaiaData {
     ownerAddress: string;
 }
 
-export const getContentFromGaiaHub = async (blockstackId: string, filename: UPLOADABLE_JSON_FILES, type= "application/json"): Promise<any> => {
+export const getContentFromGaiaHub = async (blockstackId: string, filename: UPLOADABLE_JSON_FILES, fetchEntirePayload = false, type = "application/json"): Promise<any> => {
     let fileUrl: string;
     const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackId);
     fileUrl = gaiaDetails.gaiaReadUrl + filename;
@@ -31,8 +31,9 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: UPLO
     if (responseBody.indexOf("BlobNotFound") > 0) {
         throw ErrorHelper.getPackageError(PackageErrorCode.GaiaEmptyResponse);
     } else {
-        const content = responseBody[0].decodedToken.payload.claim;
-        const pubKey = responseBody[0].decodedToken.payload.subject.publicKey;
+        const payload = responseBody[0].decodedToken.payload;
+        const content = payload.claim;
+        const pubKey = payload.subject.publicKey;
         const addressFromPub = blockstack.publicKeyToAddress(pubKey);
 
         // validate the file integrity with the token signature
@@ -45,7 +46,11 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: UPLO
         }
 
         if (addressFromPub === gaiaDetails.ownerAddress) {
-            finalContent = content;
+            if (fetchEntirePayload) {
+                finalContent = payload;
+            } else {
+                finalContent = content;
+            }
         } else {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotValidateZoneFile);
         }
