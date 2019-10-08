@@ -27,4 +27,5 @@ export interface IPaymentData {
     readonly assetID: string;
     readonly amount: number;
     readonly address: IAddress;
+    readonly requestee: IUserID;
 }

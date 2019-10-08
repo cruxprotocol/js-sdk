@@ -1,10 +1,10 @@
-import { CruxUser } from "../../domain/model/cruxuser/aggregate";
-import { CruxUserRepository } from "../../domain/model/cruxuser/repository";
-import { GaiaService } from "../../gaia-service";
-import { IUserID, IPublicKey } from "../../domain/shared-kernel/interfaces";
-import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "../../gaia-service/utils";
-import { UPLOADABLE_JSON_FILES } from "../../name-service/blockstack-service";
-import { UserId, KEY_TYPE, KEY_ENCODING, Address } from "../../domain/shared-kernel/models";
+import { CruxUser } from "../../model/cruxuser/aggregate";
+import { CruxUserRepository } from "../../model/cruxuser/repository";
+import { GaiaService } from "../../../gaia-service";
+import { IUserID, IPublicKey } from "../../shared-kernel/interfaces";
+import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "../../../gaia-service/utils";
+import { UPLOADABLE_JSON_FILES } from "../../../name-service/blockstack-service";
+import { UserId, KEY_TYPE, KEY_ENCODING, Address } from "../../shared-kernel/models";
 
 export class GaiaCruxUserRepository implements CruxUserRepository {
 

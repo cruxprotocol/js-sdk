@@ -1,4 +1,4 @@
-import { IMessage, IPublicKey } from "../../shared-kernel/interfaces";
+import { IMessage, IPublicKey, IPaymentData } from "../../shared-kernel/interfaces";
 import { Address } from "../../shared-kernel/models";
 
 export class CruxUser {
@@ -19,8 +19,9 @@ export class CruxUser {
         return this._publicKey;
     }
 
-    public requestPayment(message: IMessage) {
+    public requestPayment(paymentRequest: IPaymentData) {
         // invoke this if you want to request money from this CruxUser
         // should emit an event that is consumed by message processor
+        // should convert this paymentRequest to generic message type
     }
 }

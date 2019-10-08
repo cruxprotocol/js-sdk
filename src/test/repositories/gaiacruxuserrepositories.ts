@@ -1,7 +1,7 @@
-import { GaiaCruxUserRepository } from "../../packages/infrastructure/repositories/cruxuser";
-import { CruxUserRepository } from "../../packages/domain/model/cruxuser/repository";
-import { IUserID } from "../../packages/domain/shared-kernel/interfaces";
-import { CruxUser } from "../../packages/domain/model/cruxuser/aggregate";
+import { GaiaCruxUserRepository } from "../../packages/payment/infrastructure/repositories/cruxuser";
+import { CruxUserRepository } from "../../packages/payment/model/cruxuser/repository";
+import { IUserID } from "../../packages/payment/shared-kernel/interfaces";
+import { CruxUser } from "../../packages/payment/model/cruxuser/aggregate";
 var assert = require('chai').assert
 
 describe("GaiaCruxUserRepository tests", () => {
