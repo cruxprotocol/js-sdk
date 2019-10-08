@@ -13,7 +13,7 @@ export enum PackageErrorCode {
     GaiaCruxPayUploadFailed = 2002,
     GaiaClientConfigUploadFailed = 2003,
     GaiaAssetListUploadFailed = 2004,
-    GaiaProfileUploadFailed = 2004,
+    GaiaProfileUploadFailed = 2005,
     GaiaGetFileFailed = 2105,
     TokenVerificationFailed = 2106,
     GaiaEmptyResponse = 2107,
