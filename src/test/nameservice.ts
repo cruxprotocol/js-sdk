@@ -286,7 +286,7 @@ describe('BlockstackService tests', () => {
       await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
       // fetch registrationStatus
       let resolvedStatus = await bs.getRegistrationStatus(pendingIdentityClaim)
-      expect(httpJSONRequestStub.calledThrice).is.true
+      expect(httpJSONRequestStub.callCount).to.equal(5)
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
       expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
@@ -320,7 +320,7 @@ describe('BlockstackService tests', () => {
       await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
       // fetch registrationStatus
       let resolvedStatus = await bs.getRegistrationStatus(pendingIdentityClaim)
-      expect(httpJSONRequestStub.calledThrice).is.true
+      expect(httpJSONRequestStub.callCount).to.equal(5)
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
       expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
@@ -376,7 +376,7 @@ describe('BlockstackService tests', () => {
       let bs = new blockstackService.BlockstackService();
       await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
       let resolvedStatus = await bs.getRegistrationStatus(sampleIdentityClaim);
-      expect(httpJSONRequestStub.calledThrice).is.true
+      expect(httpJSONRequestStub.callCount).to.equal(5)
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
       expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
@@ -594,7 +594,7 @@ describe('BlockstackService tests', () => {
     })
     it('given registered cruxId, which has not made addresses public, should throw "GaiaEmptyResponse"', async() => {
       let gaiaRequestOptions = { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json", json: true }
-      let response = "<Error><Code>BlobNotFound</Code><Message>Theeee specified blob does not exist.RequestId:299c4c0b-701e-0066-67df-7d085b000000Time:2019-10-08T13:54:51.8653868Z</Message></Error>"
+      let response = "<Error><Code>BlobNotFound</Code><Message>The specified blob does not exist.RequestId:299c4c0b-701e-0066-67df-7d085b000000Time:2019-10-08T13:54:51.8653868Z</Message></Error>"
       httpJSONRequestStub.withArgs(gaiaRequestOptions).returns(response)
       let raisedError
       try {
