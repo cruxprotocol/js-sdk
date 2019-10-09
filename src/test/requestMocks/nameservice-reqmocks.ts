@@ -142,6 +142,27 @@ let requestResponseArray: { request: object, response: any }[] = [
     }
   },
   {
+    request: {
+      method: 'POST',
+      baseUrl: 'https://registrar.coinswitch.co:3000',
+      url: '/register',
+      headers: { 'Content-Type': 'application/json' },
+      body:
+      {
+        zonefile:
+          '$ORIGIN mark\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',
+        name: 'mark',
+        owner_address: '1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ'
+      },
+      json: true,
+      strictSSL: false
+    },
+    response:
+    {
+      status: false
+    }
+  },
+  {
     request: { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json", json: true },
     response: [{ "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJpc3N1ZXIiOnsicHVibGljS2V5IjoiMDJiYzljM2Y4ZTkyNGI3ZGU5MjEyY2ViZDAxMjlmMWJlMmU2YzNmMjkwNGU5MTFiMzA2OThiZGU3N2JlNDg3OGI4In0sInN1YmplY3QiOnsicHVibGljS2V5IjoiMDJiYzljM2Y4ZTkyNGI3ZGU5MjEyY2ViZDAxMjlmMWJlMmU2YzNmMjkwNGU5MTFiMzA2OThiZGU3N2JlNDg3OGI4In0sImNsYWltIjp7IkJUQyI6eyJhZGRyZXNzSGFzaCI6IjFIdEZrYlhGV0hGVzVLZDRHTGZpUnFrZmZTNUtMWjkxZUoifX19.U9Uxw8fNDZn-6Fe9tkzIeB3Tl97pSe8SJIwTmcJyUlOKFxzq1Sqy2KIwNQAhTrzIh9Ue9AGNWTlSh-w8zUOnWA", "decodedToken": { "header": { "typ": "JWT", "alg": "ES256K" }, "payload": { "issuer": { "publicKey": "02bc9c3f8e924b7de9212cebd0129f1be2e6c3f2904e911b30698bde77be4878b8" }, "subject": { "publicKey": "02bc9c3f8e924b7de9212cebd0129f1be2e6c3f2904e911b30698bde77be4878b8" }, "claim": { "BTC": { "addressHash": "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ" } } }, "signature": "U9Uxw8fNDZn-6Fe9tkzIeB3Tl97pSe8SJIwTmcJyUlOKFxzq1Sqy2KIwNQAhTrzIh9Ue9AGNWTlSh-w8zUOnWA" } }]
   },
@@ -198,6 +219,111 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://registrar.coinswitch.co:3000',
       url: '/status/carol',
+      json: true
+    },
+    response: {
+      status: "Subdomain is queued for update and should be announced within the next few blocks."
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://core.blockstack.org',
+      url: '/v1/names/carol1.devcoinswitch.id',
+      json: true
+    },
+    response: {
+      more: 'failed to find parent domain\'s resolver',
+      status: 'available'
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://bns.cruxpay.com',
+      url: '/v1/names/carol1.devcoinswitch.id',
+      json: true
+    },
+    response: {
+      status: 'available',
+      more: 'failed to find parent domain\'s resolver'
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://registrar.coinswitch.co:3000',
+      url: '/status/carol1',
+      json: true
+    },
+    response: {
+      status: "error subdomain was registered in transaction"
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://core.blockstack.org',
+      url: '/v1/names/carol2.devcoinswitch.id',
+      json: true
+    },
+    response: {
+      more: 'failed to find parent domain\'s resolver',
+      status: 'available'
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://bns.cruxpay.com',
+      url: '/v1/names/carol2.devcoinswitch.id',
+      json: true
+    },
+    response: {
+      status: 'available',
+      more: 'failed to find parent domain\'s resolver'
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://registrar.coinswitch.co:3000',
+      url: '/status/carol2',
+      json: true
+    },
+    response: {
+      status: "Subdomain not registered with this registrar"
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://core.blockstack.org',
+      url: '/v1/names/carol3.devcoinswitch.id',
+      json: true
+    },
+    response: {
+      more: 'failed to find parent domain\'s resolver',
+      status: 'available'
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://bns.cruxpay.com',
+      url: '/v1/names/carol3.devcoinswitch.id',
+      json: true
+    },
+    response: {
+      status: 'available',
+      more: 'failed to find parent domain\'s resolver'
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://registrar.coinswitch.co:3000',
+      url: '/status/carol3',
       json: true
     },
     response: {
