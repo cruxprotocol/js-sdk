@@ -21,6 +21,7 @@ import {
     identityUtils,
     nameService,
     storage,
+    utils,
 } from "./packages";
 
 // TODO: Implement classes enforcing the interfaces
@@ -166,6 +167,7 @@ class CruxPayPeer extends EventEmitter {
         log.info(`CruxPayPeer Initialised`);
     }
 
+    @utils.groupLogs("Initialising CruxPayPeer")
     public async init() {
         let configService;
 
@@ -229,6 +231,7 @@ class CruxPayPeer extends EventEmitter {
         }
     }
 
+    @utils.groupLogs()
     public isCruxIDAvailable = (cruxIDSubdomain: string): Promise<boolean> => {
         try {
             identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
@@ -238,6 +241,7 @@ class CruxPayPeer extends EventEmitter {
         }
     }
 
+    @utils.groupLogs()
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
         try {
             let correspondingAssetId: string = "";
@@ -303,6 +307,7 @@ class CruxPayPeer extends EventEmitter {
 // Wallets specific SDK code
 export class CruxClient extends CruxPayPeer {
     // NameService specific methods
+    @utils.groupLogs()
     public getCruxIDState = async (): Promise<ICruxIDState> => {
         try {
             const fullCruxID = this.hasPayIDClaim() ? this.getPayIDClaim().virtualAddress : undefined;
@@ -316,6 +321,7 @@ export class CruxClient extends CruxPayPeer {
         }
     }
 
+    @utils.groupLogs()
     public registerCruxID = async (cruxIDSubdomain: string, newAddressMap?: IAddressMapping): Promise<void> => {
         // TODO: add isCruxIDAvailable check before
         try {
@@ -347,6 +353,7 @@ export class CruxClient extends CruxPayPeer {
         }
     }
 
+    @utils.groupLogs()
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<boolean> => {
         try {
             const clientMapping: any = this._clientMapping;
@@ -364,6 +371,7 @@ export class CruxClient extends CruxPayPeer {
         }
     }
 
+    @utils.groupLogs()
     public getAddressMap = async (): Promise<IAddressMapping> => {
         try {
             const clientMapping: any = this._clientMapping;
@@ -389,6 +397,7 @@ export class CruxClient extends CruxPayPeer {
         }
     }
 
+    @utils.groupLogs()
     private getIDStatus = async (): Promise<nameService.CruxIDRegistrationStatus> => {
         await (this._payIDClaim as PayIDClaim).decrypt();
         const result = await (this._nameService as nameService.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});

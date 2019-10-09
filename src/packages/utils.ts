@@ -18,7 +18,43 @@ const sanitizePrivKey = (privKey: string): string => {
     return privKey;
 };
 
+// Decorator to group the log statements
+const groupLogs = (groupLabel?: string) => {
+    return (target: any, prop: any, descriptor?: { value?: any; }): any => {
+        let fn: any;
+        let patchedFn: any;
+
+        if (descriptor) {
+            fn = descriptor.value;
+        }
+
+        return {
+            configurable: true,
+            enumerable: true,
+            get() {
+                if (!patchedFn) {
+                    patchedFn = async (...values: any[]) => {
+                        console.group(groupLabel || prop);
+                        try {
+                            const result = await fn.call(this, ...values);
+                            return result;
+                        } finally {
+                            console.groupEnd();
+                        }
+                    };
+                }
+                return patchedFn;
+            },
+            set(newFn: any) {
+                patchedFn = undefined;
+                fn = newFn;
+            },
+        };
+    };
+};
+
 export {
     httpJSONRequest,
     sanitizePrivKey,
+    groupLogs,
 };
