@@ -1,5 +1,5 @@
-import { CruxUser } from "../../model/cruxuser/aggregate";
-import { CruxUserRepository } from "../../model/cruxuser/repository";
+import { CruxUser } from "../../domain/cruxuser/aggregate";
+import { CruxUserRepository } from "../../domain/cruxuser/repository";
 import { GaiaService } from "../../../gaia-service";
 import { IUserID, IPublicKey } from "../../shared-kernel/interfaces";
 import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "../../../gaia-service/utils";

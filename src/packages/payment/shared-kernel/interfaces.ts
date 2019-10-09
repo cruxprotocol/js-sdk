@@ -7,9 +7,9 @@ export interface IAddress {
 
 export interface IMessage {
     readonly type: string;
-    readonly from: string;
-    readonly to: string;
-    readonly data: JSON;
+    readonly from: IUserID;
+    readonly to: IUserID;
+    readonly data: IMessageData;
 }
 
 export interface IUserID {
@@ -23,9 +23,12 @@ export interface IPublicKey {
     readonly encoding: string;
 }
 
-export interface IPaymentData {
+export interface IMessageData {
+    readonly requestee: IUserID;
+}
+
+export interface IPaymentData extends IMessageData {
     readonly assetID: string;
     readonly amount: number;
     readonly address: IAddress;
-    readonly requestee: IUserID;
 }

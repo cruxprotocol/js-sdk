@@ -1,7 +1,7 @@
 import { GaiaCruxUserRepository } from "../../packages/payment/infrastructure/repositories/cruxuser";
-import { CruxUserRepository } from "../../packages/payment/model/cruxuser/repository";
+import { CruxUserRepository } from "../../packages/payment/domain/cruxuser/repository";
 import { IUserID } from "../../packages/payment/shared-kernel/interfaces";
-import { CruxUser } from "../../packages/payment/model/cruxuser/aggregate";
+import { CruxUser } from "../../packages/payment/domain/cruxuser/aggregate";
 var assert = require('chai').assert
 
 describe("GaiaCruxUserRepository tests", () => {

@@ -1,4 +1,4 @@
-import { IAddress, IMessage, IPublicKey, IUserID } from "./interfaces";
+import { IAddress, IMessage, IPublicKey, IUserID, IMessageData } from "./interfaces";
 import { ValueObject } from "./value-object";
 import { IdTranslator, BlockstackId, CruxId } from "../../identity-utils";
 
@@ -14,7 +14,6 @@ export enum KEY_ENCODING {
 
 export enum MESSAGE_TYPE {
     REQUEST_PAYMENT =  "request_payment",
-    MAKE_PAYMENT = "make_payment",
 }
 
 export class Address extends ValueObject<IAddress> {
@@ -42,9 +41,9 @@ export class Address extends ValueObject<IAddress> {
 
 export class Message extends ValueObject<IMessage> {
     public readonly type: string;
-    public readonly from: string;
-    public readonly to: string;
-    public readonly data: JSON;
+    public readonly from: IUserID;
+    public readonly to: IUserID;
+    public readonly data: IMessageData;
 
     constructor(props: IMessage) {
         super(props);
