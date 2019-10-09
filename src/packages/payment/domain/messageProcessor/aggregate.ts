@@ -1,6 +1,7 @@
 import { IMessage } from "../../shared-kernel/interfaces";
 import { MESSAGE_TYPE } from "../../shared-kernel/models";
 import { CruxUserEventHandler } from "./events";
+import { CommunicationBase, Encryption } from "./communication";
 
 class MessageQueue {
     // not accessible from outside, the messages that were sent by this guy for which acknowledgement did not arrived
@@ -10,6 +11,8 @@ class MessageQueue {
 export class MessageProcessor {
 
     private eventer: CruxUserEventHandler;
+    private communication: CommunicationBase;
+    private encryption: Encryption | undefined;
 
     constructor(configuration: any) {
         let eventsToListen = [MESSAGE_TYPE.REQUEST_PAYMENT];
@@ -18,13 +21,15 @@ export class MessageProcessor {
         }
         this.eventer = new CruxUserEventHandler();
         this.eventer.configure(eventsToListen, this.sendMessage);
+        this.communication = configuration.communication;
+        this.encryption = configuration.Encryption || undefined;
     }
 
     public sendMessage = async (message: IMessage): Promise<boolean> => {
-        
+        // encrypt the message 
     }
 
     public onAcknowledgementRecieved() {
-        
+
     }
 }
