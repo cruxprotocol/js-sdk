@@ -17,7 +17,7 @@ interface gaiaData {
 export const getContentFromGaiaHub = async (blockstackId: string, filename: UPLOADABLE_JSON_FILES, type= "application/json"): Promise<any> => {
     let fileUrl: string;
     const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackId);
-    fileUrl = gaiaDetails.gaiaReadUrl + filename;
+    fileUrl = gaiaDetails.gaiaReadUrl + gaiaDetails.ownerAddress + "/" + filename;
     const options = {
         json: true,
         method: "GET",
@@ -69,7 +69,7 @@ export const getGaiaDataFromBlockstackID = async (blockstackId: string): Promise
     let gaiaRead: string;
     let gaiaWrite: string | undefined;
     if (nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json"))) {
-        gaiaRead = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json", "s"))[2] + "/";
+        gaiaRead = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/(.+)\/profile.json", "s"))[2] + "/";
     } else {
         gaiaWrite = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1);
         gaiaRead = await getGaiaReadUrl(gaiaWrite as string);
