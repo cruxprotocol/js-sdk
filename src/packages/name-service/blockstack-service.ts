@@ -1,4 +1,6 @@
 import {Decoder, object, optional, string} from "@mojotech/json-type-validation";
+import * as bip39 from "bip39";
+import {bip32} from "bitcoinjs-lib";
 import * as blockstack from "blockstack";
 import { getLogger, IAddress, IAddressMapping } from "../..";
 import config from "../../config";
@@ -254,9 +256,7 @@ export class BlockstackService extends nameService.NameService {
     }
 
     private _generateIdentityKeyPair = async (mnemonic: string): Promise<IBitcoinKeyPair> => {
-        // TODO: need to use passcode encryption
-        const encryptedMnemonic = await blockstack.BlockstackWallet.encryptMnemonic(mnemonic, "temp");
-        const wallet = await blockstack.BlockstackWallet.fromEncryptedMnemonic(encryptedMnemonic, "temp");
+        const wallet = new blockstack.BlockstackWallet(bip32.fromSeed(bip39.mnemonicToSeedSync(mnemonic)));
         // Using the first identity key pair for now
         // TODO: need to validate the name registration on the address if already available
         const { address, key, keyID} = wallet.getIdentityKeyPair(0);
