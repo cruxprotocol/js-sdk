@@ -29,11 +29,10 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: name
     try {
         responseBody = await httpJSONRequest(options);
         log.debug(`Response from ${filename}`, responseBody);
-    } catch(error) {
+    } catch (error) {
         const packageErrorCode = nameservice.BlockstackService.getUploadPackageErrorCodeForFilename(filename);
         throw ErrorHelper.getPackageError(packageErrorCode, filename, error);
     }
-    
     if (responseBody.indexOf("BlobNotFound") > 0 || responseBody.indexOf("NoSuchKey") > 0) {
         throw ErrorHelper.getPackageError(PackageErrorCode.GaiaEmptyResponse);
     } else {
