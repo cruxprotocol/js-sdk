@@ -310,7 +310,7 @@ export class CruxClient extends CruxPayPeer {
     @utils.groupLogs()
     public getCruxIDState = async (): Promise<ICruxIDState> => {
         try {
-            const fullCruxID = this.hasPayIDClaim() ? this.getPayIDClaim().virtualAddress : undefined;
+            const fullCruxID = this.hasPayIDClaim() ? (this._payIDClaim as PayIDClaim).virtualAddress : undefined;
             const status = await this.getIDStatus();
             return {
                 cruxID: fullCruxID,
@@ -397,7 +397,6 @@ export class CruxClient extends CruxPayPeer {
         }
     }
 
-    @utils.groupLogs()
     private getIDStatus = async (): Promise<nameService.CruxIDRegistrationStatus> => {
         await (this._payIDClaim as PayIDClaim).decrypt();
         const result = await (this._nameService as nameService.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
