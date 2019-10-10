@@ -7,7 +7,7 @@ import * as utils from "../packages/utils";
 import { BlockstackConfigurationService } from '../packages/configuration-service';
 import requestFixtures from './requestMocks/config-reqmocks';
 import { BlockstackService } from '../packages/name-service/blockstack-service';
-import { async } from 'q';
+import { errors } from '..';
 var assert = require('chai').assert
 
 describe("Configuration Tests", () => {
@@ -37,14 +37,18 @@ describe("Configuration Tests", () => {
             })
 
             it("invalid name asset list", async () => {
-              let stubbedDomainName = sinon.stub(nsConfigService, 'settingsDomain').value('mocked_domain')
+              let nsConfigServiceTemp = new BlockstackConfigurationService('cruxdev');
+              let stubbedDomainName = sinon.stub(nsConfigServiceTemp, 'settingsDomain').value('mocked_domain')
+              let raisedError
               try{
-                await nsConfigService.getGlobalAssetList()
+                await nsConfigServiceTemp.getGlobalAssetList()
               }catch(e){
-                expect(e.errorCode).to.equal(5005);
-              }finally{
+                raisedError = e
+              }
+              finally {
                 stubbedDomainName.restore()
               }
+              expect(raisedError.errorCode).to.equal(errors.PackageErrorCode.CouldNotFindAssetListInClientConfig);
             })
           })
 
@@ -65,6 +69,16 @@ describe("Configuration Tests", () => {
               let nsClient = await nsConfigService.getBlockstackServiceForConfig()
               assert.instanceOf(nsClient, BlockstackService)
               expect(nsClient._subdomainRegistrar).to.equal('mocked_subdomain_registrar')
+              getConfigStub.restore()
+            })
+            it("custom nameservice client from user zonefile gaiaHub override", async () => {
+              let mockedNsConfigService = new BlockstackConfigurationService('cruxdev', 'umang@cruxdev.crux');
+              let mockedClientConfig = {nameserviceConfiguration: {subdomainRegistrar: "mocked_subdomain_registrar"}}
+              let getConfigStub = sinon.stub(mockedNsConfigService, 'getClientConfig').resolves(mockedClientConfig)
+              await mockedNsConfigService.init()
+              let nsClient = await mockedNsConfigService.getBlockstackServiceForConfig()
+              assert.instanceOf(nsClient, BlockstackService)
+              expect(nsClient._gaiaService.gaiaWriteUrl).to.equal('https://hub.cruxpay.com')
               getConfigStub.restore()
             })
           })
