@@ -38,7 +38,7 @@ describe('BlockstackService tests', () => {
   let sampleIdentityClaimWithoutSecret = {
     secrets: undefined
   }
-  let sampleIdentityClaimWithoumnemonic = {
+  let sampleIdentityClaimWithoutmnemonic = {
     secrets: {
       mnemonic: undefined,
       identityKeyPair: {
@@ -118,22 +118,10 @@ describe('BlockstackService tests', () => {
     })
     it('given identityClaim with mnemonic with invalid cruxID, should throw "CruxIdLengthValidation" | "CruxIdNamespaceValidation"')
     it('given identityClaim with mnemonic and non-corresponding cruxID, should throw error')
-    
-    it('given identityClaim without secret', async() => {
-      let raisedError
-      try {
-        let restoredIdentityClaimWithoutSecret = await blkstkService.restoreIdentity(sampleCruxId, sampleIdentityClaimWithoutSecret)
-      }
-      catch (error) {
-        raisedError = error
-      }
-      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity)
-    })
-
-    it('given identityClaim without mnemonic', async() => {
+    it('given identityClaim without mnemonic, should throw "CouldNotFindMnemonicToRestoreIdentity"', async() => {
       let raisedError
         try {
-          let restoredIdentityClaimWithoutMnemonic = await blkstkService.restoreIdentity(sampleCruxId, sampleIdentityClaimWithoumnemonic)
+          let restoredIdentityClaimWithoutMnemonic = await blkstkService.restoreIdentity(sampleCruxId, sampleIdentityClaimWithoutmnemonic)
         }
         catch (error) {
           raisedError = error
@@ -379,7 +367,7 @@ describe('BlockstackService tests', () => {
       expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
       expect(resolvedStatus).to.eql(registrarPendingStatus);
     })
-    it(`(carol4@devcoinswitch.crux), should return PENDING`, async () => {
+    it(`address for bns node and identityclaim mismatch(carol4@devcoinswitch.crux), should return PENDING`, async () => {
       let CruxId = "carol4@devcoinswitch.crux";
       let IdentityClaim1 = { "secrets": { "identityKeyPair": { "address": "1FnntbZKRLB7rZFvng9PDgvMMEXMek1jrv", "privKey": "d4f1d65bbe0a89a91506828f4e62639b99558aeffda06b6f66961dccec5e301b01", "pubKey": "03d2b5b73bd06b624ccd24d05d0ffc259e7b9180d85b29f61e16404866fe344e60" }, "mnemonic": "minute furnace room favorite hunt auto scrap angry tribe wait foam drive" } }
       let IdentityClaim2 = { "secrets": { "identityKeyPair": { "address": "1FnntbZKRLB7rZFvng9PDgvMMEXMek1jrv_something", "privKey": "d4f1d65bbe0a89a91506828f4e62639b99558aeffda06b6f66961dccec5e301b01", "pubKey": "03d2b5b73bd06b624ccd24d05d0ffc259e7b9180d85b29f61e16404866fe344e60" }, "mnemonic": "minute furnace room favorite hunt auto scrap angry tribe wait foam drive" } }
@@ -501,7 +489,7 @@ describe('BlockstackService tests', () => {
     it('given identityClaim without mnemonic should throw "CouldNotFindMnemonicToRegisterName"', async() => {
       let raisedError
       try {
-        await blkstkService.registerName(sampleIdentityClaimWithoumnemonic, sampleSubdomain)
+        await blkstkService.registerName(sampleIdentityClaimWithoutmnemonic, sampleSubdomain)
       } catch (error) {
         raisedError = error
       }
@@ -563,7 +551,7 @@ describe('BlockstackService tests', () => {
       }
       expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping)
     })
-    it('if uploadContentToGaiaHub breaks, should raise error', async () => {
+    it('if uploadContentToGaiaHub breaks, should raise "GaiaCruxPayUploadFailed"', async () => {
       uploadToGaiaHubStub.onCall(0).throws('unhandled in mocks')
       let bs = new blockstackService.BlockstackService()
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)

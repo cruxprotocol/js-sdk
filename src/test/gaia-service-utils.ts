@@ -17,7 +17,7 @@ describe('getContentFromGaiaHub tests', () => {
 
     beforeEach(() => {
         httpJSONRequestStub = sinon.stub(utils, 'httpJSONRequest').throws('unhandled in mocks')
-        verifyProfileTokenStub = sinon.stub(blockstack, 'verifyProfileToken').resolves("mocked varification")
+        verifyProfileTokenStub = sinon.stub(blockstack, 'verifyProfileToken').resolves("mocked verification")
         publicKeyToAddressStub = sinon.stub(blockstack, 'publicKeyToAddress').resolves("mocked public address")
 
         requestFixtures.forEach(requestObj => {
@@ -30,7 +30,7 @@ describe('getContentFromGaiaHub tests', () => {
         verifyProfileTokenStub.restore()
         publicKeyToAddressStub.restore()
     });
-    it('getContentFromGaiaHub fails to get file content throws filename specific error', async () => {
+    it('if it fails to get file content throws filename specific error', async () => {
         let request = {
             method: 'GET',
             url: 'https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/client-config.json',
