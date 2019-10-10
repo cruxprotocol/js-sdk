@@ -67,6 +67,16 @@ describe("Configuration Tests", () => {
               expect(nsClient._subdomainRegistrar).to.equal('mocked_subdomain_registrar')
               getConfigStub.restore()
             })
+            it("custom nameservice client from user zonefile gaiaHub override", async () => {
+              let mockedNsConfigService = new BlockstackConfigurationService('cruxdev', 'umang@cruxdev.crux');
+              let mockedClientConfig = {nameserviceConfiguration: {subdomainRegistrar: "mocked_subdomain_registrar"}}
+              let getConfigStub = sinon.stub(mockedNsConfigService, 'getClientConfig').resolves(mockedClientConfig)
+              await mockedNsConfigService.init()
+              let nsClient = await mockedNsConfigService.getBlockstackServiceForConfig()
+              assert.instanceOf(nsClient, BlockstackService)
+              expect(nsClient._gaiaService.gaiaWriteUrl).to.equal('https://hub.cruxpay.com')
+              getConfigStub.restore()
+            })
           })
 
 

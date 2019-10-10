@@ -71,7 +71,7 @@ export const getGaiaDataFromBlockstackID = async (blockstackId: string): Promise
     if (nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json"))) {
         gaiaRead = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json", "s"))[2] + "/";
     } else {
-        gaiaWrite = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1);
+        gaiaWrite = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1)[0];
         gaiaRead = await getGaiaReadUrl(gaiaWrite as string);
     }
     const gaiaDetails: gaiaData = {
