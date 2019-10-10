@@ -8,6 +8,7 @@ import { BlockstackConfigurationService } from '../packages/configuration-servic
 import requestFixtures from './requestMocks/config-reqmocks';
 import { BlockstackService } from '../packages/name-service/blockstack-service';
 import { async } from 'q';
+import { errors } from '..';
 var assert = require('chai').assert
 
 describe("Configuration Tests", () => {
@@ -37,14 +38,15 @@ describe("Configuration Tests", () => {
             })
 
             it("invalid name asset list", async () => {
-              let stubbedDomainName = sinon.stub(nsConfigService, 'settingsDomain').value('mocked_domain')
+              // let stubbedDomainName = sinon.stub(nsConfigService, 'settingsDomain').value('mocked_domain')
+              let raisedError
+              let nsConfigService = new BlockstackConfigurationService('cruxdev')
               try{
                 await nsConfigService.getGlobalAssetList()
               }catch(e){
-                expect(e.errorCode).to.equal(5005);
-              }finally{
-                stubbedDomainName.restore()
+                raisedError = e
               }
+              expect(raisedError.errorCode).to.equal(errors.PackageErrorCode.CouldNotFindAssetListInClientConfig);
             })
           })
 

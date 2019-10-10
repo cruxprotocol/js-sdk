@@ -45,7 +45,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         if (clientConfig && clientConfig.assetList) {
             return clientConfig.assetList;
         } else {
-            { throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindAssetListInClientConfig); }
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindAssetListInClientConfig);
         }
     }
 

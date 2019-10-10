@@ -329,6 +329,55 @@ let requestResponseArray: { request: object, response: any }[] = [
     response: {
       status: "Your subdomain was registered in transaction"
     }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://core.blockstack.org',
+      url: '/v1/names/carol4.devcoinswitch.id',
+      json: true
+    },
+    response: {
+      address: '1FnntbZKRLB7rZFvng9PDgvMMEXMek1jrv',
+      blockchain: 'bitcoin',
+      did: 'did:stack:v0:SeBFnSJQEeShbdQWomenyjuEKDJkC2mEuh-0',
+      last_txid:
+        'ee3bb9fd8cf3d804128447241d5aef3ac9e329f6af4ae1dd4346141a8e144e8f',
+      status: 'registered_subdomain',
+      zonefile:
+        '$ORIGIN cs1\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.cruxpay.com/1FnntbZKRLB7rZFvng9PDgvMMEXMek1jrv/profile.json"\n',
+      zonefile_hash: '43c015df4f9566d8d7e69be351530d63c771d3b4'
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://bns.cruxpay.com',
+      url: '/v1/names/carol4.devcoinswitch.id',
+      json: true
+    },
+    response: {
+      address: '1FnntbZKRLB7rZFvng9PDgvMMEXMek1jrv',
+      blockchain: 'bitcoin',
+      did: 'did:stack:v0:SeBFnSJQEeShbdQWomenyjuEKDJkC2mEuh-0',
+      last_txid:
+        'ee3bb9fd8cf3d804128447241d5aef3ac9e329f6af4ae1dd4346141a8e144e8f',
+      status: 'registered_subdomain',
+      zonefile:
+        '$ORIGIN cs1\n$TTL 3600\n_https._tcp URI 10 1 "https://gaia.cruxpay.com/1FnntbZKRLB7rZFvng9PDgvMMEXMek1jrv/profile.json"\n',
+      zonefile_hash: '43c015df4f9566d8d7e69be351530d63c771d3b4'
+    }
+  },
+  {
+    request: {
+      method: 'GET',
+      baseUrl: 'https://registrar.coinswitch.co:3000',
+      url: '/status/carol4',
+      json: true
+    },
+    response: {
+      status: "Your subdomain was registered in transaction"
+    }
   }
 ]
 
