@@ -23,7 +23,7 @@ const sanitizePrivKey = (privKey: string): string => {
     return privKey;
 };
 
-const cachedFunctionCall = async (cacheKey: string, ttl: number = 3600, fn: (...args: any[]) => any, paramArray: any[], skipConditional?: (returnValue: any) => Promise<boolean>): Promise<any> => {
+const cachedFunctionCall = async (cacheKey: string, ttl: number = 300, fn: (...args: any[]) => any, paramArray: any[], skipConditional?: (returnValue: any) => Promise<boolean>): Promise<any> => {
     const storage = new LocalStorage();
     const storageCacheKey = `crux_cache_${cacheKey}`;
     const cachedValue = storage.getItem(storageCacheKey);
