@@ -1,12 +1,12 @@
 import { GaiaService } from "../../../gaia-service";
-import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "../../../gaia-service/utils";
+import { getContentFromGaiaHub } from "../../../gaia-service/utils";
 import { UPLOADABLE_JSON_FILES } from "../../../name-service/blockstack-service";
-import { CruxUser } from "../../domain/cruxuser/aggregate";
-import { CruxUserRepository } from "../../domain/cruxuser/repository";
+import { CruxUserProfile } from "../../domain/cruxuser/cruxuserprofile";
+import { CruxUserProfileRepository } from "../../domain/cruxuser/repository";
 import { IPublicKey, IUserID } from "../../shared-kernel/interfaces";
 import { Address, KEY_ENCODING, KEY_TYPE, UserId } from "../../shared-kernel/models";
 
-export class GaiaCruxUserRepository implements CruxUserRepository {
+export class GaiaCruxUserProfileRepository implements CruxUserProfileRepository {
 
     private _gaiaService: GaiaService | undefined;
 
@@ -14,7 +14,7 @@ export class GaiaCruxUserRepository implements CruxUserRepository {
         this._gaiaService = new GaiaService(gaiaWriterUrl);
     }
 
-    public getCruxUser = async (userId: IUserID): Promise<CruxUser> => {
+    public getCruxUserProfile = async (userId: IUserID): Promise<CruxUserProfile> => {
         const userIdentifier = new UserId(userId);
         const bsIDString = userIdentifier.getBlockstackID().toString();
         const userProfile = await getContentFromGaiaHub(bsIDString, UPLOADABLE_JSON_FILES.PROFILE, true);
@@ -29,11 +29,6 @@ export class GaiaCruxUserRepository implements CruxUserRepository {
             }
 
         }
-
-        return new CruxUser(userId, publicKey, addresses);
-    }
-
-    public updateCruxUser(userId: IUserID): Promise<CruxUser> {
-        throw new Error("Method not implemented.");
+        return new CruxUserProfile(userId, publicKey, addresses);
     }
 }

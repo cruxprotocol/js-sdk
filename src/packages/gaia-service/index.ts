@@ -16,6 +16,7 @@ export class GaiaService {
     }
 
     public uploadContentToGaiaHub = async (filename: UPLOADABLE_JSON_FILES, privKey: string, content: any, type= "application/json"): Promise<string> => {
+        console.log("uploadContentToGaiaHub called");
         const sanitizedPrivKey = sanitizePrivKey(privKey);
         const hubURL = this.gaiaWriteUrl;
         const hubConfig = await blockstack.connectToGaiaHub(hubURL, sanitizedPrivKey);

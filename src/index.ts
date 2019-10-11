@@ -3,6 +3,7 @@ import Logger from "js-logger";
 import path from "path";
 import "regenerator-runtime/runtime";
 import config from "./config";
+import { CruxUser } from "./packages/payment/domain/cruxuser/aggregate";
 
 // Setup logging configuration
 Logger.useDefaults();
@@ -22,6 +23,8 @@ import {
     nameService,
     storage,
 } from "./packages";
+import { GaiaCruxUserRepository } from "./packages/payment/infrastructure/repositories/cruxuser";
+import { CruxUserRepository } from "./packages/payment/domain/cruxuser/repository";
 
 // TODO: Implement classes enforcing the interfaces
 export interface IAddress {
@@ -146,6 +149,8 @@ class CruxPayPeer extends EventEmitter {
     protected _assetList: object | undefined;
     protected _clientMapping: object | undefined;
     protected _payIDClaim: PayIDClaim | undefined;
+    protected _cruxUser: CruxUser | undefined;
+    protected _gaiaUserRepo: CruxUserRepository;
 
     constructor(_options: ICruxPayPeerOptions) {
         super();
@@ -161,6 +166,7 @@ class CruxPayPeer extends EventEmitter {
         this._encryption = this._options.encryption || encryption.Encryption;
         this._nameService = this._options.nameService;
         this.walletClientName = this._options.walletClientName;
+        this._gaiaUserRepo = new GaiaCruxUserRepository("https://hub.cruxpay.com")
 
         log.info(`Config mode:`, config.CONFIG_MODE);
         log.info(`CruxPayPeer Initialised`);
@@ -192,6 +198,12 @@ class CruxPayPeer extends EventEmitter {
             const payIDClaim = {identitySecrets: identityClaim.secrets};
             this._setPayIDClaim(new PayIDClaim(payIDClaim as ICruxPayClaim, { getEncryptionKey: this._getEncryptionKey }));
             log.debug(`Allocated temporary identitySecrets and payIDClaim`);
+        }
+
+        if (this._payIDClaim && this._payIDClaim.virtualAddress) {
+            const splitted = this._payIDClaim.virtualAddress.split(".")[0].split("@");
+            const userConfig = {domain: splitted[1], subdomain: splitted[0]};
+            this._cruxUser = await this._gaiaUserRepo.getCruxUser(userConfig);
         }
         this._clientMapping = await configService.getClientAssetMapping();
         this._assetList = await configService.getGlobalAssetList();
@@ -389,12 +401,19 @@ export class CruxClient extends CruxPayPeer {
         }
     }
 
+    public sendPaymentRequest = (requestee, currency, amount, address): boolean => {
+        const currentUser: CruxUser = this._cruxUser;
+        currentUser.requestPayment(requstee.requestPayment)
+        return true;
+    }
+
     private getIDStatus = async (): Promise<nameService.CruxIDRegistrationStatus> => {
         await (this._payIDClaim as PayIDClaim).decrypt();
         const result = await (this._nameService as nameService.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
         await (this._payIDClaim as PayIDClaim).encrypt();
         return result;
     }
+
 
 }
 

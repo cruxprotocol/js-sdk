@@ -62,21 +62,21 @@ export class Message extends ValueObject<IMessage> {
 }
 
 export class UserId extends ValueObject<IUserID> {
-    public readonly domain: string;
-    public readonly subdomain: string;
-    public readonly blockstackId: BlockstackId;
+
+    public readonly cruxIdentifier: string;
     public readonly cruxId: CruxId;
+    public readonly blockstackId: BlockstackId;
 
     constructor(props: IUserID) {
         super(props);
-        this.domain = props.domain;
-        this.subdomain = props.subdomain;
-        this.blockstackId = new BlockstackId({domain: this.domain, subdomain: this.subdomain});
-        this.cruxId = new CruxId({domain: this.domain,subdomain: this.subdomain });
+        this.cruxIdentifier = props.cruxIdentifier;
+        const splitted = props.cruxIdentifier.split(".")[0].split("@");
+        this.cruxId = new CruxId({domain: splitted[1], subdomain: splitted[0]});
+        this.blockstackId = new BlockstackId({domain: splitted[1], subdomain: splitted[0]});
     }
 
     public validate() {
-        if (this.userId) {
+        if (this.cruxIdentifier && this.cruxId && this.blockstackId) {
             return true;
         }
         return false;

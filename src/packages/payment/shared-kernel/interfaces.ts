@@ -10,11 +10,11 @@ export interface IMessage {
     readonly from: IUserID;
     readonly to: IUserID;
     readonly data: IMessageData;
+    readonly signature: string | undefined;
 }
 
 export interface IUserID {
-    readonly subdomain: string;
-    readonly domain: string;
+    readonly cruxIdentifier: string;
 }
 
 export interface IPublicKey {
