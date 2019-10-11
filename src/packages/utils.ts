@@ -38,7 +38,7 @@ const cachedFunctionCall = async (cacheKey: string, ttl: number = 3600, fn: (...
     }
     const newValue = await fn.apply(fn, paramArray);
     const skipCache = skipConditional && await skipConditional(newValue) || false;
-    if (!skipCache) {
+    if (newValue && !skipCache) {
         const stringValue = typeof newValue === "string" ? newValue : JSON.stringify(newValue);
         storage.setItem(storageCacheKey, stringValue);
         storage.setItem(storageCacheKey + ":exp", ((ttl * 1000) + Date.now()).toString());
