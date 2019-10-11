@@ -78,6 +78,7 @@ describe('BlockstackService tests', () => {
     httpJSONRequestStub.restore()
     connectToGaiaHubStub.restore()
     uploadToGaiaHubStub.restore()
+    localStorage.clear()
   })
 
   // Test cases
@@ -331,7 +332,7 @@ describe('BlockstackService tests', () => {
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
       // fetch registrationStatus
       let resolvedStatus = await bs.getRegistrationStatus(sampleIdentityClaim);
-      expect(httpJSONRequestStub.callCount).to.equal(4)
+      expect(httpJSONRequestStub.callCount).to.equal(2)
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
       expect(resolvedStatus).to.eql(registeredStatus);
@@ -386,7 +387,7 @@ describe('BlockstackService tests', () => {
       let bs = new blockstackService.BlockstackService();
       await bs.restoreIdentity(CruxId, IdentityClaim1)
       let resolvedStatus = await bs.getRegistrationStatus(IdentityClaim2);
-      expect(httpJSONRequestStub.callCount).to.equal(4)
+      expect(httpJSONRequestStub.callCount).to.equal(2)
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
       expect(resolvedStatus).to.eql(rejectStatus);
