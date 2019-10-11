@@ -79,7 +79,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         if (this.clientConfig.nameserviceConfiguration) {
             const nsConfiguration = {
                 bnsNodes: this.clientConfig.nameserviceConfiguration.bnsNodes || config.BLOCKSTACK.BNS_NODES,
-                domain: this.clientConfig.nameserviceConfiguration.domain || config.BLOCKSTACK.IDENTITY_DOMAIN,
+                domain: this.clientName || config.BLOCKSTACK.IDENTITY_DOMAIN,
                 gaiaHub: gaiaHub || this.clientConfig.nameserviceConfiguration.gaiaHub || config.BLOCKSTACK.GAIA_HUB,
                 subdomainRegistrar: this.clientConfig.nameserviceConfiguration.subdomainRegistrar || config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
             };
