@@ -25,7 +25,7 @@ const putClientCurrencyMapping = async () => {
         subdomainRegistrar: 'https://registrar.coinswitch.co:4000'
     }
     let clientConfig = {"assetMapping": content, "nameserviceConfiguration": nameserviceConfig}
-    let response = await window.blockstackservice.uploadContentToGaiaHub(nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, '', clientConfig);
+    let response = await window.blockstackservice.uploadContentToGaiaHub(nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, '', clientConfig, 'scatter_dev');
     console.log(`content upload response is:- ${response}`)
 }
 
