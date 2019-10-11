@@ -147,7 +147,7 @@ let requestResponseArray: { request: object, response: object }[] = [
   {
     request: {
       method: 'GET',
-      url: 'https://gaia.blockstack.org/hub/14WfvwxX5G9Nb1C4pq2RHn2bUophFLzrgf/client-config.json',
+      url: 'https://gaia.blockstack.org/hub/14WfvwxX5G9Nb1C4pq2RHn2bUophFLzrgf/scatter_dev_client-config.json',
       json: true
     },
     response: [

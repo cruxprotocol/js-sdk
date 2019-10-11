@@ -104,7 +104,7 @@ let requestResponseArray: { request: object, response: object }[] = [
     request: {
       "json":true,
       "method":"GET",
-      "url":"https://gaia.blockstack.org/hub/14WfvwxX5G9Nb1C4pq2RHn2bUophFLzrgf/client-config.json"
+      "url":"https://gaia.blockstack.org/hub/14WfvwxX5G9Nb1C4pq2RHn2bUophFLzrgf/cruxdev_client-config.json"
     },
     response: [
       {
