@@ -4,7 +4,7 @@ import config from "../../config";
 import { ErrorHelper, PackageErrorCode } from "../error";
 import * as nameservice from "../name-service/blockstack-service";
 import { fetchNameDetails } from "../name-service/utils";
-import { httpJSONRequest } from "../utils";
+import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
 
@@ -27,7 +27,7 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: name
     let finalContent: any;
     let responseBody: any;
     try {
-        responseBody = await httpJSONRequest(options);
+        responseBody = await cachedFunctionCall(options.url, undefined, httpJSONRequest, [options], async (data) => Boolean(data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0));
         log.debug(`Response from ${filename}`, responseBody);
     } catch (error) {
         const packageErrorCode = nameservice.BlockstackService.getUploadPackageErrorCodeForFilename(filename);
@@ -94,7 +94,7 @@ export const getGaiaReadUrl = async (gaiaWriteURL: string): Promise<string> => {
         url: gaiaWriteURL + "/hub_info" ,
     };
     try {
-        const responseBody: any = await httpJSONRequest(options);
+        const responseBody: any = await cachedFunctionCall(options.url, undefined, httpJSONRequest, [options]);
         const gaiaReadURL = responseBody.read_url_prefix;
         return gaiaReadURL;
     } catch (err) {
