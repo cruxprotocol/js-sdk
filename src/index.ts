@@ -354,6 +354,7 @@ export class CruxClient extends CruxPayPeer {
             const clientMapping: any = this._clientMapping;
             const csAddressMap: any = {};
             for (let walletCurrencySymbol of Object.keys(userAddressMap)) {
+                userAddressMap[walletCurrencySymbol.toLowerCase()] = userAddressMap[walletCurrencySymbol];
                 walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
                 csAddressMap[clientMapping[walletCurrencySymbol]] = userAddressMap[walletCurrencySymbol];
             }
