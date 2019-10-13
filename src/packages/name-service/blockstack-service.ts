@@ -104,7 +104,7 @@ export class BlockstackService extends nameService.NameService {
         // TODO: Verify Domain against Registrar
         const _options: IBlockstackServiceOptions = {...defaultBNSConfig, ...options};
 
-        this._domain = _options.domain;
+        this._domain = _options.domain + "_crux";
         this._gaiaHub = _options.gaiaHub;
         this._subdomainRegistrar = _options.subdomainRegistrar;
         // @ts-ignore
