@@ -80,7 +80,6 @@ export function fetchPrivate(input, init?): Promise<Response> {
 
 const getSignPayload = async(payloadArray: any) => {
     const [payload1, payload2] = payloadArray
-    alert("Please Sign this: " + JSON.stringify(payloadArray))
     const signerKeyHex = "dda3c7f72491f8adf592181370dfa15ebb8057e61eed3329b36f53d92ed5a4b6"
     return [new TokenSigner('ES256K', signerKeyHex).sign(payload1), new TokenSigner('ES256K', signerKeyHex).sign(payload2)]
     // https://github.com/blockstack/blockstack.js/blob/e4864ad41f376d963d4917b95996a6032f992789/src/storage/hub.ts#L173
