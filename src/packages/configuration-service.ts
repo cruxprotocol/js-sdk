@@ -39,7 +39,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     }
 
     public getGlobalAssetList = async (): Promise<object> => {
-        const clientConfig = await this.clientConfig;
+        const clientConfig = this.clientConfig;
         if (clientConfig && clientConfig.assetList) {
             return clientConfig.assetList;
         } else {
