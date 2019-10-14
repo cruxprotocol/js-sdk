@@ -94,8 +94,4 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         return ns;
     }
 
-    public getVirtualAddressFromClientName = (clientName: string): string => {
-        return clientName +  "." + this.settingsDomain;
-    }
-
 }

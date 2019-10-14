@@ -112,12 +112,5 @@ describe("Configuration Tests", () => {
               }
             })
           })
-
-          describe('virtual address tests', () => {
-            it("get virtual address for client name", () => {
-              let vAdd = nsConfigService.getVirtualAddressFromClientName('scatter')
-              expect(vAdd).to.be.string
-            })
-          })
     });
 });
