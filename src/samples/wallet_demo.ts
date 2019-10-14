@@ -63,7 +63,7 @@ const publishClientConfig = async (clientConfig: any, signatureCallback: any, pu
     // const publicKey = "0363409e301867f3756a66ef4bf0ab91eb96f2cad18e2bd8a49d8726c9f7ff6931"
     // const address = "1Ep3hL7FjMfutRnJfvAAZgzDpQTHKxJZVm"
         try {
-            await uploadClientContentToGaiaHub(clientName +"_"+ "client-config.json", clientConfig, "application/json", gaiaHubUrl, publicKey, signatureCallback, address);
+            await uploadClientContentToGaiaHub(`${clientName}_` + "client-config.json", clientConfig, "application/json", gaiaHubUrl, publicKey, signatureCallback, address);
         } catch (error) {
             throw new Error(`unable to upload content to gaiahub, ${error}`);
         }
