@@ -29,6 +29,7 @@ describe('getContentFromGaiaHub tests', () => {
         httpJSONRequestStub.restore()
         verifyProfileTokenStub.restore()
         publicKeyToAddressStub.restore()
+        localStorage.clear()
     });
     it('if it fails to get file content throws filename specific error', async () => {
         let request = {

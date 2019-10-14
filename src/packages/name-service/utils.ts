@@ -1,7 +1,7 @@
 import { AssertionError, deepStrictEqual } from "assert";
 import { getLogger } from "../..";
 import { ErrorHelper, PackageErrorCode } from "../error";
-import { httpJSONRequest } from "../utils";
+import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
 
@@ -47,7 +47,7 @@ const bnsResolveName = async (baseUrl: string, blockstackId: string): Promise<ob
     };
     let nameData;
     try {
-        nameData = await httpJSONRequest(options);
+        nameData = await cachedFunctionCall(`${options.baseUrl}${blockstackId}`, 3600, httpJSONRequest, [options], async (data) => Boolean(data && data.status && data.status !== "registered_subdomain"));
     } catch (error) {
         throw ErrorHelper.getPackageError(PackageErrorCode.BnsResolutionFailed, baseUrl, error);
     }
