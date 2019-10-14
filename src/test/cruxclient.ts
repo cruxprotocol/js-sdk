@@ -289,6 +289,28 @@ describe('CruxClient tests', () => {
 					updateProfileStub.restore()
 				}
 			})
+
+			it("put address map, currency does not exist in client mapping", async () => {
+				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
+				let cruxClient = new CruxClient(walletOptions);
+				await cruxClient.init()
+				let mockedAddressMap = { 
+					ZRX: {
+						addressHash: '0x0a2311594059b468c9897338b027c8782398b481'
+					}
+				};
+				let raisesException = false
+				let updateProfileStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves(true)
+				try {
+					await cruxClient.putAddressMap(mockedAddressMap)
+				} catch(e) {
+					raisesException = true
+					expect(e.errorCode).to.equal(4010)
+				} finally {
+					expect(raisesException).to.be.true
+					updateProfileStub.restore()
+				}
+			})
 		})
 	})
 

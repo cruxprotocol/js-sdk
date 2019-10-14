@@ -356,7 +356,11 @@ export class CruxClient extends CruxPayPeer {
             for (let walletCurrencySymbol of Object.keys(userAddressMap)) {
                 userAddressMap[walletCurrencySymbol.toLowerCase()] = userAddressMap[walletCurrencySymbol];
                 walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
-                csAddressMap[clientMapping[walletCurrencySymbol]] = userAddressMap[walletCurrencySymbol];
+                if (clientMapping[walletCurrencySymbol]) {
+                    csAddressMap[clientMapping[walletCurrencySymbol]] = userAddressMap[walletCurrencySymbol];
+                } else {
+                    throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping);
+                }
             }
 
             await (this._payIDClaim as PayIDClaim).decrypt();
@@ -371,13 +375,13 @@ export class CruxClient extends CruxPayPeer {
     public getAddressMap = async (): Promise<IAddressMapping> => {
         try {
             const clientMapping: any = this._clientMapping;
-            const assetIdToWalletCurrencySymbolMap: any = {};
+            const assetIdToWalletCurrencySymbolMap: {[assetId: string]: string} = {};
             for (let walletCurrencySymbol of Object.keys(clientMapping)) {
                 walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
                 assetIdToWalletCurrencySymbolMap[clientMapping[walletCurrencySymbol]] = walletCurrencySymbol;
             }
 
-            const userAddressMap: any = {};
+            const userAddressMap: IAddressMapping = {};
             if (this._payIDClaim && this._payIDClaim.virtualAddress) {
                 const userAssetIdToAddressMap = await (this._nameService as nameService.NameService).getAddressMapping(this._payIDClaim.virtualAddress);
 

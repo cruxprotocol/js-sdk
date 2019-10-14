@@ -34,4 +34,5 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.TokenVerificationFailed]: "Token verification failed for '{0}'",
     [PackageErrorCode.UserDoesNotExist]: "ID does not exist",
     [PackageErrorCode.IdentityMismatch]: "Identity mismatch",
+    [PackageErrorCode.CurrencyDoesNotExistInClientMapping]: "Currency does not exist in wallet's client mapping",
 };
