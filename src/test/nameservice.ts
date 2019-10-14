@@ -78,6 +78,7 @@ describe('BlockstackService tests', () => {
     httpJSONRequestStub.restore()
     connectToGaiaHubStub.restore()
     uploadToGaiaHubStub.restore()
+    localStorage.clear()
   })
 
   // Test cases
@@ -153,6 +154,7 @@ describe('BlockstackService tests', () => {
       let resolvedPublicKey = await blkstkService.getNameAvailability(registeredSubdomain)
       let options = {
         baseUrl: "https://registrar.coinswitch.co:3000",
+        headers: {'x-wallet-name': 'devcoinswitch'},
         json: true,
         method: "GET",
         url: `/status/${registeredSubdomain}`,
@@ -165,6 +167,7 @@ describe('BlockstackService tests', () => {
       let resolvedPublicKey = await blkstkService.getNameAvailability(unregisteredSubdomain)
       let options = {
         baseUrl: "https://registrar.coinswitch.co:3000",
+        headers: {'x-wallet-name': 'devcoinswitch'},
         json: true,
         method: "GET",
         url: `/status/${unregisteredSubdomain}`,
@@ -227,6 +230,7 @@ describe('BlockstackService tests', () => {
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
+        headers: {'x-wallet-name': 'devcoinswitch'},
         json: true,
         method: "GET",
         url: `/status/carol`,
@@ -261,6 +265,7 @@ describe('BlockstackService tests', () => {
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
+        headers: {'x-wallet-name': 'devcoinswitch'},
         json: true,
         method: "GET",
         url: `/status/carol1`,
@@ -295,6 +300,7 @@ describe('BlockstackService tests', () => {
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
+        headers: {'x-wallet-name': 'devcoinswitch'},
         json: true,
         method: "GET",
         url: `/status/carol2`,
@@ -331,7 +337,7 @@ describe('BlockstackService tests', () => {
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
       // fetch registrationStatus
       let resolvedStatus = await bs.getRegistrationStatus(sampleIdentityClaim);
-      expect(httpJSONRequestStub.callCount).to.equal(4)
+      expect(httpJSONRequestStub.callCount).to.equal(2)
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
       expect(resolvedStatus).to.eql(registeredStatus);
@@ -353,6 +359,7 @@ describe('BlockstackService tests', () => {
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
+        headers: {'x-wallet-name': 'devcoinswitch'},
         json: true,
         method: "GET",
         url: `/status/carol3`,
@@ -386,7 +393,7 @@ describe('BlockstackService tests', () => {
       let bs = new blockstackService.BlockstackService();
       await bs.restoreIdentity(CruxId, IdentityClaim1)
       let resolvedStatus = await bs.getRegistrationStatus(IdentityClaim2);
-      expect(httpJSONRequestStub.callCount).to.equal(4)
+      expect(httpJSONRequestStub.callCount).to.equal(2)
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
       expect(resolvedStatus).to.eql(rejectStatus);
@@ -405,7 +412,7 @@ describe('BlockstackService tests', () => {
       method: 'POST',
       baseUrl: 'https://registrar.coinswitch.co:3000',
       url: '/register',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-wallet-name': 'devcoinswitch' },
       body: {
         zonefile:
           '$ORIGIN bob\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',
@@ -419,7 +426,7 @@ describe('BlockstackService tests', () => {
       method: 'POST',
       baseUrl: 'https://registrar.coinswitch.co:3000',
       url: '/register',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-wallet-name': 'devcoinswitch' },
       body:
       {
         zonefile:
@@ -434,7 +441,7 @@ describe('BlockstackService tests', () => {
       method: 'POST',
       baseUrl: 'https://registrar.coinswitch.co:3000',
       url: '/register',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-wallet-name': 'devcoinswitch' },
       body: {
         zonefile:
           '$ORIGIN mark\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',

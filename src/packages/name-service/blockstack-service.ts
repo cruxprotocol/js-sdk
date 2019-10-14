@@ -202,6 +202,9 @@ export class BlockstackService extends nameService.NameService {
         }
         const options = {
             baseUrl: this._subdomainRegistrar,
+            headers: {
+                "x-wallet-name": this._domain,
+            },
             json: true,
             method: "GET",
             url: `/status/${this._identityCouple.bsId.components.subdomain}`,
@@ -215,6 +218,9 @@ export class BlockstackService extends nameService.NameService {
     public getNameAvailability = async (subdomain: string): Promise<boolean> => {
         const options = {
             baseUrl: this._subdomainRegistrar,
+            headers: {
+                "x-wallet-name": this._domain,
+            },
             json: true,
             method: "GET",
             url: `/status/${subdomain}`,
@@ -278,6 +284,7 @@ export class BlockstackService extends nameService.NameService {
             },
             headers: {
                 "Content-Type": "application/json",
+                "x-wallet-name": this._domain,
             },
             json: true,
             method: "POST",
