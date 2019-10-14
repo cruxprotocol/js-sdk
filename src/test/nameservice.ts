@@ -117,7 +117,7 @@ describe('BlockstackService tests', () => {
       expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
       expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
     })
-    it('given identityClaim with mnemonic with invalid cruxID, should throw "CruxIdLengthValidation" | "CruxIdNamespaceValidation"')
+    it('given identityClaim with mnemonic with invalid cruxID, should throw "CruxIdInvalidStructure" | "CruxIdNamespaceValidation"')
     it('given identityClaim with mnemonic and non-corresponding cruxID, should throw error')
     it('given identityClaim without mnemonic, should throw "CouldNotFindMnemonicToRestoreIdentity"', async() => {
       let raisedError
@@ -220,13 +220,13 @@ describe('BlockstackService tests', () => {
         baseUrl: 'https://core.blockstack.org',
         json: true,
         method: "GET",
-        url: `/v1/names/carol.devcoinswitch.id`,
+        url: `/v1/names/carol.devcoinswitch_crux.id`,
       }
       let bnsRequestOptions2 = {
         baseUrl: 'https://bns.cruxpay.com',
         json: true,
         method: "GET",
-        url: `/v1/names/carol.devcoinswitch.id`,
+        url: `/v1/names/carol.devcoinswitch_crux.id`,
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
@@ -255,13 +255,13 @@ describe('BlockstackService tests', () => {
         baseUrl: 'https://core.blockstack.org',
         json: true,
         method: "GET",
-        url: `/v1/names/carol1.devcoinswitch.id`,
+        url: `/v1/names/carol1.devcoinswitch_crux.id`,
       }
       let bnsRequestOptions2 = {
         baseUrl: 'https://bns.cruxpay.com',
         json: true,
         method: "GET",
-        url: `/v1/names/carol1.devcoinswitch.id`,
+        url: `/v1/names/carol1.devcoinswitch_crux.id`,
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
@@ -290,13 +290,13 @@ describe('BlockstackService tests', () => {
         baseUrl: 'https://core.blockstack.org',
         json: true,
         method: "GET",
-        url: `/v1/names/carol2.devcoinswitch.id`,
+        url: `/v1/names/carol2.devcoinswitch_crux.id`,
       }
       let bnsRequestOptions2 = {
         baseUrl: 'https://bns.cruxpay.com',
         json: true,
         method: "GET",
-        url: `/v1/names/carol2.devcoinswitch.id`,
+        url: `/v1/names/carol2.devcoinswitch_crux.id`,
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
@@ -322,13 +322,13 @@ describe('BlockstackService tests', () => {
         baseUrl: 'https://core.blockstack.org',
         json: true,
         method: "GET",
-        url: `/v1/names/cs1.devcoinswitch.id`,
+        url: `/v1/names/cs1.devcoinswitch_crux.id`,
       }
       let bnsRequestOptions2 = {
         baseUrl: 'https://bns.cruxpay.com',
         json: true,
         method: "GET",
-        url: `/v1/names/cs1.devcoinswitch.id`,
+        url: `/v1/names/cs1.devcoinswitch_crux.id`,
       }
 
       // initialise the nameservice
@@ -349,13 +349,13 @@ describe('BlockstackService tests', () => {
         baseUrl: 'https://core.blockstack.org',
         json: true,
         method: "GET",
-        url: `/v1/names/carol3.devcoinswitch.id`,
+        url: `/v1/names/carol3.devcoinswitch_crux.id`,
       }
       let bnsRequestOptions2 = {
         baseUrl: 'https://bns.cruxpay.com',
         json: true,
         method: "GET",
-        url: `/v1/names/carol3.devcoinswitch.id`,
+        url: `/v1/names/carol3.devcoinswitch_crux.id`,
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
@@ -382,13 +382,13 @@ describe('BlockstackService tests', () => {
         baseUrl: 'https://core.blockstack.org',
         json: true,
         method: "GET",
-        url: `/v1/names/carol4.devcoinswitch.id`,
+        url: `/v1/names/carol4.devcoinswitch_crux.id`,
       }
       let bnsRequestOptions2 = {
         baseUrl: 'https://bns.cruxpay.com',
         json: true,
         method: "GET",
-        url: `/v1/names/carol4.devcoinswitch.id`,
+        url: `/v1/names/carol4.devcoinswitch_crux.id`,
       }
       let bs = new blockstackService.BlockstackService();
       await bs.restoreIdentity(CruxId, IdentityClaim1)
@@ -578,13 +578,13 @@ describe('BlockstackService tests', () => {
     let bnsRequestOptions1 = {
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
-      url: '/v1/names/cs1.devcoinswitch.id',
+      url: '/v1/names/cs1.devcoinswitch_crux.id',
       json: true
     }
     let bnsRequestOptions2 = {
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
-      url: '/v1/names/cs1.devcoinswitch.id',
+      url: '/v1/names/cs1.devcoinswitch_crux.id',
       json: true
     }
     let gaiaRequestOptions = { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json", json: true }
@@ -615,7 +615,8 @@ describe('BlockstackService tests', () => {
       try {
         await blkstkService.getAddressMapping("cs1@devcoinswitch.crux")
       } catch (error) {
-        raisedError = error
+          console.log(error.stack);
+          raisedError = error
       }
       expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GaiaEmptyResponse)
     })
