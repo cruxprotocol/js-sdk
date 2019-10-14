@@ -24,63 +24,15 @@
         }
     </style>
     
-    <h4>Demo Wallet</h4>
-    <br><span class="helper">wallet client:</span> <span class="walletClientName"></span><br>
-    <br><span class="helper">wallet addresses:</span><br>
-    <pre id="userAddresses"></pre>
-    <br><span class="helper">wallet encryption key:</span> <span id="encryptionKey"></span><br>
-
-    ========================
-
-    <h5>CruxPay Interface</h5>
-
-    <div id="init">
-        Initialising cruxClient...
-    </div>
-
-    <br><span class="helper">cruxID status:</span><br>
-    <pre id="cruxIDStatus"></pre>
-
-
-    <br><span class="helper">cruxID availability:</span><br>
-    <input id="registrationId" placeholder="ankit" style="text-align: right;">@<span class="walletClientName"></span>.crux <button onclick="isCruxIDAvailable()">Check</button><br>
+    <br><span class="helper">status:</span><br>
+    <input id="registrationId" placeholder="ankit" style="text-align: right;"><span class="walletClientName"></span> <button onclick="ramTest()">Check</button><br>
     <pre id='availability'></pre>
 
-    
-    <br><span class="helper">cruxID registration:</span><br>
-    <input id="newSubdomain" placeholder="ankit" style="text-align: right;">@<span class="walletClientName"></span>.crux <button onclick="registerCruxID()">Register</button>
-    <pre id='registrationAcknowledgement'></pre>    
 
-
-    <br><span class="helper">resolving public addresses:</span><br>
-    <input id="receiverVirtualAddress" placeholder="ankit@scatter_dev.crux">
-    <select id="currency">
-        <option value="BTC">BTC</option>
-        <option value="ETH">ETH</option>
-        <option value="TRX">TRX</option>
-    </select>
-    <button onclick="resolveCurrencyAddressForCruxID()">Resolve Address</button><br>
-    <pre id='addresses'></pre>
-
-
-    <br><span class="helper">fetch public address map:</span><br>
-    <button onclick="getAddressMap()">Get Public Addresses</button>
-    <pre id="addressMap"></pre>
-
-
-    <br><span class="helper">publish address map:</span><br>
-    <button onclick="putAddressMap()">Publish Address</button>
-    <pre id="putAddressMapAcknowledgement"></pre>
-
-
-    <br><span class="helper">change password (effectively encryptionKey):</span><br>
-    <input id="oldEncryptionKey" placeholder="old encryption key">
-    <input id="newEncryptionKey" placeholder="new encryption key">
-    <button onclick="updatePassword()">Change password</button>
-    <pre id="passwordUpdateAcknowledgement"></pre>
-
-    ========================
-
+    <br><span class="helper">publish:</span><br>
+    <input id="registrationId" placeholder="ankit" style="text-align: right;"><span class="walletClientName"></span> <button onclick="ramTest1()">Check</button><br>
+    <pre id='availability'></pre>
+   
     <script src="./wallet_demo.ts"></script>
 </body>
 </html>
