@@ -133,7 +133,7 @@ export class PayIDClaim implements ICruxPayClaim {
 
 }
 
-class CruxPayPeer extends EventEmitter {
+class CruxPayPeer {
     public walletClientName: string;
     protected _options: ICruxPayPeerOptions;
     protected _getEncryptionKey: () => string;
@@ -146,8 +146,6 @@ class CruxPayPeer extends EventEmitter {
     protected _payIDClaim: PayIDClaim | undefined;
 
     constructor(_options: ICruxPayPeerOptions) {
-        super();
-
         this._options = Object.assign({}, _options);
         // TODO: Need to validate options
 
