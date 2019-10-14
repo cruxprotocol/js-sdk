@@ -98,14 +98,6 @@ describe('CruxClient tests', () => {
 					let cruxIdState = await cruxClient.getCruxIDState()
 					expect(cruxIdState.status.cruxID).to.equal(undefined)
 				})
-	
-				it("getIDStatus handling empty local storage", async () => {
-					localStorage.clear();
-					let cruxClient = new CruxClient(walletOptions);
-					await cruxClient.init()
-					let cruxIDStatus = await cruxClient.getIDStatus()
-					expect(cruxIDStatus.status).to.equal('NONE')
-				})
 			})
 
 			it("invalid getEncryptionKey provided", async () => {
