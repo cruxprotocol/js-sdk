@@ -3,7 +3,7 @@ let requestResponseArray: { request: object, response: object }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
-      url: '/v1/names/devcoinswitch.id',
+      url: '/v1/names/devcoinswitch_crux.id',
       json: true
     },
     response: {
@@ -14,7 +14,7 @@ let requestResponseArray: { request: object, response: object }[] = [
       zonefile_hash: "a9094d07226c7b9263928f07d03681a9f90db560",
       renewal_deadline: 699987,
       grace_period: false,
-      zonefile: "$ORIGIN devcoinswitch.id\n$TTL 3600\nbob\tIN\tTXT\t\"owner=1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiBib2IKJFRUTCAzNjAwCl9odHRwcy5fdGNwIFVSSSAxMCAxICJodHRwczovL2dhaWEuYmxvY2tzdGFjay5vcmcvaHViLzFIdEZrYlhGV0hGVzVLZDRHTGZpUnFrZmZTNUtMWjkxZUovcHJvZmlsZS5qc29uIgo=\"\n_http._tcp\tIN\tURI\t10\t1\t\"https://gaia.blockstack.org/hub/18izR7sjo7Nn3pb5LrnHWKdV7P42cqricA/profile.json\"\n",
+      zonefile: "$ORIGIN devcoinswitch_crux.id\n$TTL 3600\nbob\tIN\tTXT\t\"owner=1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiBib2IKJFRUTCAzNjAwCl9odHRwcy5fdGNwIFVSSSAxMCAxICJodHRwczovL2dhaWEuYmxvY2tzdGFjay5vcmcvaHViLzFIdEZrYlhGV0hGVzVLZDRHTGZpUnFrZmZTNUtMWjkxZUovcHJvZmlsZS5qc29uIgo=\"\n_http._tcp\tIN\tURI\t10\t1\t\"https://gaia.blockstack.org/hub/18izR7sjo7Nn3pb5LrnHWKdV7P42cqricA/profile.json\"\n",
       blockchain: "bitcoin",
       last_txid: "7e4ae9eb23d90eb45c8c258ff462e0e25cce257695f822e44818b047008ccb7f",
       did: "did:stack:v0:1Ce8JHUyodWwi6kQxg3c1wXoiYmLibZe8y-0"
@@ -24,7 +24,7 @@ let requestResponseArray: { request: object, response: object }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
-      url: '/v1/names/cruxdev.devcoinswitch.id',
+      url: '/v1/names/cruxdev.devcoinswitch_crux.id',
       json: true
     },
     response: {
@@ -41,7 +41,7 @@ let requestResponseArray: { request: object, response: object }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
-      url: '/v1/names/cruxdev.devcoinswitch.id',
+      url: '/v1/names/cruxdev.devcoinswitch_crux.id',
       json: true
     },
     response: {
@@ -58,7 +58,7 @@ let requestResponseArray: { request: object, response: object }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
-      url: '/v1/names/umang.cruxdev.id',
+      url: '/v1/names/umang.cruxdev_crux.id',
       json: true
     },
     response: {
@@ -75,7 +75,7 @@ let requestResponseArray: { request: object, response: object }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
-      url: '/v1/names/umang.cruxdev.id',
+      url: '/v1/names/umang.cruxdev_crux.id',
       json: true
     },
     response: {
@@ -151,7 +151,7 @@ let requestResponseArray: { request: object, response: object }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
-      url: '/v1/names/devcoinswitch.id',
+      url: '/v1/names/devcoinswitch_crux.id',
       json: true
     },
     response: {
@@ -162,7 +162,7 @@ let requestResponseArray: { request: object, response: object }[] = [
       zonefile_hash: "a9094d07226c7b9263928f07d03681a9f90db560",
       renewal_deadline: 699987,
       grace_period: false,
-      zonefile: "$ORIGIN devcoinswitch.id\n$TTL 3600\nbob\tIN\tTXT\t\"owner=1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiBib2IKJFRUTCAzNjAwCl9odHRwcy5fdGNwIFVSSSAxMCAxICJodHRwczovL2dhaWEuYmxvY2tzdGFjay5vcmcvaHViLzFIdEZrYlhGV0hGVzVLZDRHTGZpUnFrZmZTNUtMWjkxZUovcHJvZmlsZS5qc29uIgo=\"\n_http._tcp\tIN\tURI\t10\t1\t\"https://gaia.blockstack.org/hub/18izR7sjo7Nn3pb5LrnHWKdV7P42cqricA/profile.json\"\n",
+      zonefile: "$ORIGIN devcoinswitch_crux.id\n$TTL 3600\nbob\tIN\tTXT\t\"owner=1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiBib2IKJFRUTCAzNjAwCl9odHRwcy5fdGNwIFVSSSAxMCAxICJodHRwczovL2dhaWEuYmxvY2tzdGFjay5vcmcvaHViLzFIdEZrYlhGV0hGVzVLZDRHTGZpUnFrZmZTNUtMWjkxZUovcHJvZmlsZS5qc29uIgo=\"\n_http._tcp\tIN\tURI\t10\t1\t\"https://gaia.blockstack.org/hub/18izR7sjo7Nn3pb5LrnHWKdV7P42cqricA/profile.json\"\n",
       blockchain: "bitcoin",
       last_txid: "7e4ae9eb23d90eb45c8c258ff462e0e25cce257695f822e44818b047008ccb7f",
       did: "did:stack:v0:1Ce8JHUyodWwi6kQxg3c1wXoiYmLibZe8y-0"
@@ -172,7 +172,7 @@ let requestResponseArray: { request: object, response: object }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
-      url: '/v1/names/mocked_domain.id',
+      url: '/v1/names/mocked_domain_crux.id',
       json: true
     },
     response: {
@@ -183,7 +183,7 @@ let requestResponseArray: { request: object, response: object }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
-      url: '/v1/names/mocked_domain.id',
+      url: '/v1/names/mocked_domain_crux.id',
       json: true
     },
     response: {
@@ -195,7 +195,7 @@ let requestResponseArray: { request: object, response: object }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
-      url: '/v1/names/mocked_subdomain.mocked_domain.id',
+      url: '/v1/names/mocked_subdomain.mocked_domain_crux.id',
       json: true
     },
     response: {
@@ -206,7 +206,7 @@ let requestResponseArray: { request: object, response: object }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
-      url: '/v1/names/mocked_subdomain.mocked_domain.id',
+      url: '/v1/names/mocked_subdomain.mocked_domain_crux.id',
       json: true
     },
     response: {
