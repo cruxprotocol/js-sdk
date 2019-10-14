@@ -154,6 +154,7 @@ describe('BlockstackService tests', () => {
       let resolvedPublicKey = await blkstkService.getNameAvailability(registeredSubdomain)
       let options = {
         baseUrl: "https://registrar.coinswitch.co:3000",
+        headers: {'x-wallet-name': 'devcoinswitch'},
         json: true,
         method: "GET",
         url: `/status/${registeredSubdomain}`,
@@ -166,6 +167,7 @@ describe('BlockstackService tests', () => {
       let resolvedPublicKey = await blkstkService.getNameAvailability(unregisteredSubdomain)
       let options = {
         baseUrl: "https://registrar.coinswitch.co:3000",
+        headers: {'x-wallet-name': 'devcoinswitch'},
         json: true,
         method: "GET",
         url: `/status/${unregisteredSubdomain}`,
@@ -228,6 +230,7 @@ describe('BlockstackService tests', () => {
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
+        headers: {'x-wallet-name': 'devcoinswitch'},
         json: true,
         method: "GET",
         url: `/status/carol`,
@@ -262,6 +265,7 @@ describe('BlockstackService tests', () => {
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
+        headers: {'x-wallet-name': 'devcoinswitch'},
         json: true,
         method: "GET",
         url: `/status/carol1`,
@@ -296,6 +300,7 @@ describe('BlockstackService tests', () => {
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
+        headers: {'x-wallet-name': 'devcoinswitch'},
         json: true,
         method: "GET",
         url: `/status/carol2`,
@@ -354,6 +359,7 @@ describe('BlockstackService tests', () => {
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
+        headers: {'x-wallet-name': 'devcoinswitch'},
         json: true,
         method: "GET",
         url: `/status/carol3`,
@@ -406,7 +412,7 @@ describe('BlockstackService tests', () => {
       method: 'POST',
       baseUrl: 'https://registrar.coinswitch.co:3000',
       url: '/register',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-wallet-name': 'devcoinswitch' },
       body: {
         zonefile:
           '$ORIGIN bob\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',
@@ -420,7 +426,7 @@ describe('BlockstackService tests', () => {
       method: 'POST',
       baseUrl: 'https://registrar.coinswitch.co:3000',
       url: '/register',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-wallet-name': 'devcoinswitch' },
       body:
       {
         zonefile:
@@ -435,7 +441,7 @@ describe('BlockstackService tests', () => {
       method: 'POST',
       baseUrl: 'https://registrar.coinswitch.co:3000',
       url: '/register',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-wallet-name': 'devcoinswitch' },
       body: {
         zonefile:
           '$ORIGIN mark\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',
