@@ -112,8 +112,8 @@ export class PayIDClaim implements ICruxPayClaim {
         }
     }
 
-    public toJSON = (): ICruxPayClaim => {
-        // await this.encrypt()
+    public toJSON = async (): Promise<ICruxPayClaim> => {
+        await this.encrypt();
         const json = JSON.parse(JSON.stringify({
             identitySecrets: this.identitySecrets,
             virtualAddress: this.virtualAddress,
@@ -122,7 +122,7 @@ export class PayIDClaim implements ICruxPayClaim {
     }
 
     public save = async (storageService: storage.StorageService): Promise<void> => {
-        const json = this.toJSON();
+        const json = await this.toJSON();
         // log.debug(`PayIDClaim being stored to storage:`, json)
         storageService.setJSON("payIDClaim", json);
     }
