@@ -1,12 +1,14 @@
 import { AssertionError, deepStrictEqual } from "assert";
 import { getLogger } from "../..";
+import config from "../../config";
 import { ErrorHelper, PackageErrorCode } from "../error";
 import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
 
-export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[]): Promise<object|undefined> => {
-    const nodeResponses = bnsNodes.map((baseUrl) => bnsResolveName(baseUrl, blockstackId));
+export const fetchNameDetails = async (blockstackId: string, bnsNodes?: string[]): Promise<object|undefined> => {
+    bnsNodes = bnsNodes || config.BLOCKSTACK.BNS_NODES;
+    const nodeResponses = (bnsNodes as string[]).map((baseUrl) => bnsResolveName(baseUrl, blockstackId));
     log.debug(`BNS node responses:`, nodeResponses);
 
     const responsesArr: object[] = await Promise.all(nodeResponses);
