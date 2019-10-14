@@ -1,158 +1,82 @@
 import { expect } from 'chai';
 import 'mocha';
-import {BlockstackId, CruxId, IdTranslator} from "../packages/identity-utils";
+import {BlockstackId, CruxId, IdTranslator, validateSubdomain} from "../packages/identity-utils";
 import { errors } from '..';
 
 // TODO: strict validation of the cruxID format
 
 describe('ID Translation Tests', () => {
-    let testBlockstackId1 = 'ankit.exodus.id'
+    let testBlockstackId1 = 'ankit.exodus_crux.id'
     let testCruxId1 = 'ankit@exodus.crux'
 
-    let testBlockstackId3 = 'foo.crux.id'
-    let testCruxId3 = 'foo@crux'
+
+    let testBlockstackId2 = 'ankit.something.id'
+
+    let testBlockstackId3 = 'ankit.something_crux.foo'
+
 
     it('blockstack id translates to crux id', () => {
         let bsid = BlockstackId.fromString(testBlockstackId1)
-        console.log(bsid.components)
         expect(IdTranslator.blockstackToCrux(bsid).toString()).to.equal(testCruxId1)
-
-        let bsid3 = BlockstackId.fromString(testBlockstackId3)
-        expect(IdTranslator.blockstackToCrux(bsid3).toString()).to.equal(testCruxId3)
-
-
     })
 
     it('crux id translates to blockstack id', () => {
         let csid = CruxId.fromString(testCruxId1)
         expect(IdTranslator.cruxToBlockstack(csid).toString()).to.equal(testBlockstackId1)
-
-        let csid3 = CruxId.fromString(testCruxId3)
-        expect(IdTranslator.cruxToBlockstack(csid3).toString()).to.equal(testBlockstackId3)
-
     })
-    it('(negative case) - crux id regex validation', () => {
-        let raisedError
-        try{
-            let csid = CruxId.validateSubdomain('coin**switch')
+
+    it('blockstack id which cant be translated because of domain', () => {
+        let raisedError;
+        try {
+            let bsid = BlockstackId.fromString(testBlockstackId2)
+            IdTranslator.blockstackToCrux(bsid) //  INVALID DOMAIN TO TRANSLATE
+        } catch (e) {
+            raisedError = e;
         }
-        catch(error) {
-            raisedError = error
+        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.BlockstackIdInvalidDomainForTranslation)
+    })
+
+    it('blockstack id which cant be translated because of namespace', () => {
+        let raisedError;
+        try {
+            let bsid = BlockstackId.fromString(testBlockstackId3) // SHOULD RAISE ERROR
+            IdTranslator.blockstackToCrux(bsid) // INVALID NAMESPACE TO TRANSLATE
+        } catch (e) {
+            raisedError = e;
+        }
+        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.BlockstackIdNamespaceValidation)
+    })
+
+    it('invalid crux id because of structure', () => {
+        let raisedError;
+        try {
+            CruxId.fromString('abcd@foobar') // SHOULD RAISE ERROR
+        } catch (e) {
+            raisedError = e;
+        }
+        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CruxIdInvalidStructure)
+    })
+
+    it('invalid subdomain due to regex', () => {
+        let raisedError;
+        try {
+            validateSubdomain('_foofoo')
+        } catch (e) {
+            raisedError = e;
         }
         expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.SubdomainRegexMatchFailure)
     })
-    it('(negative case) - crux id minimun length constrain validation', () => {
-        let raisedError
-        try{
-            let csid = CruxId.validateSubdomain('abc')
-        }
-        catch(error) {
-            raisedError = error
-        }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.SubdomainLengthCheckFailure)
-    })
-    it('(negative case) - crux id maximum length constrain validation', () => {
-        let raisedError
-        try{
-            let csid = CruxId.validateSubdomain('mynameisanthonygonsalves')
-        }
-        catch(error) {
-            raisedError = error
+
+    it('invalid subdomain due to length', () => {
+        let raisedError;
+        try {
+            validateSubdomain('foo')
+        } catch (e) {
+            raisedError = e;
         }
         expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.SubdomainLengthCheckFailure)
     })
 
-    it('(negative case) - crux id without subdomain and invalid namespace', () => {
-        let raisedError
-        try {
-            let csid = CruxId.fromString('exodus.rux')
-        }
-        catch(error){
-            raisedError= error
-        }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CruxIdNamespaceValidation)
-
-    })
-    it('(negative case) - crux id maximum components validation', () => {
-        let raisedError
-        try {
-            let csid = CruxId.fromString('ram@coinswitch@exodus.crux')
-        }
-        catch(error){
-            raisedError= error
-        }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CruxIdLengthValidation)
-
-    })
-    it('(negative case) - crux id with invalid namespace', () => {
-        let raisedError
-        try {
-            let csid = CruxId.fromString('ram@exodus.rux')
-        }
-        catch(error){
-            raisedError= error
-        }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CruxIdNamespaceValidation)
-
-    })
-
-    it('(negative case) - blockstack id components count  !=(2,3) , throws "BlockstackIdLengthValidation"', () => {
-        let raisedError
-        try{
-            let csid = BlockstackId.fromString('ram')
-        }
-        catch(error) {
-            raisedError = error
-        }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.BlockstackIdLengthValidation)
-    })
-    it('(negative case) - blockstack id invalid namespace, throws "BlockstackIdNamespaceValidation"', () => {
-        let raisedError
-        try{
-            let csid = BlockstackId.fromString('ram.exodus.crux')
-        }
-        catch(error) {
-            raisedError = error
-        }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.BlockstackIdNamespaceValidation)
-    })
-    it('(negative case) - translate crux id to blockstack with invalid namespace, throws "CruxIdNamespaceValidation"', () => {
-        let raisedError
-        try{
-            let csid = BlockstackId.fromString('ram.exodus.id')
-            csid.components.namespace = 'CRUX'
-            let bsid = IdTranslator.cruxToBlockstack(csid)
-        }
-        catch(error) {
-            raisedError = error
-        }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CruxIdNamespaceValidation)
-    })
-
-    it('(negative case) - translate blockstack id without subdomain, throws "BlockstackIdInvalidSubdomain"', () => {
-        let raisedError
-        try{
-            let csid = CruxId.fromString('ram.exodus.crux')
-            csid.components.subdomain = ''
-            let bsid = IdTranslator.blockstackToCrux(csid)
-        }
-        catch(error) {
-            raisedError = error
-        }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.BlockstackIdInvalidSubdomain)
-    })
-    it('(negative case) - blockstack id with invalid namespace, throws "BlockstackIdNamespaceValidation"', () => {
-        let raisedError
-        try{
-            let csid = CruxId.fromString('ram@exodus.crux')
-            csid.components.namespace = 'CRUX'
-            let bsid = IdTranslator.blockstackToCrux(csid)
-        }
-        catch(error) {
-            raisedError = error
-        }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.BlockstackIdNamespaceValidation)
-    })
 
 
 })
