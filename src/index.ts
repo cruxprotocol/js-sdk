@@ -231,7 +231,7 @@ class CruxPayPeer extends EventEmitter {
 
     public isCruxIDAvailable = (cruxIDSubdomain: string): Promise<boolean> => {
         try {
-            identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
+            identityUtils.validateSubdomain(cruxIDSubdomain);
             return (this._nameService as nameService.NameService).getNameAvailability(cruxIDSubdomain);
         } catch (err) {
             throw errors.CruxClientError.fromError(err);
@@ -320,7 +320,7 @@ export class CruxClient extends CruxPayPeer {
         // TODO: add isCruxIDAvailable check before
         try {
             // Subdomain validation
-            identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
+            identityUtils.validateSubdomain(cruxIDSubdomain);
 
             // Generating the identityClaim
             await (this._payIDClaim as PayIDClaim).decrypt();

@@ -2,6 +2,7 @@ import {ErrorHelper, PackageErrorCode} from "./error";
 
 const DEFAULT_CRUX_NAMESPACE = "crux";
 const DEFAULT_BLOCKSTACK_NAMESPACE = "id";
+const CRUX_DOMAIN_SUFFIX = "_crux";
 
 interface InputIDComponents {
     domain: string;
@@ -14,19 +15,19 @@ interface GenericIDComponents {
     namespace: string;
 }
 
-export class CruxId {
-
-    public static validateSubdomain = (subDomain: string) => {
-        const subdomainRegex: string = "^[a-z]([a-z]|[0-9]|-|_)*([a-z]|[0-9])$";
-        const subdomainMinLength: number = 4;
-        const subdomainMaxLength: number = 20;
-        if (!subDomain.match(new RegExp(subdomainRegex))) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainRegexMatchFailure);
-        }
-        if (subDomain.length < subdomainMinLength || subDomain.length > subdomainMaxLength) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainLengthCheckFailure);
-        }
+export const validateSubdomain = (subDomain: string) => {
+    const subdomainRegex: string = "^[a-z]([a-z]|[0-9]|-|_)*([a-z]|[0-9])$";
+    const subdomainMinLength: number = 4;
+    const subdomainMaxLength: number = 20;
+    if (!subDomain.match(new RegExp(subdomainRegex))) {
+        throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainRegexMatchFailure);
     }
+    if (subDomain.length < subdomainMinLength || subDomain.length > subdomainMaxLength) {
+        throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainLengthCheckFailure);
+    }
+};
+
+export class CruxId {
     public static fromString = (stringRepresentation: string) => {
         const arrayCruxId = stringRepresentation.split(/[.@]/);
         let cruxSubdomain: string = "";
@@ -34,15 +35,8 @@ export class CruxId {
         let cruxNamespace: string = "";
         if (arrayCruxId.length === 3) {
             [cruxSubdomain, cruxDomain, cruxNamespace] = arrayCruxId; // foo@exodus.crux
-        } else if (arrayCruxId.length === 2) {
-            if (arrayCruxId[1] !== "crux") {
-                throw ErrorHelper.getPackageError(PackageErrorCode.CruxIdNamespaceValidation, arrayCruxId[1]);
-            } else {
-                [cruxSubdomain, cruxDomain] = arrayCruxId; // eg. foo@crux
-                cruxNamespace = "crux";
-            }
         } else {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CruxIdLengthValidation);
+            throw ErrorHelper.getPackageError(PackageErrorCode.CruxIdInvalidStructure);
         }
 
         if (cruxNamespace !== DEFAULT_CRUX_NAMESPACE) {
@@ -53,6 +47,7 @@ export class CruxId {
     }
     public components: GenericIDComponents;
     constructor(inputComponents: InputIDComponents) {
+        // validateSubdomain(inputComponents.subdomain);
         this.components = {
             ...inputComponents,
             namespace: DEFAULT_CRUX_NAMESPACE,
@@ -60,15 +55,8 @@ export class CruxId {
     }
 
     public toString = () => {
-        const cruxSubdomainPart: string = this.components.subdomain.length > 0 ? this.components.subdomain + "@" : "";
-        let otherPart: string;
-
-        if (this.components.domain === DEFAULT_CRUX_NAMESPACE && this.components.namespace === DEFAULT_CRUX_NAMESPACE) {
-            otherPart = this.components.domain;
-        } else {
-            otherPart = this.components.domain + "." + this.components.namespace;
-        }
-
+        const cruxSubdomainPart: string = this.components.subdomain + "@";
+        const otherPart = this.components.domain + "." + this.components.namespace;
         return cruxSubdomainPart +  otherPart;
     }
 }
@@ -85,7 +73,7 @@ export class BlockstackId {
         } else if (arrayBsId.length === 2) {
             [bsDomain, bsNamespace] = arrayBsId;
         } else {
-            throw ErrorHelper.getPackageError(PackageErrorCode.BlockstackIdLengthValidation);
+            throw ErrorHelper.getPackageError(PackageErrorCode.BlockstackIdInvalidStructure);
         }
 
         if (bsNamespace !== DEFAULT_BLOCKSTACK_NAMESPACE) {
@@ -114,19 +102,24 @@ export class IdTranslator {
             throw ErrorHelper.getPackageError(PackageErrorCode.CruxIdNamespaceValidation, cruxId.components.namespace);
         }
         return new BlockstackId({
-            domain: cruxId.components.domain,
+            domain: cruxId.components.domain + CRUX_DOMAIN_SUFFIX,
             subdomain: cruxId.components.subdomain,
         });
     }
     public static blockstackToCrux = (bsId: BlockstackId): CruxId => {
         if (!bsId.components.subdomain) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.BlockstackIdInvalidSubdomain);
+            throw ErrorHelper.getPackageError(PackageErrorCode.BlockstackIdInvalidSubdomainForTranslation);
         }
         if (bsId.components.namespace !== DEFAULT_BLOCKSTACK_NAMESPACE) {
             throw ErrorHelper.getPackageError(PackageErrorCode.BlockstackIdNamespaceValidation, bsId.components.namespace);
         }
+        if (!bsId.components.domain.endsWith(CRUX_DOMAIN_SUFFIX)) {
+            throw ErrorHelper.getPackageError(PackageErrorCode.BlockstackIdInvalidDomainForTranslation);
+        }
+        const cruxDomain = bsId.components.domain.slice(0, -5);
+
         return new CruxId({
-            domain: bsId.components.domain,
+            domain: cruxDomain,
             subdomain: bsId.components.subdomain,
         });
     }
