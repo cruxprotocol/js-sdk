@@ -96,8 +96,7 @@ export class PayIDClaim implements ICruxPayClaim {
             if (!encryptionKey) {
                 encryptionKey = await this._getEncryptionKey();
             }
-            const encryptionKeyDigest = await this._encryption.digest(encryptionKey);
-            this.identitySecrets = JSON.stringify(await this._encryption.encryptJSON(this.identitySecrets as object, encryptionKeyDigest));
+            this.identitySecrets = JSON.stringify(await this._encryption.encryptJSON(this.identitySecrets as object, encryptionKey));
         }
     }
 
@@ -109,8 +108,7 @@ export class PayIDClaim implements ICruxPayClaim {
             if (!encryptionKey) {
                 encryptionKey = await this._getEncryptionKey();
             }
-            const encryptionKeyDigest = await this._encryption.digest(encryptionKey);
-            this.identitySecrets = (await this._encryption.decryptJSON(encryptedObj.encBuffer, encryptedObj.iv, encryptionKeyDigest) as nameService.IIdentityClaim);
+            this.identitySecrets = (await this._encryption.decryptJSON(encryptedObj.encBuffer, encryptedObj.iv, encryptionKey) as nameService.IIdentityClaim);
         }
     }
 

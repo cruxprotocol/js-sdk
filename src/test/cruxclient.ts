@@ -33,7 +33,7 @@ describe('CruxClient tests', () => {
 	};
 	let mockedAddressMapping = {"1d6e1a99-1e77-41e1-9ebb-0e216faa166a": {addressHash: "19m51F8YkjzK625csaNtKnM9pgByeMJRU3"}}
 	let sampleUser = {
-		'payIDClaim': {"virtualAddress":"syedhassanashraf@cruxdev.crux","identitySecrets":"{\"iv\":\"XJmOCWeHzU4HfsYI\",\"encBuffer\":\"ss20WCh7PW64wWswkRUu/dxMkPro2KmD1rCGLKdtew82cPuJwZTqcdrfz9GBJOYqsHrzE4lOoUmODHeWor3ebC6vHCU8tQdg17Rlpdj3hx2FU0XTY1PsmJft4wZOvb9uThk6estvQgnj5/7quw9Be6oGt6gyCtOYsxtfSQysH0kfgRauCEOx4tTjSXO2GAufeEK4hubCC7bJ6iQCr9uAeMWRSxFknK8I+M62RnE8iINVp2yQ+5I3M7Z8oFRSzwi0nJAVps/rTMfZOw2mXYtgEgY59aSXItr+hHSGGF0pWHqlRNzcCbV11MdBCIrEHWhOnU/hK5PWSxJMRytIwEaYspXqWEu+KaftkKIxr/CU/rnCd8w/ML0lS7hMXljMG95BN66M8k5vXHkAmdmMRZdQN4Y4nD5vhxY0q69+37fH0LmsMG0tKdm3d4H8PVpu\"}"},
+		'payIDClaim': {"virtualAddress":"syedhassanashraf@cruxdev.crux","identitySecrets":"{\"iv\":\"d6mQLg2lv/SHvpPV\",\"encBuffer\":\"EJ0NDIGyvT+FMxjG9pD7yKkUVUJffcd0mU3V7rqgbpip5ikCR+kx/Xl4tJcBNtQUJzKbDPNJeeWdzUKH01NQOiyEe9qfCYEqzbJgj4PSqE/B1geSlCMRWcdJMdbrUDHgEcwDWw6PC41p0odNHLzMWOR1LA+PKVzCAMXRom6UppG+gjMnjp9QqF00SfnNR6wla/es7LgE3eF6O4Gq9Ku/mAhdYrZiaMMd47hQvTzH9KzDZrTjK37jmtiRC6cuNDy9zZ+BtpzufozAbuCvfeQc2nXKdV4a3kx7peLK7eAGZUV6soaOfq+ZIPx5bbnNos8Py7fhNOmqbop12yCQ4Ot2jm7Bmx9eXIFq7/EtLWP488xU3l2qB0/XHMmGtlsZ8Er19al+aB4OJAJ5yzBU01rVQFVkOLC50ZlYT4VcVgJbOUvRXi8c4mlv0JNfvajA\"}"},
 		'cruxID': 'syedhassanashraf@cruxdev.crux',
 		'blockStackID': 'syedhassanashraf.crux.id',
 		'cruxIDSubdomain': 'syedhassanashraf',
@@ -64,7 +64,7 @@ describe('CruxClient tests', () => {
 		describe('updatePassword tests', () => {
 
 			it('after encryption is mnemonic and identityKeyPair are same', async () => {
-				localStorage.setItem('payIDClaim', JSON.stringify({"virtualAddress":"yadunandan.cruxdev.crux","identitySecrets":"{\"iv\":\"XJmOCWeHzU4HfsYI\",\"encBuffer\":\"ss20WCh7PW64wWswkRUu/dxMkPro2KmD1rCGLKdtew82cPuJwZTqcdrfz9GBJOYqsHrzE4lOoUmODHeWor3ebC6vHCU8tQdg17Rlpdj3hx2FU0XTY1PsmJft4wZOvb9uThk6estvQgnj5/7quw9Be6oGt6gyCtOYsxtfSQysH0kfgRauCEOx4tTjSXO2GAufeEK4hubCC7bJ6iQCr9uAeMWRSxFknK8I+M62RnE8iINVp2yQ+5I3M7Z8oFRSzwi0nJAVps/rTMfZOw2mXYtgEgY59aSXItr+hHSGGF0pWHqlRNzcCbV11MdBCIrEHWhOnU/hK5PWSxJMRytIwEaYspXqWEu+KaftkKIxr/CU/rnCd8w/ML0lS7hMXljMG95BN66M8k5vXHkAmdmMRZdQN4Y4nD5vhxY0q69+37fH0LmsMG0tKdm3d4H8PVpu\"}"}))
+				localStorage.setItem('payIDClaim', JSON.stringify({"identitySecrets":"{\"iv\":\"cxgg/vvP6XlWOwov\",\"encBuffer\":\"DX+FXU8rG4P2BQIZxWIV8R0DSc8WENREtf2PrIybw3cJLjk/90BYvpn+eC5c45Xb4tXHBW7ScxV26nR9OvDT5nT9SNyPZNIsFpnjnC83y31DodxgijK/ZPUGpPeA1ARYezB4KFHRfC1qCzxkD8qboFBCPp9mTpL4wscrYTuTBhZw/BAePSgu6RC3mdrvEgQGeIW4BgXI4HQ+ebEiDxGUkSpapeu1FnACALRlibmfwjE87z+D71SPft9o9YnRIBMxeWu9kU1wUJLeJKHSFfLwBkAbnb/MGTYuwPaJtY94MpCs3Fe9+4URMjuceWMMvabGCe9KplD8gPJCw9EqDzJjmA9Ie3BaIsRWwYZhS51uxaQvdTiGnxnmlJHT+y1WyK7dIAW3SfRqHzaf3VnYeTOfz0xErw4luHhVHO0HjNqhgGfML0rEYu5SJD4Gyeoj\"}","virtualAddress":"yadunandan.cruxdev.crux"}))
 				let cruxClient = new CruxClient(walletOptions);
 				let oldEncryptionKey = "fookey"
 				let newEncryptionKey = "fookey1"
@@ -125,7 +125,7 @@ describe('CruxClient tests', () => {
 			})
 
 			it("invalid payIDClaim in local storage", async () => {
-				localStorage.setItem('payIDClaim', JSON.stringify({"virtualAddress":"yadunandan.devcoinswitch.id","identitySecrets":"{\"iv\":\"XJmOCWeHzU4HfsYI\",\"encBuffer\":\"ss20WCh7PW64wWswkRUu/dxMkPro2KmD1rCGLKdtew82cPuJwZTqcdrfz9GBJOYqsHrzE4lOoUmODHeWor3ebC6vHCU8tQdg17Rlpdj3hx2FU0XTY1PsmJft4wZOvb9uThk6estvQgnj5/7quw9Be6oGt6gyCtOYsxtfSQysH0kfgRauCEOx4tTjSXO2GAufeEK4hubCC7bJ6iQCr9uAeMWRSxFknK8I+M62RnE8iINVp2yQ+5I3M7Z8oFRSzwi0nJAVps/rTMfZOw2mXYtgEgY59aSXItr+hHSGGF0pWHqlRNzcCbV11MdBCIrEHWhOnU/hK5PWSxJMRytIwEaYspXqWEu+KaftkKIxr/CU/rnCd8w/ML0lS7hMXljMG95BN66M8k5vXHkAmdmMRZdQN4Y4nD5vhxY0q69+37fH0LmsMG0tKdm3d4H8PVpu\"}"}))
+				localStorage.setItem('payIDClaim', JSON.stringify({"identitySecrets":"{\"iv\":\"cxgg/vvP6XlWOwov\",\"encBuffer\":\"DX+FXU8rG4P2BQIZxWIV8R0DSc8WENREtf2PrIybw3cJLjk/90BYvpn+eC5c45Xb4tXHBW7ScxV26nR9OvDT5nT9SNyPZNIsFpnjnC83y31DodxgijK/ZPUGpPeA1ARYezB4KFHRfC1qCzxkD8qboFBCPp9mTpL4wscrYTuTBhZw/BAePSgu6RC3mdrvEgQGeIW4BgXI4HQ+ebEiDxGUkSpapeu1FnACALRlibmfwjE87z+D71SPft9o9YnRIBMxeWu9kU1wUJLeJKHSFfLwBkAbnb/MGTYuwPaJtY94MpCs3Fe9+4URMjuceWMMvabGCe9KplD8gPJCw9EqDzJjmA9Ie3BaIsRWwYZhS51uxaQvdTiGnxnmlJHT+y1WyK7dIAW3SfRqHzaf3VnYeTOfz0xErw4luHhVHO0HjNqhgGfML0rEYu5SJD4Gyeoj\"}","virtualAddress":"yadunandan.cruxdev.id"}))
 				let cruxClient = new CruxClient(walletOptions);
 				let raiseException = false
 				try{
