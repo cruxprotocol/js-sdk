@@ -32,7 +32,7 @@ const putClientCurrencyMapping = async () => {
 const getContentFromGaiaHub = async () => {
     console.log("getContentFromGaiaHub called...")
     let name = ''
-    let response = await window.blockstackservice.getContentFromGaiaHub(name, nameservice.UPLOADABLE_JSON_FILES.CLIENT_MAPPING);
+    let response = await window.blockstackservice.getContentFromGaiaHub(name, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG);
     console.log(`content upload response is:- ${response}`)
 }
 

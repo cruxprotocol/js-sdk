@@ -65,7 +65,6 @@ const defaultBNSConfig: IBlockstackServiceOptions = {
 export enum UPLOADABLE_JSON_FILES {
     CRUXPAY = "cruxpay.json",
     CLIENT_CONFIG = "client-config.json",
-    CLIENT_MAPPING = "client-mapping.json",
     ASSET_LIST = "asset-list.json",
     PROFILE = "profile.json",
 }
