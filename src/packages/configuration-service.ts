@@ -4,6 +4,7 @@ import {ErrorHelper, PackageErrorCode} from "./error";
 import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "./gaia-service/utils";
 import * as identityUtils from "./identity-utils";
 import * as nameservice from "./name-service/blockstack-service";
+import { IBlockstackServiceInputOptions } from "./name-service/blockstack-service";
 
 const log = getLogger(__filename);
 
@@ -75,11 +76,9 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             }
         }
         const domain = this.clientName + "_crux";
-        const nsConfiguration = {
-            bnsNodes: undefined,
+        const nsConfiguration: IBlockstackServiceInputOptions = {
             domain,
-            gaiaHub: gaiaHub || undefined,
-            subdomainRegistrar: undefined,
+            gaiaHub,
         };
         if (this.clientConfig.nameserviceConfiguration) {
             nsConfiguration.bnsNodes = this.clientConfig.nameserviceConfiguration.bnsNodes;
