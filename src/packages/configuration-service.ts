@@ -54,13 +54,17 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             domain: this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX,
             subdomain: CONFIG_SUBDOMAIN,
         }).toString();
-        return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, clientName);
+        return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, config.BLOCKSTACK.BNS_NODES, clientName);
     }
 
     public getClientAssetMapping = async (): Promise<object> => {
         const clientConfig = await this.clientConfig;
+        const lowerAssetMapping: any = {};
         if (clientConfig.assetMapping) {
-            return clientConfig.assetMapping;
+            for (const walletCurrencySymbol of Object.keys(clientConfig.assetMapping)) {
+                lowerAssetMapping[walletCurrencySymbol.toLowerCase()] = clientConfig.assetMapping[walletCurrencySymbol];
+            }
+            return lowerAssetMapping;
         } else {
             return {};
         }
@@ -71,10 +75,8 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         let ns: nameservice.BlockstackService;
         let gaiaHub: string | undefined;
         if (this.blockstackID) {
-            const gaiaUrls = await getGaiaDataFromBlockstackID(this.blockstackID);
-            if (gaiaUrls.gaiaWriteUrl) {
-                gaiaHub = gaiaUrls.gaiaWriteUrl;
-            }
+            const gaiaUrls = await getGaiaDataFromBlockstackID(this.blockstackID, (this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.bnsNodes) || config.BLOCKSTACK.BNS_NODES);
+            gaiaHub = gaiaUrls.gaiaWriteUrl;
         }
         const domain = this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX;
         const nsConfiguration: IBlockstackServiceInputOptions = {
@@ -89,10 +91,6 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         }
         ns = new nameservice.BlockstackService(nsConfiguration);
         return ns;
-    }
-
-    public getVirtualAddressFromClientName = (clientName: string): string => {
-        return CONFIG_SUBDOMAIN + clientName + identityUtils.CRUX_DOMAIN_SUFFIX;
     }
 
 }
