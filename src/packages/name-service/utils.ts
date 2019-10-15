@@ -1,6 +1,5 @@
 import { AssertionError, deepStrictEqual } from "assert";
 import { getLogger } from "../..";
-import config from "../../config";
 import { ErrorHelper, PackageErrorCode } from "../error";
 import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
