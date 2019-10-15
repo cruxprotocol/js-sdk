@@ -80,7 +80,6 @@ const defaultBNSConfig: IDefaultServiceOptions = {
 export enum UPLOADABLE_JSON_FILES {
     CRUXPAY = "cruxpay.json",
     CLIENT_CONFIG = "client-config.json",
-    ASSET_LIST = "asset-list.json",
     PROFILE = "profile.json",
 }
 
@@ -95,11 +94,23 @@ export class BlockstackService extends nameService.NameService {
             case UPLOADABLE_JSON_FILES.CLIENT_CONFIG:
                 packageErrorCode = PackageErrorCode.GaiaClientConfigUploadFailed;
                 break;
-            case UPLOADABLE_JSON_FILES.ASSET_LIST:
-                packageErrorCode = PackageErrorCode.GaiaAssetListUploadFailed;
-                break;
             default:
                 packageErrorCode = PackageErrorCode.GaiaUploadFailed;
+        }
+        return packageErrorCode;
+    }
+
+    public static getGetPackageErrorCodeForFilename = (filename: UPLOADABLE_JSON_FILES) => {
+        let packageErrorCode;
+        switch (filename) {
+            case UPLOADABLE_JSON_FILES.CRUXPAY:
+                packageErrorCode = PackageErrorCode.GaiaCruxPayUploadFailed;
+                break;
+            case UPLOADABLE_JSON_FILES.CLIENT_CONFIG:
+                packageErrorCode = PackageErrorCode.GaiaClientConfigUploadFailed;
+                break;
+            default:
+                packageErrorCode = PackageErrorCode.GaiaGetFileFailed;
         }
         return packageErrorCode;
     }

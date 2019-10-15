@@ -32,7 +32,7 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: name
         });
         log.debug(`Response from ${filename}`, responseBody);
     } catch (error) {
-        const packageErrorCode = nameservice.BlockstackService.getUploadPackageErrorCodeForFilename(filename);
+        const packageErrorCode = nameservice.BlockstackService.getGetPackageErrorCodeForFilename(filename);
         throw ErrorHelper.getPackageError(packageErrorCode, filename, error);
     }
     if (responseBody.indexOf("BlobNotFound") > 0 || responseBody.indexOf("NoSuchKey") > 0) {
