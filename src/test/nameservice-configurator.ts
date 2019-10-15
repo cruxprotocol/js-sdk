@@ -86,11 +86,11 @@ describe("Configuration Tests", () => {
 
           describe("client asset mapping tests", () => {
             it("valid subdomain get client asset mapping", async () => {
-              let configPromise = new Promise<any>(async(resolve, reject) => {resolve({assetMapping: {EOS: "9dbdc727-de68-4f2a-8956-04a38ed71ca6",}, })})
+              let configPromise = new Promise<any>(async(resolve, reject) => {resolve({assetMapping: {eos: "9dbdc727-de68-4f2a-8956-04a38ed71ca6",}, })})
               let getConfigStub = sinon.stub(nsConfigService, 'getClientConfig').returns(configPromise)
               await nsConfigService.init()
               let mockedClientAsssetMapping = await nsConfigService.getClientAssetMapping()
-              expect(mockedClientAsssetMapping).to.deep.include({EOS: "9dbdc727-de68-4f2a-8956-04a38ed71ca6"})
+              expect(mockedClientAsssetMapping).to.deep.include({eos: "9dbdc727-de68-4f2a-8956-04a38ed71ca6"})
               getConfigStub.restore()
             })
           })
@@ -110,13 +110,6 @@ describe("Configuration Tests", () => {
                 expect(raiseError).to.be.true
                 stubbedDomainName.restore()
               }
-            })
-          })
-
-          describe('virtual address tests', () => {
-            it("get virtual address for client name", () => {
-              let vAdd = nsConfigService.getVirtualAddressFromClientName('scatter')
-              expect(vAdd).to.be.string
             })
           })
     });

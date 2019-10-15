@@ -54,13 +54,17 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             domain: this.settingsDomain,
             subdomain: clientName,
         }).toString();
-        return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, clientName);
+        return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, config.BLOCKSTACK.BNS_NODES, clientName);
     }
 
     public getClientAssetMapping = async (): Promise<object> => {
         const clientConfig = await this.clientConfig;
+        const lowerAssetMapping: any = {};
         if (clientConfig.assetMapping) {
-            return clientConfig.assetMapping;
+            for (const walletCurrencySymbol of Object.keys(clientConfig.assetMapping)) {
+                lowerAssetMapping[walletCurrencySymbol.toLowerCase()] = clientConfig.assetMapping[walletCurrencySymbol];
+            }
+            return lowerAssetMapping;
         } else {
             return {};
         }
@@ -71,10 +75,8 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         let ns: nameservice.BlockstackService;
         let gaiaHub: string | undefined;
         if (this.blockstackID) {
-            const gaiaUrls = await getGaiaDataFromBlockstackID(this.blockstackID);
-            if (gaiaUrls.gaiaWriteUrl) {
-                gaiaHub = gaiaUrls.gaiaWriteUrl;
-            }
+            const gaiaUrls = await getGaiaDataFromBlockstackID(this.blockstackID, (this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.bnsNodes) || config.BLOCKSTACK.BNS_NODES);
+            gaiaHub = gaiaUrls.gaiaWriteUrl;
         }
         if (this.clientConfig.nameserviceConfiguration) {
             const nsConfiguration = {
@@ -92,10 +94,6 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             }
         }
         return ns;
-    }
-
-    public getVirtualAddressFromClientName = (clientName: string): string => {
-        return clientName +  "." + this.settingsDomain;
     }
 
 }

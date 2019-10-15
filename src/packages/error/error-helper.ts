@@ -3,14 +3,13 @@ import {PackageError} from "./package-error";
 import {PackageErrorCode} from "./package-error-code";
 
 export class ErrorHelper {
-    public static ERROR_STRINGS = ERROR_STRINGS;
     public static getPackageError(errorCode: PackageErrorCode, ...optionalArgs: any[]): PackageError {
         const message = ErrorHelper.getErrorMessage(errorCode, ...optionalArgs);
         return new PackageError(message, errorCode as number);
     }
 
     private static getErrorMessage(errorCode: PackageErrorCode, ...optionalArgs: any[]): string {
-        return ErrorHelper.formatErrorMessage(ErrorHelper.ERROR_STRINGS[errorCode], ...optionalArgs);
+        return ErrorHelper.formatErrorMessage(ERROR_STRINGS[errorCode], ...optionalArgs);
     }
 
     private static formatErrorMessage(errorMessage: string, ...optionalArgs: any[]): string {
