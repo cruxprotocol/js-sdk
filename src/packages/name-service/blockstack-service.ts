@@ -245,7 +245,6 @@ export class BlockstackService extends nameService.NameService {
             throw ErrorHelper.getPackageError(PackageErrorCode.AddressMappingDecodingFailure);
         }
         await this._gaiaService.uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping);
-        // TODO: need to validate the final uploaded URL is corresponding to the identityClaim provided
         return true;
     }
 
