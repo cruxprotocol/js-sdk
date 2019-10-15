@@ -7,6 +7,7 @@ import * as nameservice from "./name-service/blockstack-service";
 import { IBlockstackServiceInputOptions } from "./name-service/blockstack-service";
 
 const log = getLogger(__filename);
+const CONFIG_SUBDOMAIN = "_config";
 
 export abstract class NameServiceConfigurationService {
     constructor() {
@@ -51,7 +52,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     public getClientConfig = async (clientName: string): Promise<any> => {
         const blockstackId = new identityUtils.BlockstackId({
             domain: this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX,
-            subdomain: "_config",
+            subdomain: CONFIG_SUBDOMAIN,
         }).toString();
         return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, clientName);
     }
@@ -91,7 +92,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     }
 
     public getVirtualAddressFromClientName = (clientName: string): string => {
-        return "_config." + clientName + identityUtils.CRUX_DOMAIN_SUFFIX;
+        return CONFIG_SUBDOMAIN + clientName + identityUtils.CRUX_DOMAIN_SUFFIX;
     }
 
 }
