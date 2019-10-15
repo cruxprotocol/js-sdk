@@ -46,7 +46,7 @@ let requestResponseArray: { request: object, response: object }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
-      url: '/v1/names/scatter_dev.devcoinswitch_crux.id',
+      url: '/v1/names/_config.scatter_dev_crux.id',
       json: true
     },
     response: {
@@ -131,7 +131,7 @@ let requestResponseArray: { request: object, response: object }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
-      url: '/v1/names/scatter_dev.devcoinswitch_crux.id',
+      url: '/v1/names/_config.scatter_dev_crux.id',
       json: true
     },
     response: {

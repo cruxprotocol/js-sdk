@@ -30,7 +30,13 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         if (cruxID) {
             this.blockstackID = identityUtils.IdTranslator.cruxToBlockstack(identityUtils.CruxId.fromString(cruxID)).toString();
         }
-        this.blockstackNameservice = new nameservice.BlockstackService();
+        const options = {
+            bnsNodes: undefined,
+            domain: this.clientName + "_crux",
+            gaiaHub: undefined,
+            subdomainRegistrar: undefined,
+        };
+        this.blockstackNameservice = new nameservice.BlockstackService(options);
         log.info(`BlockstackConfigurationService initialised with default configs`);
     }
 
@@ -74,26 +80,25 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
                 gaiaHub = gaiaUrls.gaiaWriteUrl;
             }
         }
+        const domain = this.clientName + "_crux";
+        const nsConfiguration = {
+            bnsNodes: undefined,
+            domain,
+            gaiaHub: gaiaHub || undefined,
+            subdomainRegistrar: undefined,
+        };
         if (this.clientConfig.nameserviceConfiguration) {
-            const nsConfiguration = {
-                bnsNodes: this.clientConfig.nameserviceConfiguration.bnsNodes || config.BLOCKSTACK.BNS_NODES,
-                domain: this.clientName || config.BLOCKSTACK.IDENTITY_DOMAIN,
-                gaiaHub: gaiaHub || this.clientConfig.nameserviceConfiguration.gaiaHub || config.BLOCKSTACK.GAIA_HUB,
-                subdomainRegistrar: this.clientConfig.nameserviceConfiguration.subdomainRegistrar || config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
-            };
-            ns = new nameservice.BlockstackService(nsConfiguration);
-        } else {
-            if (gaiaHub) {
-                ns = new nameservice.BlockstackService({gaiaHub});
-            } else {
-                ns = new nameservice.BlockstackService();
-            }
+            nsConfiguration.bnsNodes = this.clientConfig.nameserviceConfiguration.bnsNodes;
+            nsConfiguration.domain = domain;
+            nsConfiguration.gaiaHub = gaiaHub || this.clientConfig.nameserviceConfiguration.gaiaHub;
+            nsConfiguration.subdomainRegistrar = this.clientConfig.nameserviceConfiguration.subdomainRegistrar;
         }
+        ns = new nameservice.BlockstackService(nsConfiguration);
         return ns;
     }
 
     public getVirtualAddressFromClientName = (clientName: string): string => {
-        return "_config." + this.clientName + "_crux";
+        return "_config." + clientName + "_crux";
     }
 
 }

@@ -111,7 +111,7 @@ let requestResponseArray: { request: object, response: any }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://registrar.coinswitch.co:3000',
-      headers: {'x-wallet-name': 'devcoinswitch'},
+      headers: {'x-domain-name': 'devcoinswitch_crux'},
       url: '/status/cs1',
       json: true
     },
@@ -124,7 +124,7 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'POST',
       baseUrl: 'https://registrar.coinswitch.co:3000',
       url: '/register',
-      headers: { 'Content-Type': 'application/json', 'x-wallet-name': 'devcoinswitch' },
+      headers: { 'Content-Type': 'application/json', 'x-domain-name': 'devcoinswitch_crux' },
       body:
       {
         zonefile:
@@ -147,7 +147,7 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'POST',
       baseUrl: 'https://registrar.coinswitch.co:3000',
       url: '/register',
-      headers: { 'Content-Type': 'application/json', 'x-wallet-name': 'devcoinswitch' },
+      headers: { 'Content-Type': 'application/json', 'x-domain-name': 'devcoinswitch_crux' },
       body:
       {
         zonefile:
@@ -171,7 +171,7 @@ let requestResponseArray: { request: object, response: any }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://registrar.coinswitch.co:3000',
-      headers: {'x-wallet-name': 'devcoinswitch'},
+      headers: {'x-domain-name': 'devcoinswitch_crux'},
       url: '/status/example',
       json: true
     },
@@ -220,7 +220,7 @@ let requestResponseArray: { request: object, response: any }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://registrar.coinswitch.co:3000',
-      headers: {'x-wallet-name': 'devcoinswitch'},
+      headers: {'x-domain-name': 'devcoinswitch_crux'},
       url: '/status/carol',
       json: true
     },
@@ -256,7 +256,7 @@ let requestResponseArray: { request: object, response: any }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://registrar.coinswitch.co:3000',
-      headers: {'x-wallet-name': 'devcoinswitch'},
+      headers: {'x-domain-name': 'devcoinswitch_crux'},
       url: '/status/carol1',
       json: true
     },
@@ -292,7 +292,7 @@ let requestResponseArray: { request: object, response: any }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://registrar.coinswitch.co:3000',
-      headers: {'x-wallet-name': 'devcoinswitch'},
+      headers: {'x-domain-name': 'devcoinswitch_crux'},
       url: '/status/carol2',
       json: true
     },
@@ -328,7 +328,7 @@ let requestResponseArray: { request: object, response: any }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://registrar.coinswitch.co:3000',
-      headers: {'x-wallet-name': 'devcoinswitch'},
+      headers: {'x-domain-name': 'devcoinswitch_crux'},
       url: '/status/carol3',
       json: true
     },
@@ -378,7 +378,7 @@ let requestResponseArray: { request: object, response: any }[] = [
     request: {
       method: 'GET',
       baseUrl: 'https://registrar.coinswitch.co:3000',
-      headers: {'x-wallet-name': 'devcoinswitch'},
+      headers: {'x-domain-name': 'devcoinswitch_crux'},
       url: '/status/carol4',
       json: true
     },

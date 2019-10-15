@@ -22,8 +22,17 @@ export interface IBitcoinKeyPair {
     address: string;
 }
 
-export interface IBlockstackServiceOptions {
+export interface IBlockstackServiceOptions extends IDefaultServiceOptions {
     domain: string;
+}
+export interface IBlockstackServiceInputOptions {
+    domain: string;
+    gaiaHub: string | undefined;
+    subdomainRegistrar: string | undefined;
+    bnsNodes: string[] | undefined;
+}
+
+export interface IDefaultServiceOptions {
     gaiaHub: string;
     subdomainRegistrar: string;
     bnsNodes: string[];
@@ -55,9 +64,8 @@ const getIdentityCoupleFromCruxId = (cruxId: CruxId): IdentityCouple => {
     };
 };
 
-const defaultBNSConfig: IBlockstackServiceOptions = {
+const defaultBNSConfig: IDefaultServiceOptions = {
     bnsNodes: config.BLOCKSTACK.BNS_NODES,
-    domain: config.BLOCKSTACK.IDENTITY_DOMAIN,
     gaiaHub: config.BLOCKSTACK.GAIA_HUB,
     subdomainRegistrar: config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
 };
@@ -99,12 +107,16 @@ export class BlockstackService extends nameService.NameService {
     private _identityCouple: IdentityCouple | undefined;
     private _gaiaService: GaiaService;
 
-    constructor(options: any = {}) {
+    constructor(options: IBlockstackServiceInputOptions) {
         super();
         // TODO: Verify Domain against Registrar
-        const _options: IBlockstackServiceOptions = {...defaultBNSConfig, ...options};
+        if (!options.domain) {
+            throw new Error("No wallet name sepcified!");
+        }
 
-        this._domain = _options.domain + "_crux";
+        const _options: IBlockstackServiceOptions = this._getConfigOptions(defaultBNSConfig, options);
+
+        this._domain = _options.domain;
         this._gaiaHub = _options.gaiaHub;
         this._subdomainRegistrar = _options.subdomainRegistrar;
         // @ts-ignore
@@ -170,8 +182,9 @@ export class BlockstackService extends nameService.NameService {
         await this._gaiaService.uploadProfileInfo(identityKeyPair.privKey);
 
         const registeredSubdomain = await this._registerSubdomain(subdomain, identityKeyPair.address);
+        const cruxdomain = this._domain.slice(0, -5);
         this._identityCouple = getIdentityCoupleFromCruxId(new CruxId({
-            domain: this._domain,
+            domain: cruxdomain,
             subdomain,
         }));
         return this._identityCouple.cruxId.toString();
@@ -203,7 +216,7 @@ export class BlockstackService extends nameService.NameService {
         const options = {
             baseUrl: this._subdomainRegistrar,
             headers: {
-                "x-wallet-name": this._domain,
+                "x-domain-name": this._domain,
             },
             json: true,
             method: "GET",
@@ -219,7 +232,7 @@ export class BlockstackService extends nameService.NameService {
         const options = {
             baseUrl: this._subdomainRegistrar,
             headers: {
-                "x-wallet-name": this._domain,
+                "x-domain-name": this._domain,
             },
             json: true,
             method: "GET",
@@ -257,6 +270,16 @@ export class BlockstackService extends nameService.NameService {
         return await getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY);
     }
 
+    private _getConfigOptions = (defaultConfig: IDefaultServiceOptions, options: IBlockstackServiceInputOptions): IBlockstackServiceOptions => {
+        const configOptions: IBlockstackServiceOptions = {
+            bnsNodes: options.bnsNodes || defaultConfig.bnsNodes,
+            domain: options.domain,
+            gaiaHub: options.gaiaHub || defaultConfig.gaiaHub,
+            subdomainRegistrar: options.subdomainRegistrar || defaultConfig.subdomainRegistrar,
+        };
+        return configOptions;
+    }
+
     private _generateMnemonic = (): string => {
         return blockstack.BlockstackWallet.generateMnemonic();
     }
@@ -284,7 +307,7 @@ export class BlockstackService extends nameService.NameService {
             },
             headers: {
                 "Content-Type": "application/json",
-                "x-wallet-name": this._domain,
+                "x-domain-name": this._domain,
             },
             json: true,
             method: "POST",
