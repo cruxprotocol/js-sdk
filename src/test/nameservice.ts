@@ -624,7 +624,6 @@ describe('BlockstackService tests', () => {
     it("given filename, returns upload package error code", async() => {
       let fileNameCruxPay = UPLOADABLE_JSON_FILES.CRUXPAY
       let fileNameClientConfig = UPLOADABLE_JSON_FILES.CLIENT_CONFIG
-      let fileNameAssetList = UPLOADABLE_JSON_FILES.ASSET_LIST
       let fileNameProfile = UPLOADABLE_JSON_FILES.PROFILE
       
       let cruxPayStatus = blockstackService.BlockstackService.getUploadPackageErrorCodeForFilename(fileNameCruxPay)
@@ -632,9 +631,6 @@ describe('BlockstackService tests', () => {
 
       let clientConfigPayStatus = blockstackService.BlockstackService.getUploadPackageErrorCodeForFilename(fileNameClientConfig)
       expect(clientConfigPayStatus).to.be.equal(errors.PackageErrorCode.GaiaClientConfigUploadFailed)
-      
-      let assetListPayStatus = blockstackService.BlockstackService.getUploadPackageErrorCodeForFilename(fileNameAssetList)
-      expect(assetListPayStatus).to.be.equal(errors.PackageErrorCode.GaiaAssetListUploadFailed)
       
       let profileStatus = blockstackService.BlockstackService.getUploadPackageErrorCodeForFilename(fileNameProfile)
       expect(profileStatus).to.be.equal(errors.PackageErrorCode.GaiaUploadFailed)
