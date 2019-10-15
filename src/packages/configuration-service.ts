@@ -71,7 +71,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         let ns: nameservice.BlockstackService;
         let gaiaHub: string | undefined;
         if (this.blockstackID) {
-            const gaiaUrls = await getGaiaDataFromBlockstackID(this.blockstackID);
+            const gaiaUrls = await getGaiaDataFromBlockstackID(this.blockstackID, this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.bnsNodes);
             if (gaiaUrls.gaiaWriteUrl) {
                 gaiaHub = gaiaUrls.gaiaWriteUrl;
             }
