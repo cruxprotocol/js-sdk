@@ -296,7 +296,7 @@ describe('CruxClient tests', () => {
 					await cruxClient.putAddressMap(mockedAddressMap)
 				} catch(e) {
 					raisesException = true
-					expect(e.errorCode).to.equal(4010)
+					expect(e.errorCode).to.equal(PackageErrorCode.CurrencyDoesNotExistInClientMapping)
 				} finally {
 					expect(raisesException).to.be.true
 					updateProfileStub.restore()
