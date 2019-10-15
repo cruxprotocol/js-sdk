@@ -4,13 +4,13 @@ import { TokenSigner } from 'jsontokens'
 import 'babel-polyfill';
 
 
-const ramTest = async () => {
-    getIdStatus('ankit9')
-}
+// // const ramTest = async () => {
+// //     getIdStatus('ankit9')
+// // }
 
-const ramTest1 = async () => {
-    publishClientConfig(clientConfig, getSignPayload, "zelcore");
-}
+// // const ramTest1 = async () => {
+// //     publishClientConfig(clientConfig, getSignPayload, "zelcore");
+// }
 
 declare global {
     interface Window {
@@ -22,8 +22,8 @@ declare global {
         putAddressMap: Function;
         getCruxIDState: Function;
         updatePassword: Function;
-        ramTest: Function;
-        ramTest1: Function
+        getIdStatus: Function;
+        publishClientConfig: Function
     }
 }
 
@@ -38,23 +38,23 @@ const clientConfig = {
 const uploadClientContentToGaiaHub = async (fileName:string, csAddressMap: object, type: string, gaiaHubUrl: string, publicKey :string, signatureCallback: any, address:any) => {
 
     let [hubConfig, tokenFile] = await getAllSignedPayloads(gaiaHubUrl, csAddressMap, publicKey, signatureCallback, address)
-    console.info(hubConfig)
-    console.info(tokenFile)
+    // console.info(hubConfig)
+    // console.info(tokenFile)
     let contentToUpload: any = null;
         if (type === "application/json") {
             contentToUpload = JSON.stringify(tokenFile);
         } else {
-            console.groupEnd();
+            // console.groupEnd();
             throw new Error(`Unhandled content-type ${type}`);
         }
         let finalURL: string;
         try {
             finalURL = await blockstack.uploadToGaiaHub(fileName, contentToUpload, hubConfig, type);
         } catch (error) {
-            console.groupEnd();
+            // console.groupEnd();
             throw new Error(`unable to upload to gaiahub, ${error}`);
         }
-        console.groupEnd();
+        // console.groupEnd();
         return finalURL;
 }
 
@@ -63,11 +63,11 @@ const publishClientConfig = async (clientConfig: any, signatureCallback: any, pu
     // const publicKey = "0363409e301867f3756a66ef4bf0ab91eb96f2cad18e2bd8a49d8726c9f7ff6931"
     // const address = "1Ep3hL7FjMfutRnJfvAAZgzDpQTHKxJZVm"
         try {
-            await uploadClientContentToGaiaHub(`${clientName}_` + "client-config.json", clientConfig, "application/json", gaiaHubUrl, publicKey, signatureCallback, address);
+           const finalURL = await uploadClientContentToGaiaHub(`${clientName}_` + "client-config.json", clientConfig, "application/json", gaiaHubUrl, publicKey, signatureCallback, address);
+           return finalURL
         } catch (error) {
             throw new Error(`unable to upload content to gaiahub, ${error}`);
         }
-    console.log(clientConfig)
 }
 
 
@@ -90,7 +90,7 @@ const getAllSignedPayloads = async (gaiaHubUrl: string, content: object, publicK
     // FUNCTION START
     const response = await fetchPrivate(`${gaiaHubUrl}/hub_info`)
     const hubInfo = await response.json()
-    console.log(hubInfo);
+    // console.log(hubInfo);
     const readURL = hubInfo.read_url_prefix
     
     // FUNCTION START
@@ -115,13 +115,13 @@ const getAllSignedPayloads = async (gaiaHubUrl: string, content: object, publicK
 
     const [signedPayload1, signedPayload2] = await signatureCallback([unsignedPayload1, unsignedPayload2])
 
-    console.log(signedPayload1)
+    // console.log(signedPayload1)
     const token = `v1:${signedPayload1}`
     // Function End
 
     //ecPairToAddress(hexStringToECPair(challengeSignerHex+ (challengeSignerHex.length === 64 ? '01' : '')))
 
-    console.log(token)
+    // console.log(token)
     const tokenFile = [blockstack.wrapProfileToken(signedPayload2)];
 
     const return1 = {
@@ -179,9 +179,8 @@ const getIdStatus = async (subdomain: string) => {
     const url = 'https://registrar.coinswitch.co:4000/status/'+subdomain
     const response = await fetchPrivate(`${url}`)
     const status = parseStatus(await response.json())
-    console.log(status)
+    // console.log(status)
     return status
 }
-
-window.ramTest = ramTest;
-window.ramTest1 = ramTest1;
+window.getIdStatus = getIdStatus;
+window.publishClientConfig = publishClientConfig;
