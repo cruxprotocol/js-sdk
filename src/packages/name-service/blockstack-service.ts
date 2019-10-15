@@ -64,6 +64,13 @@ const getIdentityCoupleFromCruxId = (cruxId: CruxId): IdentityCouple => {
     };
 };
 
+const getIdentityCoupleFromBlockstackId = (blockstackId: BlockstackId): IdentityCouple => {
+    return {
+        bsId: blockstackId,
+        cruxId: IdTranslator.blockstackToCrux(blockstackId),
+    };
+};
+
 const defaultBNSConfig: IDefaultServiceOptions = {
     bnsNodes: config.BLOCKSTACK.BNS_NODES,
     gaiaHub: config.BLOCKSTACK.GAIA_HUB,
@@ -182,9 +189,8 @@ export class BlockstackService extends nameService.NameService {
         await this._gaiaService.uploadProfileInfo(identityKeyPair.privKey);
 
         const registeredSubdomain = await this._registerSubdomain(subdomain, identityKeyPair.address);
-        const cruxdomain = this._domain.slice(0, -5);
-        this._identityCouple = getIdentityCoupleFromCruxId(new CruxId({
-            domain: cruxdomain,
+        this._identityCouple = getIdentityCoupleFromBlockstackId(new BlockstackId({
+            domain: this._domain,
             subdomain,
         }));
         return this._identityCouple.cruxId.toString();
