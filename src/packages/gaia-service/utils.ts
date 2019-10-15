@@ -1,6 +1,5 @@
 import * as blockstack from "blockstack";
 import { getLogger } from "../..";
-import config from "../../config";
 import { ErrorHelper, PackageErrorCode } from "../error";
 import * as nameservice from "../name-service/blockstack-service";
 import { fetchNameDetails } from "../name-service/utils";
@@ -14,9 +13,9 @@ interface gaiaData {
     ownerAddress: string;
 }
 
-export const getContentFromGaiaHub = async (blockstackId: string, filename: nameservice.UPLOADABLE_JSON_FILES, prefix?: string, type= "application/json"): Promise<any> => {
+export const getContentFromGaiaHub = async (blockstackId: string, filename: nameservice.UPLOADABLE_JSON_FILES, bnsNodes: string[], prefix?: string): Promise<any> => {
     let fileUrl: string;
-    const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackId);
+    const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackId, bnsNodes);
     fileUrl = gaiaDetails.gaiaReadUrl + gaiaDetails.ownerAddress + "/" + (prefix ? `${prefix}_` : "") + filename;
     const options = {
         json: true,
@@ -61,9 +60,8 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: name
     return finalContent;
 };
 
-export const getGaiaDataFromBlockstackID = async (blockstackId: string): Promise<gaiaData> => {
+export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes: string[]): Promise<gaiaData> => {
     let nameData: any;
-    const bnsNodes: string[] = config.BLOCKSTACK.BNS_NODES;
     nameData = await fetchNameDetails(blockstackId, bnsNodes);
     log.debug(nameData);
     if (!nameData) {

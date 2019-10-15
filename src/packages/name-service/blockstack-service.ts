@@ -65,7 +65,6 @@ const defaultBNSConfig: IBlockstackServiceOptions = {
 export enum UPLOADABLE_JSON_FILES {
     CRUXPAY = "cruxpay.json",
     CLIENT_CONFIG = "client-config.json",
-    CLIENT_MAPPING = "client-mapping.json",
     ASSET_LIST = "asset-list.json",
     PROFILE = "profile.json",
 }
@@ -145,7 +144,6 @@ export class BlockstackService extends nameService.NameService {
 
     public generateIdentity = async (): Promise<nameService.IIdentityClaim> => {
         const newMnemonic = this._generateMnemonic();
-        log.warn(`Your new mnemonic backing your identity is: \n${newMnemonic}`);
         const identityKeyPair = await this._generateIdentityKeyPair(newMnemonic);
         return {
             secrets: {
@@ -247,14 +245,13 @@ export class BlockstackService extends nameService.NameService {
             throw ErrorHelper.getPackageError(PackageErrorCode.AddressMappingDecodingFailure);
         }
         await this._gaiaService.uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping);
-        // TODO: need to validate the final uploaded URL is corresponding to the identityClaim provided
         return true;
     }
 
     public getAddressMapping = async (fullCruxId: string): Promise<IAddressMapping> => {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
-        return await getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY);
+        return await getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, this._bnsNodes);
     }
 
     private _generateMnemonic = (): string => {

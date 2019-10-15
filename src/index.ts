@@ -96,8 +96,7 @@ export class PayIDClaim implements ICruxPayClaim {
             if (!encryptionKey) {
                 encryptionKey = await this._getEncryptionKey();
             }
-            const encryptionKeyDigest = await this._encryption.digest(encryptionKey);
-            this.identitySecrets = JSON.stringify(await this._encryption.encryptJSON(this.identitySecrets as object, encryptionKeyDigest));
+            this.identitySecrets = JSON.stringify(await this._encryption.encryptJSON(this.identitySecrets as object, encryptionKey));
         }
     }
 
@@ -109,13 +108,11 @@ export class PayIDClaim implements ICruxPayClaim {
             if (!encryptionKey) {
                 encryptionKey = await this._getEncryptionKey();
             }
-            const encryptionKeyDigest = await this._encryption.digest(encryptionKey);
-            this.identitySecrets = (await this._encryption.decryptJSON(encryptedObj.encBuffer, encryptedObj.iv, encryptionKeyDigest) as nameService.IIdentityClaim);
+            this.identitySecrets = (await this._encryption.decryptJSON(encryptedObj.encBuffer, encryptedObj.iv, encryptionKey) as nameService.IIdentityClaim);
         }
     }
 
-    public toJSON = (): ICruxPayClaim => {
-        // await this.encrypt()
+    public toJSON = (): Promise<ICruxPayClaim> => {
         const json = JSON.parse(JSON.stringify({
             identitySecrets: this.identitySecrets,
             virtualAddress: this.virtualAddress,
@@ -124,6 +121,7 @@ export class PayIDClaim implements ICruxPayClaim {
     }
 
     public save = async (storageService: storage.StorageService): Promise<void> => {
+        await this.encrypt();
         const json = this.toJSON();
         // log.debug(`PayIDClaim being stored to storage:`, json)
         storageService.setJSON("payIDClaim", json);
@@ -135,7 +133,7 @@ export class PayIDClaim implements ICruxPayClaim {
 
 }
 
-class CruxPayPeer extends EventEmitter {
+class CruxPayPeer {
     public walletClientName: string;
     protected _options: ICruxPayPeerOptions;
     protected _getEncryptionKey: () => string;
@@ -148,8 +146,6 @@ class CruxPayPeer extends EventEmitter {
     protected _payIDClaim: PayIDClaim | undefined;
 
     constructor(_options: ICruxPayPeerOptions) {
-        super();
-
         this._options = Object.assign({}, _options);
         // TODO: Need to validate options
 
@@ -188,10 +184,6 @@ class CruxPayPeer extends EventEmitter {
         } else {
             configService = new BlockstackConfigurationService(this.walletClientName);
             await this._initializeNameService(configService);
-            const identityClaim = await (this._nameService as nameService.NameService).generateIdentity();
-            const payIDClaim = {identitySecrets: identityClaim.secrets};
-            this._setPayIDClaim(new PayIDClaim(payIDClaim as ICruxPayClaim, { getEncryptionKey: this._getEncryptionKey }));
-            log.debug(`Allocated temporary identitySecrets and payIDClaim`);
         }
         this._clientMapping = await configService.getClientAssetMapping();
         this._assetList = await configService.getGlobalAssetList();
@@ -307,7 +299,15 @@ export class CruxClient extends CruxPayPeer {
     public getCruxIDState = async (): Promise<ICruxIDState> => {
         try {
             const fullCruxID = this.hasPayIDClaim() ? this.getPayIDClaim().virtualAddress : undefined;
-            const status = await this.getIDStatus();
+            if (!fullCruxID) {
+                return {
+                    status: {
+                        status: "NONE",
+                        status_detail: "",
+                    },
+                };
+            }
+            const status = await this._getIDStatus();
             return {
                 cruxID: fullCruxID,
                 status,
@@ -324,7 +324,7 @@ export class CruxClient extends CruxPayPeer {
             identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
 
             // Generating the identityClaim
-            await (this._payIDClaim as PayIDClaim).decrypt();
+            if (this._payIDClaim) { await (this._payIDClaim as PayIDClaim).decrypt(); }
             const identityClaim = this._payIDClaim ? {secrets: this._payIDClaim.identitySecrets} : await (this._nameService as nameService.NameService).generateIdentity();
             const registeredPublicID = await (this._nameService as nameService.NameService).registerName(identityClaim, cruxIDSubdomain);
 
@@ -398,7 +398,7 @@ export class CruxClient extends CruxPayPeer {
         }
     }
 
-    private getIDStatus = async (): Promise<nameService.CruxIDRegistrationStatus> => {
+    private _getIDStatus = async (): Promise<nameService.CruxIDRegistrationStatus> => {
         await (this._payIDClaim as PayIDClaim).decrypt();
         const result = await (this._nameService as nameService.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
         await (this._payIDClaim as PayIDClaim).encrypt();
