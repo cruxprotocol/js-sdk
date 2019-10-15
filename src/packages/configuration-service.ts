@@ -31,7 +31,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         if (cruxID) {
             this.blockstackID = identityUtils.IdTranslator.cruxToBlockstack(identityUtils.CruxId.fromString(cruxID)).toString();
         }
-        this.blockstackNameservice = new nameservice.BlockstackService({domain: this.clientName + "_crux"});
+        this.blockstackNameservice = new nameservice.BlockstackService({domain: this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX});
         log.info(`BlockstackConfigurationService initialised with default configs`);
     }
 
@@ -50,7 +50,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
 
     public getClientConfig = async (clientName: string): Promise<any> => {
         const blockstackId = new identityUtils.BlockstackId({
-            domain: this.clientName + "_crux",
+            domain: this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX,
             subdomain: "_config",
         }).toString();
         return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, clientName);
@@ -75,7 +75,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
                 gaiaHub = gaiaUrls.gaiaWriteUrl;
             }
         }
-        const domain = this.clientName + "_crux";
+        const domain = this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX;
         const nsConfiguration: IBlockstackServiceInputOptions = {
             domain,
             gaiaHub,
@@ -91,7 +91,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     }
 
     public getVirtualAddressFromClientName = (clientName: string): string => {
-        return "_config." + clientName + "_crux";
+        return "_config." + clientName + identityUtils.CRUX_DOMAIN_SUFFIX;
     }
 
 }
