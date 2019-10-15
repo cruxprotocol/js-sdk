@@ -7,6 +7,7 @@ import * as utils from "../packages/utils";
 import sinon from 'sinon';
 import requestFixtures from "./requestMocks/nameservice-reqmocks";
 import * as blockstack from 'blockstack';
+import config from '../config';
 
 
 
@@ -41,7 +42,7 @@ describe('getContentFromGaiaHub tests', () => {
         
         let raisedError
         try {
-            await getContentFromGaiaHub('cs1.devcoinswitch.id', UPLOADABLE_JSON_FILES.CLIENT_CONFIG)
+            await getContentFromGaiaHub('cs1.devcoinswitch.id', UPLOADABLE_JSON_FILES.CLIENT_CONFIG, undefined, config.BLOCKSTACK.BNS_NODES)
         }
         catch (error) {
             raisedError = error
@@ -53,7 +54,7 @@ describe('getContentFromGaiaHub tests', () => {
         let raisedError
         verifyProfileTokenStub.throws("sample exception")
         try {
-            await getContentFromGaiaHub('cs1.devcoinswitch.id', UPLOADABLE_JSON_FILES.CRUXPAY)
+            await getContentFromGaiaHub('cs1.devcoinswitch.id', UPLOADABLE_JSON_FILES.CRUXPAY, undefined, config.BLOCKSTACK.BNS_NODES)
         } catch (error) {
             raisedError = error
       }
@@ -66,7 +67,7 @@ describe('getContentFromGaiaHub tests', () => {
         let raisedError
         publicKeyToAddressStub.resolves("some address")
         try {
-            await getContentFromGaiaHub('cs1.devcoinswitch.id', UPLOADABLE_JSON_FILES.CRUXPAY)
+            await getContentFromGaiaHub('cs1.devcoinswitch.id', UPLOADABLE_JSON_FILES.CRUXPAY, undefined, config.BLOCKSTACK.BNS_NODES)
         } catch (error) {
             raisedError = error
       }

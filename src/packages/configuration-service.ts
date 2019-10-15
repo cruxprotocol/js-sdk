@@ -54,7 +54,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             domain: this.settingsDomain,
             subdomain: clientName,
         }).toString();
-        return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, clientName);
+        return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, clientName, config.BLOCKSTACK.BNS_NODES);
     }
 
     public getClientAssetMapping = async (): Promise<object> => {
@@ -71,10 +71,8 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         let ns: nameservice.BlockstackService;
         let gaiaHub: string | undefined;
         if (this.blockstackID) {
-            const gaiaUrls = await getGaiaDataFromBlockstackID(this.blockstackID, this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.bnsNodes);
-            if (gaiaUrls.gaiaWriteUrl) {
-                gaiaHub = gaiaUrls.gaiaWriteUrl;
-            }
+            const gaiaUrls = await getGaiaDataFromBlockstackID(this.blockstackID, (this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.bnsNodes) || config.BLOCKSTACK.BNS_NODES);
+            gaiaHub = gaiaUrls.gaiaWriteUrl || undefined;
         }
         if (this.clientConfig.nameserviceConfiguration) {
             const nsConfiguration = {

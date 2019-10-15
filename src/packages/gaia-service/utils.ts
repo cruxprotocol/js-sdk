@@ -13,7 +13,7 @@ interface gaiaData {
     ownerAddress: string;
 }
 
-export const getContentFromGaiaHub = async (blockstackId: string, filename: nameservice.UPLOADABLE_JSON_FILES, prefix?: string, bnsNodes?: string[]): Promise<any> => {
+export const getContentFromGaiaHub = async (blockstackId: string, filename: nameservice.UPLOADABLE_JSON_FILES, prefix?: string, bnsNodes: string[]): Promise<any> => {
     let fileUrl: string;
     const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackId, bnsNodes);
     fileUrl = gaiaDetails.gaiaReadUrl + gaiaDetails.ownerAddress + "/" + (prefix ? `${prefix}_` : "") + filename;
@@ -60,7 +60,7 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: name
     return finalContent;
 };
 
-export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes?: string[]): Promise<gaiaData> => {
+export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes: string[]): Promise<gaiaData> => {
     let nameData: any;
     nameData = await fetchNameDetails(blockstackId, bnsNodes);
     log.debug(nameData);
