@@ -22,8 +22,17 @@ export interface IBitcoinKeyPair {
     address: string;
 }
 
-export interface IBlockstackServiceOptions {
+export interface IBlockstackServiceOptions extends IDefaultServiceOptions {
     domain: string;
+}
+export interface IBlockstackServiceInputOptions {
+    domain: string;
+    gaiaHub?: string;
+    subdomainRegistrar?: string;
+    bnsNodes?: string[];
+}
+
+export interface IDefaultServiceOptions {
     gaiaHub: string;
     subdomainRegistrar: string;
     bnsNodes: string[];
@@ -55,9 +64,15 @@ const getIdentityCoupleFromCruxId = (cruxId: CruxId): IdentityCouple => {
     };
 };
 
-const defaultBNSConfig: IBlockstackServiceOptions = {
+const getIdentityCoupleFromBlockstackId = (blockstackId: BlockstackId): IdentityCouple => {
+    return {
+        bsId: blockstackId,
+        cruxId: IdTranslator.blockstackToCrux(blockstackId),
+    };
+};
+
+const defaultBNSConfig: IDefaultServiceOptions = {
     bnsNodes: config.BLOCKSTACK.BNS_NODES,
-    domain: config.BLOCKSTACK.IDENTITY_DOMAIN,
     gaiaHub: config.BLOCKSTACK.GAIA_HUB,
     subdomainRegistrar: config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
 };
@@ -65,8 +80,6 @@ const defaultBNSConfig: IBlockstackServiceOptions = {
 export enum UPLOADABLE_JSON_FILES {
     CRUXPAY = "cruxpay.json",
     CLIENT_CONFIG = "client-config.json",
-    CLIENT_MAPPING = "client-mapping.json",
-    ASSET_LIST = "asset-list.json",
     PROFILE = "profile.json",
 }
 
@@ -81,11 +94,23 @@ export class BlockstackService extends nameService.NameService {
             case UPLOADABLE_JSON_FILES.CLIENT_CONFIG:
                 packageErrorCode = PackageErrorCode.GaiaClientConfigUploadFailed;
                 break;
-            case UPLOADABLE_JSON_FILES.ASSET_LIST:
-                packageErrorCode = PackageErrorCode.GaiaAssetListUploadFailed;
-                break;
             default:
                 packageErrorCode = PackageErrorCode.GaiaUploadFailed;
+        }
+        return packageErrorCode;
+    }
+
+    public static getGetPackageErrorCodeForFilename = (filename: UPLOADABLE_JSON_FILES) => {
+        let packageErrorCode;
+        switch (filename) {
+            case UPLOADABLE_JSON_FILES.CRUXPAY:
+                packageErrorCode = PackageErrorCode.GaiaCruxPayUploadFailed;
+                break;
+            case UPLOADABLE_JSON_FILES.CLIENT_CONFIG:
+                packageErrorCode = PackageErrorCode.GaiaClientConfigUploadFailed;
+                break;
+            default:
+                packageErrorCode = PackageErrorCode.GaiaGetFileFailed;
         }
         return packageErrorCode;
     }
@@ -99,10 +124,14 @@ export class BlockstackService extends nameService.NameService {
     private _identityCouple: IdentityCouple | undefined;
     private _gaiaService: GaiaService;
 
-    constructor(options: any = {}) {
+    constructor(options: IBlockstackServiceInputOptions) {
         super();
         // TODO: Verify Domain against Registrar
-        const _options: IBlockstackServiceOptions = {...defaultBNSConfig, ...options};
+        if (!options.domain) {
+            throw new Error("No wallet name sepcified!");
+        }
+
+        const _options: IBlockstackServiceOptions = this._getConfigOptions(defaultBNSConfig, options);
 
         this._domain = _options.domain;
         this._gaiaHub = _options.gaiaHub;
@@ -145,7 +174,6 @@ export class BlockstackService extends nameService.NameService {
 
     public generateIdentity = async (): Promise<nameService.IIdentityClaim> => {
         const newMnemonic = this._generateMnemonic();
-        log.warn(`Your new mnemonic backing your identity is: \n${newMnemonic}`);
         const identityKeyPair = await this._generateIdentityKeyPair(newMnemonic);
         return {
             secrets: {
@@ -170,7 +198,7 @@ export class BlockstackService extends nameService.NameService {
         await this._gaiaService.uploadProfileInfo(identityKeyPair.privKey);
 
         const registeredSubdomain = await this._registerSubdomain(subdomain, identityKeyPair.address);
-        this._identityCouple = getIdentityCoupleFromCruxId(new CruxId({
+        this._identityCouple = getIdentityCoupleFromBlockstackId(new BlockstackId({
             domain: this._domain,
             subdomain,
         }));
@@ -202,6 +230,9 @@ export class BlockstackService extends nameService.NameService {
         }
         const options = {
             baseUrl: this._subdomainRegistrar,
+            headers: {
+                "x-domain-name": this._domain,
+            },
             json: true,
             method: "GET",
             url: `/status/${this._identityCouple.bsId.components.subdomain}`,
@@ -215,6 +246,9 @@ export class BlockstackService extends nameService.NameService {
     public getNameAvailability = async (subdomain: string): Promise<boolean> => {
         const options = {
             baseUrl: this._subdomainRegistrar,
+            headers: {
+                "x-domain-name": this._domain,
+            },
             json: true,
             method: "GET",
             url: `/status/${subdomain}`,
@@ -241,14 +275,23 @@ export class BlockstackService extends nameService.NameService {
             throw ErrorHelper.getPackageError(PackageErrorCode.AddressMappingDecodingFailure);
         }
         await this._gaiaService.uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping);
-        // TODO: need to validate the final uploaded URL is corresponding to the identityClaim provided
         return true;
     }
 
     public getAddressMapping = async (fullCruxId: string): Promise<IAddressMapping> => {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
-        return await getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY);
+        return await getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, this._bnsNodes);
+    }
+
+    private _getConfigOptions = (defaultConfig: IDefaultServiceOptions, options: IBlockstackServiceInputOptions): IBlockstackServiceOptions => {
+        const configOptions: IBlockstackServiceOptions = {
+            bnsNodes: options.bnsNodes || defaultConfig.bnsNodes,
+            domain: options.domain,
+            gaiaHub: options.gaiaHub || defaultConfig.gaiaHub,
+            subdomainRegistrar: options.subdomainRegistrar || defaultConfig.subdomainRegistrar,
+        };
+        return configOptions;
     }
 
     private _generateMnemonic = (): string => {
@@ -278,6 +321,7 @@ export class BlockstackService extends nameService.NameService {
             },
             headers: {
                 "Content-Type": "application/json",
+                "x-domain-name": this._domain,
             },
             json: true,
             method: "POST",
