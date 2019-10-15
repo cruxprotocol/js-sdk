@@ -173,10 +173,7 @@ class CruxPayPeer extends EventEmitter {
             const payIDClaim = this._storage.getJSON("payIDClaim");
             // log.debug(`Local payIDClaim:`, payIDClaim)
             const options = {
-                bnsNodes: undefined,
                 domain: this.walletClientName + "_crux",
-                gaiaHub: undefined,
-                subdomainRegistrar: undefined,
             };
             this._setPayIDClaim(new PayIDClaim(payIDClaim as ICruxPayClaim, { getEncryptionKey: this._getEncryptionKey }));
             const ns: blockstackService.BlockstackService = new blockstackService.BlockstackService(options);

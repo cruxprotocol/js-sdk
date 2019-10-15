@@ -16,10 +16,7 @@ import { IdTranslator, BlockstackId } from '../packages/identity-utils';
 // TODO: resolving addresses with invalid name/id
 
 const options = {
-  bnsNodes: undefined,
   domain: "devcoinswitch_crux",
-  gaiaHub: undefined,
-  subdomainRegistrar: undefined,
 };
 
 describe('BlockstackService tests', () => {

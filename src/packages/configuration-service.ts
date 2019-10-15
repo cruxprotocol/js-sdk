@@ -31,10 +31,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             this.blockstackID = identityUtils.IdTranslator.cruxToBlockstack(identityUtils.CruxId.fromString(cruxID)).toString();
         }
         const options = {
-            bnsNodes: undefined,
             domain: this.clientName + "_crux",
-            gaiaHub: undefined,
-            subdomainRegistrar: undefined,
         };
         this.blockstackNameservice = new nameservice.BlockstackService(options);
         log.info(`BlockstackConfigurationService initialised with default configs`);

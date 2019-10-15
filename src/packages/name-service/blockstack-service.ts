@@ -27,9 +27,9 @@ export interface IBlockstackServiceOptions extends IDefaultServiceOptions {
 }
 export interface IBlockstackServiceInputOptions {
     domain: string;
-    gaiaHub: string | undefined;
-    subdomainRegistrar: string | undefined;
-    bnsNodes: string[] | undefined;
+    gaiaHub?: string;
+    subdomainRegistrar?: string;
+    bnsNodes?: string[];
 }
 
 export interface IDefaultServiceOptions {
