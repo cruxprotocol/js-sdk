@@ -59,8 +59,12 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
 
     public getClientAssetMapping = async (): Promise<object> => {
         const clientConfig = await this.clientConfig;
+        const lowerAssetMapping: any = {};
         if (clientConfig.assetMapping) {
-            return clientConfig.assetMapping;
+            for (const walletCurrencySymbol of Object.keys(clientConfig.assetMapping)) {
+                lowerAssetMapping[walletCurrencySymbol.toLowerCase()] = clientConfig.assetMapping[walletCurrencySymbol];
+            }
+            return lowerAssetMapping;
         } else {
             return {};
         }

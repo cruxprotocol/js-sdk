@@ -240,6 +240,7 @@ class CruxPayPeer extends EventEmitter {
 
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
         try {
+            walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
             let correspondingAssetId: string = "";
             for (const i in this._clientMapping) {
                 if (i === walletCurrencySymbol) {
@@ -349,10 +350,17 @@ export class CruxClient extends CruxPayPeer {
 
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<boolean> => {
         try {
+            const userAddressMap = newAddressMap;
             const clientMapping: any = this._clientMapping;
             const csAddressMap: any = {};
-            for (const key of Object.keys(newAddressMap)) {
-                csAddressMap[clientMapping[key]] = newAddressMap[key];
+            for (let walletCurrencySymbol of Object.keys(userAddressMap)) {
+                userAddressMap[walletCurrencySymbol.toLowerCase()] = userAddressMap[walletCurrencySymbol];
+                walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
+                if (clientMapping[walletCurrencySymbol]) {
+                    csAddressMap[clientMapping[walletCurrencySymbol]] = userAddressMap[walletCurrencySymbol];
+                } else {
+                    throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping);
+                }
             }
 
             await (this._payIDClaim as PayIDClaim).decrypt();
@@ -367,19 +375,20 @@ export class CruxClient extends CruxPayPeer {
     public getAddressMap = async (): Promise<IAddressMapping> => {
         try {
             const clientMapping: any = this._clientMapping;
-            const clientIdToAssetIdMap: any = {};
-            for (const i of Object.keys(clientMapping)) {
-                clientIdToAssetIdMap[clientMapping[i]] = i;
+            const assetIdToWalletCurrencySymbolMap: {[assetId: string]: string} = {};
+            for (let walletCurrencySymbol of Object.keys(clientMapping)) {
+                walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
+                assetIdToWalletCurrencySymbolMap[clientMapping[walletCurrencySymbol]] = walletCurrencySymbol;
             }
 
-            const clientIdMap: any = {};
+            const userAddressMap: IAddressMapping = {};
             if (this._payIDClaim && this._payIDClaim.virtualAddress) {
-                const assetIdMap = await (this._nameService as nameService.NameService).getAddressMapping(this._payIDClaim.virtualAddress);
+                const userAssetIdToAddressMap = await (this._nameService as nameService.NameService).getAddressMapping(this._payIDClaim.virtualAddress);
 
-                for (const key of Object.keys(assetIdMap)) {
-                    clientIdMap[clientIdToAssetIdMap[key]] = assetIdMap[key];
+                for (const assetId of Object.keys(userAssetIdToAddressMap)) {
+                    userAddressMap[assetIdToWalletCurrencySymbolMap[assetId]] = userAssetIdToAddressMap[assetId];
                 }
-                return clientIdMap;
+                return userAddressMap;
 
             } else {
                 return {};

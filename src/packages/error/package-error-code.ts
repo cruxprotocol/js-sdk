@@ -30,6 +30,7 @@ export enum PackageErrorCode {
     BlockstackIdNamespaceValidation = 4007,
     BlockstackIdLengthValidation = 4008,
     BlockstackIdInvalidSubdomain = 4009,
+    CurrencyDoesNotExistInClientMapping = 4010,
     // Internal errors
     CouldNotFindBlockstackConfigurationServiceClientConfig = 5001,
     CouldNotFindMnemonicToRestoreIdentity = 5002,
