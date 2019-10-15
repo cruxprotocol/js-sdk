@@ -1,6 +1,6 @@
 {
   "name": "@cruxpay/js-sdk",
-  "version": "0.0.10",
+  "version": "0.0.12",
   "description": "CruxPay Javascript SDK",
   "unpkg": "dist/cruxpay-sdk-dom.js",
   "main": "lib/exports.js",
@@ -9,7 +9,6 @@
     "test": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 5000 src/test/*.ts",
     "coverage": "./node_modules/.bin/nyc npm run test",
     "wallet_demo": "cross-env NODE_ENV=prod ./node_modules/.bin/parcel src/samples/wallet_demo.html --https",
-    "blockstack": "node_modules/.bin/parcel src/samples/blockstack.html --https",
     "typecheck": "./node_modules/.bin/tsc --noEmit",
     "transpile": "./node_modules/.bin/tsc || true",
     "build:js": "./node_modules/.bin/parcel build src/index.ts -d dist --out-file cruxpay-sdk.js --no-minify",
@@ -85,6 +84,7 @@
   },
   "dependencies": {
     "@mojotech/json-type-validation": "^3.1.0",
+    "bip39": "^3.0.2",
     "bitcoinjs-lib": "^5.1.4",
     "blockstack": "^19.2.5",
     "eciesjs": "^0.2.0",

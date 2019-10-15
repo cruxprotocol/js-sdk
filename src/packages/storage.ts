@@ -5,6 +5,8 @@ const log = getLogger(__filename);
 // Storage service abstraction
 /* istanbul ignore next */
 export abstract class StorageService {
+    public abstract setItem = (key: string, value: string): void => undefined;
+    public abstract getItem = (key: string): string | null => null;
     public abstract getJSON = (key: string): object | null => null;
     public abstract setJSON = (key: string, jsonObj: object): void => {return; };
 }
@@ -22,6 +24,14 @@ export class LocalStorage extends StorageService {
             this.storage = localStorage;
             log.info(`Using localStorage as StorageService`);
         }
+    }
+
+    public setItem = (key: string, value: string): void => {
+        this.storage.setItem(key, value);
+    }
+
+    public getItem = (key: string): string | null => {
+        return this.storage.getItem(key);
     }
 
     public setJSON = (key: string, jsonObj: object): void => {

@@ -7,7 +7,7 @@ import * as utils from "../packages/utils";
 import { BlockstackConfigurationService } from '../packages/configuration-service';
 import requestFixtures from './requestMocks/config-reqmocks';
 import { BlockstackService } from '../packages/name-service/blockstack-service';
-import { async } from 'q';
+import { errors } from '..';
 var assert = require('chai').assert
 
 describe("Configuration Tests", () => {
@@ -37,14 +37,14 @@ describe("Configuration Tests", () => {
             })
 
             it("invalid name asset list", async () => {
-              let stubbedDomainName = sinon.stub(nsConfigService, 'settingsDomain').value('mocked_domain')
+              let nsConfigServiceTemp = new BlockstackConfigurationService('cruxdev');
+              let raisedError
               try{
-                await nsConfigService.getGlobalAssetList()
+                await nsConfigServiceTemp.getGlobalAssetList()
               }catch(e){
-                expect(e.errorCode).to.equal(5005);
-              }finally{
-                stubbedDomainName.restore()
+                raisedError = e
               }
+              expect(raisedError.errorCode).to.equal(errors.PackageErrorCode.CouldNotFindAssetListInClientConfig);
             })
           })
 
@@ -67,24 +67,33 @@ describe("Configuration Tests", () => {
               expect(nsClient._subdomainRegistrar).to.equal('mocked_subdomain_registrar')
               getConfigStub.restore()
             })
+            it("custom nameservice client from user zonefile gaiaHub override", async () => {
+              let mockedNsConfigService = new BlockstackConfigurationService('cruxdev', 'umang@cruxdev.crux');
+              let mockedClientConfig = {nameserviceConfiguration: {subdomainRegistrar: "mocked_subdomain_registrar"}}
+              let getConfigStub = sinon.stub(mockedNsConfigService, 'getClientConfig').resolves(mockedClientConfig)
+              await mockedNsConfigService.init()
+              let nsClient = await mockedNsConfigService.getBlockstackServiceForConfig()
+              assert.instanceOf(nsClient, BlockstackService)
+              expect(nsClient._gaiaService.gaiaWriteUrl).to.equal('https://hub.cruxpay.com')
+              getConfigStub.restore()
+            })
           })
 
 
           describe("client asset mapping tests", () => {
             it("valid subdomain get client asset mapping", async () => {
-              let configPromise = new Promise<any>(async(resolve, reject) => {resolve({assetMapping: {EOS: "9dbdc727-de68-4f2a-8956-04a38ed71ca6",}, })})
+              let configPromise = new Promise<any>(async(resolve, reject) => {resolve({assetMapping: {eos: "9dbdc727-de68-4f2a-8956-04a38ed71ca6",}, })})
               let getConfigStub = sinon.stub(nsConfigService, 'getClientConfig').returns(configPromise)
               await nsConfigService.init()
               let mockedClientAsssetMapping = await nsConfigService.getClientAssetMapping()
-              expect(mockedClientAsssetMapping).to.deep.include({EOS: "9dbdc727-de68-4f2a-8956-04a38ed71ca6"})
+              expect(mockedClientAsssetMapping).to.deep.include({eos: "9dbdc727-de68-4f2a-8956-04a38ed71ca6"})
               getConfigStub.restore()
             })
           })
 
           describe("configurator client creation", () => {
             it("invalid client name", async () => {
-              let nsConfigService = new BlockstackConfigurationService('mocked_subdomain');
-              let stubbedDomainName = sinon.stub(nsConfigService, 'settingsDomain').value('mocked_domain')
+              let nsConfigService = new BlockstackConfigurationService('mocked_domain');
               let raiseError = false
               try{
                 await nsConfigService.init()
@@ -94,15 +103,7 @@ describe("Configuration Tests", () => {
               }
               finally{
                 expect(raiseError).to.be.true
-                stubbedDomainName.restore()
               }
-            })
-          })
-
-          describe('virtual address tests', () => {
-            it("get virtual address for client name", () => {
-              let vAdd = nsConfigService.getVirtualAddressFromClientName('scatter')
-              expect(vAdd).to.be.string
             })
           })
     });
