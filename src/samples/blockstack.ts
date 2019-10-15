@@ -1,11 +1,14 @@
-import { CruxClient, nameservice } from "../index";
-
+import { CruxClient } from "../index";
+import * as nameservice from "../packages/name-service/blockstack-service";
+import * as gaiaUtils from "../packages/gaia-service/utils";
+import { GaiaService } from "../packages/gaia-service/index";
 
 declare global {
   interface Window {
       wallet: CruxClient;
       blockstackservice: nameservice.BlockstackService;
       addPayIDClaim: Function;
+      gaiaService: GaiaService;
       putClientCurrencyMapping: Function;
       getContentFromGaiaHub: Function;
       uploadGlobalAssetList: Function;
@@ -16,6 +19,7 @@ declare global {
 window.blockstackservice = new nameservice.BlockstackService();
 
 window.wallet = new CruxClient({walletClientName: "devcoinswitch", getEncryptionKey: () => "fookey"});
+window.gaiaService = new GaiaService("https://hub.cruxpay.com")
 
 const putClientCurrencyMapping = async () => {
     console.log("putClientCurrencyMapping called...")
@@ -25,14 +29,14 @@ const putClientCurrencyMapping = async () => {
         subdomainRegistrar: 'https://registrar.coinswitch.co:4000'
     }
     let clientConfig = {"assetMapping": content, "nameserviceConfiguration": nameserviceConfig}
-    let response = await window.blockstackservice.uploadContentToGaiaHub(nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, '', clientConfig, 'scatter_dev');
+    let response = await window.gaiaService.uploadContentToGaiaHub(nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, '', clientConfig, 'scatter_dev');
     console.log(`content upload response is:- ${response}`)
 }
 
 const getContentFromGaiaHub = async () => {
     console.log("getContentFromGaiaHub called...")
     let name = ''
-    let response = await window.blockstackservice.getContentFromGaiaHub(name, nameservice.UPLOADABLE_JSON_FILES.CLIENT_MAPPING);
+    let response = await gaiaUtils.getContentFromGaiaHub(name, nameservice.UPLOADABLE_JSON_FILES.CLIENT_MAPPING);
     console.log(`content upload response is:- ${response}`)
 }
 
@@ -154,7 +158,7 @@ const uploadGlobalAssetList = async () => {
           "image_sm_url": "https://s3.ap-south-1.amazonaws.com/crypto-exchange/coins-sm/augur.png"
         }
       ]
-    let response = await window.blockstackservice.uploadContentToGaiaHub(nameservice.UPLOADABLE_JSON_FILES.ASSET_LIST, '', content);
+    let response = await window.gaiaService.uploadContentToGaiaHub(nameservice.UPLOADABLE_JSON_FILES.ASSET_LIST, '', content);
     console.log(`content upload response is:- ${response}`)
 }
 
