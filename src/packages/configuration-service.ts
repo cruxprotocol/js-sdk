@@ -54,7 +54,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             domain: this.settingsDomain,
             subdomain: clientName,
         }).toString();
-        return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, clientName, config.BLOCKSTACK.BNS_NODES);
+        return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, config.BLOCKSTACK.BNS_NODES, clientName);
     }
 
     public getClientAssetMapping = async (): Promise<object> => {

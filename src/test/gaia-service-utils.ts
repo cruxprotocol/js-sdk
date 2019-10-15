@@ -42,7 +42,7 @@ describe('getContentFromGaiaHub tests', () => {
         
         let raisedError
         try {
-            await getContentFromGaiaHub('cs1.devcoinswitch.id', UPLOADABLE_JSON_FILES.CLIENT_CONFIG, undefined, config.BLOCKSTACK.BNS_NODES)
+            await getContentFromGaiaHub('cs1.devcoinswitch.id', UPLOADABLE_JSON_FILES.CLIENT_CONFIG, config.BLOCKSTACK.BNS_NODES)
         }
         catch (error) {
             raisedError = error
@@ -54,7 +54,7 @@ describe('getContentFromGaiaHub tests', () => {
         let raisedError
         verifyProfileTokenStub.throws("sample exception")
         try {
-            await getContentFromGaiaHub('cs1.devcoinswitch.id', UPLOADABLE_JSON_FILES.CRUXPAY, undefined, config.BLOCKSTACK.BNS_NODES)
+            await getContentFromGaiaHub('cs1.devcoinswitch.id', UPLOADABLE_JSON_FILES.CRUXPAY, config.BLOCKSTACK.BNS_NODES)
         } catch (error) {
             raisedError = error
       }
@@ -67,7 +67,7 @@ describe('getContentFromGaiaHub tests', () => {
         let raisedError
         publicKeyToAddressStub.resolves("some address")
         try {
-            await getContentFromGaiaHub('cs1.devcoinswitch.id', UPLOADABLE_JSON_FILES.CRUXPAY, undefined, config.BLOCKSTACK.BNS_NODES)
+            await getContentFromGaiaHub('cs1.devcoinswitch.id', UPLOADABLE_JSON_FILES.CRUXPAY, config.BLOCKSTACK.BNS_NODES)
         } catch (error) {
             raisedError = error
       }
