@@ -15,9 +15,12 @@ import { IdTranslator, BlockstackId } from '../packages/identity-utils';
 // TODO: registration of already registered names and error handling
 // TODO: resolving addresses with invalid name/id
 
+const nameservice_options = {
+  domain: "devcoinswitch_crux",
+};
 
 describe('BlockstackService tests', () => {
-  let blkstkService = new blockstackService.BlockstackService()
+  let blkstkService = new blockstackService.BlockstackService(nameservice_options)
   let httpJSONRequestStub: sinon.SinonStub
   let connectToGaiaHubStub: sinon.SinonStub
   let uploadToGaiaHubStub: sinon.SinonStub
@@ -117,7 +120,7 @@ describe('BlockstackService tests', () => {
       expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
       expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
     })
-    it('given identityClaim with mnemonic with invalid cruxID, should throw "CruxIdLengthValidation" | "CruxIdNamespaceValidation"')
+    it('given identityClaim with mnemonic with invalid cruxID, should throw "CruxIdInvalidStructure" | "CruxIdNamespaceValidation"')
     it('given identityClaim with mnemonic and non-corresponding cruxID, should throw error')
     it('given identityClaim without mnemonic, should throw "CouldNotFindMnemonicToRestoreIdentity"', async() => {
       let raisedError
@@ -154,7 +157,7 @@ describe('BlockstackService tests', () => {
       let resolvedPublicKey = await blkstkService.getNameAvailability(registeredSubdomain)
       let options = {
         baseUrl: "https://registrar.coinswitch.co:3000",
-        headers: {'x-wallet-name': 'devcoinswitch'},
+        headers: {'x-domain-name': 'devcoinswitch_crux'},
         json: true,
         method: "GET",
         url: `/status/${registeredSubdomain}`,
@@ -167,7 +170,7 @@ describe('BlockstackService tests', () => {
       let resolvedPublicKey = await blkstkService.getNameAvailability(unregisteredSubdomain)
       let options = {
         baseUrl: "https://registrar.coinswitch.co:3000",
-        headers: {'x-wallet-name': 'devcoinswitch'},
+        headers: {'x-domain-name': 'devcoinswitch_crux'},
         json: true,
         method: "GET",
         url: `/status/${unregisteredSubdomain}`,
@@ -207,7 +210,7 @@ describe('BlockstackService tests', () => {
 
     it('given identityClaim, without restoring identity, should return NONE', async () => {
       // initialise the nameservice
-      let bs = new blockstackService.BlockstackService()
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // fetch registrationStatus
       let resolvedStatus = await bs.getRegistrationStatus(sampleIdentityClaim);
       expect(httpJSONRequestStub.notCalled).is.true
@@ -220,23 +223,23 @@ describe('BlockstackService tests', () => {
         baseUrl: 'https://core.blockstack.org',
         json: true,
         method: "GET",
-        url: `/v1/names/carol.devcoinswitch.id`,
+        url: `/v1/names/carol.devcoinswitch_crux.id`,
       }
       let bnsRequestOptions2 = {
         baseUrl: 'https://bns.cruxpay.com',
         json: true,
         method: "GET",
-        url: `/v1/names/carol.devcoinswitch.id`,
+        url: `/v1/names/carol.devcoinswitch_crux.id`,
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
-        headers: {'x-wallet-name': 'devcoinswitch'},
+        headers: {'x-domain-name': 'devcoinswitch_crux'},
         json: true,
         method: "GET",
         url: `/status/carol`,
       }
       // initialise the nameservice
-      let bs = new blockstackService.BlockstackService()
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // restore identity
       await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
       // fetch registrationStatus
@@ -255,23 +258,23 @@ describe('BlockstackService tests', () => {
         baseUrl: 'https://core.blockstack.org',
         json: true,
         method: "GET",
-        url: `/v1/names/carol1.devcoinswitch.id`,
+        url: `/v1/names/carol1.devcoinswitch_crux.id`,
       }
       let bnsRequestOptions2 = {
         baseUrl: 'https://bns.cruxpay.com',
         json: true,
         method: "GET",
-        url: `/v1/names/carol1.devcoinswitch.id`,
+        url: `/v1/names/carol1.devcoinswitch_crux.id`,
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
-        headers: {'x-wallet-name': 'devcoinswitch'},
+        headers: {'x-domain-name': 'devcoinswitch_crux'},
         json: true,
         method: "GET",
         url: `/status/carol1`,
       }
       // initialise the nameservice
-      let bs = new blockstackService.BlockstackService()
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // restore identity
       await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
       // fetch registrationStatus
@@ -290,23 +293,23 @@ describe('BlockstackService tests', () => {
         baseUrl: 'https://core.blockstack.org',
         json: true,
         method: "GET",
-        url: `/v1/names/carol2.devcoinswitch.id`,
+        url: `/v1/names/carol2.devcoinswitch_crux.id`,
       }
       let bnsRequestOptions2 = {
         baseUrl: 'https://bns.cruxpay.com',
         json: true,
         method: "GET",
-        url: `/v1/names/carol2.devcoinswitch.id`,
+        url: `/v1/names/carol2.devcoinswitch_crux.id`,
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
-        headers: {'x-wallet-name': 'devcoinswitch'},
+        headers: {'x-domain-name': 'devcoinswitch_crux'},
         json: true,
         method: "GET",
         url: `/status/carol2`,
       }
       // initialise the nameservice
-      let bs = new blockstackService.BlockstackService()
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // restore identity
       await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
       // fetch registrationStatus
@@ -322,17 +325,17 @@ describe('BlockstackService tests', () => {
         baseUrl: 'https://core.blockstack.org',
         json: true,
         method: "GET",
-        url: `/v1/names/cs1.devcoinswitch.id`,
+        url: `/v1/names/cs1.devcoinswitch_crux.id`,
       }
       let bnsRequestOptions2 = {
         baseUrl: 'https://bns.cruxpay.com',
         json: true,
         method: "GET",
-        url: `/v1/names/cs1.devcoinswitch.id`,
+        url: `/v1/names/cs1.devcoinswitch_crux.id`,
       }
 
       // initialise the nameservice
-      let bs = new blockstackService.BlockstackService();
+      let bs = new blockstackService.BlockstackService(nameservice_options);
       // restore the identity using identityClaim
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
       // fetch registrationStatus
@@ -349,23 +352,23 @@ describe('BlockstackService tests', () => {
         baseUrl: 'https://core.blockstack.org',
         json: true,
         method: "GET",
-        url: `/v1/names/carol3.devcoinswitch.id`,
+        url: `/v1/names/carol3.devcoinswitch_crux.id`,
       }
       let bnsRequestOptions2 = {
         baseUrl: 'https://bns.cruxpay.com',
         json: true,
         method: "GET",
-        url: `/v1/names/carol3.devcoinswitch.id`,
+        url: `/v1/names/carol3.devcoinswitch_crux.id`,
       }
       let registrarRequestOptions = {
         baseUrl: "https://registrar.coinswitch.co:3000",
-        headers: {'x-wallet-name': 'devcoinswitch'},
+        headers: {'x-domain-name': 'devcoinswitch_crux'},
         json: true,
         method: "GET",
         url: `/status/carol3`,
       }
 
-      let bs = new blockstackService.BlockstackService();
+      let bs = new blockstackService.BlockstackService(nameservice_options);
       await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
       let resolvedStatus = await bs.getRegistrationStatus(sampleIdentityClaim);
       expect(httpJSONRequestStub.callCount).to.equal(5)
@@ -382,15 +385,15 @@ describe('BlockstackService tests', () => {
         baseUrl: 'https://core.blockstack.org',
         json: true,
         method: "GET",
-        url: `/v1/names/carol4.devcoinswitch.id`,
+        url: `/v1/names/carol4.devcoinswitch_crux.id`,
       }
       let bnsRequestOptions2 = {
         baseUrl: 'https://bns.cruxpay.com',
         json: true,
         method: "GET",
-        url: `/v1/names/carol4.devcoinswitch.id`,
+        url: `/v1/names/carol4.devcoinswitch_crux.id`,
       }
-      let bs = new blockstackService.BlockstackService();
+      let bs = new blockstackService.BlockstackService(nameservice_options);
       await bs.restoreIdentity(CruxId, IdentityClaim1)
       let resolvedStatus = await bs.getRegistrationStatus(IdentityClaim2);
       expect(httpJSONRequestStub.callCount).to.equal(2)
@@ -412,7 +415,7 @@ describe('BlockstackService tests', () => {
       method: 'POST',
       baseUrl: 'https://registrar.coinswitch.co:3000',
       url: '/register',
-      headers: { 'Content-Type': 'application/json', 'x-wallet-name': 'devcoinswitch' },
+      headers: { 'Content-Type': 'application/json', 'x-domain-name': 'devcoinswitch_crux' },
       body: {
         zonefile:
           '$ORIGIN bob\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',
@@ -426,7 +429,7 @@ describe('BlockstackService tests', () => {
       method: 'POST',
       baseUrl: 'https://registrar.coinswitch.co:3000',
       url: '/register',
-      headers: { 'Content-Type': 'application/json', 'x-wallet-name': 'devcoinswitch' },
+      headers: { 'Content-Type': 'application/json', 'x-domain-name': 'devcoinswitch_crux' },
       body:
       {
         zonefile:
@@ -441,7 +444,7 @@ describe('BlockstackService tests', () => {
       method: 'POST',
       baseUrl: 'https://registrar.coinswitch.co:3000',
       url: '/register',
-      headers: { 'Content-Type': 'application/json', 'x-wallet-name': 'devcoinswitch' },
+      headers: { 'Content-Type': 'application/json', 'x-domain-name': 'devcoinswitch_crux' },
       body: {
         zonefile:
           '$ORIGIN mark\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com',
@@ -521,7 +524,7 @@ describe('BlockstackService tests', () => {
       uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json")
 
       // initialising the nameservice
-      let bs = new blockstackService.BlockstackService()
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // restoring identity
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
       let acknowledgement = await bs.putAddressMapping(sampleIdentityClaim, sampleAddressMap)
@@ -532,7 +535,7 @@ describe('BlockstackService tests', () => {
     })
     it('given valid identityClaim and invalid addressMap, should throw "AddressMappingDecodingFailure"', async () => {
       // initialising the nameservice
-      let bs = new blockstackService.BlockstackService()
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // restoring identity
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
 
@@ -546,7 +549,7 @@ describe('BlockstackService tests', () => {
     })
     it('given invalid identityClaim (only mnemonic) and valid addressMap, should throw "CouldNotFindIdentityKeyPairToPutAddressMapping"', async () => {
       // initialising the nameservice
-      let bs = new blockstackService.BlockstackService()
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // restoring identity
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
 
@@ -560,7 +563,7 @@ describe('BlockstackService tests', () => {
     })
     it('if uploadContentToGaiaHub breaks, should raise "GaiaCruxPayUploadFailed"', async () => {
       uploadToGaiaHubStub.onCall(0).throws('unhandled in mocks')
-      let bs = new blockstackService.BlockstackService()
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
       let raisedError
       try {
@@ -578,13 +581,13 @@ describe('BlockstackService tests', () => {
     let bnsRequestOptions1 = {
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
-      url: '/v1/names/cs1.devcoinswitch.id',
+      url: '/v1/names/cs1.devcoinswitch_crux.id',
       json: true
     }
     let bnsRequestOptions2 = {
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
-      url: '/v1/names/cs1.devcoinswitch.id',
+      url: '/v1/names/cs1.devcoinswitch_crux.id',
       json: true
     }
     let gaiaRequestOptions = { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json", json: true }
@@ -615,7 +618,8 @@ describe('BlockstackService tests', () => {
       try {
         await blkstkService.getAddressMapping("cs1@devcoinswitch.crux")
       } catch (error) {
-        raisedError = error
+          console.log(error.stack);
+          raisedError = error
       }
       expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GaiaEmptyResponse)
     })

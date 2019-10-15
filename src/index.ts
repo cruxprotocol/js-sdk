@@ -3,6 +3,7 @@ import Logger from "js-logger";
 import path from "path";
 import "regenerator-runtime/runtime";
 import config from "./config";
+import { CRUX_DOMAIN_SUFFIX } from "./packages/identity-utils";
 
 // Setup logging configuration
 Logger.useDefaults();
@@ -169,7 +170,7 @@ class CruxPayPeer {
             const payIDClaim = this._storage.getJSON("payIDClaim");
             // log.debug(`Local payIDClaim:`, payIDClaim)
             this._setPayIDClaim(new PayIDClaim(payIDClaim as ICruxPayClaim, { getEncryptionKey: this._getEncryptionKey }));
-            const ns: blockstackService.BlockstackService = new blockstackService.BlockstackService();
+            const ns: blockstackService.BlockstackService = new blockstackService.BlockstackService({domain: this.walletClientName + CRUX_DOMAIN_SUFFIX});
             await (this._payIDClaim as PayIDClaim).decrypt();
             await ns.restoreIdentity((this._payIDClaim as PayIDClaim).virtualAddress as string, {secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
             const status = await ns.getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
@@ -223,7 +224,7 @@ class CruxPayPeer {
 
     public isCruxIDAvailable = (cruxIDSubdomain: string): Promise<boolean> => {
         try {
-            identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
+            identityUtils.validateSubdomain(cruxIDSubdomain);
             return (this._nameService as nameService.NameService).getNameAvailability(cruxIDSubdomain);
         } catch (err) {
             throw errors.CruxClientError.fromError(err);
@@ -321,7 +322,7 @@ export class CruxClient extends CruxPayPeer {
         // TODO: add isCruxIDAvailable check before
         try {
             // Subdomain validation
-            identityUtils.CruxId.validateSubdomain(cruxIDSubdomain);
+            identityUtils.validateSubdomain(cruxIDSubdomain);
 
             // Generating the identityClaim
             if (this._payIDClaim) { await (this._payIDClaim as PayIDClaim).decrypt(); }

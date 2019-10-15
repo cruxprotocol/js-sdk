@@ -38,15 +38,11 @@ describe("Configuration Tests", () => {
 
             it("invalid name asset list", async () => {
               let nsConfigServiceTemp = new BlockstackConfigurationService('cruxdev');
-              let stubbedDomainName = sinon.stub(nsConfigServiceTemp, 'settingsDomain').value('mocked_domain')
               let raisedError
               try{
                 await nsConfigServiceTemp.getGlobalAssetList()
               }catch(e){
                 raisedError = e
-              }
-              finally {
-                stubbedDomainName.restore()
               }
               expect(raisedError.errorCode).to.equal(errors.PackageErrorCode.CouldNotFindAssetListInClientConfig);
             })
@@ -97,8 +93,7 @@ describe("Configuration Tests", () => {
 
           describe("configurator client creation", () => {
             it("invalid client name", async () => {
-              let nsConfigService = new BlockstackConfigurationService('mocked_subdomain');
-              let stubbedDomainName = sinon.stub(nsConfigService, 'settingsDomain').value('mocked_domain')
+              let nsConfigService = new BlockstackConfigurationService('mocked_domain');
               let raiseError = false
               try{
                 await nsConfigService.init()
@@ -108,7 +103,6 @@ describe("Configuration Tests", () => {
               }
               finally{
                 expect(raiseError).to.be.true
-                stubbedDomainName.restore()
               }
             })
           })

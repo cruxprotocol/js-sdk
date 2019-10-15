@@ -1,8 +1,6 @@
 {
     "CONFIG_MODE": "DEV",
     "BLOCKSTACK": {
-        "IDENTITY_DOMAIN": "devcoinswitch",
-        "SETTINGS_DOMAIN": "devcoinswitch",
         "SUBDOMAIN_REGISTRAR": "https://registrar.coinswitch.co:3000",
         "GAIA_HUB": "https://hub.cruxpay.com",
         "BNS_NODES": ["https://core.blockstack.org", "https://bns.cruxpay.com"]

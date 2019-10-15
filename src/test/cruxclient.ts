@@ -116,7 +116,7 @@ describe('CruxClient tests', () => {
 			})
 
 			it("invalid payIDClaim in local storage", async () => {
-				localStorage.setItem('payIDClaim', JSON.stringify({"identitySecrets":"{\"iv\":\"cxgg/vvP6XlWOwov\",\"encBuffer\":\"DX+FXU8rG4P2BQIZxWIV8R0DSc8WENREtf2PrIybw3cJLjk/90BYvpn+eC5c45Xb4tXHBW7ScxV26nR9OvDT5nT9SNyPZNIsFpnjnC83y31DodxgijK/ZPUGpPeA1ARYezB4KFHRfC1qCzxkD8qboFBCPp9mTpL4wscrYTuTBhZw/BAePSgu6RC3mdrvEgQGeIW4BgXI4HQ+ebEiDxGUkSpapeu1FnACALRlibmfwjE87z+D71SPft9o9YnRIBMxeWu9kU1wUJLeJKHSFfLwBkAbnb/MGTYuwPaJtY94MpCs3Fe9+4URMjuceWMMvabGCe9KplD8gPJCw9EqDzJjmA9Ie3BaIsRWwYZhS51uxaQvdTiGnxnmlJHT+y1WyK7dIAW3SfRqHzaf3VnYeTOfz0xErw4luHhVHO0HjNqhgGfML0rEYu5SJD4Gyeoj\"}","virtualAddress":"yadunandan.cruxdev.id"}))
+				localStorage.setItem('payIDClaim', JSON.stringify({"identitySecrets":"{\"iv\":\"cxgg/vvP6XlWOwov\",\"encBuffer\":\"DX+FXU8rG4P2BQIZxWIV8R0DSc8WENREtf2PrIybw3cJLjk/90BYvpn+eC5c45Xb4tXHBW7ScxV26nR9OvDT5nT9SNyPZNIsFpnjnC83y31DodxgijK/ZPUGpPeA1ARYezB4KFHRfC1qCzxkD8qboFBCPp9mTpL4wscrYTuTBhZw/BAePSgu6RC3mdrvEgQGeIW4BgXI4HQ+ebEiDxGUkSpapeu1FnACALRlibmfwjE87z+D71SPft9o9YnRIBMxeWu9kU1wUJLeJKHSFfLwBkAbnb/MGTYuwPaJtY94MpCs3Fe9+4URMjuceWMMvabGCe9KplD8gPJCw9EqDzJjmA9Ie3BaIsRWwYZhS51uxaQvdTiGnxnmlJHT+y1WyK7dIAW3SfRqHzaf3VnYeTOfz0xErw4luHhVHO0HjNqhgGfML0rEYu5SJD4Gyeoj\"}","virtualAddress":"yadunandan.cruxdev_crux.id"}))
 				let cruxClient = new CruxClient(walletOptions);
 				let raiseException = false
 				try{
@@ -285,7 +285,7 @@ describe('CruxClient tests', () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
-				let mockedAddressMap = { 
+				let mockedAddressMap = {
 					ZRX: {
 						addressHash: '0x0a2311594059b468c9897338b027c8782398b481'
 					}
@@ -296,7 +296,7 @@ describe('CruxClient tests', () => {
 					await cruxClient.putAddressMap(mockedAddressMap)
 				} catch(e) {
 					raisesException = true
-					expect(e.errorCode).to.equal(4010)
+					expect(e.errorCode).to.equal(PackageErrorCode.CurrencyDoesNotExistInClientMapping)
 				} finally {
 					expect(raisesException).to.be.true
 					updateProfileStub.restore()
