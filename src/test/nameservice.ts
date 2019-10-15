@@ -15,12 +15,12 @@ import { IdTranslator, BlockstackId } from '../packages/identity-utils';
 // TODO: registration of already registered names and error handling
 // TODO: resolving addresses with invalid name/id
 
-const options = {
+const nameservice_options = {
   domain: "devcoinswitch_crux",
 };
 
 describe('BlockstackService tests', () => {
-  let blkstkService = new blockstackService.BlockstackService(options)
+  let blkstkService = new blockstackService.BlockstackService(nameservice_options)
   let httpJSONRequestStub: sinon.SinonStub
   let connectToGaiaHubStub: sinon.SinonStub
   let uploadToGaiaHubStub: sinon.SinonStub
@@ -210,7 +210,7 @@ describe('BlockstackService tests', () => {
 
     it('given identityClaim, without restoring identity, should return NONE', async () => {
       // initialise the nameservice
-      let bs = new blockstackService.BlockstackService(options)
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // fetch registrationStatus
       let resolvedStatus = await bs.getRegistrationStatus(sampleIdentityClaim);
       expect(httpJSONRequestStub.notCalled).is.true
@@ -239,7 +239,7 @@ describe('BlockstackService tests', () => {
         url: `/status/carol`,
       }
       // initialise the nameservice
-      let bs = new blockstackService.BlockstackService(options)
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // restore identity
       await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
       // fetch registrationStatus
@@ -274,7 +274,7 @@ describe('BlockstackService tests', () => {
         url: `/status/carol1`,
       }
       // initialise the nameservice
-      let bs = new blockstackService.BlockstackService(options)
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // restore identity
       await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
       // fetch registrationStatus
@@ -309,7 +309,7 @@ describe('BlockstackService tests', () => {
         url: `/status/carol2`,
       }
       // initialise the nameservice
-      let bs = new blockstackService.BlockstackService(options)
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // restore identity
       await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
       // fetch registrationStatus
@@ -335,7 +335,7 @@ describe('BlockstackService tests', () => {
       }
 
       // initialise the nameservice
-      let bs = new blockstackService.BlockstackService(options);
+      let bs = new blockstackService.BlockstackService(nameservice_options);
       // restore the identity using identityClaim
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
       // fetch registrationStatus
@@ -368,7 +368,7 @@ describe('BlockstackService tests', () => {
         url: `/status/carol3`,
       }
 
-      let bs = new blockstackService.BlockstackService(options);
+      let bs = new blockstackService.BlockstackService(nameservice_options);
       await bs.restoreIdentity(pendingCruxId, pendingIdentityClaim)
       let resolvedStatus = await bs.getRegistrationStatus(sampleIdentityClaim);
       expect(httpJSONRequestStub.callCount).to.equal(5)
@@ -393,7 +393,7 @@ describe('BlockstackService tests', () => {
         method: "GET",
         url: `/v1/names/carol4.devcoinswitch_crux.id`,
       }
-      let bs = new blockstackService.BlockstackService(options);
+      let bs = new blockstackService.BlockstackService(nameservice_options);
       await bs.restoreIdentity(CruxId, IdentityClaim1)
       let resolvedStatus = await bs.getRegistrationStatus(IdentityClaim2);
       expect(httpJSONRequestStub.callCount).to.equal(2)
@@ -524,7 +524,7 @@ describe('BlockstackService tests', () => {
       uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json")
 
       // initialising the nameservice
-      let bs = new blockstackService.BlockstackService(options)
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // restoring identity
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
       let acknowledgement = await bs.putAddressMapping(sampleIdentityClaim, sampleAddressMap)
@@ -535,7 +535,7 @@ describe('BlockstackService tests', () => {
     })
     it('given valid identityClaim and invalid addressMap, should throw "AddressMappingDecodingFailure"', async () => {
       // initialising the nameservice
-      let bs = new blockstackService.BlockstackService(options)
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // restoring identity
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
 
@@ -549,7 +549,7 @@ describe('BlockstackService tests', () => {
     })
     it('given invalid identityClaim (only mnemonic) and valid addressMap, should throw "CouldNotFindIdentityKeyPairToPutAddressMapping"', async () => {
       // initialising the nameservice
-      let bs = new blockstackService.BlockstackService(options)
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       // restoring identity
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
 
@@ -563,7 +563,7 @@ describe('BlockstackService tests', () => {
     })
     it('if uploadContentToGaiaHub breaks, should raise "GaiaCruxPayUploadFailed"', async () => {
       uploadToGaiaHubStub.onCall(0).throws('unhandled in mocks')
-      let bs = new blockstackService.BlockstackService(options)
+      let bs = new blockstackService.BlockstackService(nameservice_options)
       await bs.restoreIdentity(sampleCruxId, sampleIdentityClaim)
       let raisedError
       try {

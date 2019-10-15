@@ -30,10 +30,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         if (cruxID) {
             this.blockstackID = identityUtils.IdTranslator.cruxToBlockstack(identityUtils.CruxId.fromString(cruxID)).toString();
         }
-        const options = {
-            domain: this.clientName + "_crux",
-        };
-        this.blockstackNameservice = new nameservice.BlockstackService(options);
+        this.blockstackNameservice = new nameservice.BlockstackService({domain: this.clientName + "_crux"});
         log.info(`BlockstackConfigurationService initialised with default configs`);
     }
 
