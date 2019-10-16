@@ -104,10 +104,10 @@ export class BlockstackService extends nameService.NameService {
         let packageErrorCode;
         switch (filename) {
             case UPLOADABLE_JSON_FILES.CRUXPAY:
-                packageErrorCode = PackageErrorCode.GaiaCruxPayUploadFailed;
+                packageErrorCode = PackageErrorCode.GaiaCruxPayGetFailed;
                 break;
             case UPLOADABLE_JSON_FILES.CLIENT_CONFIG:
-                packageErrorCode = PackageErrorCode.GaiaClientConfigUploadFailed;
+                packageErrorCode = PackageErrorCode.GaiaClientConfigGetFailed;
                 break;
             default:
                 packageErrorCode = PackageErrorCode.GaiaGetFileFailed;
