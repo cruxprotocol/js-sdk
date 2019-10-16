@@ -8,6 +8,6 @@ export abstract class Encryption {
 }
 
 export abstract class CommunicationBase {
-    public abstract sendMessage = async (message: IMessage, userID: IUserID): Promise<boolean> => true;
-    public abstract onMessageRecieved = async (): Promise<IMessage> ;
+    public abstract sendMessage = async (message: any, userID: IUserID): Promise<boolean> => true;
+    public abstract onMessageRecieved = async (): Promise<any> ;
 }

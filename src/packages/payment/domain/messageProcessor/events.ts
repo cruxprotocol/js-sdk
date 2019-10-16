@@ -15,4 +15,8 @@ export class CruxUserEventHandler {
             }
         }
     }
+
+    public getIntegerationEventer() {
+        return this.eventer;
+    }
 }
