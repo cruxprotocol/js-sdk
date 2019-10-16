@@ -48,7 +48,7 @@ describe('getContentFromGaiaHub tests', () => {
             raisedError = error
         }
         expect(httpJSONRequestStub.callCount).to.be.equal(3)
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GaiaClientConfigUploadFailed)
+        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GaiaClientConfigGetFailed)
     });
     it('given token and public key, if blockstack validation fails, throws "TokenVerificationFailed"', async() => {
         let raisedError
