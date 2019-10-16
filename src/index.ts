@@ -324,6 +324,10 @@ export class CruxClient extends CruxPayPeer {
         try {
             // Subdomain validation
             identityUtils.validateSubdomain(cruxIDSubdomain);
+            // validating the addressMap provided
+            if (newAddressMap) {
+                this._transpileAddressMap(newAddressMap);
+            }
 
             // Generating the identityClaim
             if (this._payIDClaim) { await (this._payIDClaim as PayIDClaim).decrypt(); }
@@ -352,19 +356,7 @@ export class CruxClient extends CruxPayPeer {
 
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<boolean> => {
         try {
-            const userAddressMap = newAddressMap;
-            const clientMapping: any = this._clientMapping;
-            const csAddressMap: any = {};
-            for (let walletCurrencySymbol of Object.keys(userAddressMap)) {
-                userAddressMap[walletCurrencySymbol.toLowerCase()] = userAddressMap[walletCurrencySymbol];
-                walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
-                if (clientMapping[walletCurrencySymbol]) {
-                    csAddressMap[clientMapping[walletCurrencySymbol]] = userAddressMap[walletCurrencySymbol];
-                } else {
-                    throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping);
-                }
-            }
-
+            const csAddressMap = this._transpileAddressMap(newAddressMap);
             await (this._payIDClaim as PayIDClaim).decrypt();
             const acknowledgement = await (this._nameService as nameService.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, csAddressMap);
             await (this._payIDClaim as PayIDClaim).encrypt();
@@ -407,6 +399,20 @@ export class CruxClient extends CruxPayPeer {
         return result;
     }
 
+    private _transpileAddressMap = (userAddressMap: IAddressMapping) => {
+        const clientMapping: any = this._clientMapping;
+        const csAddressMap: any = {};
+        for (let walletCurrencySymbol of Object.keys(userAddressMap)) {
+            userAddressMap[walletCurrencySymbol.toLowerCase()] = userAddressMap[walletCurrencySymbol];
+            walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
+            if (clientMapping[walletCurrencySymbol]) {
+                csAddressMap[clientMapping[walletCurrencySymbol]] = userAddressMap[walletCurrencySymbol];
+            } else {
+                throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping);
+            }
+        }
+        return csAddressMap;
+    }
 }
 
 export {
