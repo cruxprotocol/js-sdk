@@ -20,16 +20,16 @@ const wallet_xrp_address = "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h"
 const wallet_xrp_sec_identifier = "12345"
 
 let sampleAddressMap: IAddressMapping = {
-    BTC: {
+    bitcoin: {
         addressHash: wallet_btc_address
     },
-    ETH: {
+    ethereum: {
         addressHash: wallet_eth_address
     },
-    TRX: {
+    tron: {
         addressHash: wallet_trx_address
     },
-    XRP: {
+    ripple: {
         addressHash: wallet_xrp_address,
         secIdentifier: wallet_xrp_sec_identifier
     }
