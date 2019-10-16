@@ -63,7 +63,7 @@ interface ICruxPayClaim {
 }
 
 export interface ICruxIDState {
-    cruxID?: string;
+    cruxID: string | null;
     status: nameService.CruxIDRegistrationStatus;
 }
 
@@ -302,6 +302,7 @@ export class CruxClient extends CruxPayPeer {
             const fullCruxID = this.hasPayIDClaim() ? this.getPayIDClaim().virtualAddress : undefined;
             if (!fullCruxID) {
                 return {
+                    cruxID: null,
                     status: {
                         status: "NONE",
                         status_detail: "",
