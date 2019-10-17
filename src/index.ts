@@ -420,4 +420,5 @@ export {
     errors,
     storage,
     nameService,
+    blockstackService,
 };

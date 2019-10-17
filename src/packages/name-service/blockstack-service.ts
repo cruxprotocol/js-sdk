@@ -8,7 +8,7 @@ import config from "../../config";
 import {ErrorHelper, PackageErrorCode} from "../error";
 import { GaiaService } from "../gaia-service";
 import { getContentFromGaiaHub } from "../gaia-service/utils";
-import {BlockstackId, CruxId, IdTranslator} from "../identity-utils";
+import {BlockstackId, CRUX_DOMAIN_SUFFIX, CruxId, DEFAULT_BLOCKSTACK_NAMESPACE, IdTranslator} from "../identity-utils";
 import * as utils from "../utils";
 import * as nameService from "./index";
 import { fetchNameDetails } from "./utils";
@@ -256,6 +256,19 @@ export class BlockstackService extends nameService.NameService {
         log.debug("registration query params", options);
         const body: any = await utils.httpJSONRequest(options);
         return body.status === "Subdomain not registered with this registrar";
+
+    }
+
+    public getDomainAvailability = async (domain: string): Promise<boolean> => {
+        const options = {
+            baseUrl: this._bnsNodes[0],
+            json: true,
+            method: "GET",
+            url: `/v1/names/${domain}${CRUX_DOMAIN_SUFFIX}.${DEFAULT_BLOCKSTACK_NAMESPACE}`,
+        };
+        log.debug("domain name availability query params", options);
+        const body: any = await utils.httpJSONRequest(options);
+        return body.status === "available";
 
     }
 
