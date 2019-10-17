@@ -1,5 +1,4 @@
 import { IMessage, IUserID } from "../../shared-kernel/interfaces";
-import { Message } from "../../shared-kernel/models";
 
 export abstract class Encryption {
     public abstract encryptMessage = async (message: IMessage): Promise<string> => "";
@@ -8,6 +7,7 @@ export abstract class Encryption {
 }
 
 export abstract class CommunicationBase {
+    public abstract initialise(callback: (data: any) => void): void;
     public abstract sendMessage = async (message: any, userID: IUserID): Promise<boolean> => true;
     public abstract onMessageRecieved = async (): Promise<any> ;
 }

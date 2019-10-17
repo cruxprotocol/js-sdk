@@ -1,7 +1,7 @@
-export interface IAddress {
+export interface IntAddress {
     readonly assetId: string;
     readonly address: string;
-    readonly tag: string;
+    readonly tag: string | undefined;
     readonly encoding: string;
 }
 
@@ -30,5 +30,5 @@ export interface IMessageData {
 export interface IPaymentData extends IMessageData {
     readonly assetID: string;
     readonly amount: number;
-    readonly address: IAddress;
+    readonly address: IntAddress;
 }

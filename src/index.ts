@@ -23,8 +23,13 @@ import {
     nameService,
     storage,
 } from "./packages";
-import { GaiaCruxUserRepository } from "./packages/payment/infrastructure/repositories/cruxuser";
+import { CruxUserProfile } from "./packages/payment/domain/cruxuser/cruxuserprofile";
 import { CruxUserRepository } from "./packages/payment/domain/cruxuser/repository";
+import { MessageProcessor } from "./packages/payment/domain/messageProcessor/aggregate";
+import { GaiaCruxUserRepository } from "./packages/payment/infrastructure/repositories/cruxuser";
+import { GaiaCruxUserProfileRepository } from "./packages/payment/infrastructure/repositories/cruxuserrepository";
+import { IntAddress, IPaymentData, IUserID } from "./packages/payment/shared-kernel/interfaces";
+import { UserId } from "./packages/payment/shared-kernel/models";
 
 // TODO: Implement classes enforcing the interfaces
 export interface IAddress {
@@ -151,6 +156,7 @@ class CruxPayPeer extends EventEmitter {
     protected _payIDClaim: PayIDClaim | undefined;
     protected _cruxUser: CruxUser | undefined;
     protected _gaiaUserRepo: CruxUserRepository;
+    protected _messageProcessor: MessageProcessor;
 
     constructor(_options: ICruxPayPeerOptions) {
         super();
@@ -166,10 +172,28 @@ class CruxPayPeer extends EventEmitter {
         this._encryption = this._options.encryption || encryption.Encryption;
         this._nameService = this._options.nameService;
         this.walletClientName = this._options.walletClientName;
-        this._gaiaUserRepo = new GaiaCruxUserRepository("https://hub.cruxpay.com")
+        this._gaiaUserRepo = new GaiaCruxUserRepository("https://hub.cruxpay.com");
+        this._messageProcessor = new MessageProcessor({});
 
         log.info(`Config mode:`, config.CONFIG_MODE);
         log.info(`CruxPayPeer Initialised`);
+    }
+
+    public sendPaymentRequest = async (assetId: string, amount: number, address: string, cruxId: string): Promise<boolean> => {
+        const currentUser: CruxUser | undefined = this._cruxUser;
+        if (!currentUser) {
+            throw errors.CruxClientError.fromError("No current user");
+        }
+        const userId = new UserId({cruxIdentifier: cruxId});
+        const repositoryForProfile = new GaiaCruxUserProfileRepository("https://gaia.cruxpay.com");
+        const cruxUserProfile: CruxUserProfile = await repositoryForProfile.getCruxUserProfile(userId);
+        if (!cruxUserProfile) {
+            throw errors.CruxClientError.fromError("Invalid reciever");
+        }
+        const addressModel: IntAddress = {assetId, address, encoding: "hex", tag: undefined };
+        const paymentRequest: IPaymentData = {assetID: assetId, amount, address: addressModel, requestee: userId };
+        currentUser.sendPaymentRequest(paymentRequest, cruxUserProfile);
+        return true;
     }
 
     public async init() {
@@ -201,9 +225,9 @@ class CruxPayPeer extends EventEmitter {
         }
 
         if (this._payIDClaim && this._payIDClaim.virtualAddress) {
-            const splitted = this._payIDClaim.virtualAddress.split(".")[0].split("@");
-            const userConfig = {domain: splitted[1], subdomain: splitted[0]};
-            this._cruxUser = await this._gaiaUserRepo.getCruxUser(userConfig);
+            const cruxId: IUserID = { cruxIdentifier: this._payIDClaim.virtualAddress };
+            this._cruxUser = await this._gaiaUserRepo.getCruxUser(cruxId);
+            await this._messageProcessor.initialise();
         }
         this._clientMapping = await configService.getClientAssetMapping();
         this._assetList = await configService.getGlobalAssetList();
@@ -309,7 +333,6 @@ class CruxPayPeer extends EventEmitter {
         const payIDClaim = this._storage.getJSON("payIDClaim");
         return Boolean(payIDClaim);
     }
-
 }
 
 // Wallets specific SDK code
@@ -401,20 +424,12 @@ export class CruxClient extends CruxPayPeer {
         }
     }
 
-    public sendPaymentRequest = (requestee, currency, amount, address): boolean => {
-        const currentUser: CruxUser = this._cruxUser;
-        currentUser.requestPayment(requstee.requestPayment)
-        return true;
-    }
-
     private getIDStatus = async (): Promise<nameService.CruxIDRegistrationStatus> => {
         await (this._payIDClaim as PayIDClaim).decrypt();
         const result = await (this._nameService as nameService.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
         await (this._payIDClaim as PayIDClaim).encrypt();
         return result;
     }
-
-
 }
 
 export {

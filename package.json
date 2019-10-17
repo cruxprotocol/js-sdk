@@ -63,6 +63,7 @@
     "@types/mocha": "^5.2.7",
     "@types/request": "^2.48.3",
     "@types/sinon": "^7.0.13",
+    "@types/socket.io-client": "^1.4.32",
     "chai": "^4.2.0",
     "cross-env": "^5.2.1",
     "git-branch-is": "^3.0.0",

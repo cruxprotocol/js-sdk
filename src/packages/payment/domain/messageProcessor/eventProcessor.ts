@@ -1,7 +1,7 @@
 import { IntegrationEventer } from "../../shared-kernel/eventer";
 import { MESSAGE_TYPE } from "../../shared-kernel/models";
 
-export class CruxUserEventHandler {
+export class MessageProcessorEventProcessor {
     private eventer: any;
 
     constructor() {

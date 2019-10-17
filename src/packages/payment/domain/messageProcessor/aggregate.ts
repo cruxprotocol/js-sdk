@@ -1,40 +1,49 @@
-import { IMessage } from "../../shared-kernel/interfaces";
-import { MESSAGE_TYPE } from "../../shared-kernel/models";
-import { CruxUserEventHandler } from "./events";
-import { CommunicationBase, Encryption } from "./communication";
-
-class MessageQueue {
-    // not accessible from outside, the messages that were sent by this guy for which acknowledgement did not arrived
-    // should also keep ignored messages queue which tells what messages were ignored ??
-}
+// import { CommunicationBase } from "./communication";
+import { PeerJsCommunication } from "../../infrastructure/communication/peerJsCommunication";
+import { IntegrationEventer } from "../../shared-kernel/eventer";
 
 export class MessageProcessor {
 
-    private eventer: CruxUserEventHandler;
-    private communication: CommunicationBase;
-    private encryption: Encryption | undefined;
+    private communication: PeerJsCommunication;
+    private eventer: IntegrationEventer;
 
     constructor(configuration: any) {
-        let eventsToListen = [MESSAGE_TYPE.REQUEST_PAYMENT];
+        let eventsToListen = ["request_payment"];
         if (configuration.events) {
             eventsToListen = configuration.events;
         }
-        this.eventer = new CruxUserEventHandler();
-        this.eventer.configure(eventsToListen, this.sendMessage);
-        this.communication = configuration.communication;
-        this.encryption = configuration.Encryption || undefined;
 
-        this.communication.initialise({onMessageRecieved: this.onAcknowledgementRecieved});
+        // this.communication = configuration.communication;
+        this.communication = new PeerJsCommunication();
+
+        this.eventer = IntegrationEventer.getInstance();
+        for (const eventName in eventsToListen) {
+            if (eventsToListen[eventName]) {
+                this.eventer.on(eventsToListen[eventName], this.sendMessage);
+            }
+        }
     }
 
-    public sendMessage = async (message: IMessage): Promise<boolean> => {
+    public async initialise() {
+        this.communication.initialise({onMessageRecieved: this.onMessageRecieved});
+    }
+
+    public sendMessage = async (message: any): Promise<boolean> => {
         // encrypt the message here
-        const encryptedMessage: string = JSON.stringify(message);
-        const sendStatus = await this.communication.sendMessage(encryptedMessage, message.to);   
+        const sendStatus = this.communication.sendMessage(message, message.to);
         return sendStatus;
     }
 
-    public onMessageRecieved = async(message: string) => {
-        this.eventer.getIntegerationEventer().emit(message);
+    public onMessageRecieved = async (message: string) => {
+        let decMessage;
+        if (typeof message === "string") {
+            decMessage = message;
+        } else {
+            decMessage = JSON.parse(message);
+            if (decMessage.type === "request_payment") {
+                decMessage.type = "request_payment_recieved";
+                this.eventer.emitMessage("request_payment_recieved", decMessage);
+            }
+        }
     }
 }

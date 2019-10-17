@@ -12,4 +12,9 @@ export class IntegrationEventer extends EventEmitter {
     private static instance: IntegrationEventer;
 
     private constructor() { super(); }
+
+    public emitMessage(messageType: string, messageData: any) {
+        console.log(`emitting event ${messageType} with data ${messageData}`);
+        this.emit(messageType, messageData);
+    }
 }

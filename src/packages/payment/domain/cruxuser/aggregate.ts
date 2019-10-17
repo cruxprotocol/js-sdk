@@ -6,22 +6,14 @@ import { CruxUserProfile } from "./cruxuserprofile";
 export class CruxUser {
 
     public userId: IUserID;
-    // private _addresses: [Address] | undefined;
-    // private _publicKey: IPublicKey;
 
     constructor(userID: IUserID, publicKey: IPublicKey, addresses: [Address] | undefined) {
-        // this._publicKey = publicKey;
-        // this._addresses = addresses;
+        IntegrationEventer.getInstance().on("request_payment_recieved", (data) => {
+            console.log(`payment request recieved:- ${data}`);
+        });
+
         this.userId = new UserId(userID);
     }
-
-    // public getAddresses() {
-    //     return this._addresses;
-    // }
-
-    // public getPublicKey() {
-    //     return this._publicKey;
-    // }
 
     public sendPaymentRequest(paymentRequest: IPaymentData, to: CruxUserProfile) {
         // TODO: requester should be a present globally as current user
@@ -29,6 +21,6 @@ export class CruxUser {
         const requestee: IUserID = to.userId;
         const messageProps: IMessage = { type: MESSAGE_TYPE.REQUEST_PAYMENT, from: requester, to: requestee, data: paymentRequest, signature: undefined };
         const requestPaymentMessage = new Message(messageProps);
-        IntegrationEventer.getInstance().emit(MESSAGE_TYPE.REQUEST_PAYMENT, requestPaymentMessage);
+        IntegrationEventer.getInstance().emitMessage("request_payment", requestPaymentMessage);
     }
 }
