@@ -9,3 +9,4 @@ lib
 coverage
 .nyc_output
 #.vscode
+src/config.json
