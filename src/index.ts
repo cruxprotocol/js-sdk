@@ -1,4 +1,3 @@
-import {EventEmitter} from "eventemitter3";
 import Logger from "js-logger";
 import path from "path";
 import "regenerator-runtime/runtime";
