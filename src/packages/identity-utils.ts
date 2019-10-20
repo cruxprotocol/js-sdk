@@ -1,7 +1,7 @@
 import {ErrorHelper, PackageErrorCode} from "./error";
 
 const DEFAULT_CRUX_NAMESPACE = "crux";
-const DEFAULT_BLOCKSTACK_NAMESPACE = "id";
+export const DEFAULT_BLOCKSTACK_NAMESPACE = "id";
 export const CRUX_DOMAIN_SUFFIX = "_crux";
 
 interface InputIDComponents {

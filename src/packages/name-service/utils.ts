@@ -1,7 +1,7 @@
 import { AssertionError, deepStrictEqual } from "assert";
 import { getLogger } from "../..";
 import { ErrorHelper, PackageErrorCode } from "../error";
-import { BlockstackId, IdTranslator } from "../identity-utils";
+import { BlockstackId, CRUX_DOMAIN_SUFFIX, DEFAULT_BLOCKSTACK_NAMESPACE, IdTranslator } from "../identity-utils";
 import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
@@ -55,27 +55,32 @@ const bnsResolveName = async (baseUrl: string, blockstackId: string): Promise<ob
     return nameData;
 };
 
-export const getCruxIDByAddress = async (bnsUrl: string, walletClientName: string, address: string) => {
+export const getCruxIDByAddress = async (bnsNodes: string[], walletClientName: string, address: string): Promise<string|null> => {
     // TODO: need to shift this call from BNS nodes to registrar
+    const nodePromises = bnsNodes.map((baseUrl) => bnsFetchNamesByAddress(baseUrl, address));
+    const responseArr: string[][] = await Promise.all(nodePromises);
+    const commonNames = [...(responseArr.map((arr) => new Set(arr)).reduce((a, b) => new Set([...a].filter((x) => b.has(x)))))];
+    const bsId = commonNames.find((name) => {
+        const regex = new RegExp(`(.+)\.${walletClientName}${CRUX_DOMAIN_SUFFIX}.${DEFAULT_BLOCKSTACK_NAMESPACE}`);
+        const match = name.match(regex);
+        return match && match[0];
+    });
+    return (bsId && IdTranslator.blockstackToCrux(BlockstackId.fromString(bsId)).toString()) || null;
+};
+
+const bnsFetchNamesByAddress = async (baseUrl: string, address: string): Promise<string[]> => {
     const url = `/v1/addresses/bitcoin/${address}`;
     const options = {
-        baseUrl: bnsUrl,
+        baseUrl,
         json: true,
         method: "GET",
         url,
     };
-    let names: string[];
+    let namesData: {names: string[]};
     try {
-        const namesData = (await httpJSONRequest(options) as {names: string[]});
-        names = namesData.names;
+        namesData = ((await httpJSONRequest(options)) as {names: string[]});
     } catch (error) {
-        throw ErrorHelper.getPackageError(PackageErrorCode.GetNamesByAddressFailed, `${bnsUrl}${url}`, error);
+        throw ErrorHelper.getPackageError(PackageErrorCode.GetNamesByAddressFailed, `${baseUrl}${url}`, error);
     }
-    const cruxIDs = names.map((name) => {
-        const regex = new RegExp(`(.+)\.${walletClientName}_crux.id`);
-        const match = name.match(regex);
-        return match && IdTranslator.blockstackToCrux(BlockstackId.fromString(match[0])).toString();
-    }).filter((subdomain) => subdomain);
-
-    return cruxIDs;
+    return namesData.names;
 };

@@ -175,8 +175,8 @@ class CruxPayPeer {
 
             // if a keyPair is provided, add a validation check on the cruxID stored
             if (this._keyPair) {
-                const CruxIDArray = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES[0], this.walletClientName, this._keyPair.address);
-                if (!CruxIDArray.includes(payIDClaim.virtualAddress as string)) {
+                const registeredCruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, this.walletClientName, this._keyPair.address);
+                if ((registeredCruxID && registeredCruxID as string) !== (payIDClaim.virtualAddress as string)) {
                     throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.KeyPairMismatch);
                 }
             }
@@ -186,10 +186,9 @@ class CruxPayPeer {
             await this._restoreIdentity();
         } else if (this._keyPair) {
             log.debug("using the keyPair provided");
-            const cruxIDArray = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES[0], this.walletClientName, this._keyPair.address);
-            // Assuming the first identity using the walletClientName as the identity
-            if (cruxIDArray[0]) {
-                const payIDClaim = {identitySecrets: {identityKeyPair: this._keyPair}, virtualAddress: (cruxIDArray && cruxIDArray[0]) || undefined};
+            const registeredCruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, this.walletClientName, this._keyPair.address);
+            if (registeredCruxID) {
+                const payIDClaim = {identitySecrets: {identityKeyPair: this._keyPair}, virtualAddress: registeredCruxID || undefined};
                 this._setPayIDClaim(new PayIDClaim(payIDClaim, { getEncryptionKey: this._getEncryptionKey }));
                 configService = await this._getConfigService();
                 await this._initializeNameService(configService);
@@ -296,8 +295,8 @@ class CruxPayPeer {
     }
 
     private _initializeNameService = async (configService: BlockstackConfigurationService) => {
-        await configService.init();
         if (!this._nameService) {
+            await configService.init();
             this._nameService = await configService.getBlockstackServiceForConfig();
         }
     }
