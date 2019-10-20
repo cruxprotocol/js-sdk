@@ -8,6 +8,8 @@ export enum PackageErrorCode {
     AssetIDNotAvailable = 1006,
     DecryptionFailed = 1007,
     IdentityMismatch = 1008,
+    GetNamesByAddressFailed = 1009,
+    KeyPairMismatch = 1010,
     // 2000s: Gaia errors
     GaiaUploadFailed = 2001,
     GaiaCruxPayUploadFailed = 2002,

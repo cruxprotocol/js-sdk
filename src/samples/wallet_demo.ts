@@ -1,4 +1,4 @@
-import { CruxClient, IAddressMapping, ICruxIDState } from "../index";
+import { CruxClient, IAddressMapping, ICruxIDState, ICruxPayPeerOptions } from "../index";
 // TODO: add optional import statement to use the build
 
 let doc = (document as {
@@ -52,7 +52,7 @@ doc.getElementById('publishAddresses').innerHTML = Object.keys(sampleAddressMap)
 
 
 // defining cruxClientOptions
-let cruxClientOptions = {
+let cruxClientOptions: ICruxPayPeerOptions = {
     getEncryptionKey: () => encryptionKey,
     walletClientName: walletClientName
 }

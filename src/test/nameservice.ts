@@ -2,14 +2,15 @@ import { expect } from 'chai';
 import sinon from "sinon";
 import 'mocha';
 
-import { identityUtils, blockstackService, errors } from "../packages";
+import config from "../config";
+import { blockstackService, errors } from "../packages";
 import * as utils from "../packages/utils";
 import requestFixtures from "./requestMocks/nameservice-reqmocks";
 import * as blockstack from 'blockstack';
 import { IAddressMapping } from '../index';
 import { sanitizePrivKey } from "../packages/utils";
 import { UPLOADABLE_JSON_FILES } from '../packages/name-service/blockstack-service';
-import { IdTranslator, BlockstackId } from '../packages/identity-utils';
+import { getCruxIDByAddress } from '../packages/name-service/utils';
 
 
 // TODO: registration of already registered names and error handling
@@ -44,11 +45,7 @@ describe('BlockstackService tests', () => {
   let sampleIdentityClaimWithoutmnemonic = {
     secrets: {
       mnemonic: undefined,
-      identityKeyPair: {
-        privKey: "anyvalue",
-        pubKey: "anyvalue",
-        address: "anyvalue"
-      }
+      identityKeyPair: undefined
     }
   }
   let sampleIdentityClaimWithoutIdentityKeyPair = {
@@ -638,6 +635,34 @@ describe('BlockstackService tests', () => {
       
       let profileStatus = blockstackService.BlockstackService.getUploadPackageErrorCodeForFilename(fileNameProfile)
       expect(profileStatus).to.be.equal(errors.PackageErrorCode.GaiaUploadFailed)
+    })
+  })
+
+  describe("getCruxIDByAddress tests", () => {
+    it("126LEzWTg6twppHtJodwF8am8PwPdgbmwV using cruxdev wallet should resolve to ankit@cruxdev.crux", async () => {
+      const cruxIDs = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES[0], "cruxdev", "126LEzWTg6twppHtJodwF8am8PwPdgbmwV")
+      let bnsRequestOptions = {
+        baseUrl: "https://core.blockstack.org", 
+        json: true, 
+        method: "GET", 
+        url: "/v1/addresses/bitcoin/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
+      }
+      expect(httpJSONRequestStub.calledOnce).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions)).is.true
+      expect(cruxIDs).to.contain("ankit@cruxdev.crux")
+    })
+
+    it("126LEzWTg6twppHtJodwF8am8PwPdgbmwV using scatter_dev wallet should resolve to empty array", async () => {
+      const cruxIDs = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES[0], "scatter_dev", "126LEzWTg6twppHtJodwF8am8PwPdgbmwV")
+      let bnsRequestOptions = {
+        baseUrl: "https://core.blockstack.org", 
+        json: true, 
+        method: "GET", 
+        url: "/v1/addresses/bitcoin/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
+      }
+      expect(httpJSONRequestStub.calledOnce).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions)).is.true
+      expect(cruxIDs).to.be.empty
     })
   })
 

@@ -143,16 +143,16 @@ export class BlockstackService extends nameService.NameService {
     }
 
     public restoreIdentity = async (fullCruxId: string, identityClaim: nameService.IIdentityClaim): Promise<nameService.IIdentityClaim> => {
-        if (!identityClaim.secrets || !identityClaim.secrets.mnemonic) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity);
-        }
-
         const mnemonic = identityClaim.secrets.mnemonic;
-        let identityKeyPair = identityClaim.secrets.identityKeyPair || undefined;
+        let identityKeyPair = identityClaim.secrets.identityKeyPair;
 
-        // If identityKeypair is not stored locally, generate them using the mnemonic
+        // If identityKeypair is not provided, generate them using the mnemonic provided
         if (!identityKeyPair) {
-            identityKeyPair = await this._generateIdentityKeyPair(mnemonic);
+            if (!mnemonic) {
+                throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity);
+            } else {
+                identityKeyPair = await this._generateIdentityKeyPair(mnemonic);
+            }
         }
 
         // TODO: validate the correspondance of cruxID with the identityClaim
@@ -186,12 +186,13 @@ export class BlockstackService extends nameService.NameService {
     public registerName = async (identityClaim: nameService.IIdentityClaim, subdomain: string): Promise<string> => {
         const mnemonic = identityClaim.secrets.mnemonic;
         let identityKeyPair = identityClaim.secrets.identityKeyPair;
-        // Check for existing mnemonic
-        if (!mnemonic) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRegisterName);
-        }
+
         // Generate the Identity key pair
         if (!identityKeyPair) {
+            // Check for existing mnemonic
+            if (!mnemonic) {
+                throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRegisterName);
+            }
             identityKeyPair = await this._generateIdentityKeyPair(mnemonic);
         }
 

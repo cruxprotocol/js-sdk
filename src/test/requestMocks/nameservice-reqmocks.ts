@@ -385,6 +385,17 @@ let requestResponseArray: { request: object, response: any }[] = [
     response: {
       status: "Your subdomain was registered in transaction"
     }
+  },
+  {
+    request: {
+      baseUrl: "https://core.blockstack.org", 
+      json: true, 
+      method: "GET", 
+      url: "/v1/addresses/bitcoin/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
+    },
+    response: {
+      names: ["ankit.cruxdev_crux.id"]
+    }
   }
 ]
 

@@ -1,6 +1,7 @@
 import { AssertionError, deepStrictEqual } from "assert";
 import { getLogger } from "../..";
 import { ErrorHelper, PackageErrorCode } from "../error";
+import { BlockstackId, IdTranslator } from "../identity-utils";
 import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
@@ -52,4 +53,29 @@ const bnsResolveName = async (baseUrl: string, blockstackId: string): Promise<ob
         throw ErrorHelper.getPackageError(PackageErrorCode.BnsResolutionFailed, baseUrl, error);
     }
     return nameData;
+};
+
+export const getCruxIDByAddress = async (bnsUrl: string, walletClientName: string, address: string) => {
+    // TODO: need to shift this call from BNS nodes to registrar
+    const url = `/v1/addresses/bitcoin/${address}`;
+    const options = {
+        baseUrl: bnsUrl,
+        json: true,
+        method: "GET",
+        url,
+    };
+    let names: string[];
+    try {
+        const namesData = (await httpJSONRequest(options) as {names: string[]});
+        names = namesData.names;
+    } catch (error) {
+        throw ErrorHelper.getPackageError(PackageErrorCode.GetNamesByAddressFailed, `${bnsUrl}${url}`, error);
+    }
+    const cruxIDs = names.map((name) => {
+        const regex = new RegExp(`(.+)\.${walletClientName}_crux.id`);
+        const match = name.match(regex);
+        return match && IdTranslator.blockstackToCrux(BlockstackId.fromString(match[0])).toString();
+    }).filter((subdomain) => subdomain);
+
+    return cruxIDs;
 };

@@ -28,6 +28,8 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.GaiaGetFileFailed]: "Unable to get gaia read url prefix: '{0}'",
     [PackageErrorCode.GaiaProfileUploadFailed]: "Unable to upload '{0}' to gaia: '{1}'",
     [PackageErrorCode.GaiaUploadFailed]: "Unable to upload '{0}' to gaia: '{1}'",
+    [PackageErrorCode.GetNamesByAddressFailed]: "'{0}' failed with error '{1}'",
+    [PackageErrorCode.KeyPairMismatch]: "Invalid keyPair provided",
     [PackageErrorCode.NameIntegrityCheckFailed]: "Name resolution integrity check failed",
     [PackageErrorCode.SubdomainLengthCheckFailure]: "Validation failed: Subdomain length must be between 4 to 20",
     [PackageErrorCode.SubdomainRegexMatchFailure]: "Validation failed: Subdomain should start with alphabet and end with alphabet or number. Allowed characters are lowercase alphabets, numbers, - and _",
