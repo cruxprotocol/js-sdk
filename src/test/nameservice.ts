@@ -39,18 +39,8 @@ describe('BlockstackService tests', () => {
       }
     }
   }
-  let sampleIdentityClaimWithoutSecret = {
-    secrets: undefined
-  }
-  let sampleIdentityClaimWithoutmnemonic = {
+  let sampleIdentityClaimWithoutKeyPair = {
     secrets: {
-      mnemonic: undefined,
-      identityKeyPair: undefined
-    }
-  }
-  let sampleIdentityClaimWithoutIdentityKeyPair = {
-    secrets: {
-      mnemonic: "jelly level auction pluck system record unique huge text fold galaxy home",
       identityKeyPair: undefined
     }
   }
@@ -86,7 +76,6 @@ describe('BlockstackService tests', () => {
   describe('generateIdentity tests', () => {
     it('always generates a proper identity claim (mnemonic and a keypair)', async () => {
       let generatedIdentityClaim = await blkstkService.generateIdentity()
-      expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('mnemonic').to.be.a('string')
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('pubKey').to.be.a('string')
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
@@ -96,38 +85,28 @@ describe('BlockstackService tests', () => {
   describe('restoreIdentity tests', () => {
     it('given cruxID and identityClaim with mnemonic, should return the corresponding full identityClaim', async () => {
       let restoredIdentityClaim = await blkstkService.restoreIdentity(sampleCruxId, sampleIdentityClaim)
-      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('mnemonic').to.be.a('string')
       expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('pubKey').to.be.a('string')
       expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
       expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
     })
-    it('given cruxID without identityClaim, should throw "CouldNotFindMnemonicToRestoreIdentity"', async () => {
+    it('given cruxID without identityClaim, should throw "CouldNotFindKeyPairToRestoreIdentity"', async () => {
       let raisedError;
       try {
         let restoredIdentityClaim = await blkstkService.restoreIdentity(sampleCruxId, {secrets: {}})
       } catch (error) {
         raisedError = error
       }
-      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity)
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CouldNotFindKeyPairToRestoreIdentity)
     })
-    it('given cruxID with identityClaim (only mnemonic), should return the corresponding full identityClaim', async () => {
-      let restoredIdentityClaim = await blkstkService.restoreIdentity(sampleCruxId, {secrets: {mnemonic: sampleIdentityClaim.secrets.mnemonic}})
-      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('mnemonic').to.be.a('string')
-      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('pubKey').to.be.a('string')
-      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
-      expect(restoredIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
-    })
-    it('given identityClaim with mnemonic with invalid cruxID, should throw "CruxIdInvalidStructure" | "CruxIdNamespaceValidation"')
-    it('given identityClaim with mnemonic and non-corresponding cruxID, should throw error')
-    it('given identityClaim without mnemonic, should throw "CouldNotFindMnemonicToRestoreIdentity"', async() => {
+    it('given identityClaim without keypair, should throw "CouldNotFindKeyPairToRestoreIdentity"', async() => {
       let raisedError
         try {
-          let restoredIdentityClaimWithoutMnemonic = await blkstkService.restoreIdentity(sampleCruxId, sampleIdentityClaimWithoutmnemonic)
+          let restoredIdentityClaimWithoutMnemonic = await blkstkService.restoreIdentity(sampleCruxId, sampleIdentityClaimWithoutKeyPair)
         }
         catch (error) {
           raisedError = error
         }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity)
+        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CouldNotFindKeyPairToRestoreIdentity)
     })
   })
 
@@ -463,14 +442,6 @@ describe('BlockstackService tests', () => {
       expect(uploadToGaiaHubStub.calledOnce).is.true
     })
 
-    it('given valid identityClaim (only mnemonic) and a non-registered cruxId, should successfully register and return the fullCruxId', async () => {
-      let registeredName = await blkstkService.registerName({ secrets: { mnemonic: sampleIdentityClaim.secrets.mnemonic } }, desiredName)
-      expect(httpJSONRequestStub.calledOnce).is.true
-      // expect(httpJSONRequestStub.calledWith(hubInfoRequestOptions)).is.true
-      expect(httpJSONRequestStub.calledWith(registrarRequestOptions)).is.true
-      expect(registeredName).is.equal(expectedRegisteredName)
-    })
-
     it('given valid identityClaim and a non-registered cruxId (bob@devcoinswitch.crux), should successfully register and return the fullCruxId', async () => {
       let registeredName = await blkstkService.registerName(sampleIdentityClaim, desiredName)
       expect(httpJSONRequestStub.calledOnce).is.true
@@ -493,20 +464,20 @@ describe('BlockstackService tests', () => {
       expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.SubdomainRegistrationFailed)
     })
 
-    it('given identityClaim without mnemonic should throw "CouldNotFindMnemonicToRegisterName"', async() => {
+    it('given identityClaim without keypair should throw "CouldNotFindKeyPairToRegisterName"', async() => {
       let raisedError
       try {
-        await blkstkService.registerName(sampleIdentityClaimWithoutmnemonic, sampleSubdomain)
+        await blkstkService.registerName(sampleIdentityClaimWithoutKeyPair, sampleSubdomain)
       } catch (error) {
         raisedError = error
       }
-      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CouldNotFindMnemonicToRegisterName)
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CouldNotFindKeyPairToRegisterName)
     })
     it('given valid identityClaim and a cruxId, if registration status is false then sould SubdomainRegistrationAcknowledgementFailed', async () => {
       let desiredName = 'mark'
       let raisedError
       try {
-        await blkstkService.registerName({ secrets: { mnemonic: sampleIdentityClaim.secrets.mnemonic } }, desiredName) 
+        await blkstkService.registerName({ secrets: { identityKeyPair: sampleIdentityClaim.secrets.identityKeyPair } }, desiredName) 
       } catch (error) {
         raisedError = error
       }

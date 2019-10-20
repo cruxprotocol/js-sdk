@@ -143,16 +143,10 @@ export class BlockstackService extends nameService.NameService {
     }
 
     public restoreIdentity = async (fullCruxId: string, identityClaim: nameService.IIdentityClaim): Promise<nameService.IIdentityClaim> => {
-        const mnemonic = identityClaim.secrets.mnemonic;
-        let identityKeyPair = identityClaim.secrets.identityKeyPair;
+        const identityKeyPair = identityClaim.secrets.identityKeyPair;
 
-        // If identityKeypair is not provided, generate them using the mnemonic provided
         if (!identityKeyPair) {
-            if (!mnemonic) {
-                throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity);
-            } else {
-                identityKeyPair = await this._generateIdentityKeyPair(mnemonic);
-            }
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindKeyPairToRestoreIdentity);
         }
 
         // TODO: validate the correspondance of cruxID with the identityClaim
@@ -166,7 +160,6 @@ export class BlockstackService extends nameService.NameService {
         return {
             secrets: {
                 identityKeyPair,
-                mnemonic,
             },
         };
 
@@ -174,26 +167,20 @@ export class BlockstackService extends nameService.NameService {
 
     public generateIdentity = async (): Promise<nameService.IIdentityClaim> => {
         const newMnemonic = this._generateMnemonic();
+        // TODO: pass the generated mnemonic to the client to handle the identity restoration
         const identityKeyPair = await this._generateIdentityKeyPair(newMnemonic);
         return {
             secrets: {
                 identityKeyPair,
-                mnemonic: newMnemonic,
             },
         };
     }
 
     public registerName = async (identityClaim: nameService.IIdentityClaim, subdomain: string): Promise<string> => {
-        const mnemonic = identityClaim.secrets.mnemonic;
-        let identityKeyPair = identityClaim.secrets.identityKeyPair;
+        const identityKeyPair = identityClaim.secrets.identityKeyPair;
 
-        // Generate the Identity key pair
         if (!identityKeyPair) {
-            // Check for existing mnemonic
-            if (!mnemonic) {
-                throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRegisterName);
-            }
-            identityKeyPair = await this._generateIdentityKeyPair(mnemonic);
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
 
         await this._gaiaService.uploadProfileInfo(identityKeyPair.privKey);

@@ -37,9 +37,9 @@ export enum PackageErrorCode {
     CurrencyDoesNotExistInClientMapping = 4011,
     // Internal errors
     CouldNotFindBlockstackConfigurationServiceClientConfig = 5001,
-    CouldNotFindMnemonicToRestoreIdentity = 5002,
+    CouldNotFindKeyPairToRestoreIdentity = 5002,
     CouldNotValidateZoneFile = 5003,
     CouldNotFindIdentityKeyPairToPutAddressMapping = 5004,
     CouldNotFindAssetListInClientConfig = 5005,
-    CouldNotFindMnemonicToRegisterName = 5006,
+    CouldNotFindKeyPairToRegisterName = 5006,
 }
