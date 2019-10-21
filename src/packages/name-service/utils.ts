@@ -56,7 +56,6 @@ const bnsResolveName = async (baseUrl: string, blockstackId: string): Promise<ob
 };
 
 export const getCruxIDByAddress = async (bnsNodes: string[], address: string): Promise<string|null> => {
-    // TODO: need to shift this call from BNS nodes to registrar
     const nodePromises = bnsNodes.map((baseUrl) => bnsFetchNamesByAddress(baseUrl, address));
     const responseArr: string[][] = await Promise.all(nodePromises);
     const commonNames = [...(responseArr.map((arr) => new Set(arr)).reduce((a, b) => new Set([...a].filter((x) => b.has(x)))))];
@@ -65,6 +64,9 @@ export const getCruxIDByAddress = async (bnsNodes: string[], address: string): P
         const match = name.match(regex);
         return match && match[0];
     });
+    if (!bsId) {
+        // Fetch any pending registrations on the address using the registrar
+    }
     return (bsId && IdTranslator.blockstackToCrux(BlockstackId.fromString(bsId)).toString()) || null;
 };
 
