@@ -227,7 +227,7 @@ class CruxPayPeer {
             if (this._resolvedClientAssetMapping) {
                 return this._resolvedClientAssetMapping;
             } else {
-                throw ErrorHelper.getPackageError(PackageErrorCode.ClientNotInitialized)
+                throw ErrorHelper.getPackageError(PackageErrorCode.ClientNotInitialized);
             }
         } catch (err) {
             throw errors.CruxClientError.fromError(err);
