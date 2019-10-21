@@ -116,7 +116,7 @@ cruxClient.getCruxIDState().then((cruxIDState) => {
         ```
         {
             status: "PENDING",
-            status_detail: "Your subdomain was registered in transaction"
+            statusDetail: "Your subdomain was registered in transaction"
         }
         ```
     - Type: javascript object
@@ -124,7 +124,7 @@ cruxClient.getCruxIDState().then((cruxIDState) => {
         - status: 
             - Type: string
             - Description: which can have the following values [UNKNOWN, PENDING, REJECTED, DONE]
-        - status_detail:
+        - statusDetail:
             - Type: string
             - Description: which contains further details/reason about the status.
 

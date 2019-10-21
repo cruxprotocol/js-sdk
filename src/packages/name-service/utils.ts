@@ -11,15 +11,15 @@ export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[])
 
     const responsesArr: object[] = await Promise.all(nodeResponses);
     log.debug(`BNS resolved JSON array:`, responsesArr);
-    let prev_res;
+    let prevRes;
     let response: object;
     for (let i = 0; i < responsesArr.length; i++) {
         const res = responsesArr[i];
         if (i === 0) {
-            prev_res = res;
+            prevRes = res;
         } else {
             try {
-                deepStrictEqual(prev_res, res);
+                deepStrictEqual(prevRes, res);
             } catch (e) {
                 if (e instanceof AssertionError) {
                     throw ErrorHelper.getPackageError(PackageErrorCode.NameIntegrityCheckFailed);

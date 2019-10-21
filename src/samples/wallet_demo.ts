@@ -151,7 +151,7 @@ const putAddressMap = async () => {
 }
 const getCruxIDState = async (): Promise<ICruxIDState> => {
     let UIResponse: string = ""
-    let cruxIDStatus: ICruxIDState = {status: {status: "NONE", status_detail: ""}}
+    let cruxIDStatus: ICruxIDState = {status: {status: "NONE", statusDetail: ""}}
     try {
         cruxIDStatus = await cruxClient.getCruxIDState()
         UIResponse = JSON.stringify(cruxIDStatus, undefined, 4)
