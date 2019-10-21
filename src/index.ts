@@ -21,6 +21,7 @@ import {
     identityUtils,
     nameService,
     storage,
+    utils,
 } from "./packages";
 import { getCruxIDByAddress } from "./packages/name-service/utils";
 
@@ -47,7 +48,7 @@ export class AddressMapping {
 
 export interface ICruxPayPeerOptions {
     getEncryptionKey: () => string;
-    keyPair?: blockstackService.IBitcoinKeyPair;
+    privateKey?: string;
     storage?: storage.StorageService;
     encryption?: typeof encryption.Encryption;
     nameService?: nameService.NameService;
@@ -166,7 +167,7 @@ class CruxPayPeer {
         this._storage =  this._options.storage || new storage.LocalStorage();
         this._encryption = this._options.encryption || encryption.Encryption;
         this._nameService = this._options.nameService;
-        this._keyPair = this._options.keyPair;
+        if (this._options.privateKey) { this._keyPair =  utils.getKeyPairFromPrivKey(this._options.privateKey); }
         this.walletClientName = this._options.walletClientName;
 
         log.info(`Config mode:`, config.CONFIG_MODE);
