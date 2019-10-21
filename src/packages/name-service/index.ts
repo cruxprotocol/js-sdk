@@ -1,4 +1,5 @@
 import { IAddressMapping } from "../..";
+import { StorageService } from "../storage";
 
 // NameService abstraction
 
@@ -9,7 +10,7 @@ export interface IIdentityClaim {
 /* istanbul ignore next */
 export abstract class NameService {
     // TODO: Make CHILD CLASS implement instead of extend
-    public abstract generateIdentity = async (): Promise<IIdentityClaim> => ({ secrets: null });
+    public abstract generateIdentity = async (storage: StorageService, encryptionKey: string): Promise<IIdentityClaim> => ({ secrets: null });
     public abstract restoreIdentity = async (name: string, identityClaim: IIdentityClaim): Promise<IIdentityClaim> => ({ secrets: null });
     public abstract getNameAvailability = async (name: string): Promise<boolean> => false;
     public abstract registerName = async (identityClaim: IIdentityClaim, name: string): Promise<string> => "";

@@ -55,6 +55,12 @@ cruxClient.getCruxIDState().then((cruxIDState) => {
 })
 ```
 
+Wallet clients are encouraged to surface the respective `ERROR_CODE` of the `CruxClientError` to their Users with any custom error messages. This will help in debugging any issues with the functionality.
+
+Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/error-handling.md) for more information on Error handling.
+
+
+
 ### SDK Operation
 
 1. ##### isCruxIDAvailable(cruxID<onlySubdomain>)
