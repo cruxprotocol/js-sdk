@@ -8,6 +8,9 @@ export enum PackageErrorCode {
     AssetIDNotAvailable = 1006,
     DecryptionFailed = 1007,
     IdentityMismatch = 1008,
+    GetNamesByAddressFailed = 1009,
+    KeyPairMismatch = 1010,
+    DifferentWalletCruxID = 1011,
     // 2000s: Gaia errors
     GaiaUploadFailed = 2001,
     GaiaCruxPayUploadFailed = 2002,
@@ -35,9 +38,9 @@ export enum PackageErrorCode {
     CurrencyDoesNotExistInClientMapping = 4011,
     // Internal errors
     CouldNotFindBlockstackConfigurationServiceClientConfig = 5001,
-    CouldNotFindMnemonicToRestoreIdentity = 5002,
+    CouldNotFindKeyPairToRestoreIdentity = 5002,
     CouldNotValidateZoneFile = 5003,
     CouldNotFindIdentityKeyPairToPutAddressMapping = 5004,
     CouldNotFindAssetListInClientConfig = 5005,
-    CouldNotFindMnemonicToRegisterName = 5006,
+    CouldNotFindKeyPairToRegisterName = 5006,
 }
