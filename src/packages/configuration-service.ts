@@ -33,7 +33,7 @@ interface IClientAssetMapping {
 interface IClientConfig {
     assetMapping: IClientAssetMapping;
     assetList: IGlobalAssetList;
-    nameserviceConfiguration: IBlockstackServiceInputOptions;
+    nameserviceConfiguration?: IBlockstackServiceInputOptions;
 }
 
 export interface IResolvedClientAssetMapping {
