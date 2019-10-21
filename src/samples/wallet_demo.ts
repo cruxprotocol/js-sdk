@@ -1,4 +1,4 @@
-import { CruxClient, IAddressMapping, ICruxIDState, ICruxPayPeerOptions } from "../index";
+import { CruxClient, IAddressMapping, ICruxIDState, ICruxPayPeerOptions, errors } from "../index";
 // TODO: add optional import statement to use the build
 
 let doc = (document as {
@@ -84,7 +84,12 @@ const isCruxIDAvailable = async () => {
         let available = await cruxClient.isCruxIDAvailable(cruxID)
         UIResponse = available ? "available" : "unavailable"
     } catch (e) {
-        UIResponse = e
+        if (e instanceof errors.CruxClientError) {
+            UIResponse = `${e.errorCode}: ${e}`
+        } else {
+            UIResponse = e
+        }
+
     } finally {
         doc.getElementById('availability').textContent = UIResponse
     }
@@ -97,7 +102,11 @@ const registerCruxID = async () => {
         await cruxClient.registerCruxID(cruxID, newAddressMap)
         UIResponse = "cruxID registration initiated!"
     } catch (e) {
-        UIResponse = e
+        if (e instanceof errors.CruxClientError) {
+            UIResponse = `${e.errorCode}: ${e}`
+        } else {
+            UIResponse = e
+        }
     } finally {
         doc.getElementById('registrationAcknowledgement').textContent = UIResponse
     }
@@ -111,7 +120,11 @@ const resolveCurrencyAddressForCruxID = async () => {
         let resolvedAddress = await cruxClient.resolveCurrencyAddressForCruxID(cruxID, walletCurrencySymbol)
         UIResponse = JSON.stringify(resolvedAddress, undefined, 4)
     } catch (e) {
-        UIResponse = e
+        if (e instanceof errors.CruxClientError) {
+            UIResponse = `${e.errorCode}: ${e}`
+        } else {
+            UIResponse = e
+        }
     } finally {
         doc.getElementById('addresses').textContent = UIResponse
     }
@@ -123,7 +136,11 @@ const getAddressMap = async () => {
         let addressMap = await cruxClient.getAddressMap()
         UIResponse = JSON.stringify(addressMap, undefined, 4)
     } catch (e) {
-        UIResponse = e
+        if (e instanceof errors.CruxClientError) {
+            UIResponse = `${e.errorCode}: ${e}`
+        } else {
+            UIResponse = e
+        }
     } finally {
         doc.getElementById('addressMap').textContent = UIResponse
     }    
@@ -144,19 +161,27 @@ const putAddressMap = async () => {
         let acknowledgement = await cruxClient.putAddressMap(addressMap)
         UIResponse = acknowledgement ? "successfully published addresses!" : acknowledgement.toString()
     } catch (e) {
-        UIResponse = e
+        if (e instanceof errors.CruxClientError) {
+            UIResponse = `${e.errorCode}: ${e}`
+        } else {
+            UIResponse = e
+        }
     } finally {
         doc.getElementById('putAddressMapAcknowledgement').textContent = UIResponse
     }    
 }
 const getCruxIDState = async (): Promise<ICruxIDState> => {
     let UIResponse: string = ""
-    let cruxIDStatus: ICruxIDState = {status: {status: "NONE", status_detail: ""}}
+    let cruxIDStatus: ICruxIDState = {cruxID: null, status: {status: "NONE", status_detail: ""}}
     try {
         cruxIDStatus = await cruxClient.getCruxIDState()
         UIResponse = JSON.stringify(cruxIDStatus, undefined, 4)
     } catch (e) {
-        UIResponse = e
+        if (e instanceof errors.CruxClientError) {
+            UIResponse = `${e.errorCode}: ${e}`
+        } else {
+            UIResponse = e
+        }
     } finally {
         doc.getElementById('cruxIDStatus').textContent = UIResponse
     }
@@ -170,7 +195,11 @@ const updatePassword = async () => {
         await cruxClient.updatePassword(oldEncryptionKey, newEncryptionKey)
         UIResponse = 'updated password successfully!'
     } catch (e) {
-        UIResponse = e
+        if (e instanceof errors.CruxClientError) {
+            UIResponse = `${e.errorCode}: ${e}`
+        } else {
+            UIResponse = e
+        }
     } finally {
         doc.getElementById('passwordUpdateAcknowledgement').textContent = UIResponse
     }
