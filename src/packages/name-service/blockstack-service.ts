@@ -5,10 +5,12 @@ import * as blockstack from "blockstack";
 import { getLogger, IAddress, IAddressMapping } from "../..";
 import config from "../../config";
 
+import { Encryption } from "../encryption";
 import {ErrorHelper, PackageErrorCode} from "../error";
 import { GaiaService } from "../gaia-service";
 import { getContentFromGaiaHub } from "../gaia-service/utils";
 import {BlockstackId, CruxId, IdTranslator} from "../identity-utils";
+import { StorageService } from "../storage";
 import * as utils from "../utils";
 import * as nameService from "./index";
 import { fetchNameDetails } from "./utils";
@@ -165,9 +167,9 @@ export class BlockstackService extends nameService.NameService {
 
     }
 
-    public generateIdentity = async (): Promise<nameService.IIdentityClaim> => {
+    public generateIdentity = async (storage: StorageService, encryptionKey: string): Promise<nameService.IIdentityClaim> => {
         const newMnemonic = this._generateMnemonic();
-        // TODO: pass the generated mnemonic to the client to handle the identity restoration
+        storage.setItem("encryptedMnemonic", JSON.stringify(Encryption.encryptText(newMnemonic, encryptionKey)));
         const identityKeyPair = await this._generateIdentityKeyPair(newMnemonic);
         return {
             secrets: {

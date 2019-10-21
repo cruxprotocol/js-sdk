@@ -370,7 +370,7 @@ export class CruxClient extends CruxPayPeer {
             } else if (this._keyPair) {
                 identityClaim = {secrets: {identityKeyPair: this._keyPair}};
             } else {
-                identityClaim = await (this._nameService as nameService.NameService).generateIdentity();
+                identityClaim = await (this._nameService as nameService.NameService).generateIdentity(this._storage, await this._getEncryptionKey());
             }
 
             const registeredPublicID = await (this._nameService as nameService.NameService).registerName(identityClaim, cruxIDSubdomain);

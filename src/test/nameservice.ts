@@ -11,6 +11,7 @@ import { IAddressMapping } from '../index';
 import { sanitizePrivKey } from "../packages/utils";
 import { UPLOADABLE_JSON_FILES } from '../packages/name-service/blockstack-service';
 import { getCruxIDByAddress } from '../packages/name-service/utils';
+import { LocalStorage } from '../packages/storage';
 
 
 // TODO: registration of already registered names and error handling
@@ -51,6 +52,8 @@ describe('BlockstackService tests', () => {
   }
 
   beforeEach(() => {
+    localStorage.clear();
+    
     // Handling mock stubs
 
     httpJSONRequestStub = sinon.stub(utils, 'httpJSONRequest').throws('unhandled in mocks')
@@ -75,7 +78,7 @@ describe('BlockstackService tests', () => {
 
   describe('generateIdentity tests', () => {
     it('always generates a proper identity claim (mnemonic and a keypair)', async () => {
-      let generatedIdentityClaim = await blkstkService.generateIdentity()
+      let generatedIdentityClaim = await blkstkService.generateIdentity(new LocalStorage(), "fooKey")
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('pubKey').to.be.a('string')
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
