@@ -70,6 +70,7 @@ cruxClient.getCruxIDState().then((cruxIDState) => {
 
 3. ##### registerCruxID(cruxID<onlySubdomain>, newAddressMap)
     - Description: Reserves/registers the cruxID for the user. The user can link any blockchain address to his CruxID with the help of newAddressMap sent. The addresses are now publicly linked and can be resolved.
+    - Note: To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
     - Params:
         - subdomain part of [CruxID](#cruxid)
         - newAddressMap of type [IAddressMapping](#iaddressmapping) which has symbols and addresses a user wants to publically expose with CruxID.
@@ -91,6 +92,7 @@ cruxClient.getCruxIDState().then((cruxIDState) => {
     - Description: Helps to update 2 things:-
         - change list of publicly accessible currency addresses.
         - change the value of addressHash and/or secIdentifier to another one.
+    - Note: To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
     - Params:
         - newAddressMap of type [IAddressMapping](#iaddressmapping) has modified map has symbols and addresses a user wants to publically expose with CruxID.
     - Returns: Promise returns _boolean_ indicating success or failures 
