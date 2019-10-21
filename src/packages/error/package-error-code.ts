@@ -10,6 +10,7 @@ export enum PackageErrorCode {
     IdentityMismatch = 1008,
     GetNamesByAddressFailed = 1009,
     KeyPairMismatch = 1010,
+    DifferentWalletCruxID = 1011,
     // 2000s: Gaia errors
     GaiaUploadFailed = 2001,
     GaiaCruxPayUploadFailed = 2002,

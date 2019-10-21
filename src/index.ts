@@ -136,6 +136,13 @@ export class PayIDClaim implements ICruxPayClaim {
 }
 
 class CruxPayPeer {
+    public static validateCruxIDByWallet = (walletClientName: string, cruxIDString: string): void => {
+        const cruxID = identityUtils.CruxId.fromString(cruxIDString);
+        if (cruxID.components.domain !== walletClientName) {
+            throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.DifferentWalletCruxID);
+        }
+    }
+
     public walletClientName: string;
     protected _options: ICruxPayPeerOptions;
     protected _getEncryptionKey: () => string;
@@ -175,9 +182,12 @@ class CruxPayPeer {
 
             // if a keyPair is provided, add a validation check on the cruxID stored
             if (this._keyPair) {
-                const registeredCruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, this.walletClientName, this._keyPair.address);
-                if ((registeredCruxID && registeredCruxID as string) !== (payIDClaim.virtualAddress as string)) {
-                    throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.KeyPairMismatch);
+                const registeredCruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, this._keyPair.address);
+                if (registeredCruxID) {
+                    CruxPayPeer.validateCruxIDByWallet(this.walletClientName, registeredCruxID);
+                    if (registeredCruxID !== payIDClaim.virtualAddress as string) {
+                        throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.KeyPairMismatch);
+                    }
                 }
             }
             this._setPayIDClaim(new PayIDClaim(payIDClaim, { getEncryptionKey: this._getEncryptionKey }));
@@ -186,8 +196,9 @@ class CruxPayPeer {
             await this._restoreIdentity();
         } else if (this._keyPair) {
             log.debug("using the keyPair provided");
-            const registeredCruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, this.walletClientName, this._keyPair.address);
+            const registeredCruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, this._keyPair.address);
             if (registeredCruxID) {
+                CruxPayPeer.validateCruxIDByWallet(this.walletClientName, registeredCruxID);
                 const payIDClaim = {identitySecrets: {identityKeyPair: this._keyPair}, virtualAddress: registeredCruxID || undefined};
                 this._setPayIDClaim(new PayIDClaim(payIDClaim, { getEncryptionKey: this._getEncryptionKey }));
                 configService = await this._getConfigService();

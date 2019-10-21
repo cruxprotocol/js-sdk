@@ -19,6 +19,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.CruxIdNamespaceValidation]: "Invalid Crux ID namespace: '{0}', should end with .crux",
     [PackageErrorCode.CruxIdInvalidStructure]: "Invalid Crux ID",
     [PackageErrorCode.DecryptionFailed]: "Decryption failed",
+    [PackageErrorCode.DifferentWalletCruxID]: "Already has a Crux ID registered with different wallet",
     [PackageErrorCode.ExpectedEncryptionKeyValue]: "Missing encryptionKey method",
     [PackageErrorCode.GaiaClientConfigUploadFailed]: "Unable to upload '{0}' to gaia: '{1}'",
     [PackageErrorCode.GaiaCruxPayUploadFailed]: "Unable to upload '{0}' to gaia: '{1}'",

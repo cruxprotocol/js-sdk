@@ -613,8 +613,8 @@ describe('BlockstackService tests', () => {
   })
 
   describe("getCruxIDByAddress tests", () => {
-    it("126LEzWTg6twppHtJodwF8am8PwPdgbmwV using cruxdev wallet should resolve to ankit@cruxdev.crux", async () => {
-      const cruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, "cruxdev", "126LEzWTg6twppHtJodwF8am8PwPdgbmwV")
+    it("126LEzWTg6twppHtJodwF8am8PwPdgbmwV should resolve to ankit@cruxdev.crux", async () => {
+      const cruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, "126LEzWTg6twppHtJodwF8am8PwPdgbmwV")
       let bnsRequestOptions1 = {
         baseUrl: "https://core.blockstack.org", 
         json: true, 
@@ -633,28 +633,8 @@ describe('BlockstackService tests', () => {
       expect(cruxID).to.be.equal("ankit@cruxdev.crux")
     })
 
-    it("126LEzWTg6twppHtJodwF8am8PwPdgbmwV using scatter_dev wallet should resolve to empty array", async () => {
-      const cruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, "scatter_dev", "126LEzWTg6twppHtJodwF8am8PwPdgbmwV")
-      let bnsRequestOptions1 = {
-        baseUrl: "https://core.blockstack.org", 
-        json: true, 
-        method: "GET", 
-        url: "/v1/addresses/bitcoin/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
-      }
-      let bnsRequestOptions2 = {
-        baseUrl: "https://bns.cruxpay.com", 
-        json: true, 
-        method: "GET", 
-        url: "/v1/addresses/bitcoin/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
-      }
-      expect(httpJSONRequestStub.calledTwice).is.true
-      expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
-      expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
-      expect(cruxID).to.be.null
-    })
-
-    it("1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ using cruxdev wallet should resolve to empty array", async () => {
-      const cruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, "cruxdev", "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ")
+    it("1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ should resolve to empty array", async () => {
+      const cruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ")
       let bnsRequestOptions1 = {
         baseUrl: "https://core.blockstack.org", 
         json: true, 
