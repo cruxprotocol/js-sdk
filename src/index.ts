@@ -287,8 +287,9 @@ class CruxPayPeer {
     }
 
     private _hasPayIDClaimStored = (): boolean => {
-        const payIDClaim = this._storage.getJSON("payIDClaim");
-        return Boolean(payIDClaim);
+        // const payIDClaim = this._storage.getJSON("payIDClaim");
+        // return Boolean(payIDClaim);
+        return false;
     }
 
 }

@@ -12,7 +12,8 @@
     "wallet_demo": "npm run set-local-config && ./node_modules/.bin/parcel src/samples/wallet_demo.html --https --no-cache",
     "typecheck": "./node_modules/.bin/tsc --noEmit",
     "transpile": "./node_modules/.bin/tsc || true",
-    "build:js": "npm run set-local-config && ./node_modules/.bin/parcel build src/index.ts -d dist --out-file cruxpay-sdk.js --no-minify",
+    "build:js": "npm run set-local-config && ./node_modules/.bin/parcel build src/index.ts -d dist --out-file cruxpay-sdk.js --no-minify --detailed-report 900",
+    "build:babel": "babel . --extensions '.ts,.tsx' --out-dir dist1 --source-maps inline --ignore './node_modules/@babel/**/*'",
     "build:dom": "npm run set-local-config && ./node_modules/.bin/parcel build src/cruxpay-sdk-dom.ts -d dist --out-file cruxpay-sdk-dom.js --no-minify --no-cache --detailed-report",
     "build": "npm run build:js && npm run build:dom",
     "build-prod:js": "cross-env NODE_ENV=prod npm run set-local-config && cross-env NODE_ENV=prod ./node_modules/.bin/parcel build src/index.ts -d dist --out-file cruxpay-sdk.js --no-minify",
@@ -56,12 +57,21 @@
   "author": "",
   "license": "GPL-3.0",
   "devDependencies": {
-    "@babel/core": "^7.6.0",
+    "@babel/cli": "^7.6.4",
+    "@babel/core": "^7.6.4",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-numeric-separator": "^7.2.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
+    "@babel/preset-env": "^7.6.3",
+    "@babel/preset-typescript": "^7.6.0",
     "@types/chai": "^4.2.3",
     "@types/expect": "^1.20.4",
     "@types/mocha": "^5.2.7",
     "@types/request": "^2.48.3",
     "@types/sinon": "^7.0.13",
+    "babel-cli": "^6.26.0",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-module-resolver": "^3.2.0",
     "chai": "^4.2.0",
     "cross-env": "^5.2.1",
     "git-branch-is": "^3.0.0",
@@ -78,9 +88,15 @@
     "nyc": "^14.1.1",
     "parcel-bundler": "^1.12.4",
     "sinon": "^7.4.2",
+    "ts-loader": "^6.2.0",
     "ts-node": "^8.4.1",
     "tslint": "5.20.0",
-    "typescript": "^3.6.3"
+    "typescript": "^3.6.4",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.9"
+  },
+  "peerDependencies": {
+    "react-native": "0.61.2"
   },
   "dependencies": {
     "@mojotech/json-type-validation": "^3.1.0",
@@ -91,6 +107,10 @@
     "eventemitter3": "^4.0.0",
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
-    "regenerator-runtime": "^0.13.3"
+    "react-native": "0.59.8",
+    "react-native-crypto": "^2.2.0",
+    "react-native-randombytes": "^3.5.3",
+    "regenerator-runtime": "^0.13.3",
+    "stream-browserify": "^2.0.2"
   }
 }

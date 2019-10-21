@@ -49,7 +49,7 @@ describe('CruxClient tests', () => {
 
 		before(() => {
 			httpJSONRequestStub = sinon.stub(utils, 'httpJSONRequest').throws('unhandled in mocks')
-			
+
             requestFixtures.forEach(requestObj => {
               httpJSONRequestStub.withArgs(requestObj.request).returns(requestObj.response)
 			});

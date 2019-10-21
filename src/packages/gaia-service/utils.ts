@@ -27,9 +27,10 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: name
     let responseBody: any;
     const cacheTTL = filename === nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG ? 3600 : undefined;
     try {
-        responseBody = await cachedFunctionCall(options.url, cacheTTL, httpJSONRequest, [options], async (data) => {
-            return Boolean(filename !== nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
-        });
+        responseBody = await httpJSONRequest(options);
+        // responseBody = await cachedFunctionCall(options.url, cacheTTL, httpJSONRequest, [options], async (data) => {
+        //     return Boolean(filename !== nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
+        // });
         log.debug(`Response from ${filename}`, responseBody);
     } catch (error) {
         const packageErrorCode = nameservice.BlockstackService.getGetPackageErrorCodeForFilename(filename);
@@ -95,7 +96,8 @@ export const getGaiaReadUrl = async (gaiaWriteURL: string): Promise<string> => {
         url: gaiaWriteURL + "/hub_info" ,
     };
     try {
-        const responseBody: any = await cachedFunctionCall(options.url, 3600, httpJSONRequest, [options]);
+        const responseBody: any = await httpJSONRequest(options);
+        // const responseBody: any = await cachedFunctionCall(options.url, 3600, httpJSONRequest, [options]);
         const gaiaReadURL = responseBody.read_url_prefix;
         return gaiaReadURL;
     } catch (err) {
