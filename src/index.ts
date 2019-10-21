@@ -188,6 +188,8 @@ class CruxPayPeer {
                     if (registeredCruxID !== payIDClaim.virtualAddress as string) {
                         throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.KeyPairMismatch);
                     }
+                } else {
+                    throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.KeyPairMismatch);
                 }
             }
             this._setPayIDClaim(new PayIDClaim(payIDClaim, { getEncryptionKey: this._getEncryptionKey }));
