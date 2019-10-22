@@ -444,7 +444,7 @@ export class CruxClient extends CruxPayPeer {
                 return {};
             }
         } catch (err) {
-            if (err.errorCode) {
+            if (err.errorCode && err.errorCode === 2107) {
                 const error =  errors.ErrorHelper.getPackageError(errors.PackageErrorCode.GetAddressMapFailed);
                 throw errors.CruxClientError.fromError(error);
             }

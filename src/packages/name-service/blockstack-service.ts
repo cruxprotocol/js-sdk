@@ -272,17 +272,7 @@ export class BlockstackService extends nameService.NameService {
     public getAddressMapping = async (fullCruxId: string): Promise<IAddressMapping> => {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
-        let content;
-        try {
-            content = await getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, this._bnsNodes);
-        } catch (err) {
-            if (err.errorCode) {
-                const error =  ErrorHelper.getPackageError(PackageErrorCode.GetAddressMapFailed);
-                throw CruxClientError.fromError(error);
-            }
-            throw CruxClientError.fromError(err);
-        }
-        return content;
+        return await getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, this._bnsNodes);
     }
 
     private _getConfigOptions = (defaultConfig: IDefaultServiceOptions, options: IBlockstackServiceInputOptions): IBlockstackServiceOptions => {

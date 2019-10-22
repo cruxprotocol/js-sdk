@@ -563,14 +563,14 @@ describe('BlockstackService tests', () => {
     }
     let gaiaRequestOptions = { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json", json: true }
 
-    it('given registered cruxId (sanchay@devcoinswitch.crux), which does not have pulic addressMap should throw "GetAddressMapFailed"', async () => {
+    it('given registered cruxId (sanchay@devcoinswitch.crux), which does not have pulic addressMap should throw "GaiaCruxPayGetFailed"', async () => {
       let raisedError
       try {
         let resolvedAddressMap: IAddressMapping = await blkstkService.getAddressMapping("sanchay@devcoinswitch.crux")
       } catch (error) {
         raisedError = error
       }
-      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GetAddressMapFailed)
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GaiaCruxPayGetFailed)
     })
     
     it('given registered cruxId (cs1@devcoinswitch.crux), which have public addressMap should resolve the addressMap', async () => {
@@ -588,7 +588,7 @@ describe('BlockstackService tests', () => {
       } catch (error) {
         raisedError = error
       }
-      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GetAddressMapFailed)
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.UserDoesNotExist)
     })
     it('given registered cruxId, which has not made addresses public, should throw "GaiaEmptyResponse"', async() => {
       let gaiaRequestOptions = { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json", json: true }
@@ -601,7 +601,7 @@ describe('BlockstackService tests', () => {
           console.log(error.stack);
           raisedError = error
       }
-      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GetAddressMapFailed)
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GaiaEmptyResponse)
     })
   })
   describe("getUploadPackageErrorCodeForFilename tests", () => {
