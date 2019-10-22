@@ -181,9 +181,9 @@ describe('CruxClient tests', () => {
 				await cruxClient.init()
 				let mockedSampleAddress = sampleUser['addressMapping']
 
-				let mockedClientMapping = { btc: '1d6e1a99-1e77-41e1-9ebb-0e216faa166a' }
+				let mockedRevserseClientMapping = {'1d6e1a99-1e77-41e1-9ebb-0e216faa166a': 'btc' }
 
-				let clientMappingStub = sinon.stub(cruxClient, '_clientMapping').value(mockedClientMapping)
+				let clientMappingStub = sinon.stub(cruxClient._configService, 'reverseClientAssetMapping').value(mockedRevserseClientMapping)
 				let addressMappingStub = sinon.stub(cruxClient._nameService, 'getAddressMapping').returns(mockedSampleAddress)
 
 				let resolvedAddress = await cruxClient.resolveCurrencyAddressForCruxID(sampleUser['cruxID'], "btc")
@@ -199,13 +199,13 @@ describe('CruxClient tests', () => {
 				await cruxClient.init()
 				let mockedSampleAddress = sampleUser['addressMapping']
 
-				let mockedClientMapping = { BTC: '1d6e1a99-1e77-41e1-9ebb-0e216faa166a' }
+				let mockedClientMapping = {'1d6e1a99-1e77-41e1-9ebb-0e216faa166a': 'btc' }
 
-				let clientMappingStub = sinon.stub(cruxClient, '_clientMapping').value(mockedClientMapping)
+				let clientMappingStub = sinon.stub(cruxClient._configService, 'reverseClientAssetMapping').value(mockedClientMapping)
 				let addressMappingStub = sinon.stub(cruxClient._nameService, 'getAddressMapping').returns(mockedSampleAddress)
 				let raisedException = false
 				try {
-					await cruxClient.resolveCurrencyAddressForCruxID(sampleUser['cruxID'], "ETH")
+					await cruxClient.resolveCurrencyAddressForCruxID(sampleUser['cruxID'], "ZRX")
 				} catch(e) {
 					raisedException = true
 					expect(e.errorCode).to.equal(1006)
@@ -223,9 +223,9 @@ describe('CruxClient tests', () => {
 				await cruxClient.init()
 				let mockedSampleAddress = {"1234567-1e77-41e1-9ebb-0e216faa166a": {addressHash: "19m51F8YkjzK625csaNtKnM9pgByeMJRU3"}}
 
-				let mockedClientMapping = { btc: '1d6e1a99-1e77-41e1-9ebb-0e216faa166a' }
+				let mockedClientMapping = {'1d6e1a99-1e77-41e1-9ebb-0e216faa166a': 'btc' }
 
-				let clientMappingStub = sinon.stub(cruxClient, '_clientMapping').value(mockedClientMapping)
+				let clientMappingStub = sinon.stub(cruxClient._configService, 'reverseClientAssetMapping').value(mockedClientMapping)
 				let addressMappingStub = sinon.stub(cruxClient._nameService, 'getAddressMapping').returns(mockedSampleAddress)
 				let raisedException = false
 				try {
@@ -255,12 +255,12 @@ describe('CruxClient tests', () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']));
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
-				let mockedClientMapping = { btc: '1d6e1a99-1e77-41e1-9ebb-0e216faa166a' }
-				let clientMappingStub = sinon.stub(cruxClient, '_clientMapping').value(mockedClientMapping)
+				let mockedClientMapping = {'1d6e1a99-1e77-41e1-9ebb-0e216faa166a': 'btc' }
+				let clientMappingStub = sinon.stub(cruxClient._configService, 'reverseClientAssetMapping').value(mockedClientMapping)
 				let addressMappingStub = sinon.stub(cruxClient._nameService, 'getAddressMapping').returns(sampleUser['addressMapping'])
 				let gotAddMap = await cruxClient.getAddressMap()
 				expect(gotAddMap.btc.addressHash).to.equal('19m51F8YkjzK625csaNtKnM9pgByeMJRU3')
-				clientMappingStub.restore(gotAddMap.addressHash)
+				clientMappingStub.restore()
 				addressMappingStub.restore()
 			})
 

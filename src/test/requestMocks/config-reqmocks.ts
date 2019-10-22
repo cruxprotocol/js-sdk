@@ -117,10 +117,11 @@ let requestResponseArray: { request: object, response: object }[] = [
           "payload": {
             "claim": {
               "assetMapping": {
-                "EOS": "9dbdc727-de68-4f2a-8956-04a38ed71ca6",
-                "ETH": "508b8f73-4b06-453e-8151-78cb8cfc3bc9",
-                "TRX": "9dbdc727-de68-4f2a-8956-04a38ed71ca5",
-                "BTC": "1d6e1a99-1e77-41e1-9ebb-0e216faa166a"
+                "eos": "9dbdc727-de68-4f2a-8956-04a38ed71ca6",
+                "eth": "508b8f73-4b06-453e-8151-78cb8cfc3bc9",
+                "trx": "9dbdc727-de68-4f2a-8956-04a38ed71ca5",
+                "btc": "1d6e1a99-1e77-41e1-9ebb-0e216faa166a",
+                "ltc": "8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b",
               },
               "nameserviceConfiguration": {
                 "domain": "scatter_dev",
@@ -128,10 +129,14 @@ let requestResponseArray: { request: object, response: object }[] = [
               },
               "assetList": [
                 {
-                  "asset_id": "8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b",
+                  "assetId": "8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b",
                   "name": "Litecoin",
+                  "decimals": 8,
+                  "assetType": null,
                   "symbol": "ltc",
-                  "image_sm_url": "https://s3.ap-south-1.amazonaws.com/crypto-exchange/coins-sm/litecoin.png"
+                  "assetIdentifierName": null,
+                  "assetIdentifierValue": null,
+                  "parentAssetId": null,
                 }
               ]
             },

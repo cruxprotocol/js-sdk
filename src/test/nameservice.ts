@@ -164,27 +164,27 @@ describe('BlockstackService tests', () => {
   describe('getRegistrationStatus tests', () => {
     let unavailableStatus = { 
       'status': 'NONE',
-      'status_detail': ''
+      'statusDetail': ''
     }
     let pendingStatus = {
       'status': 'PENDING',
-      'status_detail': 'Subdomain registration pending on blockchain.'
+      'statusDetail': 'Subdomain registration pending on blockchain.'
     };
     let registeredStatus = {
       'status': 'DONE',
-      'status_detail': 'Subdomain propagated.'
+      'statusDetail': 'Subdomain propagated.'
     };
     let noneStatus = {
       'status': 'NONE',
-      'status_detail': 'Subdomain not registered with this registrar.'
+      'statusDetail': 'Subdomain not registered with this registrar.'
     }
     let registrarPendingStatus = {
       'status': 'PENDING',
-      'status_detail': 'Subdomain registration pending on registrar.'
+      'statusDetail': 'Subdomain registration pending on registrar.'
     };
     let rejectStatus = {
       'status': 'REJECT',
-      'status_detail': ''
+      'statusDetail': ''
     }
 
     it('given identityClaim, without restoring identity, should return NONE', async () => {
@@ -563,7 +563,16 @@ describe('BlockstackService tests', () => {
     }
     let gaiaRequestOptions = { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json", json: true }
 
-    it('given registered cruxId (sanchay@devcoinswitch.crux), which does not have pulic addressMap should throw "GaiaEmptyResponse"')
+    it('given registered cruxId (sanchay@devcoinswitch.crux), which does not have pulic addressMap should throw "GaiaCruxPayGetFailed"', async () => {
+      let raisedError
+      try {
+        let resolvedAddressMap: IAddressMapping = await blkstkService.getAddressMapping("sanchay@devcoinswitch.crux")
+      } catch (error) {
+        raisedError = error
+      }
+      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GaiaCruxPayGetFailed)
+    })
+    
     it('given registered cruxId (cs1@devcoinswitch.crux), which have public addressMap should resolve the addressMap', async () => {
       let resolvedAddressMap: IAddressMapping = await blkstkService.getAddressMapping(sampleCruxId)
       expect(httpJSONRequestStub.calledThrice).is.true
