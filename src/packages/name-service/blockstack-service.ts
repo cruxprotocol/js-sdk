@@ -250,7 +250,7 @@ export class BlockstackService extends nameService.NameService {
 
     }
 
-    public putAddressMapping = async (identityClaim: nameService.IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {
+    public putAddressMapping = async (identityClaim: nameService.IIdentityClaim, addressMapping: IAddressMapping): Promise<void> => {
         if (!identityClaim.secrets.identityKeyPair) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping);
         }
@@ -266,7 +266,7 @@ export class BlockstackService extends nameService.NameService {
             throw ErrorHelper.getPackageError(PackageErrorCode.AddressMappingDecodingFailure);
         }
         await this._gaiaService.uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping);
-        return true;
+        return;
     }
 
     public getAddressMapping = async (fullCruxId: string): Promise<IAddressMapping> => {

@@ -246,8 +246,8 @@ describe('CruxClient tests', () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
-				let addressMappingStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves(true)
-				expect(await cruxClient.putAddressMap(sampleAddressMap)).to.be.true
+				let addressMappingStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves()
+				expect(await cruxClient.putAddressMap(sampleAddressMap)).to.be.eql({success: ["btc", "eth"], failures: {}})
 				addressMappingStub.restore()
 			})
 
@@ -291,16 +291,12 @@ describe('CruxClient tests', () => {
 					}
 				};
 				let raisesException = false
-				let updateProfileStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves(true)
-				try {
-					await cruxClient.putAddressMap(mockedAddressMap)
-				} catch(e) {
-					raisesException = true
-					expect(e.errorCode).to.equal(PackageErrorCode.CurrencyDoesNotExistInClientMapping)
-				} finally {
-					expect(raisesException).to.be.true
-					updateProfileStub.restore()
-				}
+				let updateProfileStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves()
+				const {success, failures} = await cruxClient.putAddressMap(mockedAddressMap)
+				expect(failures.zrx).to.include(PackageErrorCode.CurrencyDoesNotExistInClientMapping)
+				expect(success).is.empty
+				updateProfileStub.restore()
+
 			})
 		})
 	})

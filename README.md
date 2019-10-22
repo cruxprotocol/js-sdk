@@ -67,7 +67,7 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     - Description: Helps to check if a particular CruxID is available to be registered.
     - Params:
         - subdomain part of [CruxID](#cruxid)
-    - Returns: Promise returns a _boolean_ indicating whether a particular Crux ID is available for registration.
+    - Returns: Promise resolving to a _boolean_ indicating whether a particular Crux ID is available for registration.
 
 2. ##### getAssetMapping()
     - Description: Get Wallet's asset map with currency symbols as the keys and asset object as the value.
@@ -80,19 +80,19 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     - Params:
         - subdomain part of [CruxID](#cruxid)
         - newAddressMap of type [IAddressMapping](#iaddressmapping) which has symbols and addresses a user wants to publically expose with CruxID.
-    - Returns: Promise returns _void_
+    - Returns: Promise resolving to {success: [], failures: [IPutAddressMapFailures](#iputaddressmapfailures)}
     
 4. ##### resolveCurrencyAddressForCruxID(cruxID, walletCurrencySymbol)
     - Description: Helps to lookup a mapped address for a currency of any CruxID if its marked publically accessible.
     - Params:
         - complete [CruxID](#cruxid) of a user whose address you want to fetch
         - [walletCurrencySymbol](#walletcurrencysymbol) wallet symbol of currency whose address you want to fetch.
-    - Returns: Promise returns [IAddress](#iaddress) for that symbol of currency if available.
+    - Returns: Promise resolving to [IAddress](#iaddress) for that symbol of currency if available.
 
 5. ##### getAddressMap()
     - Description: Get back the current publicly registered address json 
     - Params: None
-    - Returns: Promise returns [IAddressMapping](#iaddressmapping)
+    - Returns: Promise resolving to [IAddressMapping](#iaddressmapping)
     
 6. ##### putAddressMap(newAddressMap)
     - Description: Helps to update 2 things:-
@@ -101,19 +101,19 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     - Note: To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
     - Params:
         - newAddressMap of type [IAddressMapping](#iaddressmapping) has modified map has symbols and addresses a user wants to publically expose with CruxID.
-    - Returns: Promise returns _boolean_ indicating success or failures 
+    - Returns: Promise resolving to {success: [], failures: [IPutAddressMapFailures](#iputaddressmapfailures)}
 
 7. ##### getCruxIDState()
     - Description: Returns details of the current registered CruxID(if any) for this instance of the user wallet and its registration status
     - Params: None
-    - Returns: Promise returns [CruxIDState](#cruxidstate)
+    - Returns: Promise resolving to [CruxIDState](#cruxidstate)
     
 8. ##### updatePassword(oldEncryptionKey, newEncryptionKey)
     - Description: As all the values were encrypted by the string we got from getEncryptionKey. Whenever the user changes his password. This function needs to be called so all data is re-encrypted.
     - Params:
         - oldEncryptionKey => hash returned by getEncryptionKey before password changed.
         - newEncryptionKey => hash returned by getEncryptionKey after password changed.
-    - Returns: Promise returns _boolean_ indicating successful password updation.
+    - Returns: Promise resolving to _boolean_ indicating successful password updation.
 
 
 ### SDK Object Definition
@@ -150,7 +150,7 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
        registration_status: <CruxIDRegistrationStatus>
     }
     ```
-   - Type: javascript object
+    - Type: javascript object
     - Description: Return the current registered ID and its status.
 
 4. ##### IAddress
@@ -238,6 +238,14 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     ```
     - Type: javascript object
     - Description: Map of [walletCurrencySymbol](#walletcurrencysymbol) to [IGlobalAsset](#iglobalasset).
+
+9. ##### IPutAddressMapFailures
+    - Example:
+    ```
+    {
+        "monero": "4011: Currency does not exist in wallet's client mapping"
+    }
+    ```
 
 
 ### Building

@@ -99,8 +99,8 @@ const registerCruxID = async () => {
     let cruxID = doc.getElementById('newSubdomain').value
     let newAddressMap = sampleAddressMap
     try {
-        await cruxClient.registerCruxID(cruxID, newAddressMap)
-        UIResponse = "cruxID registration initiated!"
+        const {success, failures} = await cruxClient.registerCruxID(cruxID, newAddressMap)
+        UIResponse = `cruxID registration initiated!\nAddresses published: ${JSON.stringify(success)}\nFailed publishing: ${JSON.stringify(failures, undefined, 4)}`
     } catch (e) {
         if (e instanceof errors.CruxClientError) {
             UIResponse = `${e.errorCode}: ${e}`
@@ -158,8 +158,8 @@ const putAddressMap = async () => {
     });
     try {
         doc.getElementById('putAddressMapAcknowledgement').textContent = "Publishing your selected addresses..."
-        let acknowledgement = await cruxClient.putAddressMap(addressMap)
-        UIResponse = acknowledgement ? "successfully published addresses!" : acknowledgement.toString()
+        let {success, failures} = await cruxClient.putAddressMap(addressMap)
+        UIResponse = `successfully published: ${JSON.stringify(success)}, \nFailed publishing: ${JSON.stringify(failures, undefined, 4)}`
     } catch (e) {
         if (e instanceof errors.CruxClientError) {
             UIResponse = `${e.errorCode}: ${e}`
