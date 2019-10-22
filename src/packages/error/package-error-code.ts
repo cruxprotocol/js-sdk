@@ -38,6 +38,7 @@ export enum PackageErrorCode {
     BlockstackIdInvalidDomainForTranslation = 4010,
     CurrencyDoesNotExistInClientMapping = 4011,
     ExistingCruxIDFound = 4012,
+    CruxIDUnavailable = 4013,
     // Internal errors
     CouldNotFindBlockstackConfigurationServiceClientConfig = 5001,
     CouldNotFindKeyPairToRestoreIdentity = 5002,

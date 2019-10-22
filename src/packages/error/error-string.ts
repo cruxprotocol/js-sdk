@@ -20,6 +20,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.CouldNotValidateZoneFile]: "Invalid zonefile",
     [PackageErrorCode.CruxIdNamespaceValidation]: "Invalid Crux ID namespace: '{0}', should end with .crux",
     [PackageErrorCode.CruxIdInvalidStructure]: "Invalid Crux ID",
+    [PackageErrorCode.CruxIDUnavailable]: "'{0}' name is unavailable",
     [PackageErrorCode.CurrencyDoesNotExistInClientMapping]: "Currency does not exist in wallet's client mapping",
     [PackageErrorCode.DecryptionFailed]: "Decryption failed",
     [PackageErrorCode.DifferentWalletCruxID]: "Already has a Crux ID registered with different wallet",

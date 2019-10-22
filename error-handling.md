@@ -76,6 +76,8 @@ Some common ERROR_CODES thrown by the SDK:
     BlockstackIdInvalidSubdomainForTranslation = 4009,
     BlockstackIdInvalidDomainForTranslation = 4010,
     CurrencyDoesNotExistInClientMapping = 4011,
+    ExistingCruxIDFound = 4012,
+    CruxIDUnavailable = 4013,
 }
 ```
 

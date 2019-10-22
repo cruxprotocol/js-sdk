@@ -387,6 +387,11 @@ export class CruxClient extends CruxPayPeer {
             // Subdomain validation
             identityUtils.validateSubdomain(cruxIDSubdomain);
 
+            // Validate if the subdomain is available
+            if (!(await this.isCruxIDAvailable(cruxIDSubdomain))) {
+                throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.CruxIDUnavailable, cruxIDSubdomain);
+            }
+
             // Generating the identityClaim
             if (this._payIDClaim) {
                 if (this._payIDClaim.virtualAddress) {
