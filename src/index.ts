@@ -36,6 +36,14 @@ export interface IAddressMapping {
     [currency: string]: IAddress;
 }
 
+export interface IPutAddressMapSuccess {
+    [currency: string]: IAddress;
+}
+
+export interface IPutAddressMapFailures {
+    [currency: string]: string;
+}
+
 export class AddressMapping {
     constructor(values: IAddressMapping | any = {}) {
         Object.assign(this, values);
@@ -373,15 +381,11 @@ export class CruxClient extends CruxPayPeer {
         }
     }
 
-    public registerCruxID = async (cruxIDSubdomain: string, newAddressMap?: IAddressMapping): Promise<void> => {
+    public registerCruxID = async (cruxIDSubdomain: string): Promise<void> => {
         // TODO: add isCruxIDAvailable check before
         try {
             // Subdomain validation
             identityUtils.validateSubdomain(cruxIDSubdomain);
-            // validating the addressMap provided
-            if (newAddressMap) {
-                this._getAssetAddressMapFromCurrencyAddressMap(newAddressMap);
-            }
 
             // Generating the identityClaim
             if (this._payIDClaim) { await (this._payIDClaim as PayIDClaim).decrypt(); }
@@ -402,28 +406,21 @@ export class CruxClient extends CruxPayPeer {
             // await this._payIDClaim.setPasscode(passcode)
             await (this._payIDClaim as PayIDClaim).encrypt();
             await (this._payIDClaim as PayIDClaim).save(this._storage);
-
-            // TODO: Setup public addresses
-            if (newAddressMap) {
-                log.debug(`Selected addresses for resolving via your ID: ${
-                    Object.keys(newAddressMap).map((currency) => {
-                        return `\n${newAddressMap[currency].addressHash}`;
-                    })
-                }`);
-                await this.putAddressMap(newAddressMap);
-            }
+            return;
         } catch (err) {
             throw errors.CruxClientError.fromError(err);
         }
     }
 
-    public putAddressMap = async (newAddressMap: IAddressMapping): Promise<boolean> => {
+    public putAddressMap = async (newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {
         try {
-            const assetAddressMap = await this._getAssetAddressMapFromCurrencyAddressMap(newAddressMap);
+            const {assetAddressMap, success, failures} = await this._getAssetAddressMapFromCurrencyAddressMap(newAddressMap);
             await (this._payIDClaim as PayIDClaim).decrypt();
-            const acknowledgement = await (this._nameService as nameService.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, assetAddressMap);
+            if (Object.keys(assetAddressMap).length !== 0) {
+                await (this._nameService as nameService.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, assetAddressMap);
+            }
             await (this._payIDClaim as PayIDClaim).encrypt();
-            return acknowledgement;
+            return {success, failures};
         } catch (err) {
             throw errors.CruxClientError.fromError(err);
         }
@@ -459,21 +456,27 @@ export class CruxClient extends CruxPayPeer {
         return result;
     }
 
-    private _getAssetAddressMapFromCurrencyAddressMap = async (currencyAddressMap: IAddressMapping) => {
-        if (this._configService) {
-            const assetAddressMap: any = {};
-            for (let walletCurrencySymbol of Object.keys(currencyAddressMap)) {
-                currencyAddressMap[walletCurrencySymbol.toLowerCase()] = currencyAddressMap[walletCurrencySymbol];
-                walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
-                const assetId = await this._configService.translateSymbolToAssetId(walletCurrencySymbol);
-                if (assetId) {
-                    assetAddressMap[assetId] = currencyAddressMap[walletCurrencySymbol];
-                } else {
-                    throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping);
-                }
+    private _getAssetAddressMapFromCurrencyAddressMap = async (currencyAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures, assetAddressMap: IAddressMapping}> => {
+        const lowerCurrencyAddressMap = Object.assign({}, currencyAddressMap);
+        const assetAddressMap: IAddressMapping = {};
+        const success: IPutAddressMapSuccess = {};
+        const failures: IPutAddressMapFailures = {};
+        for (let walletCurrencySymbol of Object.keys(lowerCurrencyAddressMap)) {
+            lowerCurrencyAddressMap[walletCurrencySymbol.toLowerCase()] = lowerCurrencyAddressMap[walletCurrencySymbol];
+            walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
+            const assetId = await (this._configService as BlockstackConfigurationService).translateSymbolToAssetId(walletCurrencySymbol);
+            if (assetId) {
+                assetAddressMap[assetId] = lowerCurrencyAddressMap[walletCurrencySymbol];
+                success[walletCurrencySymbol] = lowerCurrencyAddressMap[walletCurrencySymbol];
+            } else {
+                failures[walletCurrencySymbol] = `${errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping}: ${errors.ERROR_STRINGS[errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping]}`;
             }
-            return assetAddressMap;
         }
+        return {
+            assetAddressMap,
+            failures,
+            success,
+        };
     }
 }
 
