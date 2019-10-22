@@ -74,13 +74,12 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     - Params: None
     - Returns: [IResolvedClientAssetMapping](#iresolvedclientassetmapping) which has symbols and asset objects.
 
-3. ##### registerCruxID(cruxID<onlySubdomain>, newAddressMap)
+3. ##### registerCruxID(cruxID<onlySubdomain>)
     - Description: Reserves/registers the cruxID for the user. The user can link any blockchain address to his CruxID with the help of newAddressMap sent. The addresses are now publicly linked and can be resolved.
     - Note: To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
     - Params:
         - subdomain part of [CruxID](#cruxid)
-        - newAddressMap of type [IAddressMapping](#iaddressmapping) which has symbols and addresses a user wants to publically expose with CruxID.
-    - Returns: Promise resolving to {success: [], failures: [IPutAddressMapFailures](#iputaddressmapfailures)}
+    - Returns: Promise resolving on successful call to the registrar.
     
 4. ##### resolveCurrencyAddressForCruxID(cruxID, walletCurrencySymbol)
     - Description: Helps to lookup a mapped address for a currency of any CruxID if its marked publically accessible.
@@ -101,7 +100,7 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     - Note: To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
     - Params:
         - newAddressMap of type [IAddressMapping](#iaddressmapping) has modified map has symbols and addresses a user wants to publically expose with CruxID.
-    - Returns: Promise resolving to {success: [], failures: [IPutAddressMapFailures](#iputaddressmapfailures)}
+    - Returns: Promise resolving to {success: [IPutAddressMapSuccess](#iputaddressmapSuccess), failures: [IPutAddressMapFailures](#iputaddressmapfailures)}
 
 7. ##### getCruxIDState()
     - Description: Returns details of the current registered CruxID(if any) for this instance of the user wallet and its registration status
@@ -244,6 +243,16 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     ```
     {
         "monero": "4011: Currency does not exist in wallet's client mapping"
+    }
+    ```
+
+10. ##### IPutAddressMapSuccess
+    - Example:
+    ```
+    {
+        "eth": {
+            "addressHash": "0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8"
+        }
     }
     ```
 

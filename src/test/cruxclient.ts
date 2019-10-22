@@ -247,7 +247,7 @@ describe('CruxClient tests', () => {
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
 				let addressMappingStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves()
-				expect(await cruxClient.putAddressMap(sampleAddressMap)).to.be.eql({success: ["btc", "eth"], failures: {}})
+				expect(await cruxClient.putAddressMap(sampleAddressMap)).to.be.eql({success: {"btc": sampleAddressMap["BTC"], "eth": sampleAddressMap["ETH"]}, failures: {}})
 				addressMappingStub.restore()
 			})
 

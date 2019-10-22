@@ -170,7 +170,7 @@ export class BlockstackService extends nameService.NameService {
 
     public generateIdentity = async (storage: StorageService, encryptionKey: string): Promise<nameService.IIdentityClaim> => {
         const newMnemonic = this._generateMnemonic();
-        storage.setItem("encryptedMnemonic", JSON.stringify(Encryption.encryptText(newMnemonic, encryptionKey)));
+        storage.setItem("encryptedMnemonic", JSON.stringify(await Encryption.encryptText(newMnemonic, encryptionKey)));
         const identityKeyPair = await this._generateIdentityKeyPair(newMnemonic);
         return {
             secrets: {

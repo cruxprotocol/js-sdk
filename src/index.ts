@@ -36,6 +36,10 @@ export interface IAddressMapping {
     [currency: string]: IAddress;
 }
 
+export interface IPutAddressMapSuccess {
+    [currency: string]: IAddress;
+}
+
 export interface IPutAddressMapFailures {
     [currency: string]: string;
 }
@@ -377,12 +381,9 @@ export class CruxClient extends CruxPayPeer {
         }
     }
 
-    public registerCruxID = async (cruxIDSubdomain: string, newAddressMap?: IAddressMapping): Promise<{success: string[], failures: {[symbol: string]: string}}> => {
+    public registerCruxID = async (cruxIDSubdomain: string): Promise<void> => {
         // TODO: add isCruxIDAvailable check before
         try {
-            let success: string[] = [];
-            let failures: IPutAddressMapFailures = {};
-
             // Subdomain validation
             identityUtils.validateSubdomain(cruxIDSubdomain);
 
@@ -405,25 +406,13 @@ export class CruxClient extends CruxPayPeer {
             // await this._payIDClaim.setPasscode(passcode)
             await (this._payIDClaim as PayIDClaim).encrypt();
             await (this._payIDClaim as PayIDClaim).save(this._storage);
-
-            // TODO: Setup public addresses
-            if (newAddressMap) {
-                log.debug(`Selected addresses for resolving via your ID: ${
-                    Object.keys(newAddressMap).map((currency) => {
-                        return `\n${newAddressMap[currency].addressHash}`;
-                    })
-                }`);
-                const putAddressMapResponse = await this.putAddressMap(newAddressMap);
-                success = putAddressMapResponse.success;
-                failures = putAddressMapResponse.failures;
-            }
-            return {success, failures};
+            return;
         } catch (err) {
             throw errors.CruxClientError.fromError(err);
         }
     }
 
-    public putAddressMap = async (newAddressMap: IAddressMapping): Promise<{success: string[], failures: IPutAddressMapFailures}> => {
+    public putAddressMap = async (newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {
         try {
             const {assetAddressMap, success, failures} = await this._getAssetAddressMapFromCurrencyAddressMap(newAddressMap);
             await (this._payIDClaim as PayIDClaim).decrypt();
@@ -465,10 +454,10 @@ export class CruxClient extends CruxPayPeer {
         return result;
     }
 
-    private _getAssetAddressMapFromCurrencyAddressMap = async (currencyAddressMap: IAddressMapping): Promise<{success: string[], failures: IPutAddressMapFailures, assetAddressMap: IAddressMapping}> => {
+    private _getAssetAddressMapFromCurrencyAddressMap = async (currencyAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures, assetAddressMap: IAddressMapping}> => {
         const lowerCurrencyAddressMap = Object.assign({}, currencyAddressMap);
         const assetAddressMap: IAddressMapping = {};
-        const success: string[] = [];
+        const success: IPutAddressMapSuccess = {};
         const failures: IPutAddressMapFailures = {};
         for (let walletCurrencySymbol of Object.keys(lowerCurrencyAddressMap)) {
             lowerCurrencyAddressMap[walletCurrencySymbol.toLowerCase()] = lowerCurrencyAddressMap[walletCurrencySymbol];
@@ -476,7 +465,7 @@ export class CruxClient extends CruxPayPeer {
             const assetId = await (this._configService as BlockstackConfigurationService).translateSymbolToAssetId(walletCurrencySymbol);
             if (assetId) {
                 assetAddressMap[assetId] = lowerCurrencyAddressMap[walletCurrencySymbol];
-                success.push(walletCurrencySymbol);
+                success[walletCurrencySymbol] = lowerCurrencyAddressMap[walletCurrencySymbol];
             } else {
                 failures[walletCurrencySymbol] = `${errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping}: ${errors.ERROR_STRINGS[errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping]}`;
             }
