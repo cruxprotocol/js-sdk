@@ -22,12 +22,16 @@ interface IGlobalAsset {
 
 interface IGlobalAssetList extends Array<IGlobalAsset> {}
 
-interface IGlobalMapping {
+interface IGlobalMap {
     [assetId: string]: IGlobalAsset;
 }
 
 interface IClientAssetMapping {
     [currencySymbol: string]: string;
+}
+
+interface IReverseClientAssetMapping {
+    [assetId: string]: string;
 }
 
 interface IClientConfig {
@@ -45,20 +49,20 @@ export abstract class NameServiceConfigurationService {
         log.info(`Initizing NameServiceConfigurationService with options:- `);
     }
 
-    public abstract getResolvedClientAssetMapping = async (): Promise<any> => ({});
-    public abstract translateSymbolToAssetId = async (assetId: string): Promise<string> => ("");
-    public abstract translateAssetIdToSymbol = async (currencySymbol: string): Promise<string> => ("");
+    public abstract getResolvedClientAssetMapping = async (): Promise<IResolvedClientAssetMapping> => ({});
+    public abstract translateSymbolToAssetId = async (currencySymbol: string): Promise<string> => ("");
+    public abstract translateAssetIdToSymbol = async (assetId: string): Promise<string> => ("");
 }
 
 export class BlockstackConfigurationService extends NameServiceConfigurationService {
 
-    private reverseClientAssetMapping?: object;
+    private reverseClientAssetMapping?: IReverseClientAssetMapping;
     private blockstackNameservice: nameservice.BlockstackService;
     private clientName: string;
     private clientConfig?: IClientConfig;
     private clientAssetMapping?: IClientAssetMapping;
     private blockstackID: string | undefined;
-    private globalMapping?: IGlobalMapping;
+    private globalAssetMap?: IGlobalMap;
 
     constructor(clientName: string, cruxID?: string) {
         super();
@@ -72,17 +76,17 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
 
     public init = async () => {
         this.clientConfig = await this._getClientConfig();
-        this.globalMapping = await this._getGlobalMapping();
+        this.globalAssetMap = await this._getGlobalMapping();
         this.clientAssetMapping = await this._getClientAssetMapping();
         this.reverseClientAssetMapping = await this._getReverseClientAssetMapping();
     }
 
-    public getResolvedClientAssetMapping = async (): Promise<any> => {
+    public getResolvedClientAssetMapping = async (): Promise<IResolvedClientAssetMapping> => {
         const resolvedClientAssetMapping: IResolvedClientAssetMapping = {};
-        if (this.globalMapping && this.clientConfig && this.clientConfig.assetMapping) {
+        if (this.globalAssetMap && this.clientConfig && this.clientConfig.assetMapping) {
             for (const currencySymbol of Object.keys(this.clientConfig.assetMapping)) {
-                if (this.globalMapping[this.clientConfig.assetMapping[currencySymbol]]) {
-                    resolvedClientAssetMapping[currencySymbol] = this.globalMapping[this.clientConfig.assetMapping[currencySymbol]];
+                if (this.globalAssetMap[this.clientConfig.assetMapping[currencySymbol]]) {
+                    resolvedClientAssetMapping[currencySymbol] = this.globalAssetMap[this.clientConfig.assetMapping[currencySymbol]];
                 }
             }
         }
@@ -117,12 +121,12 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     }
 
     public translateAssetIdToSymbol = async (assetId: string): Promise<string> => {
-        return (this.reverseClientAssetMapping as IClientAssetMapping)[assetId];
+        return (this.reverseClientAssetMapping as IReverseClientAssetMapping)[assetId];
     }
 
-    private _getGlobalMapping = async (): Promise<IGlobalMapping> => {
+    private _getGlobalMapping = async (): Promise<IGlobalMap> => {
         const clientConfig = this.clientConfig;
-        const globalMapping: IGlobalMapping = {};
+        const globalMapping: IGlobalMap = {};
         if (clientConfig && clientConfig.assetList) {
             clientConfig.assetList.forEach((asset) => {
                 globalMapping[asset.assetId] = asset;
@@ -154,7 +158,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         }
     }
 
-    private _getReverseClientAssetMapping = async (): Promise<object> => {
+    private _getReverseClientAssetMapping = async (): Promise<IReverseClientAssetMapping> => {
         const assetIdToWalletCurrencySymbolMap: {[assetId: string]: string} = {};
         if (this.clientAssetMapping) {
             for (let walletCurrencySymbol of Object.keys(this.clientAssetMapping)) {
