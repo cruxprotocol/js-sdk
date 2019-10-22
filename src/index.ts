@@ -384,7 +384,13 @@ export class CruxClient extends CruxPayPeer {
             }
 
             // Generating the identityClaim
-            if (this._payIDClaim) { await (this._payIDClaim as PayIDClaim).decrypt(); }
+            if (this._payIDClaim) {
+                if (this._payIDClaim.virtualAddress) {
+                    // Do not allow multiple registrations using same payIDClaim
+                    throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ExistingCruxIDFound, this._payIDClaim.virtualAddress);
+                }
+                await (this._payIDClaim as PayIDClaim).decrypt();
+            }
 
             let identityClaim: nameService.IIdentityClaim;
             if (this._payIDClaim) {
