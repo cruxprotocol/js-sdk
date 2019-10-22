@@ -416,7 +416,9 @@ export class CruxClient extends CruxPayPeer {
         try {
             const {assetAddressMap, success, failures} = await this._getAssetAddressMapFromCurrencyAddressMap(newAddressMap);
             await (this._payIDClaim as PayIDClaim).decrypt();
-            await (this._nameService as nameService.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, assetAddressMap);
+            if (Object.keys(assetAddressMap).length !== 0) {
+                await (this._nameService as nameService.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, assetAddressMap);
+            }
             await (this._payIDClaim as PayIDClaim).encrypt();
             return {success, failures};
         } catch (err) {

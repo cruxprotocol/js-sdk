@@ -97,10 +97,9 @@ const isCruxIDAvailable = async () => {
 const registerCruxID = async () => {
     let UIResponse: string = ""
     let cruxID = doc.getElementById('newSubdomain').value
-    let newAddressMap = sampleAddressMap
     try {
-        const {success, failures} = await cruxClient.registerCruxID(cruxID, newAddressMap)
-        UIResponse = `cruxID registration initiated!\nAddresses published: ${JSON.stringify(success)}\nFailed publishing: ${JSON.stringify(failures, undefined, 4)}`
+        await cruxClient.registerCruxID(cruxID)
+        UIResponse = 'cruxID registration initiated!'
     } catch (e) {
         if (e instanceof errors.CruxClientError) {
             UIResponse = `${e.errorCode}: ${e}`
