@@ -502,7 +502,7 @@ describe('BlockstackService tests', () => {
 
       expect(connectToGaiaHubStub.calledOnce).is.true
       expect(uploadToGaiaHubStub.calledOnce).is.true
-      expect(acknowledgement).is.true
+      expect(acknowledgement).is.undefined
     })
     it('given valid identityClaim and invalid addressMap, should throw "AddressMappingDecodingFailure"', async () => {
       // initialising the nameservice
