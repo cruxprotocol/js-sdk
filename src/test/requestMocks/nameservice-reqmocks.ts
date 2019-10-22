@@ -423,6 +423,50 @@ let requestResponseArray: { request: object, response: any }[] = [
     response: {
       status: "Your subdomain was registered in transaction"
     }
+  },
+  {
+    request: {
+      baseUrl: "https://core.blockstack.org", 
+      json: true, 
+      method: "GET", 
+      url: "/v1/addresses/bitcoin/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
+    },
+    response: {
+      names: ["ankit.cruxdev_crux.id"]
+    }
+  },
+  {
+    request: {
+      baseUrl: "https://bns.cruxpay.com", 
+      json: true, 
+      method: "GET", 
+      url: "/v1/addresses/bitcoin/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
+    },
+    response: {
+      names: ["ankit.cruxdev_crux.id"]
+    }
+  },
+  {
+    request: {
+      baseUrl: "https://core.blockstack.org", 
+      json: true, 
+      method: "GET", 
+      url: "/v1/addresses/bitcoin/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ"
+    },
+    response: {
+      names: ["ankit1.cruxdev_crux.id"]
+    }
+  },
+  {
+    request: {
+      baseUrl: "https://bns.cruxpay.com", 
+      json: true, 
+      method: "GET", 
+      url: "/v1/addresses/bitcoin/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ"
+    },
+    response: {
+      names: ["ankit2.cruxdev_crux.id"]
+    }
   }
 ]
 

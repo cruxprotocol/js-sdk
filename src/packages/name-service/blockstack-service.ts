@@ -5,10 +5,13 @@ import * as blockstack from "blockstack";
 import { getLogger, IAddress, IAddressMapping } from "../..";
 import config from "../../config";
 
+import { Encryption } from "../encryption";
 import {CruxClientError, ErrorHelper, PackageErrorCode} from "../error";
+
 import { GaiaService } from "../gaia-service";
 import { getContentFromGaiaHub } from "../gaia-service/utils";
 import {BlockstackId, CruxId, IdTranslator} from "../identity-utils";
+import { StorageService } from "../storage";
 import * as utils from "../utils";
 import * as nameService from "./index";
 import { fetchNameDetails } from "./utils";
@@ -143,16 +146,10 @@ export class BlockstackService extends nameService.NameService {
     }
 
     public restoreIdentity = async (fullCruxId: string, identityClaim: nameService.IIdentityClaim): Promise<nameService.IIdentityClaim> => {
-        if (!identityClaim.secrets || !identityClaim.secrets.mnemonic) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRestoreIdentity);
-        }
+        const identityKeyPair = identityClaim.secrets.identityKeyPair;
 
-        const mnemonic = identityClaim.secrets.mnemonic;
-        let identityKeyPair = identityClaim.secrets.identityKeyPair || undefined;
-
-        // If identityKeypair is not stored locally, generate them using the mnemonic
         if (!identityKeyPair) {
-            identityKeyPair = await this._generateIdentityKeyPair(mnemonic);
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindKeyPairToRestoreIdentity);
         }
 
         // TODO: validate the correspondance of cruxID with the identityClaim
@@ -166,33 +163,27 @@ export class BlockstackService extends nameService.NameService {
         return {
             secrets: {
                 identityKeyPair,
-                mnemonic,
             },
         };
 
     }
 
-    public generateIdentity = async (): Promise<nameService.IIdentityClaim> => {
+    public generateIdentity = async (storage: StorageService, encryptionKey: string): Promise<nameService.IIdentityClaim> => {
         const newMnemonic = this._generateMnemonic();
+        storage.setItem("encryptedMnemonic", JSON.stringify(Encryption.encryptText(newMnemonic, encryptionKey)));
         const identityKeyPair = await this._generateIdentityKeyPair(newMnemonic);
         return {
             secrets: {
                 identityKeyPair,
-                mnemonic: newMnemonic,
             },
         };
     }
 
     public registerName = async (identityClaim: nameService.IIdentityClaim, subdomain: string): Promise<string> => {
-        const mnemonic = identityClaim.secrets.mnemonic;
-        let identityKeyPair = identityClaim.secrets.identityKeyPair;
-        // Check for existing mnemonic
-        if (!mnemonic) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindMnemonicToRegisterName);
-        }
-        // Generate the Identity key pair
+        const identityKeyPair = identityClaim.secrets.identityKeyPair;
+
         if (!identityKeyPair) {
-            identityKeyPair = await this._generateIdentityKeyPair(mnemonic);
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
 
         await this._gaiaService.uploadProfileInfo(identityKeyPair.privKey);
