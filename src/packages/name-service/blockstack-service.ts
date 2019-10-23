@@ -6,7 +6,7 @@ import { getLogger, IAddress, IAddressMapping } from "../..";
 import config from "../../config";
 
 import { Encryption } from "../encryption";
-import {CruxClientError, ErrorHelper, PackageErrorCode} from "../error";
+import {ErrorHelper, PackageErrorCode} from "../error";
 
 import { GaiaService } from "../gaia-service";
 import { getContentFromGaiaHub } from "../gaia-service/utils";

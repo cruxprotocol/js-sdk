@@ -454,6 +454,8 @@ export class CruxClient extends CruxPayPeer {
         }
     }
 
+    public getAssetMapping = () => this.getAssetMap;    // For backward compatibility
+
     private _getIDStatus = async (): Promise<nameService.CruxIDRegistrationStatus> => {
         await (this._payIDClaim as PayIDClaim).decrypt();
         const result = await (this._nameService as nameService.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
