@@ -20,6 +20,7 @@ import {
     encryption,
     errors,
     identityUtils,
+    LocalStorage,
     nameService,
     storage,
     utils,
@@ -167,7 +168,7 @@ class CruxPayPeer {
         // log.debug(`Encryption key:`, this._getEncryptionKey())
 
         // Setting up the default modules as fallbacks
-        this._storage =  this._options.storage || new storage.LocalStorage();
+        this._storage =  this._options.storage || new LocalStorage();
         this._encryption = this._options.encryption || encryption.Encryption;
         this._nameService = this._options.nameService;
         if (this._options.privateKey) { this._keyPair =  utils.getKeyPairFromPrivKey(this._options.privateKey); }

@@ -6,6 +6,7 @@ import * as identityUtils from "./identity-utils";
 import * as nameService from "./name-service";
 import * as blockstackService from "./name-service/blockstack-service";
 import * as storage from "./storage";
+import {LocalStorage} from "./storage-local";
 import * as utils from "./utils";
 
 export {
@@ -16,6 +17,7 @@ export {
     blockstackService,
     identityUtils,
     BlockstackConfigurationService,
+    LocalStorage,
     utils,
     gaiaService,
 };
