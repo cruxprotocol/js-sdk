@@ -79,6 +79,29 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     - Params:
         - subdomain part of [CruxID](#cruxid)
     - Returns: Promise resolving on successful call to the registrar.
+    ```javascript
+    const sampleAddressMap: IAddressMapping = {
+        'BTC': {
+            addressHash: '1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX'
+        },
+        'ETH': {
+            addressHash: '0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8'
+        },
+    }
+
+    // Advised to pipe the method putAddressMap to registerCruxID call
+
+    await cruxClient.registerCruxID("bob")
+        .then(() => {
+            return cruxClient.putAddressMap(sampleAddressMap)
+                .catch((addressUpdationError) => {
+                    // Handling addressUpdation error
+                })
+        })
+        .catch((registrationError) => {
+            // Handling registration error
+        })
+    ```
     
 4. ##### resolveCurrencyAddressForCruxID(cruxID, walletCurrencySymbol)
     - Description: Helps to lookup a mapped address for a currency of any CruxID if its marked publically accessible.
