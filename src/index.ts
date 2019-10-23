@@ -184,8 +184,8 @@ class CruxPayPeer {
     public async init() {
         await this._setupConfigService();
         const walletNameServiceConfiguration = ((this._configService as blockstackConfigurationService.BlockstackConfigurationService).clientConfig as blockstackConfigurationService.IClientConfig).nameserviceConfiguration as blockstackService.IBlockstackServiceInputOptions;
-        const bnsNodes = walletNameServiceConfiguration.bnsNodes ? [...new Set([...config.BLOCKSTACK.BNS_NODES, ...walletNameServiceConfiguration.bnsNodes])] : config.BLOCKSTACK.BNS_NODES;
-        const registrar = walletNameServiceConfiguration.subdomainRegistrar || config.BLOCKSTACK.SUBDOMAIN_REGISTRAR;
+        const bnsNodes = (walletNameServiceConfiguration && walletNameServiceConfiguration.bnsNodes) ? [...new Set([...config.BLOCKSTACK.BNS_NODES, ...walletNameServiceConfiguration.bnsNodes])] : config.BLOCKSTACK.BNS_NODES;
+        const registrar = (walletNameServiceConfiguration && walletNameServiceConfiguration.subdomainRegistrar) || config.BLOCKSTACK.SUBDOMAIN_REGISTRAR;
 
         if (this._hasPayIDClaimStored()) {
             log.debug("using the stored payIDClaim");
