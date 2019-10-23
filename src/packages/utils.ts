@@ -21,6 +21,9 @@ const httpJSONRequest = (options: any): Promise<object> => {
         if (options.url) {
             url += options.url;
         }
+        if (options.body) {
+            fetchOptions.body = JSON.stringify(options.body);
+        }
         fetch(url, fetchOptions)
             .then((res) => res.json())
             .then((json) => resolve(json))
