@@ -7,6 +7,7 @@ import * as utils from "../packages/utils";
 import { BlockstackConfigurationService } from '../packages/configuration-service';
 import requestFixtures from './requestMocks/config-reqmocks';
 import { BlockstackService } from '../packages/name-service/blockstack-service';
+import * as gaiaUtils from '../packages/gaia-service/utils';
 import { errors } from '..';
 var assert = require('chai').assert
 
@@ -15,7 +16,6 @@ describe("Configuration Tests", () => {
       
         let httpJSONRequestStub: sinon.SinonStub
         let nsConfigService = new BlockstackConfigurationService('cruxdev');
-        let nsService = nsConfigService.blockstackNameservice
 
         before(() => {
             httpJSONRequestStub = sinon.stub(utils, 'httpJSONRequest').throws('unhandled in mocks')
@@ -30,24 +30,6 @@ describe("Configuration Tests", () => {
           });
 
           describe("Resolved Asset List Tests", () => {
-            it("Resolved Asset List Translates To List Object", async () => {
-              await nsConfigService.init()
-              let resolvedClientAssetList = await nsConfigService.getResolvedClientAssetMapping()
-              expect(resolvedClientAssetList).to.eql(
-                {"ltc": 
-                  {
-                    "assetId": "8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b",
-                    "name": "Litecoin",
-                    "decimals": 8,
-                    "assetType": null,
-                    "symbol": "ltc",
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null,
-                  }
-                })
-            })
-
             it("invalid name asset list", async () => {
               let nsConfigServiceTemp = new BlockstackConfigurationService('cruxdev');
               let mockedClientConfig = {
@@ -55,7 +37,7 @@ describe("Configuration Tests", () => {
                   subdomainRegistrar: "mocked_subdomain_registrar"
                 }
               }
-              let getConfigStub = sinon.stub(nsConfigServiceTemp, '_getClientConfig').resolves(mockedClientConfig)
+              let getConfigStub = sinon.stub(gaiaUtils, 'getContentFromGaiaHub').resolves(mockedClientConfig)
               let raisedError
               try{
                 await nsConfigServiceTemp.init()
@@ -91,7 +73,7 @@ describe("Configuration Tests", () => {
                   "parentAssetId": null,
                 }]
               }
-              let getConfigStub = sinon.stub(nsConfigService, '_getClientConfig').resolves(mockedClientConfig)
+              let getConfigStub = sinon.stub(gaiaUtils, 'getContentFromGaiaHub').resolves(mockedClientConfig)
               await nsConfigService.init()
               let nsClient = await nsConfigService.getBlockstackServiceForConfig()
               assert.instanceOf(nsClient, BlockstackService)
