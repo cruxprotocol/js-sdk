@@ -442,7 +442,7 @@ export class CruxClient extends CruxPayPeer {
         }
     }
 
-    public getAssetMapping = (): blockstackConfigurationService.IResolvedClientAssetMap => {
+    public getAssetMap = (): blockstackConfigurationService.IResolvedClientAssetMap => {
         try {
             if (this._configService) {
                 return this._configService.resolvedClientAssetMap as blockstackConfigurationService.IResolvedClientAssetMap;

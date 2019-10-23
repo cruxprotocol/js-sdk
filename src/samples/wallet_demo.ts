@@ -1,7 +1,7 @@
 import { CruxClient, IAddressMapping, ICruxIDState, ICruxPayPeerOptions, errors } from "../index";
 // TODO: add optional import statement to use the build
 
-let doc = (document as {
+const doc = (document as {
     getElementById: Function,
     getElementsByName: Function,
     getElementsByClassName: Function
@@ -19,7 +19,7 @@ const wallet_trx_address = "TG3iFaVvUs34SGpWq8RG9gnagDLTe1jdyz"
 const wallet_xrp_address = "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h"
 const wallet_xrp_sec_identifier = "12345"
 
-let sampleAddressMap: IAddressMapping = {
+const sampleAddressMap: IAddressMapping = {
     bitcoin: {
         addressHash: wallet_btc_address
     },
@@ -35,7 +35,7 @@ let sampleAddressMap: IAddressMapping = {
     }
 };
 
-let url = new URL(window.location.href);
+const url = new URL(window.location.href);
 encryptionKey = url.searchParams.get("overrideEncryptionKey") || encryptionKey;
 walletClientName = url.searchParams.get("walletClientName") || walletClientName;
 
@@ -52,26 +52,28 @@ doc.getElementById('publishAddresses').innerHTML = Object.keys(sampleAddressMap)
 
 
 // defining cruxClientOptions
-let cruxClientOptions: ICruxPayPeerOptions = {
+const cruxClientOptions: ICruxPayPeerOptions = {
     getEncryptionKey: () => encryptionKey,
     walletClientName: walletClientName
 }
 
 // initialising the cruxClient
-let cruxClient = new CruxClient(cruxClientOptions)
-cruxClient.init().then(async () => {
-    let cruxIDStatus = await getCruxIDState()
-    if (cruxIDStatus.status.status === "DONE") {
-        [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => { el.style.display = "none" });
-        [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
-    }
-    // add hook to enable registered elements
-    doc.getElementById('init').style.display = "none"
-}).catch((error) => {
-    let message = "CruxClient Initialization Error: \n" + error
-    alert(message)
-    doc.getElementById('init').innerHTML = message
-})
+const cruxClient = new CruxClient(cruxClientOptions)
+cruxClient.init()
+    .then(async () => {
+        let cruxIDStatus = await getCruxIDState()
+        if (cruxIDStatus.status.status === "DONE") {
+            [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => { el.style.display = "none" });
+            [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
+        }
+        // add hook to enable registered elements
+        doc.getElementById('init').style.display = "none"
+    })
+    .catch((error) => {
+        let message = "CruxClient Initialization Error: \n" + error
+        alert(message)
+        doc.getElementById('init').innerHTML = message
+    })
 
 
 // SDK functional interface
@@ -128,6 +130,21 @@ const resolveCurrencyAddressForCruxID = async () => {
         doc.getElementById('addresses').textContent = UIResponse
     }
 
+}
+const getAssetMap = async () => {
+    let UIResponse: string = ""
+    try {
+        let assetMap = await cruxClient.getAssetMap()
+        UIResponse = JSON.stringify(assetMap, undefined, 4)
+    } catch (e) {
+        if (e instanceof errors.CruxClientError) {
+            UIResponse = `${e.errorCode}: ${e}`
+        } else {
+            UIResponse = e
+        }
+    } finally {
+        doc.getElementById('assetMap').textContent = UIResponse
+    }    
 }
 const getAddressMap = async () => {
     let UIResponse: string = ""
@@ -212,6 +229,7 @@ declare global {
         isCruxIDAvailable: Function;
         registerCruxID: Function;
         resolveCurrencyAddressForCruxID: Function;
+        getAssetMap: Function;
         getAddressMap: Function;
         putAddressMap: Function;
         getCruxIDState: Function;
@@ -223,6 +241,7 @@ window.wallet = cruxClient;
 window.isCruxIDAvailable = isCruxIDAvailable;
 window.registerCruxID = registerCruxID;
 window.resolveCurrencyAddressForCruxID = resolveCurrencyAddressForCruxID;
+window.getAssetMap = getAssetMap;
 window.getAddressMap = getAddressMap;
 window.putAddressMap = putAddressMap;
 window.getCruxIDState = getCruxIDState;

@@ -69,14 +69,13 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
         - subdomain part of [CruxID](#cruxid)
     - Returns: Promise resolving to a _boolean_ indicating whether a particular Crux ID is available for registration.
 
-2. ##### getAssetMapping()
+2. ##### getAssetMap()
     - Description: Get Wallet's asset map with currency symbols as the keys and asset object as the value.
     - Params: None
     - Returns: [IResolvedClientAssetMapping](#iresolvedclientassetmapping) which has symbols and asset objects.
 
 3. ##### registerCruxID(cruxID<onlySubdomain>)
-    - Description: Reserves/registers the cruxID for the user. The user can link any blockchain address to his CruxID with the help of newAddressMap sent. The addresses are now publicly linked and can be resolved.
-    - Note: To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
+    - Description: Reserves/registers the cruxID for the user. The user can link any blockchain address to his CruxID immediately after registration using [putAddressMap](#putaddressmap).
     - Params:
         - subdomain part of [CruxID](#cruxid)
     - Returns: Promise resolving on successful call to the registrar.
@@ -95,9 +94,9 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     
 6. ##### putAddressMap(newAddressMap)
     - Description: Helps to update 2 things:-
-        - change list of publicly accessible currency addresses.
+        - publish/change list of publicly accessible currency addresses.
         - change the value of addressHash and/or secIdentifier to another one.
-    - Note: To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
+    - Note: The addresses are now publicly linked and can be resolved. To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
     - Params:
         - newAddressMap of type [IAddressMapping](#iaddressmapping) has modified map has symbols and addresses a user wants to publically expose with CruxID.
     - Returns: Promise resolving to {success: [IPutAddressMapSuccess](#iputaddressmapSuccess), failures: [IPutAddressMapFailures](#iputaddressmapfailures)}
