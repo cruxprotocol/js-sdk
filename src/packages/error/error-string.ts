@@ -25,6 +25,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.DecryptionFailed]: "Decryption failed",
     [PackageErrorCode.DifferentWalletCruxID]: "Already has a Crux ID registered with different wallet",
     [PackageErrorCode.ExpectedEncryptionKeyValue]: "Missing encryptionKey method",
+    [PackageErrorCode.FetchPendingRegistrationsByAddressFailed]: "'{0}' failed with error '{1}'",
     [PackageErrorCode.GaiaClientConfigUploadFailed]: "Unable to upload '{0}' to gaia: '{1}'",
     [PackageErrorCode.GaiaCruxPayUploadFailed]: "Unable to upload '{0}' to gaia: '{1}'",
     [PackageErrorCode.GaiaEmptyResponse]: "Gaia sent empty response",

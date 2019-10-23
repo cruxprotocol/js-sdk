@@ -623,7 +623,7 @@ describe('BlockstackService tests', () => {
 
   describe("getCruxIDByAddress tests", () => {
     it("126LEzWTg6twppHtJodwF8am8PwPdgbmwV should resolve to ankit@cruxdev.crux", async () => {
-      const cruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, "126LEzWTg6twppHtJodwF8am8PwPdgbmwV")
+      const cruxID = await getCruxIDByAddress("cruxdev", "126LEzWTg6twppHtJodwF8am8PwPdgbmwV", config.BLOCKSTACK.BNS_NODES, config.BLOCKSTACK.SUBDOMAIN_REGISTRAR)
       let bnsRequestOptions1 = {
         baseUrl: "https://core.blockstack.org", 
         json: true, 
@@ -643,7 +643,7 @@ describe('BlockstackService tests', () => {
     })
 
     it("1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ should resolve to empty array", async () => {
-      const cruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ")
+      const cruxID = await getCruxIDByAddress("cruxdev", "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ", config.BLOCKSTACK.BNS_NODES, config.BLOCKSTACK.SUBDOMAIN_REGISTRAR)
       let bnsRequestOptions1 = {
         baseUrl: "https://core.blockstack.org", 
         json: true, 
@@ -656,9 +656,17 @@ describe('BlockstackService tests', () => {
         method: "GET", 
         url: "/v1/addresses/bitcoin/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ"
       }
-      expect(httpJSONRequestStub.calledTwice).is.true
+      let registrarQueryOptions = {
+        "baseUrl":"https://registrar.coinswitch.co:3000",
+        "headers":{"x-domain-name":"cruxdev_crux"},
+        "json":true,
+        "method":"GET",
+        "url":"/subdomain/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ"
+      }
+      expect(httpJSONRequestStub.calledThrice).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
+      expect(httpJSONRequestStub.calledWith(registrarQueryOptions)).is.true
       expect(cruxID).to.be.null
     })
   })

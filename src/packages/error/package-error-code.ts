@@ -25,6 +25,7 @@ export enum PackageErrorCode {
     // 3000s: Registry errors
     SubdomainRegistrationFailed = 3001,
     SubdomainRegistrationAcknowledgementFailed = 3002,
+    FetchPendingRegistrationsByAddressFailed = 3003,
     // Validating user input errors
     ExpectedEncryptionKeyValue = 4001,
     SubdomainRegexMatchFailure = 4002,

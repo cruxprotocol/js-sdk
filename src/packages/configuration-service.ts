@@ -34,7 +34,7 @@ interface IReverseClientAssetMapping {
     [assetId: string]: string;
 }
 
-interface IClientConfig {
+export interface IClientConfig {
     assetMapping: IClientAssetMapping;
     assetList: IGlobalAssetList;
     nameserviceConfiguration?: IBlockstackServiceInputOptions;

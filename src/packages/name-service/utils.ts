@@ -55,17 +55,19 @@ const bnsResolveName = async (baseUrl: string, blockstackId: string): Promise<ob
     return nameData;
 };
 
-export const getCruxIDByAddress = async (bnsNodes: string[], address: string): Promise<string|null> => {
+export const getCruxIDByAddress = async (walletClientName: string, address: string, bnsNodes: string[], registrar: string): Promise<string|null> => {
     const nodePromises = bnsNodes.map((baseUrl) => bnsFetchNamesByAddress(baseUrl, address));
     const responseArr: string[][] = await Promise.all(nodePromises);
     const commonNames = [...(responseArr.map((arr) => new Set(arr)).reduce((a, b) => new Set([...a].filter((x) => b.has(x)))))];
-    const bsId = commonNames.find((name) => {
+    let bsId = commonNames.find((name) => {
         const regex = new RegExp(`(.+)\.(.+)${CRUX_DOMAIN_SUFFIX}.${DEFAULT_BLOCKSTACK_NAMESPACE}`);
         const match = name.match(regex);
         return match && match[0];
     });
     if (!bsId) {
         // Fetch any pending registrations on the address using the registrar
+        const pendingSubdomains = await fetchPendingRegistrationsByAddress(walletClientName, registrar, address);
+        bsId = pendingSubdomains[0];
     }
     return (bsId && IdTranslator.blockstackToCrux(BlockstackId.fromString(bsId)).toString()) || null;
 };
@@ -85,4 +87,36 @@ const bnsFetchNamesByAddress = async (baseUrl: string, address: string): Promise
         throw ErrorHelper.getPackageError(PackageErrorCode.GetNamesByAddressFailed, `${baseUrl}${url}`, error);
     }
     return namesData.names;
+};
+
+const fetchPendingRegistrationsByAddress = async (walletClientName: string, registrar: string, address: string): Promise<string[]> => {
+    interface IPendingRegistration {
+        owner: string;
+        queue_ix: number;
+        received_ts: string;
+        sequenceNumber: string;
+        signature: string;
+        status: string;
+        status_more: string;
+        subdomainName: string;
+        zonefile: string;
+    }
+
+    const url = `/subdomain/${address}`;
+    const options = {
+        baseUrl: registrar,
+        headers: {"x-domain-name": `${walletClientName}${CRUX_DOMAIN_SUFFIX}`},
+        json: true,
+        method: "GET",
+        url,
+    };
+    let registrationsArray: IPendingRegistration[];
+    try {
+        registrationsArray = ((await httpJSONRequest(options)) as IPendingRegistration[]);
+    } catch (error) {
+        throw ErrorHelper.getPackageError(PackageErrorCode.FetchPendingRegistrationsByAddressFailed, `${registrar}${url}`, error);
+    }
+    return registrationsArray.map((registration) => {
+        return registration.subdomainName;
+    });
 };
