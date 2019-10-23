@@ -113,7 +113,7 @@ export class ConfigurationService {
 
     private _setupNameServiceConfig = async () => {
         if (!this.clientConfig) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig); 
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
 
         // Default configurations
