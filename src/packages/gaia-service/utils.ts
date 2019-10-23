@@ -74,7 +74,10 @@ export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes
     log.debug(`ID owner: ${bitcoinAddress}`);
     let gaiaRead: string;
     let gaiaWrite: string | undefined;
-    if (nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json"))) {
+    if (nameData.zonefile.match(new RegExp("(.+)https:\/\/hub.cruxpay.com\/hub\/(.+)\/profile.json"))) {
+        gaiaWrite = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/hub\/(.+)\/profile.json", "s"))[2];
+        gaiaRead = await getGaiaReadUrl(gaiaWrite as string);
+    } else if (nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json"))) {
         gaiaRead = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/(.+)\/profile.json", "s"))[2] + "/";
     } else {
         gaiaWrite = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1)[0];
