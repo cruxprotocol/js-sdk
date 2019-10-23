@@ -126,6 +126,7 @@ export class BlockstackService extends nameService.NameService {
     private _bnsNodes: string[];
     private _identityCouple: IdentityCouple | undefined;
     private _gaiaService: GaiaService;
+    private _mnemonicStorageKey: string = "encryptedMnemonic";
 
     constructor(options: IBlockstackServiceInputOptions) {
         super();
@@ -170,7 +171,7 @@ export class BlockstackService extends nameService.NameService {
 
     public generateIdentity = async (storage: StorageService, encryptionKey: string): Promise<nameService.IIdentityClaim> => {
         const newMnemonic = this._generateMnemonic();
-        storage.setItem("encryptedMnemonic", JSON.stringify(await Encryption.encryptText(newMnemonic, encryptionKey)));
+        await this._storeMnemonic(newMnemonic, storage, encryptionKey);
         const identityKeyPair = await this._generateIdentityKeyPair(newMnemonic);
         return {
             secrets: {
@@ -273,6 +274,15 @@ export class BlockstackService extends nameService.NameService {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
         return await getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, this._bnsNodes);
+    }
+
+    private _storeMnemonic = async (mnemonic: string, storage: StorageService, encryptionKey: string): Promise<void> => {
+        storage.setItem(this._mnemonicStorageKey, JSON.stringify(await Encryption.encryptText(mnemonic, encryptionKey)));
+    }
+
+    private _retrieveMnemonic = async (storage: StorageService, encryptionKey: string): Promise<string> => {
+        const encryptedMnemonic = JSON.parse(storage.getItem(this._mnemonicStorageKey) as string) as {encBuffer: string, iv: string};
+        return await Encryption.decryptText(encryptedMnemonic.encBuffer, encryptedMnemonic.iv, encryptionKey);
     }
 
     private _getConfigOptions = (defaultConfig: IDefaultServiceOptions, options: IBlockstackServiceInputOptions): IBlockstackServiceOptions => {
