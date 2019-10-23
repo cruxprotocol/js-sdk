@@ -83,7 +83,7 @@ describe('BlockstackService tests', () => {
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
       // @ts-ignore
-      expect(localStorage.getItem(blkstkService._mnemonicStorageKey)).is.not.undefined
+      expect(localStorage.getItem(blockstackService.MNEMONIC_STORAGE_KEY)).is.not.undefined
     })
   })
 
@@ -680,7 +680,7 @@ describe('BlockstackService tests', () => {
       // @ts-ignore
       await blkstkService._storeMnemonic(sampleIdentityClaim.secrets.mnemonic, storage, encryptionKey)
       // @ts-ignore
-      expect(localStorage.getItem(blkstkService._mnemonicStorageKey)).is.not.undefined;
+      expect(localStorage.getItem(blockstackService.MNEMONIC_STORAGE_KEY)).is.not.undefined;
       // @ts-ignore
       const mnemonic = await blkstkService._retrieveMnemonic(storage, encryptionKey);
       expect(mnemonic).to.be.equal(sampleIdentityClaim.secrets.mnemonic);

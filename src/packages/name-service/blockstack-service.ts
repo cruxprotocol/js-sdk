@@ -17,6 +17,7 @@ import * as nameService from "./index";
 import { fetchNameDetails } from "./utils";
 
 const log = getLogger(__filename);
+export const MNEMONIC_STORAGE_KEY: string = "encryptedMnemonic";
 
 // Blockstack Nameservice implementation
 export interface IBitcoinKeyPair {
@@ -126,7 +127,6 @@ export class BlockstackService extends nameService.NameService {
     private _bnsNodes: string[];
     private _identityCouple: IdentityCouple | undefined;
     private _gaiaService: GaiaService;
-    private _mnemonicStorageKey: string = "encryptedMnemonic";
 
     constructor(options: IBlockstackServiceInputOptions) {
         super();
@@ -277,11 +277,11 @@ export class BlockstackService extends nameService.NameService {
     }
 
     private _storeMnemonic = async (mnemonic: string, storage: StorageService, encryptionKey: string): Promise<void> => {
-        storage.setItem(this._mnemonicStorageKey, JSON.stringify(await Encryption.encryptText(mnemonic, encryptionKey)));
+        storage.setItem(MNEMONIC_STORAGE_KEY, JSON.stringify(await Encryption.encryptText(mnemonic, encryptionKey)));
     }
 
     private _retrieveMnemonic = async (storage: StorageService, encryptionKey: string): Promise<string> => {
-        const encryptedMnemonic = JSON.parse(storage.getItem(this._mnemonicStorageKey) as string) as {encBuffer: string, iv: string};
+        const encryptedMnemonic = JSON.parse(storage.getItem(MNEMONIC_STORAGE_KEY) as string) as {encBuffer: string, iv: string};
         return await Encryption.decryptText(encryptedMnemonic.encBuffer, encryptedMnemonic.iv, encryptionKey);
     }
 
