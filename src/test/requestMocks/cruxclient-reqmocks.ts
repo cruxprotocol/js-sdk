@@ -172,10 +172,14 @@ let requestResponseArray: { request: object, response: object }[] = [
               },
               "assetList": [
                 {
-                  "asset_id": "8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b",
+                  "assetId": "8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b",
                   "name": "Litecoin",
+                  "decimals": 8,
+                  "assetType": null,
                   "symbol": "ltc",
-                  "image_sm_url": "https://s3.ap-south-1.amazonaws.com/crypto-exchange/coins-sm/litecoin.png"
+                  "assetIdentifierName": null,
+                  "assetIdentifierValue": null,
+                  "parentAssetId": null,
                 }
               ]
             },

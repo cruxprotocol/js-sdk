@@ -29,38 +29,69 @@ describe("Configuration Tests", () => {
             httpJSONRequestStub.restore()
           });
 
-          describe("Global Asset List Tests", () => {
-            it("Owner List Translates To List Object", async () => {
+          describe("Resolved Asset List Tests", () => {
+            it("Resolved Asset List Translates To List Object", async () => {
               await nsConfigService.init()
-              let globalAssetList = await nsConfigService.getGlobalAssetList()
-              expect(globalAssetList).to.eql([{"asset_id":"8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b","name":"Litecoin","symbol":"ltc","image_sm_url":"https://s3.ap-south-1.amazonaws.com/crypto-exchange/coins-sm/litecoin.png"}])
+              let resolvedClientAssetList = await nsConfigService.getResolvedClientAssetMapping()
+              expect(resolvedClientAssetList).to.eql(
+                {"ltc": 
+                  {
+                    "assetId": "8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b",
+                    "name": "Litecoin",
+                    "decimals": 8,
+                    "assetType": null,
+                    "symbol": "ltc",
+                    "assetIdentifierName": null,
+                    "assetIdentifierValue": null,
+                    "parentAssetId": null,
+                  }
+                })
             })
 
             it("invalid name asset list", async () => {
               let nsConfigServiceTemp = new BlockstackConfigurationService('cruxdev');
+              let mockedClientConfig = {
+                nameserviceConfiguration: {
+                  subdomainRegistrar: "mocked_subdomain_registrar"
+                }
+              }
+              let getConfigStub = sinon.stub(nsConfigServiceTemp, '_getClientConfig').resolves(mockedClientConfig)
               let raisedError
               try{
-                await nsConfigServiceTemp.getGlobalAssetList()
+                await nsConfigServiceTemp.init()
               }catch(e){
                 raisedError = e
               }
               expect(raisedError.errorCode).to.equal(errors.PackageErrorCode.CouldNotFindAssetListInClientConfig);
+              getConfigStub.restore()
             })
           })
 
 
           describe("nameservice client creation from config", async () => {
             it("default nameservice client for empty override settings", async () => {
-              let getConfigStub = sinon.stub(nsConfigService, 'getClientConfig').resolves({})
               await nsConfigService.init()
               let nsClient = await nsConfigService.getBlockstackServiceForConfig()
               assert.instanceOf(nsClient, BlockstackService)
-              getConfigStub.restore()
             })
 
             it("custom nameservice client by from client-config override", async () => {
-              let mockedClientConfig = {nameserviceConfiguration: {subdomainRegistrar: "mocked_subdomain_registrar"}}
-              let getConfigStub = sinon.stub(nsConfigService, 'getClientConfig').resolves(mockedClientConfig)
+              let mockedClientConfig = {
+                nameserviceConfiguration: {
+                  subdomainRegistrar: "mocked_subdomain_registrar"
+                },
+                assetList: [{
+                  "assetId": "8dd939ef-b9d2-46f0-8796-4bd8dbaeef1b",
+                  "name": "Litecoin",
+                  "decimals": 8,
+                  "assetType": null,
+                  "symbol": "ltc",
+                  "assetIdentifierName": null,
+                  "assetIdentifierValue": null,
+                  "parentAssetId": null,
+                }]
+              }
+              let getConfigStub = sinon.stub(nsConfigService, '_getClientConfig').resolves(mockedClientConfig)
               await nsConfigService.init()
               let nsClient = await nsConfigService.getBlockstackServiceForConfig()
               assert.instanceOf(nsClient, BlockstackService)
@@ -69,25 +100,10 @@ describe("Configuration Tests", () => {
             })
             it("custom nameservice client from user zonefile gaiaHub override", async () => {
               let mockedNsConfigService = new BlockstackConfigurationService('cruxdev', 'umang@cruxdev.crux');
-              let mockedClientConfig = {nameserviceConfiguration: {subdomainRegistrar: "mocked_subdomain_registrar"}}
-              let getConfigStub = sinon.stub(mockedNsConfigService, 'getClientConfig').resolves(mockedClientConfig)
               await mockedNsConfigService.init()
               let nsClient = await mockedNsConfigService.getBlockstackServiceForConfig()
               assert.instanceOf(nsClient, BlockstackService)
               expect(nsClient._gaiaService.gaiaWriteUrl).to.equal('https://hub.cruxpay.com')
-              getConfigStub.restore()
-            })
-          })
-
-
-          describe("client asset mapping tests", () => {
-            it("valid subdomain get client asset mapping", async () => {
-              let configPromise = new Promise<any>(async(resolve, reject) => {resolve({assetMapping: {eos: "9dbdc727-de68-4f2a-8956-04a38ed71ca6",}, })})
-              let getConfigStub = sinon.stub(nsConfigService, 'getClientConfig').returns(configPromise)
-              await nsConfigService.init()
-              let mockedClientAsssetMapping = await nsConfigService.getClientAssetMapping()
-              expect(mockedClientAsssetMapping).to.deep.include({eos: "9dbdc727-de68-4f2a-8956-04a38ed71ca6"})
-              getConfigStub.restore()
             })
           })
 

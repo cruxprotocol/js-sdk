@@ -1,5 +1,4 @@
 import 'mocha';
-import * as blockstack from "blockstack";
 import * as utils from "../packages/utils";
 import requestFixtures from './requestMocks/cruxclient-reqmocks';
 import sinon from "sinon";
@@ -36,7 +35,8 @@ describe('CruxClient tests', () => {
 		'payIDClaim': {"virtualAddress":"syedhassanashraf@cruxdev.crux","identitySecrets":"{\"iv\":\"d6mQLg2lv/SHvpPV\",\"encBuffer\":\"EJ0NDIGyvT+FMxjG9pD7yKkUVUJffcd0mU3V7rqgbpip5ikCR+kx/Xl4tJcBNtQUJzKbDPNJeeWdzUKH01NQOiyEe9qfCYEqzbJgj4PSqE/B1geSlCMRWcdJMdbrUDHgEcwDWw6PC41p0odNHLzMWOR1LA+PKVzCAMXRom6UppG+gjMnjp9QqF00SfnNR6wla/es7LgE3eF6O4Gq9Ku/mAhdYrZiaMMd47hQvTzH9KzDZrTjK37jmtiRC6cuNDy9zZ+BtpzufozAbuCvfeQc2nXKdV4a3kx7peLK7eAGZUV6soaOfq+ZIPx5bbnNos8Py7fhNOmqbop12yCQ4Ot2jm7Bmx9eXIFq7/EtLWP488xU3l2qB0/XHMmGtlsZ8Er19al+aB4OJAJ5yzBU01rVQFVkOLC50ZlYT4VcVgJbOUvRXi8c4mlv0JNfvajA\"}"},
 		'cruxID': 'syedhassanashraf@cruxdev.crux',
 		'cruxIDSubdomain': 'syedhassanashraf',
-		'addressMapping': mockedAddressMapping
+		'addressMapping': mockedAddressMapping,
+		'decryptedPayIDClaim': {"virtualAddress":"syedhassanashraf@cruxdev.crux", "identitySecrets": {"identityKeyPair":{"pubKey":"033f4f33c1483cb15c58c9ca03b2a0847382b0081290017e28be03b55353f1f6eb","privKey":"850433f3a2f12f0fb890041e1daed6bd491a973ec569936d41ac62cb8441ee5101","address":"16DfDLZajnAwRotCx4L1NEkAEAijwsntHV"}}}
 	}
 	let walletOptions = {
 		getEncryptionKey: () => "fookey",
@@ -181,9 +181,9 @@ describe('CruxClient tests', () => {
 				await cruxClient.init()
 				let mockedSampleAddress = sampleUser['addressMapping']
 
-				let mockedClientMapping = { btc: '1d6e1a99-1e77-41e1-9ebb-0e216faa166a' }
+				let mockedRevserseClientMapping = {'1d6e1a99-1e77-41e1-9ebb-0e216faa166a': 'btc' }
 
-				let clientMappingStub = sinon.stub(cruxClient, '_clientMapping').value(mockedClientMapping)
+				let clientMappingStub = sinon.stub(cruxClient._configService, 'reverseClientAssetMapping').value(mockedRevserseClientMapping)
 				let addressMappingStub = sinon.stub(cruxClient._nameService, 'getAddressMapping').returns(mockedSampleAddress)
 
 				let resolvedAddress = await cruxClient.resolveCurrencyAddressForCruxID(sampleUser['cruxID'], "btc")
@@ -199,13 +199,13 @@ describe('CruxClient tests', () => {
 				await cruxClient.init()
 				let mockedSampleAddress = sampleUser['addressMapping']
 
-				let mockedClientMapping = { BTC: '1d6e1a99-1e77-41e1-9ebb-0e216faa166a' }
+				let mockedClientMapping = {'1d6e1a99-1e77-41e1-9ebb-0e216faa166a': 'btc' }
 
-				let clientMappingStub = sinon.stub(cruxClient, '_clientMapping').value(mockedClientMapping)
+				let clientMappingStub = sinon.stub(cruxClient._configService, 'reverseClientAssetMapping').value(mockedClientMapping)
 				let addressMappingStub = sinon.stub(cruxClient._nameService, 'getAddressMapping').returns(mockedSampleAddress)
 				let raisedException = false
 				try {
-					await cruxClient.resolveCurrencyAddressForCruxID(sampleUser['cruxID'], "ETH")
+					await cruxClient.resolveCurrencyAddressForCruxID(sampleUser['cruxID'], "ZRX")
 				} catch(e) {
 					raisedException = true
 					expect(e.errorCode).to.equal(1006)
@@ -223,9 +223,9 @@ describe('CruxClient tests', () => {
 				await cruxClient.init()
 				let mockedSampleAddress = {"1234567-1e77-41e1-9ebb-0e216faa166a": {addressHash: "19m51F8YkjzK625csaNtKnM9pgByeMJRU3"}}
 
-				let mockedClientMapping = { btc: '1d6e1a99-1e77-41e1-9ebb-0e216faa166a' }
+				let mockedClientMapping = {'1d6e1a99-1e77-41e1-9ebb-0e216faa166a': 'btc' }
 
-				let clientMappingStub = sinon.stub(cruxClient, '_clientMapping').value(mockedClientMapping)
+				let clientMappingStub = sinon.stub(cruxClient._configService, 'reverseClientAssetMapping').value(mockedClientMapping)
 				let addressMappingStub = sinon.stub(cruxClient._nameService, 'getAddressMapping').returns(mockedSampleAddress)
 				let raisedException = false
 				try {
@@ -242,25 +242,16 @@ describe('CruxClient tests', () => {
 		})
 
 		describe("address mapping tests", () => {
-			it("positive case, put address map", async () => {
-				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
-				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init()
-				let addressMappingStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves(true)
-				expect(await cruxClient.putAddressMap(sampleAddressMap)).to.be.true
-				addressMappingStub.restore()
-			})
-
 			it("positive case, get address map", async () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']));
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init()
-				let mockedClientMapping = { btc: '1d6e1a99-1e77-41e1-9ebb-0e216faa166a' }
-				let clientMappingStub = sinon.stub(cruxClient, '_clientMapping').value(mockedClientMapping)
+				let mockedClientMapping = {'1d6e1a99-1e77-41e1-9ebb-0e216faa166a': 'btc' }
+				let clientMappingStub = sinon.stub(cruxClient._configService, 'reverseClientAssetMapping').value(mockedClientMapping)
 				let addressMappingStub = sinon.stub(cruxClient._nameService, 'getAddressMapping').returns(sampleUser['addressMapping'])
 				let gotAddMap = await cruxClient.getAddressMap()
 				expect(gotAddMap.btc.addressHash).to.equal('19m51F8YkjzK625csaNtKnM9pgByeMJRU3')
-				clientMappingStub.restore(gotAddMap.addressHash)
+				clientMappingStub.restore()
 				addressMappingStub.restore()
 			})
 
@@ -279,28 +270,96 @@ describe('CruxClient tests', () => {
 					expect(raisesException).to.be.true
 					updateProfileStub.restore()
 				}
-			})
+			})			
+		})
+		describe("putAddressMap tests", () => {
+			it("all currencies provided exist in client mapping", async () => {
+				// Mocks
+				const mockPayIDClaim = sampleUser['payIDClaim'];
+				localStorage.setItem('payIDClaim', JSON.stringify(mockPayIDClaim));
+				let mockedAddressMap = sampleAddressMap;
 
-			it("put address map, currency does not exist in client mapping", async () => {
-				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
+				// Initialising the CruxClient
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init()
+				await cruxClient.init();
+
+				// stubbing runtime property
+				// @ts-ignore
+				const nameServicePutAddressMappingStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves();
+
+				// putAddressMap
+				const {success, failures} = await cruxClient.putAddressMap(mockedAddressMap)
+				
+				// Expectations
+				let decrpytedPayIDClaim = {secrets: sampleUser["decryptedPayIDClaim"].identitySecrets};
+				let assetIdMap = {"1d6e1a99-1e77-41e1-9ebb-0e216faa166a": sampleAddressMap["BTC"], "508b8f73-4b06-453e-8151-78cb8cfc3bc9": sampleAddressMap["ETH"]};
+				let successCurrencies = {"btc": sampleAddressMap["BTC"], "eth": sampleAddressMap["ETH"]};
+
+				expect(nameServicePutAddressMappingStub.calledWith(decrpytedPayIDClaim, assetIdMap)).is.true;
+				expect(nameServicePutAddressMappingStub.calledOnce).is.true;
+				expect(failures).is.empty;
+				expect(success).to.be.eql(successCurrencies);
+
+			})
+			it("all currencies provided do not exist in client mapping", async () => {
+				// Mocks
+				const mockPayIDClaim = sampleUser['payIDClaim'];
+				localStorage.setItem('payIDClaim', JSON.stringify(mockPayIDClaim));
 				let mockedAddressMap = {
 					ZRX: {
 						addressHash: '0x0a2311594059b468c9897338b027c8782398b481'
 					}
 				};
-				let raisesException = false
-				let updateProfileStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves(true)
-				try {
-					await cruxClient.putAddressMap(mockedAddressMap)
-				} catch(e) {
-					raisesException = true
-					expect(e.errorCode).to.equal(PackageErrorCode.CurrencyDoesNotExistInClientMapping)
-				} finally {
-					expect(raisesException).to.be.true
-					updateProfileStub.restore()
-				}
+
+				// Initialising the CruxClient
+				let cruxClient = new CruxClient(walletOptions);
+				await cruxClient.init();
+
+				// stubbing runtime property
+				// @ts-ignore
+				const nameServicePutAddressMappingStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves();
+
+				// putAddressMap
+				const {success, failures} = await cruxClient.putAddressMap(mockedAddressMap)
+				
+				// Expectations
+				expect(nameServicePutAddressMappingStub.notCalled).is.true;
+				expect(failures.zrx).to.include(PackageErrorCode.CurrencyDoesNotExistInClientMapping);
+				expect(success).is.empty;
+
+			})
+			it("some of the currencies provided do not exist in client mapping", async () => {
+				// Mocks
+				const mockPayIDClaim = sampleUser['payIDClaim'];
+				localStorage.setItem('payIDClaim', JSON.stringify(mockPayIDClaim));
+				let mockedAddressMap = {
+					BTC: sampleAddressMap["BTC"],
+					ZRX: {
+						addressHash: '0x0a2311594059b468c9897338b027c8782398b481'
+					}
+				};
+
+				// Initialising the CruxClient
+				let cruxClient = new CruxClient(walletOptions);
+				await cruxClient.init();
+
+				// stubbing runtime property
+				// @ts-ignore
+				const nameServicePutAddressMappingStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves();
+
+				// putAddressMap
+				const {success, failures} = await cruxClient.putAddressMap(mockedAddressMap)
+				
+				// Expectations
+				let decrpytedPayIDClaim = {secrets: sampleUser["decryptedPayIDClaim"].identitySecrets};
+				let assetIdMap = {"1d6e1a99-1e77-41e1-9ebb-0e216faa166a": sampleAddressMap["BTC"]};
+				let successCurrencies = {"btc": sampleAddressMap["BTC"]};
+
+				expect(nameServicePutAddressMappingStub.calledWith(decrpytedPayIDClaim, assetIdMap)).is.true;
+				expect(nameServicePutAddressMappingStub.calledOnce).is.true;
+				expect(failures.zrx).to.include(PackageErrorCode.CurrencyDoesNotExistInClientMapping);
+				expect(success).to.be.eql(successCurrencies);
+
 			})
 		})
 	})

@@ -6,7 +6,8 @@ import { getLogger, IAddress, IAddressMapping } from "../..";
 import config from "../../config";
 
 import { Encryption } from "../encryption";
-import {ErrorHelper, PackageErrorCode} from "../error";
+import {CruxClientError, ErrorHelper, PackageErrorCode} from "../error";
+
 import { GaiaService } from "../gaia-service";
 import { getContentFromGaiaHub } from "../gaia-service/utils";
 import {BlockstackId, CruxId, IdTranslator} from "../identity-utils";
@@ -169,7 +170,7 @@ export class BlockstackService extends nameService.NameService {
 
     public generateIdentity = async (storage: StorageService, encryptionKey: string): Promise<nameService.IIdentityClaim> => {
         const newMnemonic = this._generateMnemonic();
-        storage.setItem("encryptedMnemonic", JSON.stringify(Encryption.encryptText(newMnemonic, encryptionKey)));
+        storage.setItem("encryptedMnemonic", JSON.stringify(await Encryption.encryptText(newMnemonic, encryptionKey)));
         const identityKeyPair = await this._generateIdentityKeyPair(newMnemonic);
         return {
             secrets: {
@@ -200,22 +201,22 @@ export class BlockstackService extends nameService.NameService {
         if (!this._identityCouple) {
             return {
                 status: SubdomainRegistrationStatus.NONE,
-                status_detail: "",
+                statusDetail: "",
             };
         }
         const nameData: any = await fetchNameDetails(this._identityCouple.bsId.toString(), this._bnsNodes);
         let status: SubdomainRegistrationStatus;
-        let status_detail: string = "";
+        let statusDetail: string = "";
         if (nameData.status === "registered_subdomain") {
             if (nameData.address === identityClaim.secrets.identityKeyPair.address) {
                 status = SubdomainRegistrationStatus.DONE;
-                status_detail = SubdomainRegistrationStatusDetail.DONE;
+                statusDetail = SubdomainRegistrationStatusDetail.DONE;
             } else {
                 status = SubdomainRegistrationStatus.REJECT;
             }
             return {
                 status,
-                status_detail,
+                statusDetail,
             };
         }
         const options = {
@@ -249,7 +250,7 @@ export class BlockstackService extends nameService.NameService {
 
     }
 
-    public putAddressMapping = async (identityClaim: nameService.IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => {
+    public putAddressMapping = async (identityClaim: nameService.IIdentityClaim, addressMapping: IAddressMapping): Promise<void> => {
         if (!identityClaim.secrets.identityKeyPair) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping);
         }
@@ -265,7 +266,7 @@ export class BlockstackService extends nameService.NameService {
             throw ErrorHelper.getPackageError(PackageErrorCode.AddressMappingDecodingFailure);
         }
         await this._gaiaService.uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping);
-        return true;
+        return;
     }
 
     public getAddressMapping = async (fullCruxId: string): Promise<IAddressMapping> => {
@@ -341,20 +342,20 @@ export class BlockstackService extends nameService.NameService {
         if (rawStatus && rawStatus.includes("Your subdomain was registered in transaction")) {
             status = {
             status: SubdomainRegistrationStatus.PENDING,
-            status_detail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
+            statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
             };
         } else {
             switch (rawStatus) {
                 case "Subdomain not registered with this registrar":
                     status = {
                         status: SubdomainRegistrationStatus.NONE,
-                        status_detail: SubdomainRegistrationStatusDetail.NONE,
+                        statusDetail: SubdomainRegistrationStatusDetail.NONE,
                     };
                     break;
                 case "Subdomain is queued for update and should be announced within the next few blocks.":
                     status = {
                         status: SubdomainRegistrationStatus.PENDING,
-                        status_detail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
+                        statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
                     };
                     break;
                 case "Subdomain propagated":
@@ -362,7 +363,7 @@ export class BlockstackService extends nameService.NameService {
                 default:
                     status = {
                         status: SubdomainRegistrationStatus.NONE,
-                        status_detail: "",
+                        statusDetail: "",
                     };
                     break;
             }
