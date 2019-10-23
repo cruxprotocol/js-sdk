@@ -17,8 +17,11 @@ import { LocalStorage } from '../packages/storage';
 // TODO: registration of already registered names and error handling
 // TODO: resolving addresses with invalid name/id
 
-const nameservice_options = {
+const nameservice_options: blockstackService.IBlockstackServiceInputOptions = {
+  bnsNodes: config.BLOCKSTACK.BNS_NODES,
   domain: "devcoinswitch_crux",
+  gaiaHub: config.BLOCKSTACK.GAIA_HUB,
+  subdomainRegistrar: config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
 };
 
 describe('BlockstackService tests', () => {

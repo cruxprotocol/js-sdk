@@ -72,6 +72,7 @@ cruxClient.init()
     .catch((error) => {
         let message = "CruxClient Initialization Error: \n" + error
         alert(message)
+        console.log(error);
         doc.getElementById('init').innerHTML = message
     })
 

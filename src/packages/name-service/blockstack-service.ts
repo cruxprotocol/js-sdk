@@ -3,7 +3,6 @@ import * as bip39 from "bip39";
 import {bip32} from "bitcoinjs-lib";
 import * as blockstack from "blockstack";
 import { getLogger, IAddress, IAddressMapping } from "../..";
-import config from "../../config";
 
 import { Encryption } from "../encryption";
 import {ErrorHelper, PackageErrorCode} from "../error";
@@ -26,17 +25,8 @@ export interface IBitcoinKeyPair {
     address: string;
 }
 
-export interface IBlockstackServiceOptions extends IDefaultServiceOptions {
-    domain: string;
-}
 export interface IBlockstackServiceInputOptions {
     domain: string;
-    gaiaHub?: string;
-    subdomainRegistrar?: string;
-    bnsNodes?: string[];
-}
-
-export interface IDefaultServiceOptions {
     gaiaHub: string;
     subdomainRegistrar: string;
     bnsNodes: string[];
@@ -73,12 +63,6 @@ const getIdentityCoupleFromBlockstackId = (blockstackId: BlockstackId): Identity
         bsId: blockstackId,
         cruxId: IdTranslator.blockstackToCrux(blockstackId),
     };
-};
-
-const defaultBNSConfig: IDefaultServiceOptions = {
-    bnsNodes: config.BLOCKSTACK.BNS_NODES,
-    gaiaHub: config.BLOCKSTACK.GAIA_HUB,
-    subdomainRegistrar: config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
 };
 
 export enum UPLOADABLE_JSON_FILES {
@@ -125,7 +109,7 @@ export class BlockstackService extends nameService.NameService {
     private _gaiaHub: string;
     private _subdomainRegistrar: string;
     private _bnsNodes: string[];
-    private _identityCouple: IdentityCouple | undefined;
+    private _identityCouple?: IdentityCouple;
     private _gaiaService: GaiaService;
 
     constructor(options: IBlockstackServiceInputOptions) {
@@ -134,14 +118,10 @@ export class BlockstackService extends nameService.NameService {
         if (!options.domain) {
             throw new Error("No wallet name sepcified!");
         }
-
-        const _options: IBlockstackServiceOptions = this._getConfigOptions(defaultBNSConfig, options);
-
-        this._domain = _options.domain;
-        this._gaiaHub = _options.gaiaHub;
-        this._subdomainRegistrar = _options.subdomainRegistrar;
-        // @ts-ignore
-        this._bnsNodes = [...new Set([...config.BLOCKSTACK.BNS_NODES, ..._options.bnsNodes])];   // always append the extra configured BNS nodes (needs `downlevelIteration` flag enabled in tsconfig.json)
+        this._domain = options.domain;
+        this._gaiaHub = options.gaiaHub;
+        this._subdomainRegistrar = options.subdomainRegistrar;
+        this._bnsNodes = options.bnsNodes;
         this._gaiaService = new GaiaService(this._gaiaHub);
 
     }
@@ -283,16 +263,6 @@ export class BlockstackService extends nameService.NameService {
     private _retrieveMnemonic = async (storage: StorageService, encryptionKey: string): Promise<string> => {
         const encryptedMnemonic = JSON.parse(storage.getItem(MNEMONIC_STORAGE_KEY) as string) as {encBuffer: string, iv: string};
         return await Encryption.decryptText(encryptedMnemonic.encBuffer, encryptedMnemonic.iv, encryptionKey);
-    }
-
-    private _getConfigOptions = (defaultConfig: IDefaultServiceOptions, options: IBlockstackServiceInputOptions): IBlockstackServiceOptions => {
-        const configOptions: IBlockstackServiceOptions = {
-            bnsNodes: options.bnsNodes || defaultConfig.bnsNodes,
-            domain: options.domain,
-            gaiaHub: options.gaiaHub || defaultConfig.gaiaHub,
-            subdomainRegistrar: options.subdomainRegistrar || defaultConfig.subdomainRegistrar,
-        };
-        return configOptions;
     }
 
     private _generateMnemonic = (): string => {

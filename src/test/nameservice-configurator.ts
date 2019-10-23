@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import * as utils from "../packages/utils";
-import { BlockstackConfigurationService } from '../packages/configuration-service';
+import { ConfigurationService } from '../packages/configuration-service';
 import requestFixtures from './requestMocks/config-reqmocks';
 import { BlockstackService } from '../packages/name-service/blockstack-service';
 import * as gaiaUtils from '../packages/gaia-service/utils';
@@ -15,7 +15,7 @@ describe("Configuration Tests", () => {
     describe("after init tests", () => {
       
         let httpJSONRequestStub: sinon.SinonStub
-        let nsConfigService = new BlockstackConfigurationService('cruxdev');
+        let nsConfigService = new ConfigurationService('cruxdev');
 
         before(() => {
             httpJSONRequestStub = sinon.stub(utils, 'httpJSONRequest').throws('unhandled in mocks')
@@ -31,7 +31,7 @@ describe("Configuration Tests", () => {
 
           describe("Resolved Asset List Tests", () => {
             it("invalid name asset list", async () => {
-              let nsConfigServiceTemp = new BlockstackConfigurationService('cruxdev');
+              let nsConfigServiceTemp = new ConfigurationService('cruxdev');
               let mockedClientConfig = {
                 nameserviceConfiguration: {
                   subdomainRegistrar: "mocked_subdomain_registrar"
@@ -81,7 +81,7 @@ describe("Configuration Tests", () => {
               getConfigStub.restore()
             })
             it("custom nameservice client from user zonefile gaiaHub override", async () => {
-              let mockedNsConfigService = new BlockstackConfigurationService('cruxdev', 'umang@cruxdev.crux');
+              let mockedNsConfigService = new ConfigurationService('cruxdev', 'umang@cruxdev.crux');
               await mockedNsConfigService.init()
               let nsClient = await mockedNsConfigService.getBlockstackServiceForConfig()
               assert.instanceOf(nsClient, BlockstackService)
@@ -91,7 +91,7 @@ describe("Configuration Tests", () => {
 
           describe("configurator client creation", () => {
             it("invalid client name", async () => {
-              let nsConfigService = new BlockstackConfigurationService('mocked_domain');
+              let nsConfigService = new ConfigurationService('mocked_domain');
               let raiseError = false
               try{
                 await nsConfigService.init()

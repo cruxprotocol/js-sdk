@@ -1,10 +1,12 @@
-import { getLogger, IAddressMapping } from "..";
+import { getLogger } from "..";
 import config from "../config";
 import { ErrorHelper, PackageErrorCode } from "./error";
 import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "./gaia-service/utils";
 import * as identityUtils from "./identity-utils";
-import * as nameservice from "./name-service/blockstack-service";
+import { IIdentityClaim } from "./name-service";
+import * as blockstackService from "./name-service/blockstack-service";
 import { IBlockstackServiceInputOptions } from "./name-service/blockstack-service";
+import { getCruxIDByAddress } from "./name-service/utils";
 
 const log = getLogger(__filename);
 const CONFIG_SUBDOMAIN = "_config";
@@ -44,16 +46,7 @@ export interface IResolvedClientAssetMap {
     [currencySymbol: string]: IGlobalAsset;
 }
 
-export abstract class NameServiceConfigurationService {
-    constructor() {
-        log.info(`Initizing NameServiceConfigurationService with options:- `);
-    }
-
-    public abstract translateSymbolToAssetId = async (currencySymbol: string): Promise<string> => ("");
-    public abstract translateAssetIdToSymbol = async (assetId: string): Promise<string> => ("");
-}
-
-export class BlockstackConfigurationService extends NameServiceConfigurationService {
+export class ConfigurationService {
 
     public clientName: string;
     public clientConfig?: IClientConfig;
@@ -61,9 +54,9 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
     public clientAssetMapping?: IClientAssetMapping;
     public reverseClientAssetMapping?: IReverseClientAssetMapping;
     public resolvedClientAssetMap?: IResolvedClientAssetMap;
+    public nameServiceConfig?: IBlockstackServiceInputOptions;
 
     constructor(clientName: string) {
-        super();
         this.clientName = clientName;
         log.info(`BlockstackConfigurationService initialised with default configs`);
     }
@@ -73,31 +66,31 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             .then(() => this._setupGlobalAseetMap())
             .then(() => this._setupClientAssetMapping())
             .then(() => this._setupReverseClientAssetMapping())
-            .then(() => this._setupResolvedClientAssetMapping());
+            .then(() => this._setupResolvedClientAssetMapping())
+            .then(() => this._setupNameServiceConfig());
     }
 
-    public getBlockstackServiceForConfig = async (userCruxID?: string): Promise<nameservice.BlockstackService> => {
-        if (!this.clientConfig) { throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig); }
-        let ns: nameservice.BlockstackService;
-        let gaiaHub: string | undefined;
-        if (userCruxID) {
-            const userBlockstackID = identityUtils.IdTranslator.cruxToBlockstack(identityUtils.CruxId.fromString(userCruxID)).toString();
-            const gaiaUrls = await getGaiaDataFromBlockstackID(userBlockstackID, (this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.bnsNodes) || config.BLOCKSTACK.BNS_NODES);
-            gaiaHub = gaiaUrls.gaiaWriteUrl;
+    public getBlockstackServiceForConfig = async (userCruxID?: string, identityClaim?: IIdentityClaim): Promise<blockstackService.BlockstackService> => {
+        if (!(this.clientConfig && this.nameServiceConfig)) {
+            throw ErrorHelper.getPackageError(PackageErrorCode.ClientNotInitialized);
         }
-        const domain = this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX;
-        const nsConfiguration: IBlockstackServiceInputOptions = {
-            domain,
-            gaiaHub,
-        };
-        if (this.clientConfig.nameserviceConfiguration) {
-            nsConfiguration.bnsNodes = this.clientConfig.nameserviceConfiguration.bnsNodes;
-            nsConfiguration.domain = domain;
-            nsConfiguration.gaiaHub = gaiaHub || this.clientConfig.nameserviceConfiguration.gaiaHub;
-            nsConfiguration.subdomainRegistrar = this.clientConfig.nameserviceConfiguration.subdomainRegistrar;
+        let nsConfig = this.nameServiceConfig;
+
+        // Merging user level configuration overrides if available (will be overriding the temporary in-memory variable)
+        if (userCruxID && identityClaim) {
+            // Get the user name registration status
+            const ns: blockstackService.BlockstackService = new blockstackService.BlockstackService(nsConfig);
+            await ns.restoreIdentity(userCruxID, identityClaim);
+            const status = await ns.getRegistrationStatus(identityClaim);
+
+            if (status.status === blockstackService.SubdomainRegistrationStatus.DONE) {
+                const userBlockstackID = identityUtils.IdTranslator.cruxToBlockstack(identityUtils.CruxId.fromString(userCruxID)).toString();
+                const gaiaUrls = await getGaiaDataFromBlockstackID(userBlockstackID, (this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.bnsNodes) || config.BLOCKSTACK.BNS_NODES);
+                const gaiaHub = gaiaUrls.gaiaWriteUrl;
+                nsConfig = Object.assign(this.nameServiceConfig, {gaiaHub});
+            }
         }
-        ns = new nameservice.BlockstackService(nsConfiguration);
-        return ns;
+        return new blockstackService.BlockstackService(nsConfig);
     }
 
     public translateSymbolToAssetId = async (currencySymbol: string): Promise<string> => {
@@ -108,12 +101,51 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         return (this.reverseClientAssetMapping as IReverseClientAssetMapping)[assetId];
     }
 
+    public getCruxIDByAddress = async (address: string) => {
+        if (!this.clientConfig) {
+            throw ErrorHelper.getPackageError(PackageErrorCode.ClientNotInitialized);
+        }
+        const walletNameServiceConfiguration = this.clientConfig.nameserviceConfiguration;
+        const bnsNodes = (walletNameServiceConfiguration && walletNameServiceConfiguration.bnsNodes) ? [...new Set([...config.BLOCKSTACK.BNS_NODES, ...walletNameServiceConfiguration.bnsNodes])] : config.BLOCKSTACK.BNS_NODES;
+        const registrar = (walletNameServiceConfiguration && walletNameServiceConfiguration.subdomainRegistrar) || config.BLOCKSTACK.SUBDOMAIN_REGISTRAR;
+        return await getCruxIDByAddress(this.clientName, address, bnsNodes, registrar);
+    }
+
+    private _setupNameServiceConfig = async () => {
+        if (!this.clientConfig) {
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig); 
+        }
+
+        // Default configurations
+        const nsConfiguration: IBlockstackServiceInputOptions = {
+            bnsNodes: config.BLOCKSTACK.BNS_NODES,
+            domain: this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX,
+            gaiaHub: config.BLOCKSTACK.GAIA_HUB,
+            subdomainRegistrar: config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
+        };
+
+        // Merging wallet level configuration overrides if available (will be overriding the class property)
+        if (this.clientConfig.nameserviceConfiguration) {
+            if (this.clientConfig.nameserviceConfiguration.bnsNodes) {
+                // always append the extra configured BNS nodes (needs `downlevelIteration` flag enabled in tsconfig.json)
+                nsConfiguration.bnsNodes = [...new Set([...config.BLOCKSTACK.BNS_NODES, ...this.clientConfig.nameserviceConfiguration.bnsNodes])];
+            }
+            if (this.clientConfig.nameserviceConfiguration.gaiaHub) {
+                nsConfiguration.gaiaHub = this.clientConfig.nameserviceConfiguration.gaiaHub;
+            }
+            if (this.clientConfig.nameserviceConfiguration.subdomainRegistrar) {
+                nsConfiguration.subdomainRegistrar = this.clientConfig.nameserviceConfiguration.subdomainRegistrar;
+            }
+        }
+        this.nameServiceConfig = nsConfiguration;
+    }
+
     private _setupClientConfig = async (): Promise<void> => {
         const blockstackId = new identityUtils.BlockstackId({
             domain: this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX,
             subdomain: CONFIG_SUBDOMAIN,
         }).toString();
-        this.clientConfig = await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, config.BLOCKSTACK.BNS_NODES, this.clientName);
+        this.clientConfig = await getContentFromGaiaHub(blockstackId, blockstackService.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, config.BLOCKSTACK.BNS_NODES, this.clientName);
     }
 
     private _setupGlobalAseetMap = async (): Promise<void> => {
