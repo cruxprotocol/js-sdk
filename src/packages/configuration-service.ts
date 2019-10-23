@@ -40,7 +40,7 @@ interface IClientConfig {
     nameserviceConfiguration?: IBlockstackServiceInputOptions;
 }
 
-export interface IResolvedClientAssetMapping {
+export interface IResolvedClientAssetMap {
     [currencySymbol: string]: IGlobalAsset;
 }
 
@@ -49,56 +49,40 @@ export abstract class NameServiceConfigurationService {
         log.info(`Initizing NameServiceConfigurationService with options:- `);
     }
 
-    public abstract getResolvedClientAssetMapping = async (): Promise<IResolvedClientAssetMapping> => ({});
     public abstract translateSymbolToAssetId = async (currencySymbol: string): Promise<string> => ("");
     public abstract translateAssetIdToSymbol = async (assetId: string): Promise<string> => ("");
 }
 
 export class BlockstackConfigurationService extends NameServiceConfigurationService {
 
-    private reverseClientAssetMapping?: IReverseClientAssetMapping;
-    private blockstackNameservice: nameservice.BlockstackService;
-    private clientName: string;
-    private clientConfig?: IClientConfig;
-    private clientAssetMapping?: IClientAssetMapping;
-    private blockstackID: string | undefined;
-    private globalAssetMap?: IGlobalMap;
+    public clientName: string;
+    public clientConfig?: IClientConfig;
+    public globalAssetMap?: IGlobalMap;
+    public clientAssetMapping?: IClientAssetMapping;
+    public reverseClientAssetMapping?: IReverseClientAssetMapping;
+    public resolvedClientAssetMap?: IResolvedClientAssetMap;
 
-    constructor(clientName: string, cruxID?: string) {
+    constructor(clientName: string) {
         super();
         this.clientName = clientName;
-        if (cruxID) {
-            this.blockstackID = identityUtils.IdTranslator.cruxToBlockstack(identityUtils.CruxId.fromString(cruxID)).toString();
-        }
-        this.blockstackNameservice = new nameservice.BlockstackService({ domain: this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX });
         log.info(`BlockstackConfigurationService initialised with default configs`);
     }
 
     public init = async () => {
-        this.clientConfig = await this._getClientConfig();
-        this.globalAssetMap = await this._getGlobalMapping();
-        this.clientAssetMapping = await this._getClientAssetMapping();
-        this.reverseClientAssetMapping = await this._getReverseClientAssetMapping();
+        await this._setupClientConfig()
+            .then(() => this._setupGlobalAseetMap())
+            .then(() => this._setupClientAssetMapping())
+            .then(() => this._setupReverseClientAssetMapping())
+            .then(() => this._setupResolvedClientAssetMapping());
     }
 
-    public getResolvedClientAssetMapping = async (): Promise<IResolvedClientAssetMapping> => {
-        const resolvedClientAssetMapping: IResolvedClientAssetMapping = {};
-        if (this.globalAssetMap && this.clientConfig && this.clientConfig.assetMapping) {
-            for (const currencySymbol of Object.keys(this.clientConfig.assetMapping)) {
-                if (this.globalAssetMap[this.clientConfig.assetMapping[currencySymbol]]) {
-                    resolvedClientAssetMapping[currencySymbol] = this.globalAssetMap[this.clientConfig.assetMapping[currencySymbol]];
-                }
-            }
-        }
-        return resolvedClientAssetMapping;
-    }
-
-    public getBlockstackServiceForConfig = async (): Promise<nameservice.BlockstackService> => {
+    public getBlockstackServiceForConfig = async (userCruxID?: string): Promise<nameservice.BlockstackService> => {
         if (!this.clientConfig) { throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig); }
         let ns: nameservice.BlockstackService;
         let gaiaHub: string | undefined;
-        if (this.blockstackID) {
-            const gaiaUrls = await getGaiaDataFromBlockstackID(this.blockstackID, (this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.bnsNodes) || config.BLOCKSTACK.BNS_NODES);
+        if (userCruxID) {
+            const userBlockstackID = identityUtils.IdTranslator.cruxToBlockstack(identityUtils.CruxId.fromString(userCruxID)).toString();
+            const gaiaUrls = await getGaiaDataFromBlockstackID(userBlockstackID, (this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.bnsNodes) || config.BLOCKSTACK.BNS_NODES);
             gaiaHub = gaiaUrls.gaiaWriteUrl;
         }
         const domain = this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX;
@@ -124,51 +108,58 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
         return (this.reverseClientAssetMapping as IReverseClientAssetMapping)[assetId];
     }
 
-    private _getGlobalMapping = async (): Promise<IGlobalMap> => {
+    private _setupClientConfig = async (): Promise<void> => {
+        const blockstackId = new identityUtils.BlockstackId({
+            domain: this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX,
+            subdomain: CONFIG_SUBDOMAIN,
+        }).toString();
+        this.clientConfig = await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, config.BLOCKSTACK.BNS_NODES, this.clientName);
+    }
+
+    private _setupGlobalAseetMap = async (): Promise<void> => {
         const clientConfig = this.clientConfig;
         const globalMapping: IGlobalMap = {};
         if (clientConfig && clientConfig.assetList) {
             clientConfig.assetList.forEach((asset) => {
                 globalMapping[asset.assetId] = asset;
             });
-            return globalMapping;
+            this.globalAssetMap = globalMapping;
         } else {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindAssetListInClientConfig);
         }
     }
 
-    private _getClientConfig = async (): Promise<IClientConfig> => {
-        const blockstackId = new identityUtils.BlockstackId({
-            domain: this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX,
-            subdomain: CONFIG_SUBDOMAIN,
-        }).toString();
-        return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, config.BLOCKSTACK.BNS_NODES, this.clientName);
-    }
-
-    private _getClientAssetMapping = async (): Promise<IClientAssetMapping> => {
-        const clientConfig = this.clientConfig;
-        const lowerAssetMapping: any = {};
-        if (clientConfig && clientConfig.assetMapping) {
-            for (const walletCurrencySymbol of Object.keys(clientConfig.assetMapping)) {
-                lowerAssetMapping[walletCurrencySymbol.toLowerCase()] = clientConfig.assetMapping[walletCurrencySymbol];
+    private _setupClientAssetMapping = async (): Promise<void> => {
+        const lowerAssetMapping: IClientAssetMapping = {};
+        if (this.clientConfig && this.clientConfig.assetMapping) {
+            for (const walletCurrencySymbol of Object.keys(this.clientConfig.assetMapping)) {
+                lowerAssetMapping[walletCurrencySymbol.toLowerCase()] = this.clientConfig.assetMapping[walletCurrencySymbol];
             }
-            return lowerAssetMapping;
-        } else {
-            return {};
         }
+        this.clientAssetMapping = lowerAssetMapping;
     }
 
-    private _getReverseClientAssetMapping = async (): Promise<IReverseClientAssetMapping> => {
-        const assetIdToWalletCurrencySymbolMap: {[assetId: string]: string} = {};
+    private _setupReverseClientAssetMapping = async (): Promise<void> => {
+        const assetIdToWalletCurrencySymbolMap: IReverseClientAssetMapping = {};
         if (this.clientAssetMapping) {
             for (let walletCurrencySymbol of Object.keys(this.clientAssetMapping)) {
                 walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
                 assetIdToWalletCurrencySymbolMap[this.clientAssetMapping[walletCurrencySymbol]] = walletCurrencySymbol;
             }
-            return assetIdToWalletCurrencySymbolMap;
-        } else {
-            return {};
         }
+        this.reverseClientAssetMapping = assetIdToWalletCurrencySymbolMap;
+    }
+
+    private _setupResolvedClientAssetMapping = async (): Promise<void> => {
+        const resolvedClientAssetMapping: IResolvedClientAssetMap = {};
+        if (this.globalAssetMap && this.clientConfig && this.clientConfig.assetMapping) {
+            for (const currencySymbol of Object.keys(this.clientConfig.assetMapping)) {
+                if (this.globalAssetMap[this.clientConfig.assetMapping[currencySymbol]]) {
+                    resolvedClientAssetMapping[currencySymbol] = this.globalAssetMap[this.clientConfig.assetMapping[currencySymbol]];
+                }
+            }
+        }
+        this.resolvedClientAssetMap = resolvedClientAssetMapping;
     }
 
 }

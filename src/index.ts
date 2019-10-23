@@ -2,7 +2,6 @@ import Logger from "js-logger";
 import path from "path";
 import "regenerator-runtime/runtime";
 import config from "./config";
-import { IResolvedClientAssetMapping } from "./packages/configuration-service";
 import { CRUX_DOMAIN_SUFFIX } from "./packages/identity-utils";
 
 // Setup logging configuration
@@ -15,7 +14,7 @@ const log = getLogger(__filename);
 
 // Importing packages
 import {
-    BlockstackConfigurationService,
+    blockstackConfigurationService,
     blockstackService,
     encryption,
     errors,
@@ -161,11 +160,8 @@ class CruxPayPeer {
     protected _storage: storage.StorageService;
     protected _encryption: typeof encryption.Encryption;
     protected _nameService?: nameService.NameService;
-    protected _assetList?: object;
-    protected _clientMapping?: object;
     protected _payIDClaim?: PayIDClaim;
-    protected _configService?: BlockstackConfigurationService;
-    protected _resolvedClientAssetMapping?: IResolvedClientAssetMapping;
+    protected _configService?: blockstackConfigurationService.BlockstackConfigurationService;
 
     constructor(options: ICruxPayPeerOptions) {
         this._options = Object.assign({}, options);
@@ -186,6 +182,7 @@ class CruxPayPeer {
     }
 
     public async init() {
+        await this._setupConfigService();
         if (this._hasPayIDClaimStored()) {
             log.debug("using the stored payIDClaim");
             const payIDClaim = (this._storage.getJSON("payIDClaim") as ICruxPayClaim);
@@ -196,7 +193,7 @@ class CruxPayPeer {
                 const registeredCruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, this._keyPair.address);
                 if (registeredCruxID) {
                     CruxPayPeer.validateCruxIDByWallet(this.walletClientName, registeredCruxID);
-                    if (registeredCruxID !== payIDClaim.virtualAddress as string) {
+                    if (registeredCruxID !== payIDClaim.virtualAddress) {
                         throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.KeyPairMismatch);
                     }
                 } else {
@@ -204,9 +201,6 @@ class CruxPayPeer {
                 }
             }
             this._setPayIDClaim(new PayIDClaim(payIDClaim, { getEncryptionKey: this._getEncryptionKey }));
-            this._configService = await this._getConfigService();
-            await this._initializeNameService(this._configService);
-            await this._restoreIdentity();
         } else if (this._keyPair) {
             log.debug("using the keyPair provided");
             const registeredCruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, this._keyPair.address);
@@ -214,22 +208,13 @@ class CruxPayPeer {
                 CruxPayPeer.validateCruxIDByWallet(this.walletClientName, registeredCruxID);
                 const payIDClaim = {identitySecrets: {identityKeyPair: this._keyPair}, virtualAddress: registeredCruxID || undefined};
                 this._setPayIDClaim(new PayIDClaim(payIDClaim, { getEncryptionKey: this._getEncryptionKey }));
-                this._configService = await this._getConfigService();
-                await this._initializeNameService(this._configService);
-                await this._restoreIdentity();
-            } else {
-                this._configService = new BlockstackConfigurationService(this.walletClientName);
-                await this._initializeNameService(this._configService);
             }
         } else {
             log.debug("falling back without any payIDClaim");
-            this._configService = new BlockstackConfigurationService(this.walletClientName);
-            await this._initializeNameService(this._configService);
         }
 
-        this._resolvedClientAssetMapping = await this._configService.getResolvedClientAssetMapping();
+        await this._initializeNameService().then(() => this._restoreIdentity());
 
-        log.debug(`resolved client asset list is:- `, this._resolvedClientAssetMapping);
         log.info(`CruxPayPeer: Done init`);
     }
 
@@ -261,18 +246,6 @@ class CruxPayPeer {
         }
     }
 
-    public getAssetMapping = (): IResolvedClientAssetMapping => {
-        try {
-            if (this._resolvedClientAssetMapping) {
-                return this._resolvedClientAssetMapping;
-            } else {
-                throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ClientNotInitialized);
-            }
-        } catch (err) {
-            throw errors.CruxClientError.fromError(err);
-        }
-    }
-
     public isCruxIDAvailable = (cruxIDSubdomain: string): Promise<boolean> => {
         try {
             identityUtils.validateSubdomain(cruxIDSubdomain);
@@ -286,7 +259,7 @@ class CruxPayPeer {
         try {
             walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
             let correspondingAssetId: string = "";
-            correspondingAssetId = await (this._configService as BlockstackConfigurationService).translateSymbolToAssetId(walletCurrencySymbol);
+            correspondingAssetId = await (this._configService as blockstackConfigurationService.BlockstackConfigurationService).translateSymbolToAssetId(walletCurrencySymbol);
             if (!correspondingAssetId) {
                 throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.AssetIDNotAvailable);
             }
@@ -308,26 +281,32 @@ class CruxPayPeer {
         this._payIDClaim = payIDClaim;
     }
 
-    private _getConfigService = async (): Promise<BlockstackConfigurationService> => {
+    private _setupConfigService = async (): Promise<void> => {
         if (!this._configService) {
-            const ns: blockstackService.BlockstackService = new blockstackService.BlockstackService({domain: this.walletClientName + CRUX_DOMAIN_SUFFIX});
-            await (this._payIDClaim as PayIDClaim).decrypt();
-            await ns.restoreIdentity((this._payIDClaim as PayIDClaim).virtualAddress as string, {secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
-            const status = await ns.getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
-            await (this._payIDClaim as PayIDClaim).encrypt();
-            if (status.status === blockstackService.SubdomainRegistrationStatus.DONE) {
-                this._configService = new BlockstackConfigurationService(this.walletClientName, (this._payIDClaim as PayIDClaim).virtualAddress);
-            } else {
-                this._configService = new BlockstackConfigurationService(this.walletClientName);
-            }
+            this._configService = new blockstackConfigurationService.BlockstackConfigurationService(this.walletClientName);
+            await this._configService.init();
         }
-        return this._configService;
     }
 
-    private _initializeNameService = async (configService: BlockstackConfigurationService) => {
+    private _initializeNameService = async () => {
+        if (!this._configService) {
+            throw new Error("Missing configSerivce.");
+        }
         if (!this._nameService) {
-            await configService.init();
-            this._nameService = await configService.getBlockstackServiceForConfig();
+            if (this._payIDClaim && this._payIDClaim.virtualAddress) {
+                const ns: blockstackService.BlockstackService = new blockstackService.BlockstackService({domain: this.walletClientName + CRUX_DOMAIN_SUFFIX});
+                await this._payIDClaim.decrypt();
+                await ns.restoreIdentity(this._payIDClaim.virtualAddress as string, {secrets: this._payIDClaim.identitySecrets});
+                const status = await ns.getRegistrationStatus({secrets: this._payIDClaim.identitySecrets});
+                await this._payIDClaim.encrypt();
+                if (status.status === blockstackService.SubdomainRegistrationStatus.DONE) {
+                    this._nameService = await this._configService.getBlockstackServiceForConfig(this._payIDClaim.virtualAddress);
+                } else {
+                    this._nameService = await this._configService.getBlockstackServiceForConfig();
+                }
+            } else {
+                this._nameService = await this._configService.getBlockstackServiceForConfig();
+            }
         }
     }
 
@@ -358,7 +337,6 @@ class CruxPayPeer {
 
 // Wallets specific SDK code
 export class CruxClient extends CruxPayPeer {
-    // NameService specific methods
     public getCruxIDState = async (): Promise<ICruxIDState> => {
         try {
             const fullCruxID = this.hasPayIDClaim() ? this.getPayIDClaim().virtualAddress : undefined;
@@ -460,6 +438,18 @@ export class CruxClient extends CruxPayPeer {
         }
     }
 
+    public getAssetMapping = (): blockstackConfigurationService.IResolvedClientAssetMap => {
+        try {
+            if (this._configService) {
+                return this._configService.resolvedClientAssetMap as blockstackConfigurationService.IResolvedClientAssetMap;
+            } else {
+                throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ClientNotInitialized);
+            }
+        } catch (err) {
+            throw errors.CruxClientError.fromError(err);
+        }
+    }
+
     private _getIDStatus = async (): Promise<nameService.CruxIDRegistrationStatus> => {
         await (this._payIDClaim as PayIDClaim).decrypt();
         const result = await (this._nameService as nameService.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
@@ -475,7 +465,7 @@ export class CruxClient extends CruxPayPeer {
         for (let walletCurrencySymbol of Object.keys(lowerCurrencyAddressMap)) {
             lowerCurrencyAddressMap[walletCurrencySymbol.toLowerCase()] = lowerCurrencyAddressMap[walletCurrencySymbol];
             walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
-            const assetId = await (this._configService as BlockstackConfigurationService).translateSymbolToAssetId(walletCurrencySymbol);
+            const assetId = await (this._configService as blockstackConfigurationService.BlockstackConfigurationService).translateSymbolToAssetId(walletCurrencySymbol);
             if (assetId) {
                 assetAddressMap[assetId] = lowerCurrencyAddressMap[walletCurrencySymbol];
                 success[walletCurrencySymbol] = lowerCurrencyAddressMap[walletCurrencySymbol];
