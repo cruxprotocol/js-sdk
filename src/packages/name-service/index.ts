@@ -1,4 +1,5 @@
 import { IAddressMapping } from "../..";
+import { StorageService } from "../storage";
 
 // NameService abstraction
 
@@ -9,16 +10,16 @@ export interface IIdentityClaim {
 /* istanbul ignore next */
 export abstract class NameService {
     // TODO: Make CHILD CLASS implement instead of extend
-    public abstract generateIdentity = async (): Promise<IIdentityClaim> => ({ secrets: null });
+    public abstract generateIdentity = async (storage: StorageService, encryptionKey: string): Promise<IIdentityClaim> => ({ secrets: null });
     public abstract restoreIdentity = async (name: string, identityClaim: IIdentityClaim): Promise<IIdentityClaim> => ({ secrets: null });
     public abstract getNameAvailability = async (name: string): Promise<boolean> => false;
     public abstract registerName = async (identityClaim: IIdentityClaim, name: string): Promise<string> => "";
-    public abstract getRegistrationStatus = async (identityClaim: IIdentityClaim): Promise<CruxIDRegistrationStatus> => ({status: "", status_detail: ""});
+    public abstract getRegistrationStatus = async (identityClaim: IIdentityClaim): Promise<CruxIDRegistrationStatus> => ({status: "", statusDetail: ""});
     public abstract getAddressMapping = async (name: string): Promise<IAddressMapping> => ({});
-    public abstract putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<boolean> => false;
+    public abstract putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<void> => {return; };
 }
 
 export interface CruxIDRegistrationStatus {
     status: string;
-    status_detail: string;
+    statusDetail: string;
 }

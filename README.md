@@ -55,52 +55,64 @@ cruxClient.getCruxIDState().then((cruxIDState) => {
 })
 ```
 
+Wallet clients are encouraged to surface the respective `ERROR_CODE` of the `CruxClientError` to their Users with any custom error messages. This will help in debugging any issues with the functionality.
+
+Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/error-handling.md) for more information on Error handling.
+
+
+
 ### SDK Operation
 
 1. ##### isCruxIDAvailable(cruxID<onlySubdomain>)
     - Description: Helps to check if a particular CruxID is available to be registered.
     - Params:
         - subdomain part of [CruxID](#cruxid)
-    - Returns: Promise returns a _boolean_ indicating whether a particular Crux ID is available for registration.
-        
-2. ##### registerCruxID(cruxID<onlySubdomain>, newAddressMap)
+    - Returns: Promise resolving to a _boolean_ indicating whether a particular Crux ID is available for registration.
+
+2. ##### getAssetMapping()
+    - Description: Get Wallet's asset map with currency symbols as the keys and asset object as the value.
+    - Params: None
+    - Returns: [IResolvedClientAssetMapping](#iresolvedclientassetmapping) which has symbols and asset objects.
+
+3. ##### registerCruxID(cruxID<onlySubdomain>)
     - Description: Reserves/registers the cruxID for the user. The user can link any blockchain address to his CruxID with the help of newAddressMap sent. The addresses are now publicly linked and can be resolved.
+    - Note: To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
     - Params:
         - subdomain part of [CruxID](#cruxid)
-        - newAddressMap of type [IAddressMapping](#iaddressmapping) which has symbols and addresses a user wants to publically expose with CruxID.
-    - Returns: Promise returns _void_
+    - Returns: Promise resolving on successful call to the registrar.
     
-3. ##### resolveCurrencyAddressForCruxID(cruxID, walletCurrencySymbol)
+4. ##### resolveCurrencyAddressForCruxID(cruxID, walletCurrencySymbol)
     - Description: Helps to lookup a mapped address for a currency of any CruxID if its marked publically accessible.
     - Params:
         - complete [CruxID](#cruxid) of a user whose address you want to fetch
         - [walletCurrencySymbol](#walletcurrencysymbol) wallet symbol of currency whose address you want to fetch.
-    - Returns: Promise returns [IAddress](#iaddress) for that symbol of currency if available.
+    - Returns: Promise resolving to [IAddress](#iaddress) for that symbol of currency if available.
 
-4. ##### getAddressMap()
+5. ##### getAddressMap()
     - Description: Get back the current publicly registered address json 
     - Params: None
-    - Returns: Promise returns [IAddressMapping](#iaddressmapping)
+    - Returns: Promise resolving to [IAddressMapping](#iaddressmapping)
     
-5. ##### putAddressMap(newAddressMap)
+6. ##### putAddressMap(newAddressMap)
     - Description: Helps to update 2 things:-
         - change list of publicly accessible currency addresses.
         - change the value of addressHash and/or secIdentifier to another one.
+    - Note: To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
     - Params:
         - newAddressMap of type [IAddressMapping](#iaddressmapping) has modified map has symbols and addresses a user wants to publically expose with CruxID.
-    - Returns: Promise returns _boolean_ indicating success or failures 
+    - Returns: Promise resolving to {success: [IPutAddressMapSuccess](#iputaddressmapSuccess), failures: [IPutAddressMapFailures](#iputaddressmapfailures)}
 
-6. ##### getCruxIDState()
+7. ##### getCruxIDState()
     - Description: Returns details of the current registered CruxID(if any) for this instance of the user wallet and its registration status
     - Params: None
-    - Returns: Promise returns [CruxIDState](#cruxidstate)
+    - Returns: Promise resolving to [CruxIDState](#cruxidstate)
     
-7. ##### updatePassword(oldEncryptionKey, newEncryptionKey)
+8. ##### updatePassword(oldEncryptionKey, newEncryptionKey)
     - Description: As all the values were encrypted by the string we got from getEncryptionKey. Whenever the user changes his password. This function needs to be called so all data is re-encrypted.
     - Params:
         - oldEncryptionKey => hash returned by getEncryptionKey before password changed.
         - newEncryptionKey => hash returned by getEncryptionKey after password changed.
-    - Returns: Promise returns _boolean_ indicating successful password updation.
+    - Returns: Promise resolving to _boolean_ indicating successful password updation.
 
 
 ### SDK Object Definition
@@ -116,7 +128,7 @@ cruxClient.getCruxIDState().then((cruxIDState) => {
         ```
         {
             status: "PENDING",
-            status_detail: "Your subdomain was registered in transaction"
+            statusDetail: "Your subdomain was registered in transaction"
         }
         ```
     - Type: javascript object
@@ -124,7 +136,7 @@ cruxClient.getCruxIDState().then((cruxIDState) => {
         - status: 
             - Type: string
             - Description: which can have the following values [UNKNOWN, PENDING, REJECTED, DONE]
-        - status_detail:
+        - statusDetail:
             - Type: string
             - Description: which contains further details/reason about the status.
 
@@ -137,7 +149,7 @@ cruxClient.getCruxIDState().then((cruxIDState) => {
        registration_status: <CruxIDRegistrationStatus>
     }
     ```
-   - Type: javascript object
+    - Type: javascript object
     - Description: Return the current registered ID and its status.
 
 4. ##### IAddress
@@ -178,6 +190,71 @@ cruxClient.getCruxIDState().then((cruxIDState) => {
     ```
     - Type: javascript object
     - Description: Map of [walletCurrencySymbol](#walletcurrencysymbol) to [IAddress](#iaddress). You can see in above example, the exchange can skip secIdentifier for currency with memo/tag if it so desires(like its done for XLM above).
+
+7. ##### IGlobalAsset
+    - Example:
+    ```
+    {
+        "assetId":"d79b9ece-a918-4523-b2bc-74071675b54a",
+        "symbol":"ltc",
+        "name":"Litecoin",
+        "assetType":null,
+        "decimals":8,
+        "assetIdentifierName":null,
+        "assetIdentifierValue":null,
+        "parentAssetId":null
+    }
+    ```
+    - Type: javascript object
+    - Description: Asset object. Describing properties of asset.
+
+8. ##### IResolvedClientAssetMapping
+
+    - Example: 
+    ```
+    {
+        'ltc': {
+            "assetId":"d79b9ece-a918-4523-b2bc-74071675b54a",
+            "symbol":"ltc",
+            "name":"Litecoin",
+            "assetType":null,
+            "decimals":8,
+            "assetIdentifierName":null,
+            "assetIdentifierValue":null,
+            "parentAssetId":null
+        },
+        'btc': {
+            "assetId":"d78c26f8-7c13-4909-bf62-57d7623f8ee8",
+            "symbol":"btc",
+            "name":"Bitcoin",
+            "assetType":null,
+            "decimals":8,
+            "assetIdentifierName":null,
+            "assetIdentifierValue":null,
+            "parentAssetId":null
+        },
+    }
+    ```
+    - Type: javascript object
+    - Description: Map of [walletCurrencySymbol](#walletcurrencysymbol) to [IGlobalAsset](#iglobalasset).
+
+9. ##### IPutAddressMapFailures
+    - Example:
+    ```
+    {
+        "monero": "4011: Currency does not exist in wallet's client mapping"
+    }
+    ```
+
+10. ##### IPutAddressMapSuccess
+    - Example:
+    ```
+    {
+        "eth": {
+            "addressHash": "0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8"
+        }
+    }
+    ```
 
 
 ### Building
