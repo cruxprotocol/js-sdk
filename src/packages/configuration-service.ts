@@ -142,7 +142,7 @@ export class BlockstackConfigurationService extends NameServiceConfigurationServ
             domain: this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX,
             subdomain: CONFIG_SUBDOMAIN,
         }).toString();
-        return await getContentFromGaiaHub(blockstackId, nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, config.BLOCKSTACK.BNS_NODES, this.clientName);
+        return await getContentFromGaiaHub(blockstackId, `${this.clientName}_${nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG}`, config.BLOCKSTACK.BNS_NODES);
     }
 
     private _getClientAssetMapping = async (): Promise<IClientAssetMapping> => {

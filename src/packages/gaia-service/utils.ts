@@ -13,10 +13,9 @@ interface gaiaData {
     ownerAddress: string;
 }
 
-export const getContentFromGaiaHub = async (blockstackId: string, filename: nameservice.UPLOADABLE_JSON_FILES, bnsNodes: string[], prefix?: string): Promise<any> => {
-    let fileUrl: string;
+export const getContentFromGaiaHub = async (blockstackId: string, filename: string, bnsNodes: string[]): Promise<any> => {
     const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackId, bnsNodes);
-    fileUrl = gaiaDetails.gaiaReadUrl + gaiaDetails.ownerAddress + "/" + (prefix ? `${prefix}_` : "") + filename;
+    const fileUrl = gaiaDetails.gaiaReadUrl + gaiaDetails.ownerAddress + "/" + filename;
     const options = {
         json: true,
         method: "GET",
@@ -24,17 +23,10 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: name
     };
 
     let finalContent: any;
-    let responseBody: any;
     const cacheTTL = filename === nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG ? 3600 : undefined;
-    try {
-        responseBody = await cachedFunctionCall(options.url, cacheTTL, httpJSONRequest, [options], async (data) => {
-            return Boolean(filename !== nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
-        });
-        log.debug(`Response from ${filename}`, responseBody);
-    } catch (error) {
-        const packageErrorCode = nameservice.BlockstackService.getGetPackageErrorCodeForFilename(filename);
-        throw ErrorHelper.getPackageError(packageErrorCode, filename, error);
-    }
+    const responseBody: any = await cachedFunctionCall(options.url, cacheTTL, httpJSONRequest, [options], async (data) => {
+        return Boolean(filename !== nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
+    });
     if (responseBody.indexOf("BlobNotFound") > 0 || responseBody.indexOf("NoSuchKey") > 0) {
         throw ErrorHelper.getPackageError(PackageErrorCode.GaiaEmptyResponse);
     } else {

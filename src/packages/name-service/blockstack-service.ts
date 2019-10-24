@@ -8,6 +8,7 @@ import config from "../../config";
 import { Encryption } from "../encryption";
 import {CruxClientError, ErrorHelper, PackageErrorCode} from "../error";
 
+import { PackageError } from "../error/package-error";
 import { GaiaService } from "../gaia-service";
 import { getContentFromGaiaHub } from "../gaia-service/utils";
 import {BlockstackId, CruxId, IdTranslator} from "../identity-utils";
@@ -262,14 +263,14 @@ export class BlockstackService extends nameService.NameService {
         } catch (error) {
             throw ErrorHelper.getPackageError(PackageErrorCode.AddressMappingDecodingFailure);
         }
-        await this.uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping, IdTranslator.blockstackDomainToCruxDomain(this._domain));
+        await this._uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping, IdTranslator.blockstackDomainToCruxDomain(this._domain));
         return;
     }
 
     public getAddressMapping = async (fullCruxId: string): Promise<IAddressMapping> => {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
-        return await this.getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, this._bnsNodes, cruxId.components.domain);
+        return await this._getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, this._bnsNodes, cruxId.components.domain);
     }
 
     private _getConfigOptions = (defaultConfig: IDefaultServiceOptions, options: IBlockstackServiceInputOptions): IBlockstackServiceOptions => {
@@ -368,11 +369,33 @@ export class BlockstackService extends nameService.NameService {
         return status;
     }
 
-    private uploadContentToGaiaHub = async (filename: UPLOADABLE_JSON_FILES, privKey: string, content: any, prefix: string): Promise<string> => {
-        return await this._gaiaService.uploadContentToGaiaHub(filename, privKey, content, prefix);
+    private _uploadContentToGaiaHub = async (filename: UPLOADABLE_JSON_FILES, privKey: string, content: any, prefix: string): Promise<string> => {
+        const filenameToUpload =  `${prefix}_${filename}`;
+        let finalURL: string;
+        try {
+            finalURL = await this._gaiaService.uploadContentToGaiaHub(filenameToUpload, privKey, content, prefix);
+            log.debug(`finalUrl is ${finalURL}`);
+        } catch (error) {
+            const packageErrorCode = BlockstackService.getUploadPackageErrorCodeForFilename(filename);
+            throw ErrorHelper.getPackageError(packageErrorCode, filename, error);
+        }
+        return finalURL;
     }
 
-    private getContentFromGaiaHub = async (blockstackId: string, filename: UPLOADABLE_JSON_FILES, bnsNodes: string[], prefix: string): Promise<any> => {
-        return await getContentFromGaiaHub(blockstackId, filename, bnsNodes, prefix);
+    private _getContentFromGaiaHub = async (blockstackId: string, filename: UPLOADABLE_JSON_FILES, bnsNodes: string[], prefix: string): Promise<any> => {
+        const filenameToFetch = `${prefix}_${filename}`;
+        let responseBody: any;
+        try {
+            responseBody = await getContentFromGaiaHub(blockstackId, filenameToFetch, bnsNodes);
+            log.debug(`Response from ${filenameToFetch}`, responseBody);
+        } catch (error) {
+            if (error instanceof PackageError && error.errorCode) {
+                throw error;
+            } else {
+                const packageErrorCode = BlockstackService.getGetPackageErrorCodeForFilename(filename);
+                throw ErrorHelper.getPackageError(packageErrorCode, filename, error);
+            }
+        }
+        return responseBody;
     }
 }
