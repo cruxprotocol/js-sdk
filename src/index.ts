@@ -23,6 +23,13 @@ import {
     utils,
 } from "./packages";
 
+export {
+    encryption,
+    errors,
+    storage,
+    nameService,
+};
+
 // TODO: Implement classes enforcing the interfaces
 export interface IAddress {
     addressHash: string;
@@ -50,8 +57,6 @@ export class AddressMapping {
     }
 }
 
-// SDK core class
-
 export interface ICruxPayPeerOptions {
     getEncryptionKey: () => string;
     privateKey?: string;
@@ -59,10 +64,6 @@ export interface ICruxPayPeerOptions {
     encryption?: typeof encryption.Encryption;
     nameService?: nameService.NameService;
     walletClientName: string;
-}
-
-interface IIdentitySecrets {
-    [nameService: string]: nameService.IIdentityClaim;
 }
 
 interface ICruxPayClaim {
@@ -82,8 +83,8 @@ interface payIDClaimOptions {
 
 export class PayIDClaim implements ICruxPayClaim {
 
-    public virtualAddress: string | undefined;
-    public identitySecrets: string | any | undefined;
+    public virtualAddress?: string;
+    public identitySecrets?: string | object;
     private _getEncryptionKey: () => string;
     private _encryption: typeof encryption.Encryption = encryption.Encryption;
 
@@ -142,7 +143,7 @@ export class PayIDClaim implements ICruxPayClaim {
 
 }
 
-class CruxPayPeer {
+export class CruxClient {
     public static validateCruxIDByWallet = (walletClientName: string, cruxIDString: string): void => {
         const cruxID = identityUtils.CruxId.fromString(cruxIDString);
         if (cruxID.components.domain !== walletClientName) {
@@ -154,7 +155,6 @@ class CruxPayPeer {
     protected _options: ICruxPayPeerOptions;
     protected _getEncryptionKey: () => string;
     protected _keyPair?: blockstackService.IBitcoinKeyPair;
-
     protected _storage: storage.StorageService;
     protected _encryption: typeof encryption.Encryption;
     protected _nameService?: nameService.NameService;
@@ -279,59 +279,6 @@ class CruxPayPeer {
         }
     }
 
-    protected _setPayIDClaim = (payIDClaim: PayIDClaim): void => {
-        this._payIDClaim = payIDClaim;
-    }
-
-    private _setupConfigService = async (): Promise<void> => {
-        if (!this._configService) {
-            this._configService = new configurationService.ConfigurationService(this.walletClientName);
-            await this._configService.init();
-        }
-    }
-
-    private _initializeNameService = async () => {
-        if (!this._configService) {
-            throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ClientNotInitialized);
-        }
-        if (!this._nameService) {
-            if (this._payIDClaim && this._payIDClaim.virtualAddress) {
-                await this._payIDClaim.decrypt();
-                this._nameService = await this._configService.getBlockstackServiceForConfig(this._payIDClaim.virtualAddress, {secrets: this._payIDClaim.identitySecrets});
-                await this._payIDClaim.encrypt();
-            } else {
-                this._nameService = await this._configService.getBlockstackServiceForConfig();
-            }
-        }
-    }
-
-    private _restoreIdentity = async () => {
-        // if have local identitySecret, setup with the nameService module
-        if ( this._payIDClaim && this._payIDClaim.identitySecrets ) {
-            await this._payIDClaim.decrypt();
-            try {
-                const identityClaim = await (this._nameService as nameService.NameService).restoreIdentity(this._payIDClaim.virtualAddress as string, {secrets: this._payIDClaim.identitySecrets});
-                (this._payIDClaim as PayIDClaim).identitySecrets = identityClaim.secrets;
-                log.info(`Identity restored`);
-            } finally {
-                log.debug("Encrypting and saving the payIDClaim");
-                await (this._payIDClaim as PayIDClaim).encrypt();
-                await (this._payIDClaim as PayIDClaim).save(this._storage);
-            }
-        } else {
-            log.info(`payIDClaim or identitySecrets not available! Identity restoration skipped`);
-        }
-    }
-
-    private _hasPayIDClaimStored = (): boolean => {
-        const payIDClaim = this._storage.getJSON("payIDClaim");
-        return Boolean(payIDClaim);
-    }
-
-}
-
-// Wallets specific SDK code
-export class CruxClient extends CruxPayPeer {
     public getCruxIDState = async (): Promise<ICruxIDState> => {
         try {
             const fullCruxID = this.hasPayIDClaim() ? this.getPayIDClaim().virtualAddress : undefined;
@@ -447,6 +394,10 @@ export class CruxClient extends CruxPayPeer {
 
     public getAssetMapping = () => this.getAssetMap;    // For backward compatibility
 
+    protected _setPayIDClaim = (payIDClaim: PayIDClaim): void => {
+        this._payIDClaim = payIDClaim;
+    }
+
     private _getIDStatus = async (): Promise<nameService.CruxIDRegistrationStatus> => {
         await (this._payIDClaim as PayIDClaim).decrypt();
         const result = await (this._nameService as nameService.NameService).getRegistrationStatus({secrets: (this._payIDClaim as PayIDClaim).identitySecrets});
@@ -476,11 +427,50 @@ export class CruxClient extends CruxPayPeer {
             success,
         };
     }
-}
 
-export {
-    encryption,
-    errors,
-    storage,
-    nameService,
-};
+    private _setupConfigService = async (): Promise<void> => {
+        if (!this._configService) {
+            this._configService = new configurationService.ConfigurationService(this.walletClientName);
+            await this._configService.init();
+        }
+    }
+
+    private _initializeNameService = async () => {
+        if (!this._configService) {
+            throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ClientNotInitialized);
+        }
+        if (!this._nameService) {
+            if (this._payIDClaim && this._payIDClaim.virtualAddress) {
+                await this._payIDClaim.decrypt();
+                this._nameService = await this._configService.getBlockstackServiceForConfig(this._payIDClaim.virtualAddress, {secrets: this._payIDClaim.identitySecrets});
+                await this._payIDClaim.encrypt();
+            } else {
+                this._nameService = await this._configService.getBlockstackServiceForConfig();
+            }
+        }
+    }
+
+    private _restoreIdentity = async () => {
+        // if have local identitySecret, setup with the nameService module
+        if ( this._payIDClaim && this._payIDClaim.identitySecrets ) {
+            await this._payIDClaim.decrypt();
+            try {
+                const identityClaim = await (this._nameService as nameService.NameService).restoreIdentity(this._payIDClaim.virtualAddress as string, {secrets: this._payIDClaim.identitySecrets});
+                (this._payIDClaim as PayIDClaim).identitySecrets = identityClaim.secrets;
+                log.info(`Identity restored`);
+            } finally {
+                log.debug("Encrypting and saving the payIDClaim");
+                await (this._payIDClaim as PayIDClaim).encrypt();
+                await (this._payIDClaim as PayIDClaim).save(this._storage);
+            }
+        } else {
+            log.info(`payIDClaim or identitySecrets not available! Identity restoration skipped`);
+        }
+    }
+
+    private _hasPayIDClaimStored = (): boolean => {
+        const payIDClaim = this._storage.getJSON("payIDClaim");
+        return Boolean(payIDClaim);
+    }
+
+}
