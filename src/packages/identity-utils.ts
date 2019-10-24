@@ -97,12 +97,18 @@ export class BlockstackId {
 }
 
 export class IdTranslator {
+    public static cruxDomainToBlockstackDomain = (domain: string): string => {
+        return domain + CRUX_DOMAIN_SUFFIX;
+    }
+    public static blockstackDomainToCruxDomain = (domain: string): string => {
+        return domain.slice(0, -5);
+    }
     public static cruxToBlockstack = (cruxId: CruxId): BlockstackId => {
         if (cruxId.components.namespace !== DEFAULT_CRUX_NAMESPACE) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CruxIdNamespaceValidation, cruxId.components.namespace);
         }
         return new BlockstackId({
-            domain: cruxId.components.domain + CRUX_DOMAIN_SUFFIX,
+            domain: IdTranslator.cruxDomainToBlockstackDomain(cruxId.components.domain),
             subdomain: cruxId.components.subdomain,
         });
     }
@@ -116,7 +122,7 @@ export class IdTranslator {
         if (!bsId.components.domain.endsWith(CRUX_DOMAIN_SUFFIX)) {
             throw ErrorHelper.getPackageError(PackageErrorCode.BlockstackIdInvalidDomainForTranslation);
         }
-        const cruxDomain = bsId.components.domain.slice(0, -5);
+        const cruxDomain = IdTranslator.blockstackDomainToCruxDomain(bsId.components.domain);
 
         return new CruxId({
             domain: cruxDomain,

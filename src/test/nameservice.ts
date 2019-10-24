@@ -433,17 +433,6 @@ describe('BlockstackService tests', () => {
       json: true,
       strictSSL: false
     }
-    it('if uploadToGaiaHub breaks, should raise "GaiaProfileUploadFailed"', async () => {
-      uploadToGaiaHubStub.onCall(0).throws('unhandled in mocks')
-      let raisedError
-      try {
-        await blkstkService.registerName(sampleIdentityClaim, sampleSubdomain)
-      } catch (error) {
-        raisedError = error
-      }
-      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GaiaProfileUploadFailed)
-      expect(uploadToGaiaHubStub.calledOnce).is.true
-    })
 
     it('given valid identityClaim and a non-registered cruxId (bob@devcoinswitch.crux), should successfully register and return the fullCruxId', async () => {
       let registeredName = await blkstkService.registerName(sampleIdentityClaim, desiredName)
@@ -453,16 +442,13 @@ describe('BlockstackService tests', () => {
       expect(registeredName).is.equal(expectedRegisteredName)
     })
     it('given valid identityClaim and a registered cruxId, should throw "SubdomainRegistrationFailed"', async () => {
-      uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json")
       let raisedError
       try {
         await blkstkService.registerName(sampleIdentityClaim, sampleSubdomain)
       } catch (error) {
         raisedError = error
       }
-      expect(uploadToGaiaHubStub.calledOnce).is.true
-      // expect(httpJSONRequestStub.calledOnce).is.true
-      expect(uploadToGaiaHubStub.calledWith('profile.json')).is.true
+      expect(httpJSONRequestStub.calledOnce).is.true
       expect(httpJSONRequestStub.calledWith(redundantRegistrarRequestOptions)).is.true
       expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.SubdomainRegistrationFailed)
     })
@@ -492,7 +478,7 @@ describe('BlockstackService tests', () => {
     it('given valid identityClaim and valid addressMap, should resolve the promise without errors', async () => {
       // mocked values
       connectToGaiaHubStub.resolves({ "url_prefix": "https://gaia.cruxpay.com/", "address": "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ", "token": "v1:eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJnYWlhQ2hhbGxlbmdlIjoiW1wiZ2FpYWh1YlwiLFwiMFwiLFwic3RvcmFnZTIuYmxvY2tzdGFjay5vcmdcIixcImJsb2Nrc3RhY2tfc3RvcmFnZV9wbGVhc2Vfc2lnblwiXSIsImh1YlVybCI6Imh0dHBzOi8vaHViLmJsb2Nrc3RhY2sub3JnIiwiaXNzIjoiMDJiYzljM2Y4ZTkyNGI3ZGU5MjEyY2ViZDAxMjlmMWJlMmU2YzNmMjkwNGU5MTFiMzA2OThiZGU3N2JlNDg3OGI4Iiwic2FsdCI6ImE0ODk1ZWE1ZjdjZjI2N2VhNDEwMjg2ZjRjNzk4MTY3In0.QFuEEVijDYMKHjERaPA_YXwnwWoBq8iVg4pzEusP0S_u5jSmmxqeJcumyMK8cqT4NTmOYgnMUC4u4-9OAUWOIQ", "server": "https://hub.cruxpay.com" })
-      uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json")
+      uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/devcoinswitch_cruxpay.json")
 
       // initialising the nameservice
       let bs = new blockstackService.BlockstackService(nameservice_options)
@@ -561,7 +547,7 @@ describe('BlockstackService tests', () => {
       url: '/v1/names/cs1.devcoinswitch_crux.id',
       json: true
     }
-    let gaiaRequestOptions = { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json", json: true }
+    let gaiaRequestOptions = { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/devcoinswitch_cruxpay.json", json: true }
 
     it('given registered cruxId (sanchay@devcoinswitch.crux), which does not have pulic addressMap should throw "GaiaCruxPayGetFailed"', async () => {
       let raisedError
@@ -591,7 +577,7 @@ describe('BlockstackService tests', () => {
       expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.UserDoesNotExist)
     })
     it('given registered cruxId, which has not made addresses public, should throw "GaiaEmptyResponse"', async() => {
-      let gaiaRequestOptions = { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json", json: true }
+      let gaiaRequestOptions = { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/devcoinswitch_cruxpay.json", json: true }
       let response = "<Error><Code>BlobNotFound</Code><Message>The specified blob does not exist.RequestId:299c4c0b-701e-0066-67df-7d085b000000Time:2019-10-08T13:54:51.8653868Z</Message></Error>"
       httpJSONRequestStub.withArgs(gaiaRequestOptions).returns(response)
       let raisedError
@@ -608,16 +594,12 @@ describe('BlockstackService tests', () => {
     it("given filename, returns upload package error code", async() => {
       let fileNameCruxPay = UPLOADABLE_JSON_FILES.CRUXPAY
       let fileNameClientConfig = UPLOADABLE_JSON_FILES.CLIENT_CONFIG
-      let fileNameProfile = UPLOADABLE_JSON_FILES.PROFILE
       
       let cruxPayStatus = blockstackService.BlockstackService.getUploadPackageErrorCodeForFilename(fileNameCruxPay)
       expect(cruxPayStatus).to.be.equal(errors.PackageErrorCode.GaiaCruxPayUploadFailed)
 
       let clientConfigPayStatus = blockstackService.BlockstackService.getUploadPackageErrorCodeForFilename(fileNameClientConfig)
       expect(clientConfigPayStatus).to.be.equal(errors.PackageErrorCode.GaiaClientConfigUploadFailed)
-      
-      let profileStatus = blockstackService.BlockstackService.getUploadPackageErrorCodeForFilename(fileNameProfile)
-      expect(profileStatus).to.be.equal(errors.PackageErrorCode.GaiaUploadFailed)
     })
   })
 

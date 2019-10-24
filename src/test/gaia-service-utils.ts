@@ -48,13 +48,13 @@ describe('getContentFromGaiaHub tests', () => {
             raisedError = error
         }
         expect(httpJSONRequestStub.callCount).to.be.equal(3)
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GaiaClientConfigGetFailed)
+        expect(raisedError).is.not.undefined
     });
     it('given token and public key, if blockstack validation fails, throws "TokenVerificationFailed"', async() => {
         let raisedError
         verifyProfileTokenStub.throws("sample exception")
         try {
-            await getContentFromGaiaHub('cs1.devcoinswitch_crux.id', UPLOADABLE_JSON_FILES.CRUXPAY, config.BLOCKSTACK.BNS_NODES)
+            await getContentFromGaiaHub('cs1.devcoinswitch_crux.id', "devcoinswitch_" + UPLOADABLE_JSON_FILES.CRUXPAY, config.BLOCKSTACK.BNS_NODES)
         } catch (error) {
             raisedError = error
       }
@@ -67,7 +67,7 @@ describe('getContentFromGaiaHub tests', () => {
         let raisedError
         publicKeyToAddressStub.resolves("some address")
         try {
-            await getContentFromGaiaHub('cs1.devcoinswitch_crux.id', UPLOADABLE_JSON_FILES.CRUXPAY, config.BLOCKSTACK.BNS_NODES)
+            await getContentFromGaiaHub('cs1.devcoinswitch_crux.id', "devcoinswitch_" + UPLOADABLE_JSON_FILES.CRUXPAY, config.BLOCKSTACK.BNS_NODES)
         } catch (error) {
             raisedError = error
       }
