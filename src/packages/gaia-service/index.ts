@@ -1,7 +1,7 @@
 import * as blockstack from "blockstack";
 import { SECP256K1Client, TokenSigner } from "jsontokens";
 import { getLogger } from "../..";
-import { ErrorHelper, PackageErrorCode } from "../error";
+import { ErrorHelper } from "../error";
 import * as nameservice from "../name-service/blockstack-service";
 import { UPLOADABLE_JSON_FILES } from "../name-service/blockstack-service";
 import { sanitizePrivKey } from "../utils";
@@ -15,7 +15,7 @@ export class GaiaService {
         this.gaiaWriteUrl = gaiaWriteUrl;
     }
 
-    public uploadContentToGaiaHub = async (filename: UPLOADABLE_JSON_FILES, privKey: string, content: any, prefix: string, type = "application/json"): Promise<string> => {
+    public uploadContentToGaiaHub = async (filename: UPLOADABLE_JSON_FILES, privKey: string, content: any, prefix?: string, type = "application/json"): Promise<string> => {
         const sanitizedPrivKey = sanitizePrivKey(privKey);
         const hubURL = this.gaiaWriteUrl;
         const hubConfig = await blockstack.connectToGaiaHub(hubURL, sanitizedPrivKey);
@@ -23,7 +23,7 @@ export class GaiaService {
         const contentToUpload: string = JSON.stringify(tokenFile);
         let finalURL: string;
         try {
-            finalURL = await blockstack.uploadToGaiaHub(`${prefix}_` + filename, contentToUpload, hubConfig, type);
+            finalURL = await blockstack.uploadToGaiaHub((prefix ? `${prefix}_` : "") + filename, contentToUpload, hubConfig, type);
             log.debug(`finalUrl is ${finalURL}`);
         } catch (error) {
             const packageErrorCode = nameservice.BlockstackService.getUploadPackageErrorCodeForFilename(filename);

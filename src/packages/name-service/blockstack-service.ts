@@ -262,14 +262,14 @@ export class BlockstackService extends nameService.NameService {
         } catch (error) {
             throw ErrorHelper.getPackageError(PackageErrorCode.AddressMappingDecodingFailure);
         }
-        await this._gaiaService.uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping, IdTranslator.blockstackDomainToCruxDomain(this._domain));
+        await this.uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping, IdTranslator.blockstackDomainToCruxDomain(this._domain));
         return;
     }
 
     public getAddressMapping = async (fullCruxId: string): Promise<IAddressMapping> => {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
-        return await getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, this._bnsNodes, cruxId.components.domain);
+        return await this.getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, this._bnsNodes, cruxId.components.domain);
     }
 
     private _getConfigOptions = (defaultConfig: IDefaultServiceOptions, options: IBlockstackServiceInputOptions): IBlockstackServiceOptions => {
@@ -366,5 +366,13 @@ export class BlockstackService extends nameService.NameService {
             }
         }
         return status;
+    }
+
+    private uploadContentToGaiaHub = async (filename: UPLOADABLE_JSON_FILES, privKey: string, content: any, prefix: string): Promise<string> => {
+        return await this._gaiaService.uploadContentToGaiaHub(filename, privKey, content, prefix);
+    }
+
+    private getContentFromGaiaHub = async (blockstackId: string, filename: UPLOADABLE_JSON_FILES, bnsNodes: string[], prefix: string): Promise<any> => {
+        return await getContentFromGaiaHub(blockstackId, filename, bnsNodes, prefix);
     }
 }
