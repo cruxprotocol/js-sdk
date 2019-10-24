@@ -433,17 +433,6 @@ describe('BlockstackService tests', () => {
       json: true,
       strictSSL: false
     }
-    it('if uploadToGaiaHub breaks, should raise "GaiaProfileUploadFailed"', async () => {
-      uploadToGaiaHubStub.onCall(0).throws('unhandled in mocks')
-      let raisedError
-      try {
-        await blkstkService.registerName(sampleIdentityClaim, sampleSubdomain)
-      } catch (error) {
-        raisedError = error
-      }
-      expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GaiaProfileUploadFailed)
-      expect(uploadToGaiaHubStub.calledOnce).is.true
-    })
 
     it('given valid identityClaim and a non-registered cruxId (bob@devcoinswitch.crux), should successfully register and return the fullCruxId', async () => {
       let registeredName = await blkstkService.registerName(sampleIdentityClaim, desiredName)
@@ -453,16 +442,13 @@ describe('BlockstackService tests', () => {
       expect(registeredName).is.equal(expectedRegisteredName)
     })
     it('given valid identityClaim and a registered cruxId, should throw "SubdomainRegistrationFailed"', async () => {
-      uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/devcoinswitch_cruxpay.json")
       let raisedError
       try {
         await blkstkService.registerName(sampleIdentityClaim, sampleSubdomain)
       } catch (error) {
         raisedError = error
       }
-      expect(uploadToGaiaHubStub.calledOnce).is.true
       expect(httpJSONRequestStub.calledOnce).is.true
-      expect(uploadToGaiaHubStub.calledWith('devcoinswitch_profile.json')).is.true
       expect(httpJSONRequestStub.calledWith(redundantRegistrarRequestOptions)).is.true
       expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.SubdomainRegistrationFailed)
     })
@@ -608,16 +594,12 @@ describe('BlockstackService tests', () => {
     it("given filename, returns upload package error code", async() => {
       let fileNameCruxPay = UPLOADABLE_JSON_FILES.CRUXPAY
       let fileNameClientConfig = UPLOADABLE_JSON_FILES.CLIENT_CONFIG
-      let fileNameProfile = UPLOADABLE_JSON_FILES.PROFILE
       
       let cruxPayStatus = blockstackService.BlockstackService.getUploadPackageErrorCodeForFilename(fileNameCruxPay)
       expect(cruxPayStatus).to.be.equal(errors.PackageErrorCode.GaiaCruxPayUploadFailed)
 
       let clientConfigPayStatus = blockstackService.BlockstackService.getUploadPackageErrorCodeForFilename(fileNameClientConfig)
       expect(clientConfigPayStatus).to.be.equal(errors.PackageErrorCode.GaiaClientConfigUploadFailed)
-      
-      let profileStatus = blockstackService.BlockstackService.getUploadPackageErrorCodeForFilename(fileNameProfile)
-      expect(profileStatus).to.be.equal(errors.PackageErrorCode.GaiaUploadFailed)
     })
   })
 

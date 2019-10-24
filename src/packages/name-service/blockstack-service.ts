@@ -83,7 +83,6 @@ const defaultBNSConfig: IDefaultServiceOptions = {
 export enum UPLOADABLE_JSON_FILES {
     CRUXPAY = "cruxpay.json",
     CLIENT_CONFIG = "client-config.json",
-    PROFILE = "profile.json",
 }
 
 export class BlockstackService extends nameService.NameService {
@@ -185,8 +184,6 @@ export class BlockstackService extends nameService.NameService {
         if (!identityKeyPair) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
-
-        await this._gaiaService.uploadProfileInfo(identityKeyPair.privKey, IdTranslator.blockstackDomainToCruxDomain(this._domain));
 
         const registeredSubdomain = await this._registerSubdomain(subdomain, identityKeyPair.address);
         this._identityCouple = getIdentityCoupleFromBlockstackId(new BlockstackId({

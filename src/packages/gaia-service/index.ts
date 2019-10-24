@@ -32,31 +32,6 @@ export class GaiaService {
         return finalURL;
     }
 
-    public uploadProfileInfo = async (privKey: string, prefix: string): Promise<void> => {
-        // TODO: validate the privateKey format and convert
-        privKey = sanitizePrivKey(privKey);
-
-        const hubUrl = this.gaiaWriteUrl;
-        const hubConfig = await blockstack.connectToGaiaHub(hubUrl, privKey);
-        const profileObj = {
-            "@context": "http://schema.org/",
-            "@type": "Person",
-        };
-        const filename = UPLOADABLE_JSON_FILES.PROFILE;
-        const person = new blockstack.Person(profileObj);
-        const token = person.toToken(privKey);
-        log.debug(token);
-        const tokenFile = [blockstack.wrapProfileToken(token)];
-        log.debug(tokenFile);
-        try {
-            const finalUrl = await blockstack.uploadToGaiaHub(`${prefix}_` + filename, JSON.stringify(tokenFile), hubConfig, "application/json");
-            log.debug(finalUrl);
-        } catch (error) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed, filename, error);
-        }
-        return;
-    }
-
     private _generateTokenFileForContent(privateKey: string, content: any) {
         const publicKey = SECP256K1Client.derivePublicKey(privateKey);
         const tokenSigner = new TokenSigner("ES256K", privateKey);
