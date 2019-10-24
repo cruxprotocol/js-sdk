@@ -15,7 +15,7 @@ export class GaiaService {
         this.gaiaWriteUrl = gaiaWriteUrl;
     }
 
-    public uploadContentToGaiaHub = async (filename: UPLOADABLE_JSON_FILES, privKey: string, content: any, prefix?: string, type = "application/json"): Promise<string> => {
+    public uploadContentToGaiaHub = async (filename: UPLOADABLE_JSON_FILES, privKey: string, content: any, prefix: string, type = "application/json"): Promise<string> => {
         const sanitizedPrivKey = sanitizePrivKey(privKey);
         const hubURL = this.gaiaWriteUrl;
         const hubConfig = await blockstack.connectToGaiaHub(hubURL, sanitizedPrivKey);
@@ -23,7 +23,7 @@ export class GaiaService {
         const contentToUpload: string = JSON.stringify(tokenFile);
         let finalURL: string;
         try {
-            finalURL = await blockstack.uploadToGaiaHub((prefix ? `${prefix}_` : "") + filename, contentToUpload, hubConfig, type);
+            finalURL = await blockstack.uploadToGaiaHub(`${prefix}_` + filename, contentToUpload, hubConfig, type);
             log.debug(`finalUrl is ${finalURL}`);
         } catch (error) {
             const packageErrorCode = nameservice.BlockstackService.getUploadPackageErrorCodeForFilename(filename);
@@ -32,7 +32,7 @@ export class GaiaService {
         return finalURL;
     }
 
-    public uploadProfileInfo = async (privKey: string): Promise<void> => {
+    public uploadProfileInfo = async (privKey: string, prefix: string): Promise<void> => {
         // TODO: validate the privateKey format and convert
         privKey = sanitizePrivKey(privKey);
 
@@ -49,7 +49,7 @@ export class GaiaService {
         const tokenFile = [blockstack.wrapProfileToken(token)];
         log.debug(tokenFile);
         try {
-            const finalUrl = await blockstack.uploadToGaiaHub(filename, JSON.stringify(tokenFile), hubConfig, "application/json");
+            const finalUrl = await blockstack.uploadToGaiaHub(`${prefix}_` + filename, JSON.stringify(tokenFile), hubConfig, "application/json");
             log.debug(finalUrl);
         } catch (error) {
             throw ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed, filename, error);

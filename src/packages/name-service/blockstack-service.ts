@@ -186,7 +186,7 @@ export class BlockstackService extends nameService.NameService {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
 
-        await this._gaiaService.uploadProfileInfo(identityKeyPair.privKey);
+        await this._gaiaService.uploadProfileInfo(identityKeyPair.privKey, IdTranslator.blockstackDomainToCruxDomain(this._domain));
 
         const registeredSubdomain = await this._registerSubdomain(subdomain, identityKeyPair.address);
         this._identityCouple = getIdentityCoupleFromBlockstackId(new BlockstackId({

@@ -453,7 +453,7 @@ describe('BlockstackService tests', () => {
       expect(registeredName).is.equal(expectedRegisteredName)
     })
     it('given valid identityClaim and a registered cruxId, should throw "SubdomainRegistrationFailed"', async () => {
-      uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/devcoinswitchcruxpay.json")
+      uploadToGaiaHubStub.resolves("https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/devcoinswitch_cruxpay.json")
       let raisedError
       try {
         await blkstkService.registerName(sampleIdentityClaim, sampleSubdomain)
@@ -462,7 +462,7 @@ describe('BlockstackService tests', () => {
       }
       expect(uploadToGaiaHubStub.calledOnce).is.true
       expect(httpJSONRequestStub.calledOnce).is.true
-      expect(uploadToGaiaHubStub.calledWith('profile.json')).is.true
+      expect(uploadToGaiaHubStub.calledWith('devcoinswitch_profile.json')).is.true
       expect(httpJSONRequestStub.calledWith(redundantRegistrarRequestOptions)).is.true
       expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.SubdomainRegistrationFailed)
     })
