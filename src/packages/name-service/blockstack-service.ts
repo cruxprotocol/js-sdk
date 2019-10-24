@@ -265,14 +265,14 @@ export class BlockstackService extends nameService.NameService {
         } catch (error) {
             throw ErrorHelper.getPackageError(PackageErrorCode.AddressMappingDecodingFailure);
         }
-        await this._gaiaService.uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping);
+        await this._gaiaService.uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping, IdTranslator.blockstackDomainToCruxDomain(this._domain));
         return;
     }
 
     public getAddressMapping = async (fullCruxId: string): Promise<IAddressMapping> => {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
-        return await getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, this._bnsNodes);
+        return await getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, this._bnsNodes, IdTranslator.blockstackDomainToCruxDomain(this._domain));
     }
 
     private _getConfigOptions = (defaultConfig: IDefaultServiceOptions, options: IBlockstackServiceInputOptions): IBlockstackServiceOptions => {
