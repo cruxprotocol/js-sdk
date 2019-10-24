@@ -63,11 +63,13 @@ export class ConfigurationService {
 
     public init = async () => {
         await this._setupClientConfig()
-            .then(() => this._setupGlobalAseetMap())
-            .then(() => this._setupClientAssetMapping())
+            .then(() => Promise.all([
+                this._setupGlobalAseetMap(),
+                this._setupClientAssetMapping(),
+                this._setupNameServiceConfig(),
+            ]))
             .then(() => this._setupReverseClientAssetMapping())
-            .then(() => this._setupResolvedClientAssetMapping())
-            .then(() => this._setupNameServiceConfig());
+            .then(() => this._setupResolvedClientAssetMapping());
     }
 
     public getBlockstackServiceForConfig = async (userCruxID?: string, identityClaim?: IIdentityClaim): Promise<blockstackService.BlockstackService> => {
