@@ -103,6 +103,16 @@ const registerCruxID = async () => {
     try {
         await cruxClient.registerCruxID(cruxID)
         UIResponse = 'cruxID registration initiated!'
+        try {
+            const { success, failures } = await cruxClient.putAddressMap(sampleAddressMap)
+            UIResponse += `\nsuccessfully published: ${JSON.stringify(success)}, \nFailed publishing: ${JSON.stringify(failures, undefined, 4)}`
+        } catch (e_1) {
+            if (e_1 instanceof errors.CruxClientError) {
+                UIResponse += `\n${e_1.errorCode}: ${e_1}`
+            } else {
+                UIResponse += '\n' + e_1
+            }
+        }
     } catch (e) {
         if (e instanceof errors.CruxClientError) {
             UIResponse = `${e.errorCode}: ${e}`
