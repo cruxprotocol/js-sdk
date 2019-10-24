@@ -64,7 +64,7 @@ export class ConfigurationService {
     public init = async () => {
         await this._setupClientConfig()
             .then(() => Promise.all([
-                this._setupGlobalAseetMap(),
+                this._setupGlobalAssetMap(),
                 this._setupClientAssetMapping(),
                 this._setupNameServiceConfig(),
             ]))
@@ -150,7 +150,7 @@ export class ConfigurationService {
         this.clientConfig = await getContentFromGaiaHub(blockstackId, blockstackService.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, config.BLOCKSTACK.BNS_NODES, this.clientName);
     }
 
-    private _setupGlobalAseetMap = async (): Promise<void> => {
+    private _setupGlobalAssetMap = async (): Promise<void> => {
         const clientConfig = this.clientConfig;
         const globalMapping: IGlobalMap = {};
         if (clientConfig && clientConfig.assetList) {
