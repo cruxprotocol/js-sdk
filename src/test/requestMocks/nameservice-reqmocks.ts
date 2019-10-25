@@ -202,7 +202,7 @@ let requestResponseArray: { request: object, response: any }[] = [
     }
   },
   {
-    request: { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/cruxpay.json", json: true },
+    request: { method: "GET", url: "https://gaia.cruxpay.com/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ/devcoinswitch_cruxpay.json", json: true },
     response: [{ "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJpc3N1ZXIiOnsicHVibGljS2V5IjoiMDJiYzljM2Y4ZTkyNGI3ZGU5MjEyY2ViZDAxMjlmMWJlMmU2YzNmMjkwNGU5MTFiMzA2OThiZGU3N2JlNDg3OGI4In0sInN1YmplY3QiOnsicHVibGljS2V5IjoiMDJiYzljM2Y4ZTkyNGI3ZGU5MjEyY2ViZDAxMjlmMWJlMmU2YzNmMjkwNGU5MTFiMzA2OThiZGU3N2JlNDg3OGI4In0sImNsYWltIjp7IkJUQyI6eyJhZGRyZXNzSGFzaCI6IjFIdEZrYlhGV0hGVzVLZDRHTGZpUnFrZmZTNUtMWjkxZUoifX19.U9Uxw8fNDZn-6Fe9tkzIeB3Tl97pSe8SJIwTmcJyUlOKFxzq1Sqy2KIwNQAhTrzIh9Ue9AGNWTlSh-w8zUOnWA", "decodedToken": { "header": { "typ": "JWT", "alg": "ES256K" }, "payload": { "issuer": { "publicKey": "02bc9c3f8e924b7de9212cebd0129f1be2e6c3f2904e911b30698bde77be4878b8" }, "subject": { "publicKey": "02bc9c3f8e924b7de9212cebd0129f1be2e6c3f2904e911b30698bde77be4878b8" }, "claim": { "BTC": { "addressHash": "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ" } } }, "signature": "U9Uxw8fNDZn-6Fe9tkzIeB3Tl97pSe8SJIwTmcJyUlOKFxzq1Sqy2KIwNQAhTrzIh9Ue9AGNWTlSh-w8zUOnWA" } }]
   },
   {

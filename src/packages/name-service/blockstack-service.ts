@@ -7,6 +7,7 @@ import { getLogger, IAddress, IAddressMapping } from "../..";
 import { Encryption } from "../encryption";
 import {ErrorHelper, PackageErrorCode} from "../error";
 
+import { PackageError } from "../error/package-error";
 import { GaiaService } from "../gaia-service";
 import { getContentFromGaiaHub } from "../gaia-service/utils";
 import {BlockstackId, CruxId, IdTranslator} from "../identity-utils";
@@ -68,7 +69,6 @@ const getIdentityCoupleFromBlockstackId = (blockstackId: BlockstackId): Identity
 export enum UPLOADABLE_JSON_FILES {
     CRUXPAY = "cruxpay.json",
     CLIENT_CONFIG = "client-config.json",
-    PROFILE = "profile.json",
 }
 
 export class BlockstackService extends nameService.NameService {
@@ -167,8 +167,6 @@ export class BlockstackService extends nameService.NameService {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
 
-        await this._gaiaService.uploadProfileInfo(identityKeyPair.privKey);
-
         const registeredSubdomain = await this._registerSubdomain(subdomain, identityKeyPair.address);
         this._identityCouple = getIdentityCoupleFromBlockstackId(new BlockstackId({
             domain: this._domain,
@@ -246,14 +244,14 @@ export class BlockstackService extends nameService.NameService {
         } catch (error) {
             throw ErrorHelper.getPackageError(PackageErrorCode.AddressMappingDecodingFailure);
         }
-        await this._gaiaService.uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping);
+        await this._uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping, IdTranslator.blockstackDomainToCruxDomain(this._domain));
         return;
     }
 
     public getAddressMapping = async (fullCruxId: string): Promise<IAddressMapping> => {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
-        return await getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, this._bnsNodes);
+        return await this._getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, this._bnsNodes, cruxId.components.domain);
     }
 
     private _storeMnemonic = async (mnemonic: string, storage: StorageService, encryptionKey: string): Promise<void> => {
@@ -349,5 +347,35 @@ export class BlockstackService extends nameService.NameService {
             }
         }
         return status;
+    }
+
+    private _uploadContentToGaiaHub = async (filename: UPLOADABLE_JSON_FILES, privKey: string, content: any, prefix: string): Promise<string> => {
+        const filenameToUpload =  `${prefix}_${filename}`;
+        let finalURL: string;
+        try {
+            finalURL = await this._gaiaService.uploadContentToGaiaHub(filenameToUpload, privKey, content, prefix);
+            log.debug(`finalUrl is ${finalURL}`);
+        } catch (error) {
+            const packageErrorCode = BlockstackService.getUploadPackageErrorCodeForFilename(filename);
+            throw ErrorHelper.getPackageError(packageErrorCode, filename, error);
+        }
+        return finalURL;
+    }
+
+    private _getContentFromGaiaHub = async (blockstackId: string, filename: UPLOADABLE_JSON_FILES, bnsNodes: string[], prefix: string): Promise<any> => {
+        const filenameToFetch = `${prefix}_${filename}`;
+        let responseBody: any;
+        try {
+            responseBody = await getContentFromGaiaHub(blockstackId, filenameToFetch, bnsNodes);
+            log.debug(`Response from ${filenameToFetch}`, responseBody);
+        } catch (error) {
+            if (error instanceof PackageError && error.errorCode) {
+                throw error;
+            } else {
+                const packageErrorCode = BlockstackService.getGetPackageErrorCodeForFilename(filename);
+                throw ErrorHelper.getPackageError(packageErrorCode, filename, error);
+            }
+        }
+        return responseBody;
     }
 }

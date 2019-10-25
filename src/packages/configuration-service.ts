@@ -146,7 +146,7 @@ export class ConfigurationService {
             domain: this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX,
             subdomain: CONFIG_SUBDOMAIN,
         }).toString();
-        this.clientConfig = await getContentFromGaiaHub(blockstackId, blockstackService.UPLOADABLE_JSON_FILES.CLIENT_CONFIG, config.BLOCKSTACK.BNS_NODES, this.clientName);
+        this.clientConfig = await getContentFromGaiaHub(blockstackId, `${this.clientName}_${blockstackService.UPLOADABLE_JSON_FILES.CLIENT_CONFIG}`, config.BLOCKSTACK.BNS_NODES);
     }
 
     private _setupGlobalAssetMap = async (): Promise<void> => {
