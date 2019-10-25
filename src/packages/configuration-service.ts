@@ -5,7 +5,6 @@ import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "./gaia-servi
 import * as identityUtils from "./identity-utils";
 import { IIdentityClaim } from "./name-service";
 import * as blockstackService from "./name-service/blockstack-service";
-import { IBlockstackServiceInputOptions } from "./name-service/blockstack-service";
 import { getCruxIDByAddress } from "./name-service/utils";
 
 const log = getLogger(__filename);
@@ -39,7 +38,7 @@ interface IReverseClientAssetMapping {
 export interface IClientConfig {
     assetMapping: IClientAssetMapping;
     assetList: IGlobalAssetList;
-    nameserviceConfiguration?: IBlockstackServiceInputOptions;
+    nameserviceConfiguration?: blockstackService.IBlockstackServiceInputOptions;
 }
 
 export interface IResolvedClientAssetMap {
@@ -54,7 +53,7 @@ export class ConfigurationService {
     public clientAssetMapping?: IClientAssetMapping;
     public reverseClientAssetMapping?: IReverseClientAssetMapping;
     public resolvedClientAssetMap?: IResolvedClientAssetMap;
-    public nameServiceConfig?: IBlockstackServiceInputOptions;
+    public nameServiceConfig?: blockstackService.IBlockstackServiceInputOptions;
 
     constructor(clientName: string) {
         this.clientName = clientName;
@@ -119,7 +118,7 @@ export class ConfigurationService {
         }
 
         // Default configurations
-        const nsConfiguration: IBlockstackServiceInputOptions = {
+        const nsConfiguration: blockstackService.IBlockstackServiceInputOptions = {
             bnsNodes: config.BLOCKSTACK.BNS_NODES,
             domain: this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX,
             gaiaHub: config.BLOCKSTACK.GAIA_HUB,
