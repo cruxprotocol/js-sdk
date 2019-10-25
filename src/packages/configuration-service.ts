@@ -10,7 +10,7 @@ import { getCruxIDByAddress } from "./name-service/utils";
 const log = getLogger(__filename);
 const CONFIG_SUBDOMAIN = "_config";
 
-interface IGlobalAsset {
+export interface IGlobalAsset {
     assetId: string;
     symbol: string;
     name: string;
@@ -21,17 +21,17 @@ interface IGlobalAsset {
     parentAssetId: string;
 }
 
-interface IGlobalAssetList extends Array<IGlobalAsset> {}
+export interface IGlobalAssetList extends Array<IGlobalAsset> {}
 
-interface IGlobalMap {
+export interface IGlobalMap {
     [assetId: string]: IGlobalAsset;
 }
 
-interface IClientAssetMapping {
+export interface IClientAssetMapping {
     [currencySymbol: string]: string;
 }
 
-interface IReverseClientAssetMapping {
+export interface IReverseClientAssetMapping {
     [assetId: string]: string;
 }
 
@@ -92,14 +92,6 @@ export class ConfigurationService {
             }
         }
         return new blockstackService.BlockstackService(nsConfig);
-    }
-
-    public translateSymbolToAssetId = async (currencySymbol: string): Promise<string> => {
-        return (this.clientAssetMapping as IClientAssetMapping)[currencySymbol];
-    }
-
-    public translateAssetIdToSymbol = async (assetId: string): Promise<string> => {
-        return (this.reverseClientAssetMapping as IReverseClientAssetMapping)[assetId];
     }
 
     public getCruxIDByAddress = async (address: string) => {

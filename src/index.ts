@@ -261,7 +261,7 @@ export class CruxClient {
             }
             walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
             let correspondingAssetId: string = "";
-            correspondingAssetId = await this._configService.translateSymbolToAssetId(walletCurrencySymbol);
+            correspondingAssetId = await this._translateSymbolToAssetId(walletCurrencySymbol);
             if (!correspondingAssetId) {
                 throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.AssetIDNotAvailable);
             }
@@ -364,7 +364,7 @@ export class CruxClient {
                 const userAssetIdToAddressMap = await (this._nameService as nameService.NameService).getAddressMapping(this._payIDClaim.virtualAddress);
 
                 for (const assetId of Object.keys(userAssetIdToAddressMap)) {
-                    currencyAddressMap[(await (this._configService.translateAssetIdToSymbol(assetId)))] = userAssetIdToAddressMap[assetId];
+                    currencyAddressMap[(await (this._translateAssetIdToSymbol(assetId)))] = userAssetIdToAddressMap[assetId];
                 }
                 return currencyAddressMap;
 
@@ -414,7 +414,7 @@ export class CruxClient {
         for (let walletCurrencySymbol of Object.keys(lowerCurrencyAddressMap)) {
             lowerCurrencyAddressMap[walletCurrencySymbol.toLowerCase()] = lowerCurrencyAddressMap[walletCurrencySymbol];
             walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
-            const assetId = await (this._configService as configurationService.ConfigurationService).translateSymbolToAssetId(walletCurrencySymbol);
+            const assetId = await this._translateSymbolToAssetId(walletCurrencySymbol);
             if (assetId) {
                 assetAddressMap[assetId] = lowerCurrencyAddressMap[walletCurrencySymbol];
                 success[walletCurrencySymbol] = lowerCurrencyAddressMap[walletCurrencySymbol];
@@ -472,6 +472,20 @@ export class CruxClient {
     private _hasPayIDClaimStored = (): boolean => {
         const payIDClaim = this._storage.getJSON("payIDClaim");
         return Boolean(payIDClaim);
+    }
+
+    private _translateSymbolToAssetId = (currencySymbol: string): string => {
+        if (!this._configService) {
+            throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ClientNotInitialized);
+        }
+        return (this._configService.clientAssetMapping as configurationService.IClientAssetMapping)[currencySymbol];
+    }
+
+    private _translateAssetIdToSymbol = (assetId: string): string => {
+        if (!this._configService) {
+            throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ClientNotInitialized);
+        }
+        return (this._configService.reverseClientAssetMapping as configurationService.IReverseClientAssetMapping)[assetId];
     }
 
 }
