@@ -193,7 +193,7 @@ export class CruxClient {
             if (this._keyPair) {
                 const registeredCruxID = await this._configService.getCruxIDByAddress(this._keyPair.address);
                 if (registeredCruxID) {
-                    CruxPayPeer.validateCruxIDByWallet(this.walletClientName, registeredCruxID);
+                    CruxClient.validateCruxIDByWallet(this.walletClientName, registeredCruxID);
                     if (registeredCruxID !== payIDClaim.virtualAddress) {
                         throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.KeyPairMismatch);
                     }
@@ -206,7 +206,7 @@ export class CruxClient {
             log.debug("using the keyPair provided");
             const registeredCruxID = await this._configService.getCruxIDByAddress(this._keyPair.address);
             if (registeredCruxID) {
-                CruxPayPeer.validateCruxIDByWallet(this.walletClientName, registeredCruxID);
+                CruxClient.validateCruxIDByWallet(this.walletClientName, registeredCruxID);
                 const payIDClaim = {identitySecrets: {identityKeyPair: this._keyPair}, virtualAddress: registeredCruxID || undefined};
                 this._setPayIDClaim(new PayIDClaim(payIDClaim, { getEncryptionKey: this._getEncryptionKey }));
             }
