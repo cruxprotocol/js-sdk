@@ -60,7 +60,7 @@ export const getCruxIDByAddress = async (walletClientName: string, address: stri
     const responseArr: string[][] = await Promise.all(nodePromises);
     const commonNames = [...(responseArr.map((arr) => new Set(arr)).reduce((a, b) => new Set([...a].filter((x) => b.has(x)))))];
     let bsId = commonNames.find((name) => {
-        const regex = new RegExp(`(.+)\.(.+)${CRUX_DOMAIN_SUFFIX}.${DEFAULT_BLOCKSTACK_NAMESPACE}`);
+        const regex = new RegExp(`(.+)\.${IdTranslator.cruxDomainToBlockstackDomain(walletClientName)}.${DEFAULT_BLOCKSTACK_NAMESPACE}`);
         const match = name.match(regex);
         return match && match[0];
     });
