@@ -396,6 +396,7 @@ export class CruxClient {
 
     protected _setPayIDClaim = (payIDClaim: PayIDClaim): void => {
         this._payIDClaim = payIDClaim;
+        delete this._keyPair;
     }
 
     private _getIDStatus = async (): Promise<nameService.CruxIDRegistrationStatus> => {
