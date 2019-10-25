@@ -425,6 +425,26 @@ let requestResponseArray: { request: object, response: any }[] = [
     }
   },
   {
+    request: {"baseUrl":"https://core.blockstack.org","json":true,"method":"GET","url":"/v1/names/cruxdev_crux.id"},
+    response: {
+      "address": "1J2CJ2Q2rMaYftnwQiSQ6rwTuq3xPBFuw3",
+      "blockchain": "bitcoin",
+      "did": "did:stack:v0:1J2CJ2Q2rMaYftnwQiSQ6rwTuq3xPBFuw3-0",
+      "expire_block": 704132,
+      "grace_period": false,
+      "last_txid": "8ae63672275e48f73fad3e2553f06527e51ec9746561595e8193434561a89518",
+      "renewal_deadline": 709132,
+      "resolver": null,
+      "status": "registered",
+      "zonefile": "$ORIGIN cruxdev_crux.id\n$TTL 3600\nankit\tIN\tTXT\t\"owner=126LEzWTg6twppHtJodwF8am8PwPdgbmwV\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiBhbmtpdAokVFRMIDM2MDAKX2h0dHBzLl90Y3AgVVJJIDEwIDEgaHR0cHM6Ly9odWIuY3J1eHBheS5jb20=\"\n_http._tcp\tIN\tURI\t10\t1\t\"https://gaia.blockstack.org/hub/1J2CJ2Q2rMaYftnwQiSQ6rwTuq3xPBFuw3/profile.json\"\n",
+      "zonefile_hash": "a7a81287e5a96b36693a504ec0ac5e4759c49542"
+    }
+  },
+  {
+    request: {"baseUrl":"https://core.blockstack.org","json":true,"method":"GET","url":"/v1/names/example_crux.id"},
+    response: {"status": "available"}
+  },
+  {
     request: {
       baseUrl: "https://core.blockstack.org", 
       json: true, 
