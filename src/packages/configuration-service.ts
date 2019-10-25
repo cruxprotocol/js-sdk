@@ -71,11 +71,11 @@ export class ConfigurationService {
             .then(() => this._setupResolvedClientAssetMapping());
     }
 
-    public getBlockstackServiceForConfig = async (userCruxID?: string, identityClaim?: IIdentityClaim): Promise<blockstackService.BlockstackService> => {
+    public getBlockstackServiceConfig = async (userCruxID?: string, identityClaim?: IIdentityClaim): Promise<blockstackService.IBlockstackServiceInputOptions> => {
         if (!(this.clientConfig && this.nameServiceConfig)) {
             throw ErrorHelper.getPackageError(PackageErrorCode.ClientNotInitialized);
         }
-        let nsConfig = this.nameServiceConfig;
+        let nsConfig: blockstackService.IBlockstackServiceInputOptions = this.nameServiceConfig;
 
         // Merging user level configuration overrides if available (will be overriding the temporary in-memory variable)
         if (userCruxID && identityClaim) {
@@ -91,45 +91,47 @@ export class ConfigurationService {
                 nsConfig = Object.assign(this.nameServiceConfig, {gaiaHub});
             }
         }
-        return new blockstackService.BlockstackService(nsConfig);
+        return nsConfig;
     }
 
-    public getCruxIDByAddress = async (address: string) => {
+    public getBnsNodes = (): string[] => {
         if (!this.clientConfig) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.ClientNotInitialized);
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
-        const walletNameServiceConfiguration = this.clientConfig.nameserviceConfiguration;
-        const bnsNodes = (walletNameServiceConfiguration && walletNameServiceConfiguration.bnsNodes) ? [...new Set([...config.BLOCKSTACK.BNS_NODES, ...walletNameServiceConfiguration.bnsNodes])] : config.BLOCKSTACK.BNS_NODES;
-        const registrar = (walletNameServiceConfiguration && walletNameServiceConfiguration.subdomainRegistrar) || config.BLOCKSTACK.SUBDOMAIN_REGISTRAR;
-        return await getCruxIDByAddress(this.clientName, address, bnsNodes, registrar);
+        let bnsNodes: string[];
+        if (this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.bnsNodes) {
+            // always append the extra configured BNS nodes (needs `downlevelIteration` flag enabled in tsconfig.json)
+            bnsNodes = [...new Set([...config.BLOCKSTACK.BNS_NODES, ...this.clientConfig.nameserviceConfiguration.bnsNodes])];
+        } else {
+            bnsNodes = config.BLOCKSTACK.BNS_NODES;
+        }
+        return bnsNodes;
+    }
+
+    public getGaiaHub = (): string => {
+        if (!this.clientConfig) {
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
+        }
+        return (this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.gaiaHub) || config.BLOCKSTACK.GAIA_HUB;
+    }
+
+    public getSubdomainRegistrar = (): string => {
+        if (!this.clientConfig) {
+            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
+        }
+        return (this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.subdomainRegistrar) || config.BLOCKSTACK.SUBDOMAIN_REGISTRAR;
     }
 
     private _setupNameServiceConfig = async () => {
         if (!this.clientConfig) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
-
-        // Default configurations
         const nsConfiguration: blockstackService.IBlockstackServiceInputOptions = {
-            bnsNodes: config.BLOCKSTACK.BNS_NODES,
+            bnsNodes: this.getBnsNodes(),
             domain: this.clientName + identityUtils.CRUX_DOMAIN_SUFFIX,
-            gaiaHub: config.BLOCKSTACK.GAIA_HUB,
-            subdomainRegistrar: config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
+            gaiaHub: this.getGaiaHub(),
+            subdomainRegistrar: this.getSubdomainRegistrar(),
         };
-
-        // Merging wallet level configuration overrides if available (will be overriding the class property)
-        if (this.clientConfig.nameserviceConfiguration) {
-            if (this.clientConfig.nameserviceConfiguration.bnsNodes) {
-                // always append the extra configured BNS nodes (needs `downlevelIteration` flag enabled in tsconfig.json)
-                nsConfiguration.bnsNodes = [...new Set([...config.BLOCKSTACK.BNS_NODES, ...this.clientConfig.nameserviceConfiguration.bnsNodes])];
-            }
-            if (this.clientConfig.nameserviceConfiguration.gaiaHub) {
-                nsConfiguration.gaiaHub = this.clientConfig.nameserviceConfiguration.gaiaHub;
-            }
-            if (this.clientConfig.nameserviceConfiguration.subdomainRegistrar) {
-                nsConfiguration.subdomainRegistrar = this.clientConfig.nameserviceConfiguration.subdomainRegistrar;
-            }
-        }
         this.nameServiceConfig = nsConfiguration;
     }
 

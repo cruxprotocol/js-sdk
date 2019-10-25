@@ -22,6 +22,7 @@ import {
     storage,
     utils,
 } from "./packages";
+import { getCruxIDByAddress } from "./packages/name-service/utils";
 
 export {
     encryption,
@@ -191,7 +192,7 @@ export class CruxClient {
 
             // if a keyPair is provided, add a validation check on the cruxID stored
             if (this._keyPair) {
-                const registeredCruxID = await this._configService.getCruxIDByAddress(this._keyPair.address);
+                const registeredCruxID = await getCruxIDByAddress(this.walletClientName, this._keyPair.address, this._configService.getBnsNodes(), this._configService.getSubdomainRegistrar());
                 if (registeredCruxID) {
                     CruxClient.validateCruxIDByWallet(this.walletClientName, registeredCruxID);
                     if (registeredCruxID !== payIDClaim.virtualAddress) {
@@ -204,7 +205,7 @@ export class CruxClient {
             this._setPayIDClaim(new PayIDClaim(payIDClaim, { getEncryptionKey: this._getEncryptionKey }));
         } else if (this._keyPair) {
             log.debug("using the keyPair provided");
-            const registeredCruxID = await this._configService.getCruxIDByAddress(this._keyPair.address);
+            const registeredCruxID = await getCruxIDByAddress(this.walletClientName, this._keyPair.address, this._configService.getBnsNodes(), this._configService.getSubdomainRegistrar());
             if (registeredCruxID) {
                 CruxClient.validateCruxIDByWallet(this.walletClientName, registeredCruxID);
                 const payIDClaim = {identitySecrets: {identityKeyPair: this._keyPair}, virtualAddress: registeredCruxID || undefined};
@@ -441,13 +442,15 @@ export class CruxClient {
             throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ClientNotInitialized);
         }
         if (!this._nameService) {
+            let nameServiceConfig: blockstackService.IBlockstackServiceInputOptions;
             if (this._payIDClaim && this._payIDClaim.virtualAddress) {
                 await this._payIDClaim.decrypt();
-                this._nameService = await this._configService.getBlockstackServiceForConfig(this._payIDClaim.virtualAddress, {secrets: this._payIDClaim.identitySecrets});
+                nameServiceConfig = await this._configService.getBlockstackServiceConfig(this._payIDClaim.virtualAddress, {secrets: this._payIDClaim.identitySecrets});
                 await this._payIDClaim.encrypt();
             } else {
-                this._nameService = await this._configService.getBlockstackServiceForConfig();
+                nameServiceConfig = await this._configService.getBlockstackServiceConfig();
             }
+            this._nameService = new blockstackService.BlockstackService(nameServiceConfig);
         }
     }
 
