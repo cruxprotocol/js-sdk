@@ -29,6 +29,7 @@ export {
     errors,
     storage,
     nameService,
+    blockstackService,
 };
 
 // TODO: Implement classes enforcing the interfaces

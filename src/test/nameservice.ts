@@ -166,6 +166,37 @@ describe('BlockstackService tests', () => {
 
   })
 
+  describe('getDomainAvailability tests', () => {
+    let registeredDomain = 'cruxdev'
+    let unregisteredDomain = 'example'
+
+    it(`${registeredDomain}.crux should be unavailable`, async () => {
+      let domainAvailability = await blkstkService.getDomainAvailability(registeredDomain)
+      let options = {
+        "baseUrl":"https://core.blockstack.org",
+        "json":true,
+        "method":"GET",
+        "url":`/v1/names/${registeredDomain}_crux.id`
+      }
+      expect(httpJSONRequestStub.calledOnce).is.true
+      expect(httpJSONRequestStub.calledWith(options)).is.true
+      expect(domainAvailability).is.false
+    })
+    it(`${unregisteredDomain}.crux should be available`, async () => {
+      let domainAvailability = await blkstkService.getDomainAvailability(unregisteredDomain)
+      let options = {
+        "baseUrl":"https://core.blockstack.org",
+        "json":true,
+        "method":"GET",
+        "url":`/v1/names/${unregisteredDomain}_crux.id`
+      }
+      expect(httpJSONRequestStub.calledOnce).is.true
+      expect(httpJSONRequestStub.calledWith(options)).is.true
+      expect(domainAvailability).is.true
+    })
+
+  })
+
   describe('getRegistrationStatus tests', () => {
     let unavailableStatus = { 
       'status': 'NONE',
