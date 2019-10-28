@@ -40,6 +40,7 @@ export enum PackageErrorCode {
     CurrencyDoesNotExistInClientMapping = 4011,
     ExistingCruxIDFound = 4012,
     CruxIDUnavailable = 4013,
+    InvalidPrivateKeyFormat = 4014,
     // Internal errors
     CouldNotFindBlockstackConfigurationServiceClientConfig = 5001,
     CouldNotFindKeyPairToRestoreIdentity = 5002,

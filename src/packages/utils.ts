@@ -3,6 +3,7 @@ import request from "request";
 import {getLogger} from "../index";
 import { IBitcoinKeyPair } from "./name-service/blockstack-service";
 import { LocalStorage } from "./storage";
+import { ErrorHelper, PackageErrorCode } from "./error";
 
 const log = getLogger(__filename);
 
@@ -49,8 +50,28 @@ const cachedFunctionCall = async (cacheKey: string, ttl: number = 300, fn: (...a
 };
 
 const getKeyPairFromPrivKey = (privKey: string): IBitcoinKeyPair => {
-    const privateKey = sanitizePrivKey(privKey);
-    const publicKey = bitcoin.ECPair.fromPrivateKey(Buffer.from(privateKey, "hex")).publicKey.toString("hex");
+    let privateKey: string;
+    // Convert the WIF format to hex
+    if (privKey.startsWith("L") || privKey.startsWith("K")) {
+        const keyPair = bitcoin.ECPair.fromWIF(privKey);
+        privateKey = sanitizePrivKey((keyPair.privateKey as Buffer).toString("hex"));
+    } else {
+        privateKey = sanitizePrivKey(privKey);
+    }
+
+    // Try with hex encoding first, then with base64
+    let publicKey: string;
+    try {
+        publicKey = bitcoin.ECPair.fromPrivateKey(Buffer.from(privateKey, "hex")).publicKey.toString("hex");
+    } catch (error) {
+        privateKey = sanitizePrivKey(Buffer.from(privKey, "base64").toString("hex"));
+        try {
+            publicKey = bitcoin.ECPair.fromPrivateKey(Buffer.from(privateKey, "hex")).publicKey.toString("hex");
+        } catch (error) {
+            throw ErrorHelper.getPackageError(PackageErrorCode.InvalidPrivateKeyFormat);
+        }
+    }
+
     const address = bitcoin.payments.p2pkh({ pubkey: Buffer.from(publicKey, "hex") }).address;
     return {
         address: address as string,
