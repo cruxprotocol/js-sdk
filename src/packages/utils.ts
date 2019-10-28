@@ -1,9 +1,9 @@
 import * as bitcoin from "bitcoinjs-lib";
 import request from "request";
 import {getLogger} from "../index";
+import { ErrorHelper, PackageErrorCode } from "./error";
 import { IBitcoinKeyPair } from "./name-service/blockstack-service";
 import { LocalStorage } from "./storage";
-import { ErrorHelper, PackageErrorCode } from "./error";
 
 const log = getLogger(__filename);
 
