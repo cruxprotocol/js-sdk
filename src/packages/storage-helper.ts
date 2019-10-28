@@ -1,12 +1,8 @@
-import {CoreManager} from "./coreManager";
 import {StorageService} from "./storage";
 
 export class StorageHelper {
     private storageService: StorageService;
-    constructor(storageService?: StorageService) {
-        if (!storageService) {
-            storageService = CoreManager.getStorageService();
-        }
+    constructor(storageService: StorageService) {
         this.storageService = storageService;
     }
 
@@ -16,6 +12,12 @@ export class StorageHelper {
             return this.storageService.setItemAsync(key, objString);
         }
         return Promise.resolve(this.storageService.setItem(key, objString));
+    }
+    public setItemAsync = async (key: string, value: string): Promise<void> => {
+        if (!this.storageService.isSync) {
+            return this.storageService.setItemAsync(key, value);
+        }
+        return Promise.resolve(this.storageService.setItem(key, value));
     }
     public getJSONAsync = async (key: string): Promise<object|null> => {
         let objString: string | null;
@@ -29,6 +31,12 @@ export class StorageHelper {
         } else {
             return Promise.resolve(null);
         }
+    }
+    public getItemAsync = async (key: string): Promise<string|null> => {
+        if (!this.storageService.isSync) {
+            return this.storageService.getItemAsync(key);
+        }
+        return Promise.resolve(this.storageService.getItem(key));
     }
 
 }

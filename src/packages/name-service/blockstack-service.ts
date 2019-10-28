@@ -15,6 +15,7 @@ import { StorageService } from "../storage";
 import * as utils from "../utils";
 import * as nameService from "./index";
 import { fetchNameDetails } from "./utils";
+import {StorageHelper} from "../storage-helper"
 
 const log = getLogger(__filename);
 export const MNEMONIC_STORAGE_KEY: string = "encryptedMnemonic";
@@ -268,11 +269,11 @@ export class BlockstackService extends nameService.NameService {
     }
 
     private _storeMnemonic = async (mnemonic: string, storage: StorageService, encryptionKey: string): Promise<void> => {
-        storage.setItem(MNEMONIC_STORAGE_KEY, JSON.stringify(await Encryption.encryptText(mnemonic, encryptionKey)));
+        await new StorageHelper(storage).setItemAsync(MNEMONIC_STORAGE_KEY, JSON.stringify(await Encryption.encryptText(mnemonic, encryptionKey)));
     }
 
     private _retrieveMnemonic = async (storage: StorageService, encryptionKey: string): Promise<string> => {
-        const encryptedMnemonic = JSON.parse(storage.getItem(MNEMONIC_STORAGE_KEY) as string) as {encBuffer: string, iv: string};
+        const encryptedMnemonic = JSON.parse(await new StorageHelper(storage).getItemAsync(MNEMONIC_STORAGE_KEY) as string) as {encBuffer: string, iv: string};
         return await Encryption.decryptText(encryptedMnemonic.encBuffer, encryptedMnemonic.iv, encryptionKey);
     }
 

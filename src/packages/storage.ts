@@ -31,4 +31,16 @@ export class LocalStorage extends StorageService {
     public getItem = (key: string): string | null => {
         return this.storage.getItem(key);
     }
+
+    public getItemAsync = async (key: string): Promise<string | null> => {
+        return new Promise((resolve, reject) => {
+            reject(new Error("Not implemented for isSync StorageService"));
+        });
+    }
+
+    public setItemAsync = async (key: string, value: string): Promise<void> => {
+        return new Promise((resolve, reject) => {
+            reject(new Error("Not implemented for isSync StorageService"));
+        });
+    }
 }

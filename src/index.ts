@@ -474,8 +474,8 @@ export class CruxClient {
         }
     }
 
-    private _hasPayIDClaimStored = (): boolean => {
-        const payIDClaim = this._storage.getJSON("payIDClaim");
+    private _hasPayIDClaimStored = async (): Promise<boolean> => {
+        const payIDClaim = await new StorageHelper(this._storage).getJSONAsync("payIDClaim");
         return Boolean(payIDClaim);
     }
 
