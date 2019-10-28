@@ -487,6 +487,26 @@ let requestResponseArray: { request: object, response: any }[] = [
     response: {
       names: ["ankit2.cruxdev_crux.id"]
     }
+  },
+  {
+    request: {
+      "baseUrl":"https://registrar.coinswitch.co:3000",
+      "headers":{"x-domain-name":"cruxdev_crux"},
+      "json":true,
+      "method":"GET",
+      "url":"/subdomain/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ"
+    },
+    response: []
+  },
+  {
+    request: {
+      "baseUrl":"https://registrar.coinswitch.co:3000",
+      "headers":{"x-domain-name":"scatter_dev_crux"},
+      "json":true,
+      "method":"GET",
+      "url":"/subdomain/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
+    },
+    response: []
   }
 ]
 

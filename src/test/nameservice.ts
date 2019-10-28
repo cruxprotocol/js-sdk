@@ -17,8 +17,11 @@ import { LocalStorage } from '../packages/storage';
 // TODO: registration of already registered names and error handling
 // TODO: resolving addresses with invalid name/id
 
-const nameservice_options = {
+const nameservice_options: blockstackService.IBlockstackServiceInputOptions = {
+  bnsNodes: config.BLOCKSTACK.BNS_NODES,
   domain: "devcoinswitch_crux",
+  gaiaHub: config.BLOCKSTACK.GAIA_HUB,
+  subdomainRegistrar: config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
 };
 
 describe('BlockstackService tests', () => {
@@ -82,6 +85,8 @@ describe('BlockstackService tests', () => {
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('pubKey').to.be.a('string')
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
       expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
+      // @ts-ignore
+      expect(localStorage.getItem(blockstackService.MNEMONIC_STORAGE_KEY)).is.not.undefined
     })
   })
 
@@ -635,8 +640,8 @@ describe('BlockstackService tests', () => {
   })
 
   describe("getCruxIDByAddress tests", () => {
-    it("126LEzWTg6twppHtJodwF8am8PwPdgbmwV should resolve to ankit@cruxdev.crux", async () => {
-      const cruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, "126LEzWTg6twppHtJodwF8am8PwPdgbmwV")
+    it("126LEzWTg6twppHtJodwF8am8PwPdgbmwV should resolve to ankit@cruxdev.crux using cruxdev", async () => {
+      const cruxID = await getCruxIDByAddress("cruxdev", "126LEzWTg6twppHtJodwF8am8PwPdgbmwV", config.BLOCKSTACK.BNS_NODES, config.BLOCKSTACK.SUBDOMAIN_REGISTRAR)
       let bnsRequestOptions1 = {
         baseUrl: "https://core.blockstack.org", 
         json: true, 
@@ -655,8 +660,8 @@ describe('BlockstackService tests', () => {
       expect(cruxID).to.be.equal("ankit@cruxdev.crux")
     })
 
-    it("1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ should resolve to empty array", async () => {
-      const cruxID = await getCruxIDByAddress(config.BLOCKSTACK.BNS_NODES, "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ")
+    it("1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ should resolve to empty array using cruxdev", async () => {
+      const cruxID = await getCruxIDByAddress("cruxdev", "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ", config.BLOCKSTACK.BNS_NODES, config.BLOCKSTACK.SUBDOMAIN_REGISTRAR)
       let bnsRequestOptions1 = {
         baseUrl: "https://core.blockstack.org", 
         json: true, 
@@ -669,10 +674,60 @@ describe('BlockstackService tests', () => {
         method: "GET", 
         url: "/v1/addresses/bitcoin/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ"
       }
-      expect(httpJSONRequestStub.calledTwice).is.true
+      let registrarQueryOptions = {
+        "baseUrl":"https://registrar.coinswitch.co:3000",
+        "headers":{"x-domain-name":"cruxdev_crux"},
+        "json":true,
+        "method":"GET",
+        "url":"/subdomain/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ"
+      }
+      expect(httpJSONRequestStub.calledThrice).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
       expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
+      expect(httpJSONRequestStub.calledWith(registrarQueryOptions)).is.true
       expect(cruxID).to.be.null
+    })
+    it("126LEzWTg6twppHtJodwF8am8PwPdgbmwV should resolve to empty array using scatter_dev", async () => {
+      const cruxID = await getCruxIDByAddress("scatter_dev", "126LEzWTg6twppHtJodwF8am8PwPdgbmwV", config.BLOCKSTACK.BNS_NODES, config.BLOCKSTACK.SUBDOMAIN_REGISTRAR)
+      let bnsRequestOptions1 = {
+        baseUrl: "https://core.blockstack.org", 
+        json: true, 
+        method: "GET", 
+        url: "/v1/addresses/bitcoin/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
+      }
+      let bnsRequestOptions2 = {
+        baseUrl: "https://bns.cruxpay.com", 
+        json: true, 
+        method: "GET", 
+        url: "/v1/addresses/bitcoin/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
+      }
+      let registrarQueryOptions = {
+        "baseUrl":"https://registrar.coinswitch.co:3000",
+        "headers":{"x-domain-name":"scatter_dev_crux"},
+        "json":true,
+        "method":"GET",
+        "url":"/subdomain/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
+      }
+      expect(httpJSONRequestStub.calledThrice).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions1)).is.true
+      expect(httpJSONRequestStub.calledWith(bnsRequestOptions2)).is.true
+      expect(httpJSONRequestStub.calledWith(registrarQueryOptions)).is.true
+      expect(cruxID).to.be.null
+    })
+  })
+
+  describe("mnemonic storage tests", () => {
+    it("store and retrieve mnemonic from storage", async () => {
+      const storage = new LocalStorage();
+      const encryptionKey = "fookey";
+      // @ts-ignore
+      await blkstkService._storeMnemonic(sampleIdentityClaim.secrets.mnemonic, storage, encryptionKey)
+      // @ts-ignore
+      expect(localStorage.getItem(blockstackService.MNEMONIC_STORAGE_KEY)).is.not.undefined;
+      // @ts-ignore
+      const mnemonic = await blkstkService._retrieveMnemonic(storage, encryptionKey);
+      expect(mnemonic).to.be.equal(sampleIdentityClaim.secrets.mnemonic);
+
     })
   })
 
