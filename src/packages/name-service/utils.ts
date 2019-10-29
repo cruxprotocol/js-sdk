@@ -67,7 +67,9 @@ export const getCruxIDByAddress = async (walletClientName: string, address: stri
     if (!bsId) {
         // Fetch any pending registrations on the address using the registrar
         const pendingSubdomains = await fetchPendingRegistrationsByAddress(walletClientName, registrar, address);
-        bsId = pendingSubdomains[0];
+        if (pendingSubdomains.length !== 0) {
+            bsId = new BlockstackId({domain: IdTranslator.cruxDomainToBlockstackDomain(walletClientName), subdomain: pendingSubdomains[0]}).toString();
+        }
     }
     return (bsId && IdTranslator.blockstackToCrux(BlockstackId.fromString(bsId)).toString()) || null;
 };
