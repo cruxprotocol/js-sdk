@@ -3,7 +3,7 @@ import sinon from "sinon";
 import 'mocha';
 
 import config from "../config";
-import { blockstackService, errors } from "../packages";
+import { blockstackService, errors, LocalStorage } from "../packages";
 import * as utils from "../packages/utils";
 import requestFixtures from "./requestMocks/nameservice-reqmocks";
 import * as blockstack from 'blockstack';
@@ -11,7 +11,6 @@ import { IAddressMapping } from '../index';
 import { sanitizePrivKey } from "../packages/utils";
 import { UPLOADABLE_JSON_FILES } from '../packages/name-service/blockstack-service';
 import { getCruxIDByAddress } from '../packages/name-service/utils';
-import { LocalStorage } from '../packages/storage';
 
 
 // TODO: registration of already registered names and error handling
@@ -56,7 +55,7 @@ describe('BlockstackService tests', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    
+
     // Handling mock stubs
 
     httpJSONRequestStub = sinon.stub(utils, 'httpJSONRequest').throws('unhandled in mocks')
@@ -198,7 +197,7 @@ describe('BlockstackService tests', () => {
   })
 
   describe('getRegistrationStatus tests', () => {
-    let unavailableStatus = { 
+    let unavailableStatus = {
       'status': 'NONE',
       'statusDetail': ''
     }
@@ -502,7 +501,7 @@ describe('BlockstackService tests', () => {
       let desiredName = 'mark'
       let raisedError
       try {
-        await blkstkService.registerName({ secrets: { identityKeyPair: sampleIdentityClaim.secrets.identityKeyPair } }, desiredName) 
+        await blkstkService.registerName({ secrets: { identityKeyPair: sampleIdentityClaim.secrets.identityKeyPair } }, desiredName)
       } catch (error) {
         raisedError = error
       }
@@ -594,7 +593,7 @@ describe('BlockstackService tests', () => {
       }
       expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.GaiaCruxPayGetFailed)
     })
-    
+
     it('given registered cruxId (cs1@devcoinswitch.crux), which have public addressMap should resolve the addressMap', async () => {
       let resolvedAddressMap: IAddressMapping = await blkstkService.getAddressMapping(sampleCruxId)
       expect(httpJSONRequestStub.calledThrice).is.true
@@ -630,7 +629,7 @@ describe('BlockstackService tests', () => {
     it("given filename, returns upload package error code", async() => {
       let fileNameCruxPay = UPLOADABLE_JSON_FILES.CRUXPAY
       let fileNameClientConfig = UPLOADABLE_JSON_FILES.CLIENT_CONFIG
-      
+
       let cruxPayStatus = blockstackService.BlockstackService.getUploadPackageErrorCodeForFilename(fileNameCruxPay)
       expect(cruxPayStatus).to.be.equal(errors.PackageErrorCode.GaiaCruxPayUploadFailed)
 
@@ -643,15 +642,15 @@ describe('BlockstackService tests', () => {
     it("126LEzWTg6twppHtJodwF8am8PwPdgbmwV should resolve to ankit@cruxdev.crux using cruxdev", async () => {
       const cruxID = await getCruxIDByAddress("cruxdev", "126LEzWTg6twppHtJodwF8am8PwPdgbmwV", config.BLOCKSTACK.BNS_NODES, config.BLOCKSTACK.SUBDOMAIN_REGISTRAR)
       let bnsRequestOptions1 = {
-        baseUrl: "https://core.blockstack.org", 
-        json: true, 
-        method: "GET", 
+        baseUrl: "https://core.blockstack.org",
+        json: true,
+        method: "GET",
         url: "/v1/addresses/bitcoin/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
       }
       let bnsRequestOptions2 = {
-        baseUrl: "https://bns.cruxpay.com", 
-        json: true, 
-        method: "GET", 
+        baseUrl: "https://bns.cruxpay.com",
+        json: true,
+        method: "GET",
         url: "/v1/addresses/bitcoin/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
       }
       expect(httpJSONRequestStub.calledTwice).is.true
@@ -663,15 +662,15 @@ describe('BlockstackService tests', () => {
     it("1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ should resolve to empty array using cruxdev", async () => {
       const cruxID = await getCruxIDByAddress("cruxdev", "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ", config.BLOCKSTACK.BNS_NODES, config.BLOCKSTACK.SUBDOMAIN_REGISTRAR)
       let bnsRequestOptions1 = {
-        baseUrl: "https://core.blockstack.org", 
-        json: true, 
-        method: "GET", 
+        baseUrl: "https://core.blockstack.org",
+        json: true,
+        method: "GET",
         url: "/v1/addresses/bitcoin/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ"
       }
       let bnsRequestOptions2 = {
-        baseUrl: "https://bns.cruxpay.com", 
-        json: true, 
-        method: "GET", 
+        baseUrl: "https://bns.cruxpay.com",
+        json: true,
+        method: "GET",
         url: "/v1/addresses/bitcoin/1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ"
       }
       let registrarQueryOptions = {
@@ -690,15 +689,15 @@ describe('BlockstackService tests', () => {
     it("126LEzWTg6twppHtJodwF8am8PwPdgbmwV should resolve to empty array using scatter_dev", async () => {
       const cruxID = await getCruxIDByAddress("scatter_dev", "126LEzWTg6twppHtJodwF8am8PwPdgbmwV", config.BLOCKSTACK.BNS_NODES, config.BLOCKSTACK.SUBDOMAIN_REGISTRAR)
       let bnsRequestOptions1 = {
-        baseUrl: "https://core.blockstack.org", 
-        json: true, 
-        method: "GET", 
+        baseUrl: "https://core.blockstack.org",
+        json: true,
+        method: "GET",
         url: "/v1/addresses/bitcoin/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
       }
       let bnsRequestOptions2 = {
-        baseUrl: "https://bns.cruxpay.com", 
-        json: true, 
-        method: "GET", 
+        baseUrl: "https://bns.cruxpay.com",
+        json: true,
+        method: "GET",
         url: "/v1/addresses/bitcoin/126LEzWTg6twppHtJodwF8am8PwPdgbmwV"
       }
       let registrarQueryOptions = {

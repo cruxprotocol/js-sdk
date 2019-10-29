@@ -2,6 +2,30 @@ import Logger from "js-logger";
 import path from "path";
 import "regenerator-runtime/runtime";
 import config from "./config";
+// Importing packages
+import {
+    blockstackService,
+    configurationService,
+    CoreManager,
+    encryption,
+    errors,
+    identityUtils,
+    nameService,
+    storage,
+    utils,
+} from "./packages";
+import {getCruxIDByAddress} from "./packages/name-service/utils";
+
+const build = "normal";
+// @ts-ignore
+if (build === "react") {
+    // tslint:disable-next-line:no-var-requires
+    CoreManager.setStorageService(require("./packages/storage-rn"));
+} else {
+    // tslint:disable-next-line:no-var-requires
+    // @ts-ignore
+    CoreManager.setStorageService(new require("./packages/storage-local")());
+}
 
 // Setup logging configuration
 Logger.useDefaults();
@@ -10,19 +34,6 @@ export function getLogger(filename: string) {
     return Logger.get("CruxPay: " + filename.slice(filename.lastIndexOf(path.sep) + 1, filename.length - 3));
 }
 const log = getLogger(__filename);
-
-// Importing packages
-import {
-    blockstackService,
-    configurationService,
-    encryption,
-    errors,
-    identityUtils,
-    nameService,
-    storage,
-    utils,
-} from "./packages";
-import { getCruxIDByAddress } from "./packages/name-service/utils";
 
 export {
     encryption,
@@ -171,7 +182,7 @@ export class CruxClient {
         // log.debug(`Encryption key:`, this._getEncryptionKey())
 
         // Setting up the default modules as fallbacks
-        this._storage =  this._options.storage || new storage.LocalStorage();
+        this._storage =  this._options.storage || CoreManager.getStorageService();
         this._encryption = this._options.encryption || encryption.Encryption;
         this._nameService = this._options.nameService;
         if (this._options.privateKey) { this._keyPair =  utils.getKeyPairFromPrivKey(this._options.privateKey); }

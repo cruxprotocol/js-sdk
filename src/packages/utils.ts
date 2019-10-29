@@ -1,8 +1,8 @@
 import * as bitcoin from "bitcoinjs-lib";
 import request from "request";
 import {getLogger} from "../index";
+import {CoreManager} from "./index";
 import { IBitcoinKeyPair } from "./name-service/blockstack-service";
-import { LocalStorage } from "./storage";
 
 const log = getLogger(__filename);
 
@@ -26,7 +26,7 @@ const sanitizePrivKey = (privKey: string): string => {
 };
 
 const cachedFunctionCall = async (cacheKey: string, ttl: number = 300, fn: (...args: any[]) => any, paramArray: any[], skipConditional?: (returnValue: any) => Promise<boolean>): Promise<any> => {
-    const storage = new LocalStorage();
+    const storage = CoreManager.getStorageService();
     const storageCacheKey = `crux_cache_${cacheKey}`;
     const cachedValue = await storage.getItem(storageCacheKey);
     const cachedExpiry = Number(await storage.getItem(storageCacheKey + ":exp"));
