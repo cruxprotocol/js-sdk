@@ -1,5 +1,6 @@
 import * as bitcoin from "bitcoinjs-lib";
-import fetch from "node-fetch";
+import fetch, { RequestInit } from "node-fetch";
+import request from "request";
 import {getLogger} from "../index";
 import { IBitcoinKeyPair } from "./name-service/blockstack-service";
 import { LocalStorage } from "./storage";
@@ -7,28 +8,33 @@ import { LocalStorage } from "./storage";
 const log = getLogger(__filename);
 
 /* istanbul ignore next */
-const httpJSONRequest = (options: any): Promise<object> => {
+const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (request.UrlOptions & request.CoreOptions)): Promise<object> => {
     log.debug("network_call:", options);
     const promise: Promise<object> = new Promise((resolve, reject) => {
-        const fetchOptions = JSON.parse(JSON.stringify(options));
-        delete fetchOptions.baseUrl;
-        delete fetchOptions.url;
-        let url: string = "";
-        if (options.baseUrl) {
-            url += options.baseUrl;
-        }
-        if (options.url) {
-            url += options.url;
-        }
-        if (options.body) {
-            fetchOptions.body = JSON.stringify(options.body);
-        }
+        const { url, fetchOptions } = translateRequestOptionsToFetchOptions(options);
         fetch(url, fetchOptions)
             .then((res) => res.json())
             .then((json) => resolve(json))
             .catch((err) => reject(new Error(err)));
     });
     return promise;
+};
+
+const translateRequestOptionsToFetchOptions = (options: any): { url: string, fetchOptions: RequestInit} => {
+    const fetchOptions = Object.assign({}, options);
+    delete fetchOptions.baseUrl;
+    delete fetchOptions.url;
+    let url: string = "";
+    if (options.baseUrl) {
+        url += options.baseUrl;
+    }
+    if (options.url) {
+        url += options.url;
+    }
+    if (options.body) {
+        fetchOptions.body = JSON.stringify(options.body);
+    }
+    return {url, fetchOptions};
 };
 
 const sanitizePrivKey = (privKey: string): string => {
