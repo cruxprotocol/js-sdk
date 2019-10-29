@@ -7,11 +7,6 @@ const typedArrayToBuffer = (array: Uint8Array): ArrayBuffer => {
 
 export class Encryption {
 
-    public static digest = async (str: string): Promise<string> => {
-        const buffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-        return Array.prototype.map.call(new Uint8Array(buffer), (x) => (("00" + x.toString(16)).slice(-2))).join("");
-    }​
-
     public static encryptJSON = async (jsonObj: object, password: string): Promise<{encBuffer: string, iv: string}> => {
         const plainText = JSON.stringify(jsonObj);
         return Encryption.encryptText(plainText, password);
