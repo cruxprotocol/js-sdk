@@ -78,6 +78,7 @@ Some common ERROR_CODES thrown by the SDK:
     CurrencyDoesNotExistInClientMapping = 4011,
     ExistingCruxIDFound = 4012,
     CruxIDUnavailable = 4013,
+    InvalidPrivateKeyFormat = 4014,
 }
 ```
 
