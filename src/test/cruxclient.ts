@@ -434,7 +434,7 @@ describe('CruxClient tests', () => {
 				const {success, failures} = await cruxClient.putAddressMap(mockedAddressMap)
 
 				// Expectations
-				expect(nameServicePutAddressMappingStub.notCalled).is.true;
+				expect(nameServicePutAddressMappingStub.calledOnce).is.true;
 				expect(failures.zrx).to.include(PackageErrorCode.CurrencyDoesNotExistInClientMapping);
 				expect(success).is.empty;
 
