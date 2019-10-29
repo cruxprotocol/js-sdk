@@ -1,5 +1,4 @@
 import 'mocha';
-import * as blockstack from "blockstack";
 import * as utils from "../packages/utils";
 import requestFixtures from './requestMocks/cruxclient-reqmocks';
 import sinon from "sinon";
@@ -36,7 +35,8 @@ describe('CruxClient tests', () => {
 		'payIDClaim': {"virtualAddress":"syedhassanashraf@cruxdev.crux","identitySecrets":"{\"iv\":\"d6mQLg2lv/SHvpPV\",\"encBuffer\":\"EJ0NDIGyvT+FMxjG9pD7yKkUVUJffcd0mU3V7rqgbpip5ikCR+kx/Xl4tJcBNtQUJzKbDPNJeeWdzUKH01NQOiyEe9qfCYEqzbJgj4PSqE/B1geSlCMRWcdJMdbrUDHgEcwDWw6PC41p0odNHLzMWOR1LA+PKVzCAMXRom6UppG+gjMnjp9QqF00SfnNR6wla/es7LgE3eF6O4Gq9Ku/mAhdYrZiaMMd47hQvTzH9KzDZrTjK37jmtiRC6cuNDy9zZ+BtpzufozAbuCvfeQc2nXKdV4a3kx7peLK7eAGZUV6soaOfq+ZIPx5bbnNos8Py7fhNOmqbop12yCQ4Ot2jm7Bmx9eXIFq7/EtLWP488xU3l2qB0/XHMmGtlsZ8Er19al+aB4OJAJ5yzBU01rVQFVkOLC50ZlYT4VcVgJbOUvRXi8c4mlv0JNfvajA\"}"},
 		'cruxID': 'syedhassanashraf@cruxdev.crux',
 		'cruxIDSubdomain': 'syedhassanashraf',
-		'addressMapping': mockedAddressMapping
+		'addressMapping': mockedAddressMapping,
+		'decryptedPayIDClaim': {"virtualAddress":"syedhassanashraf@cruxdev.crux", "identitySecrets": {"identityKeyPair":{"pubKey":"033f4f33c1483cb15c58c9ca03b2a0847382b0081290017e28be03b55353f1f6eb","privKey":"850433f3a2f12f0fb890041e1daed6bd491a973ec569936d41ac62cb8441ee5101","address":"16DfDLZajnAwRotCx4L1NEkAEAijwsntHV"}}}
 	}
 	let walletOptions = {
 		getEncryptionKey: () => "fookey",
@@ -49,7 +49,7 @@ describe('CruxClient tests', () => {
 
 		before(() => {
 			httpJSONRequestStub = sinon.stub(utils, 'httpJSONRequest').throws('unhandled in mocks')
-			
+
             requestFixtures.forEach(requestObj => {
               httpJSONRequestStub.withArgs(requestObj.request).returns(requestObj.response)
 			});
@@ -130,46 +130,157 @@ describe('CruxClient tests', () => {
 			})
 		})
 
-		describe("subdomain registration tests", () => {
+		describe("registerCruxID tests", () => {
+			it("invalid name/subdomain 'cs1' provided", async () => {
+				// Mocks
 
-			it("positive case, valid subdomain registration", async () => {
-				localStorage.clear()
-				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
+				// Initialising the CruxClient
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init()
-				let registerNameStub = sinon.stub(cruxClient._nameService, 'registerName').resolves('hassan@cruxdev.crux')
-				let raisedException = false
-				try {
-					await cruxClient.registerCruxID(sampleUser['cruxIDSubdomain'], sampleAddressMap)
-				} catch(e) {
-					raisedException = true
-				}
-				finally{
-					// registering subdomain on blockchain and uploading profile information
-					expect(raisedException).to.equal(false)
-					registerNameStub.restore()
+				await cruxClient.init();
 
+				// registerCruxID
+				const subdomain = "cs1";
+				let raisedError;
+				try {
+					await cruxClient.registerCruxID(subdomain);
+				} catch(error) {
+					raisedError = error
 				}
+
+				// Expectations
+				expect(raisedError.errorCode).to.be.equal(PackageErrorCode.SubdomainLengthCheckFailure)
+
 			})
+			it("unavailable subdomain 'test' provided", async () => {
+				// Mocks
 
-			it("valid subdomain registration, call to registrar failed", async () => {
-				localStorage.clear()
-				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
+				// Initialising the CruxClient
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init()
+				await cruxClient.init();
 
-				let registerNameStub = sinon.stub(cruxClient._nameService, 'registerName').rejects(ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed))
-				let raisedException = false
+				// stubbing runtime property
+				const isCruxIDAvailableStub = sinon.stub(cruxClient, 'isCruxIDAvailable').resolves(false);
+
+				// registerCruxID
+				const subdomain = "test";
+				let raisedError;
 				try {
-					await cruxClient.registerCruxID(sampleUser['cruxIDSubdomain'])
-				} catch(e) {
-					expect(e.errorCode).to.equal(2005)
-					raisedException = true
-				} finally {
-					expect(raisedException).to.equal(true)
-					expect(registerNameStub.callCount).to.equal(1)
-					registerNameStub.restore()
+					await cruxClient.registerCruxID(subdomain);
+				} catch(error) {
+					raisedError = error
 				}
+
+				// Expectations
+				expect(isCruxIDAvailableStub.calledWith(subdomain)).is.true
+				expect(isCruxIDAvailableStub.calledOnce).is.true
+				expect(raisedError.errorCode).to.be.equal(PackageErrorCode.CruxIDUnavailable)
+
+			})
+			it("existing CruxID found in storage (payIDClaim)", async () => {
+				// Mocks
+				const mockPayIDClaim = sampleUser['payIDClaim'];
+				localStorage.setItem('payIDClaim', JSON.stringify(mockPayIDClaim));
+
+				// Initialising the CruxClient
+				let cruxClient = new CruxClient(walletOptions);
+				await cruxClient.init();
+
+				// stubbing runtime property
+				const isCruxIDAvailableStub = sinon.stub(cruxClient, 'isCruxIDAvailable').resolves(true);
+
+				// registerCruxID
+				const subdomain = "test";
+				let raisedError;
+				try {
+					await cruxClient.registerCruxID(subdomain);
+				} catch(error) {
+					raisedError = error
+				}
+
+				// Expectations
+				expect(isCruxIDAvailableStub.calledWith(subdomain)).is.true
+				expect(isCruxIDAvailableStub.calledOnce).is.true
+				expect(raisedError.errorCode).to.be.equal(PackageErrorCode.ExistingCruxIDFound)
+
+			})
+			it("registration failure with NameService error", async () => {
+				// Mocks
+				localStorage.clear();
+
+				// Initialising the CruxClient
+				let cruxClient = new CruxClient(walletOptions);
+				await cruxClient.init();
+
+				// stubbing runtime property
+				const isCruxIDAvailableStub = sinon.stub(cruxClient, 'isCruxIDAvailable').resolves(true);
+				// @ts-ignore
+				const nameServiceGenerateIdentityStub = sinon.stub(cruxClient._nameService, 'generateIdentity').resolves({secrets: sampleUser['decryptedPayIDClaim'].identitySecrets})
+				// @ts-ignore
+				const nameServiceRegisterNameStub = sinon.stub(cruxClient._nameService, 'registerName').rejects(ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed));
+
+				// registerCruxID
+				const subdomain = "test";
+				let raisedError;
+				try {
+					await cruxClient.registerCruxID(subdomain);
+				} catch(error) {
+					raisedError = error
+				}
+
+				// Expectations
+				let identityClaim = {secrets: sampleUser['decryptedPayIDClaim'].identitySecrets}
+				// @ts-ignore
+				let storage = cruxClient._storage;
+				let encryptionKey = "fookey";
+
+				expect(isCruxIDAvailableStub.calledWith(subdomain)).is.true
+				expect(isCruxIDAvailableStub.calledOnce).is.true
+				expect(nameServiceGenerateIdentityStub.calledWith(storage, encryptionKey)).is.true
+				expect(nameServiceGenerateIdentityStub.calledOnce).is.true
+				expect(nameServiceRegisterNameStub.calledWith(identityClaim, subdomain)).is.true
+				expect(nameServiceRegisterNameStub.calledOnce).is.true
+				expect(raisedError.errorCode).to.be.equal(PackageErrorCode.GaiaProfileUploadFailed)
+
+			})
+			it("successful registration", async () => {
+				// Mocks
+				localStorage.clear();
+
+				// Initialising the CruxClient
+				let cruxClient = new CruxClient(walletOptions);
+				await cruxClient.init();
+
+				// stubbing runtime property
+				const isCruxIDAvailableStub = sinon.stub(cruxClient, 'isCruxIDAvailable').resolves(true);
+				// @ts-ignore
+				const nameServiceGenerateIdentityStub = sinon.stub(cruxClient._nameService, 'generateIdentity').resolves({secrets: sampleUser['decryptedPayIDClaim'].identitySecrets})
+				// @ts-ignore
+				const nameServiceRegisterNameStub = sinon.stub(cruxClient._nameService, 'registerName').resolves("test@scatter_dev.crux");
+
+				// registerCruxID
+				const subdomain = "test";
+				let registrationPromise = await cruxClient.registerCruxID(subdomain);
+
+				// Expectations
+				const identityClaim = {secrets: sampleUser['decryptedPayIDClaim'].identitySecrets}
+				// @ts-ignore
+				const storage = cruxClient._storage;
+				const encryptionKey = "fookey";
+				const virtualAddress = "test@scatter_dev.crux";
+				const mockPayIDClaim = {virtualAddress: "test@scatter_dev.crux", identitySecrets: sampleUser['payIDClaim'].identitySecrets};
+
+				expect(isCruxIDAvailableStub.calledWith(subdomain)).is.true
+				expect(isCruxIDAvailableStub.calledOnce).is.true
+				expect(nameServiceGenerateIdentityStub.calledWith(storage, encryptionKey)).is.true
+				expect(nameServiceGenerateIdentityStub.calledOnce).is.true
+				expect(nameServiceRegisterNameStub.calledWith(identityClaim, subdomain)).is.true
+				expect(nameServiceRegisterNameStub.calledOnce).is.true
+				expect(registrationPromise).to.be.undefined
+				// @ts-ignore
+				expect((await cruxClient._storage.getJSON('payIDClaim')).virtualAddress).is.to.equal(virtualAddress);
+				// @ts-ignore
+				expect((await cruxClient._storage.getJSON('payIDClaim')).identitySecrets).to.be.a('string');
+
 			})
 		})
 
@@ -242,15 +353,6 @@ describe('CruxClient tests', () => {
 		})
 
 		describe("address mapping tests", () => {
-			it("positive case, put address map", async () => {
-				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
-				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init()
-				let addressMappingStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves(true)
-				expect(await cruxClient.putAddressMap(sampleAddressMap)).to.be.true
-				addressMappingStub.restore()
-			})
-
 			it("positive case, get address map", async () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']));
 				let cruxClient = new CruxClient(walletOptions);
@@ -280,27 +382,95 @@ describe('CruxClient tests', () => {
 					updateProfileStub.restore()
 				}
 			})
+		})
+		describe("putAddressMap tests", () => {
+			it("all currencies provided exist in client mapping", async () => {
+				// Mocks
+				const mockPayIDClaim = sampleUser['payIDClaim'];
+				localStorage.setItem('payIDClaim', JSON.stringify(mockPayIDClaim));
+				let mockedAddressMap = sampleAddressMap;
 
-			it("put address map, currency does not exist in client mapping", async () => {
-				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
+				// Initialising the CruxClient
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init()
+				await cruxClient.init();
+
+				// stubbing runtime property
+				// @ts-ignore
+				const nameServicePutAddressMappingStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves();
+
+				// putAddressMap
+				const {success, failures} = await cruxClient.putAddressMap(mockedAddressMap)
+
+				// Expectations
+				let decrpytedPayIDClaim = {secrets: sampleUser["decryptedPayIDClaim"].identitySecrets};
+				let assetIdMap = {"1d6e1a99-1e77-41e1-9ebb-0e216faa166a": sampleAddressMap["BTC"], "508b8f73-4b06-453e-8151-78cb8cfc3bc9": sampleAddressMap["ETH"]};
+				let successCurrencies = {"btc": sampleAddressMap["BTC"], "eth": sampleAddressMap["ETH"]};
+
+				expect(nameServicePutAddressMappingStub.calledWith(decrpytedPayIDClaim, assetIdMap)).is.true;
+				expect(nameServicePutAddressMappingStub.calledOnce).is.true;
+				expect(failures).is.empty;
+				expect(success).to.be.eql(successCurrencies);
+
+			})
+			it("all currencies provided do not exist in client mapping", async () => {
+				// Mocks
+				const mockPayIDClaim = sampleUser['payIDClaim'];
+				localStorage.setItem('payIDClaim', JSON.stringify(mockPayIDClaim));
 				let mockedAddressMap = {
 					ZRX: {
 						addressHash: '0x0a2311594059b468c9897338b027c8782398b481'
 					}
 				};
-				let raisesException = false
-				let updateProfileStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves(true)
-				try {
-					await cruxClient.putAddressMap(mockedAddressMap)
-				} catch(e) {
-					raisesException = true
-					expect(e.errorCode).to.equal(PackageErrorCode.CurrencyDoesNotExistInClientMapping)
-				} finally {
-					expect(raisesException).to.be.true
-					updateProfileStub.restore()
-				}
+
+				// Initialising the CruxClient
+				let cruxClient = new CruxClient(walletOptions);
+				await cruxClient.init();
+
+				// stubbing runtime property
+				// @ts-ignore
+				const nameServicePutAddressMappingStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves();
+
+				// putAddressMap
+				const {success, failures} = await cruxClient.putAddressMap(mockedAddressMap)
+
+				// Expectations
+				expect(nameServicePutAddressMappingStub.notCalled).is.true;
+				expect(failures.zrx).to.include(PackageErrorCode.CurrencyDoesNotExistInClientMapping);
+				expect(success).is.empty;
+
+			})
+			it("some of the currencies provided do not exist in client mapping", async () => {
+				// Mocks
+				const mockPayIDClaim = sampleUser['payIDClaim'];
+				localStorage.setItem('payIDClaim', JSON.stringify(mockPayIDClaim));
+				let mockedAddressMap = {
+					BTC: sampleAddressMap["BTC"],
+					ZRX: {
+						addressHash: '0x0a2311594059b468c9897338b027c8782398b481'
+					}
+				};
+
+				// Initialising the CruxClient
+				let cruxClient = new CruxClient(walletOptions);
+				await cruxClient.init();
+
+				// stubbing runtime property
+				// @ts-ignore
+				const nameServicePutAddressMappingStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').resolves();
+
+				// putAddressMap
+				const {success, failures} = await cruxClient.putAddressMap(mockedAddressMap)
+
+				// Expectations
+				let decrpytedPayIDClaim = {secrets: sampleUser["decryptedPayIDClaim"].identitySecrets};
+				let assetIdMap = {"1d6e1a99-1e77-41e1-9ebb-0e216faa166a": sampleAddressMap["BTC"]};
+				let successCurrencies = {"btc": sampleAddressMap["BTC"]};
+
+				expect(nameServicePutAddressMappingStub.calledWith(decrpytedPayIDClaim, assetIdMap)).is.true;
+				expect(nameServicePutAddressMappingStub.calledOnce).is.true;
+				expect(failures.zrx).to.include(PackageErrorCode.CurrencyDoesNotExistInClientMapping);
+				expect(success).to.be.eql(successCurrencies);
+
 			})
 		})
 	})

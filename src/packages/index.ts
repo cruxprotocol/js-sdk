@@ -1,4 +1,4 @@
-import { BlockstackConfigurationService } from "./configuration-service";
+import * as configurationService from "./configuration-service";
 import * as encryption from "./encryption";
 import * as errors from "./error";
 import * as gaiaService from "./gaia-service";
@@ -16,7 +16,7 @@ export {
     nameService,
     blockstackService,
     identityUtils,
-    BlockstackConfigurationService,
+    configurationService,
     LocalStorage,
     utils,
     gaiaService,

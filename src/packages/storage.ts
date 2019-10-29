@@ -2,19 +2,19 @@
 // Storage service abstraction
 /* istanbul ignore next */
 export abstract class StorageService {
-    public abstract setItem = (key: string, value: string): void => undefined;
-    public abstract getItem = (key: string): string | null => null;
+    public abstract setItem = async (key: string, value: string): Promise<void> => undefined;
+    public abstract getItem = async (key: string): Promise<string | null> => null;
 
-    public setJSON = (key: string, jsonObj: object): void => {
+    public setJSON = async (key: string, jsonObj: object): Promise<void> => {
         const objString = JSON.stringify(jsonObj);
-        this.setItem(key, objString);
+        return this.setItem(key, objString);
     }
-    public getJSON = (key: string): object | null => {
-        const objString = this.getItem(key);
+    public getJSON = async (key: string): Promise<object | null> => {
+        const objString = await this.getItem(key);
         if (objString) {
-            return JSON.parse(objString);
+            return Promise.resolve(JSON.parse(objString));
         } else {
-            return null;
+            return Promise.resolve(null);
         }
     }
 }

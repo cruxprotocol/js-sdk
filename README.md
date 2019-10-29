@@ -23,6 +23,9 @@ To initialize the sdk, you need to minimally pass a javascript object with follo
         2. BNS(BlockStack Name Service) Node
         3. Currency symbol map of your wallet
     - To help you get started, you can use `cruxdev` as the value which is already configured for our dev test users. It has 5 pre-registered crypto symbols for a fast start. You can contact us at [telegram](https://t.me/cruxpay_integration) channel for registration of your own walletClientName.
+3. **privateKey (optional)**
+    - Required to re-initialise the CruxClient with same user across different devices.
+    - For clients using HD derivation paths, recommended to use the path (`m/889'/0/0'`) for CruxPay keypair node derivation with respect to account indices.
 
 `**Note:** Cruxprotocol JS SDK is case insensetive for cryptocurrency symbols and will always output lowercase symbols.`
 
@@ -37,7 +40,8 @@ function getPassHashedEncryptionKey() {
 
 let cruxClientOptions = {
     getEncryptionKey: getPassHashedEncryptionKey,     
-    walletClientName: 'cruxdev'
+    walletClientName: 'cruxdev',
+    privateKey: "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f"  // (optional parameter)
 }
 
 let cruxClient = new CruxClient(cruxClientOptions);
@@ -67,53 +71,74 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     - Description: Helps to check if a particular CruxID is available to be registered.
     - Params:
         - subdomain part of [CruxID](#cruxid)
-    - Returns: Promise returns a _boolean_ indicating whether a particular Crux ID is available for registration.
+    - Returns: Promise resolving to a _boolean_ indicating whether a particular Crux ID is available for registration.
 
-2. ##### getAssetMapping()
+2. ##### getAssetMap()
     - Description: Get Wallet's asset map with currency symbols as the keys and asset object as the value.
     - Params: None
     - Returns: [IResolvedClientAssetMapping](#iresolvedclientassetmapping) which has symbols and asset objects.
 
-3. ##### registerCruxID(cruxID<onlySubdomain>, newAddressMap)
-    - Description: Reserves/registers the cruxID for the user. The user can link any blockchain address to his CruxID with the help of newAddressMap sent. The addresses are now publicly linked and can be resolved.
-    - Note: To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
+3. ##### registerCruxID(cruxID<onlySubdomain>)
+    - Description: Reserves/registers the cruxID for the user. The user can link any blockchain address to his CruxID immediately after registration using [putAddressMap](#putaddressmap).
     - Params:
         - subdomain part of [CruxID](#cruxid)
-        - newAddressMap of type [IAddressMapping](#iaddressmapping) which has symbols and addresses a user wants to publically expose with CruxID.
-    - Returns: Promise returns _void_
+    - Returns: Promise resolving on successful call to the registrar.
+    ```javascript
+    const sampleAddressMap: IAddressMapping = {
+        'BTC': {
+            addressHash: '1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX'
+        },
+        'ETH': {
+            addressHash: '0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8'
+        },
+    }
+
+    // Advised to pipe the method putAddressMap to registerCruxID call
+
+    await cruxClient.registerCruxID("bob")
+        .then(() => {
+            return cruxClient.putAddressMap(sampleAddressMap)
+                .catch((addressUpdationError) => {
+                    // Handling addressUpdation error
+                })
+        })
+        .catch((registrationError) => {
+            // Handling registration error
+        })
+    ```
     
 4. ##### resolveCurrencyAddressForCruxID(cruxID, walletCurrencySymbol)
     - Description: Helps to lookup a mapped address for a currency of any CruxID if its marked publically accessible.
     - Params:
         - complete [CruxID](#cruxid) of a user whose address you want to fetch
         - [walletCurrencySymbol](#walletcurrencysymbol) wallet symbol of currency whose address you want to fetch.
-    - Returns: Promise returns [IAddress](#iaddress) for that symbol of currency if available.
+    - Returns: Promise resolving to [IAddress](#iaddress) for that symbol of currency if available.
 
 5. ##### getAddressMap()
     - Description: Get back the current publicly registered address json 
     - Params: None
-    - Returns: Promise returns [IAddressMapping](#iaddressmapping)
+    - Returns: Promise resolving to [IAddressMapping](#iaddressmapping)
     
 6. ##### putAddressMap(newAddressMap)
     - Description: Helps to update 2 things:-
-        - change list of publicly accessible currency addresses.
+        - publish/change list of publicly accessible currency addresses.
         - change the value of addressHash and/or secIdentifier to another one.
-    - Note: To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
+    - Note: The addresses are now publicly linked and can be resolved. To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
     - Params:
         - newAddressMap of type [IAddressMapping](#iaddressmapping) has modified map has symbols and addresses a user wants to publically expose with CruxID.
-    - Returns: Promise returns _boolean_ indicating success or failures 
+    - Returns: Promise resolving to {success: [IPutAddressMapSuccess](#iputaddressmapSuccess), failures: [IPutAddressMapFailures](#iputaddressmapfailures)}
 
 7. ##### getCruxIDState()
     - Description: Returns details of the current registered CruxID(if any) for this instance of the user wallet and its registration status
     - Params: None
-    - Returns: Promise returns [CruxIDState](#cruxidstate)
+    - Returns: Promise resolving to [CruxIDState](#cruxidstate)
     
 8. ##### updatePassword(oldEncryptionKey, newEncryptionKey)
     - Description: As all the values were encrypted by the string we got from getEncryptionKey. Whenever the user changes his password. This function needs to be called so all data is re-encrypted.
     - Params:
         - oldEncryptionKey => hash returned by getEncryptionKey before password changed.
         - newEncryptionKey => hash returned by getEncryptionKey after password changed.
-    - Returns: Promise returns _boolean_ indicating successful password updation.
+    - Returns: Promise resolving to _boolean_ indicating successful password updation.
 
 
 ### SDK Object Definition
@@ -150,7 +175,7 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
        registration_status: <CruxIDRegistrationStatus>
     }
     ```
-   - Type: javascript object
+    - Type: javascript object
     - Description: Return the current registered ID and its status.
 
 4. ##### IAddress
@@ -238,6 +263,24 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     ```
     - Type: javascript object
     - Description: Map of [walletCurrencySymbol](#walletcurrencysymbol) to [IGlobalAsset](#iglobalasset).
+
+9. ##### IPutAddressMapFailures
+    - Example:
+    ```
+    {
+        "monero": "4011: Currency does not exist in wallet's client mapping"
+    }
+    ```
+
+10. ##### IPutAddressMapSuccess
+    - Example:
+    ```
+    {
+        "eth": {
+            "addressHash": "0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8"
+        }
+    }
+    ```
 
 
 ### Building
