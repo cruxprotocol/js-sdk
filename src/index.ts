@@ -136,7 +136,7 @@ export class PayIDClaim implements ICruxPayClaim {
         await this.encrypt();
         const json = this.toJSON();
         // log.debug(`PayIDClaim being stored to storage:`, json)
-        storageService.setJSON("payIDClaim", json);
+        await storageService.setJSON("payIDClaim", json);
     }
 
     private _isEncrypted = (): boolean => {
@@ -186,9 +186,9 @@ export class CruxClient {
         if (!this._configService) {
             throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ClientNotInitialized);
         }
-        if (this._hasPayIDClaimStored()) {
+        if (await this._hasPayIDClaimStored()) {
             log.debug("using the stored payIDClaim");
-            const payIDClaim = (this._storage.getJSON("payIDClaim") as ICruxPayClaim);
+            const payIDClaim = (await this._storage.getJSON("payIDClaim") as ICruxPayClaim);
             // log.debug(`Local payIDClaim:`, payIDClaim)
 
             // if a keyPair is provided, add a validation check on the cruxID stored
@@ -229,7 +229,7 @@ export class CruxClient {
 
     public updatePassword = async (oldEncryptionKey: string, newEncryptionKey: string): Promise<boolean> => {
         try {
-            if (this._hasPayIDClaimStored()) {
+            if (await this._hasPayIDClaimStored()) {
                 await (this._payIDClaim as PayIDClaim).decrypt(oldEncryptionKey);
                 try {
                     await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
@@ -473,8 +473,8 @@ export class CruxClient {
         }
     }
 
-    private _hasPayIDClaimStored = (): boolean => {
-        const payIDClaim = this._storage.getJSON("payIDClaim");
+    private _hasPayIDClaimStored = async (): Promise<boolean> => {
+        const payIDClaim = await this._storage.getJSON("payIDClaim");
         return Boolean(payIDClaim);
     }
 
