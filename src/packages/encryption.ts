@@ -1,4 +1,3 @@
-import ecies from "eciesjs";
 import {ErrorHelper, PackageErrorCode} from "./error";
 
 export class Encryption {
