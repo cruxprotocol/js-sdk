@@ -12,10 +12,10 @@ import { GaiaService } from "../gaia-service";
 import { getContentFromGaiaHub } from "../gaia-service/utils";
 import { BlockstackId, CRUX_DOMAIN_SUFFIX, CruxId, DEFAULT_BLOCKSTACK_NAMESPACE, IdTranslator } from "../identity-utils";
 import { StorageService } from "../storage";
+import {StorageHelper} from "../storage-helper";
 import * as utils from "../utils";
 import * as nameService from "./index";
 import { fetchNameDetails } from "./utils";
-import {StorageHelper} from "../storage-helper"
 
 const log = getLogger(__filename);
 export const MNEMONIC_STORAGE_KEY: string = "encryptedMnemonic";

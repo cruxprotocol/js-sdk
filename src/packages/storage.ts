@@ -5,7 +5,7 @@ const log = getLogger(__filename);
 // Storage service abstraction
 /* istanbul ignore next */
 export abstract class StorageService {
-    public isSync: boolean;
+    public isSync: boolean = true;
     public abstract setItem = (key: string, value: string): void => undefined;
     public abstract getItem = (key: string): string | null => null;
     public abstract async getItemAsync(key: string): Promise<string | null>;
