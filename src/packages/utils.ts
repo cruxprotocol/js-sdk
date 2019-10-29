@@ -1,5 +1,4 @@
 import * as bitcoin from "bitcoinjs-lib";
-import fetch, { RequestInit } from "node-fetch";
 import request from "request";
 import {getLogger} from "../index";
 import { IBitcoinKeyPair } from "./name-service/blockstack-service";
@@ -11,30 +10,12 @@ const log = getLogger(__filename);
 const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (request.UrlOptions & request.CoreOptions)): Promise<object> => {
     log.debug("network_call:", options);
     const promise: Promise<object> = new Promise((resolve, reject) => {
-        const { url, fetchOptions } = translateRequestOptionsToFetchOptions(options);
-        fetch(url, fetchOptions)
-            .then((res) => res.json())
-            .then((json) => resolve(json))
-            .catch((err) => reject(new Error(err)));
+        request(options, (error, response, body) => {
+            if (error) { reject(new Error(error)); }
+            resolve(body);
+        });
     });
     return promise;
-};
-
-const translateRequestOptionsToFetchOptions = (options: any): { url: string, fetchOptions: RequestInit} => {
-    const fetchOptions = Object.assign({}, options);
-    delete fetchOptions.baseUrl;
-    delete fetchOptions.url;
-    let url: string = "";
-    if (options.baseUrl) {
-        url += options.baseUrl;
-    }
-    if (options.url) {
-        url += options.url;
-    }
-    if (options.body) {
-        fetchOptions.body = JSON.stringify(options.body);
-    }
-    return {url, fetchOptions};
 };
 
 const sanitizePrivKey = (privKey: string): string => {
