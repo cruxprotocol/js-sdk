@@ -11,13 +11,13 @@ export class RNLocalStorage extends StorageService {
         this.dataMemory = {};
     }
 
-    public setItem = (key: string, value: string) => {
+    public setItem = async (key: string, value: string) => {
         // AsyncStorage.setItem(MEMORY_KEY_PREFIX + key, value);
         this.dataMemory[key] = value;
-        return this.dataMemory[key];
+        return Promise.resolve(this.dataMemory[key]);
     }
 
-    public getItem = (key: string) => {
-        return Object.prototype.hasOwnProperty.call(this.dataMemory, key) ? this.dataMemory[key] : undefined;
+    public getItem = async (key: string) => {
+        return Promise.resolve(Object.prototype.hasOwnProperty.call(this.dataMemory, key) ? this.dataMemory[key] : undefined);
     }
 }

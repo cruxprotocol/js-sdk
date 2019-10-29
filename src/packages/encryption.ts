@@ -50,11 +50,11 @@ export class Encryption {
     public static decryptText = async (ctBufferBase64: string, ivBase64: string, password: string): Promise<string> => {
     ​
             const ctBuffer = Buffer.from(ctBufferBase64, "base64");
-        const iv = Buffer.from(ivBase64, "base64");
-        const pwUtf8 = Buffer.from(password);
-        const hash = ncrypto.createHash("sha256");
-        hash.update(pwUtf8);
-        const pwHash = typedArrayToBuffer(await hash.digest());
+            const iv = Buffer.from(ivBase64, "base64");
+            const pwUtf8 = Buffer.from(password);
+            const hash = ncrypto.createHash("sha256");
+            hash.update(pwUtf8);
+            const pwHash = typedArrayToBuffer(await hash.digest());
 ​
             const decrypt = (buffer: any, eiv: any, ekey: any, tagLength: any) => {
                 const decipher = ncrypto.createDecipheriv("aes-256-gcm", Buffer.from(ekey), eiv);
@@ -63,8 +63,8 @@ export class Encryption {
                 decipher.setAuthTag(tag);
                 return Buffer.concat([decipher.update(text), decipher.final()]);
             };
-        let ptBuffer;
-        try {
+            let ptBuffer;
+            try {
             ptBuffer = decrypt(ctBuffer, iv, pwHash, 16);
         } catch (err) {
             if (err instanceof DOMException) {
@@ -72,6 +72,6 @@ export class Encryption {
             }
             throw err;
         }
-        return ptBuffer.toString();
+            return ptBuffer.toString();
     }
 }

@@ -13,11 +13,11 @@ export class LocalStorage extends StorageService {
         log.info(`Using localStorage as StorageService`);
     }
 
-    public setItem = (key: string, value: string): void => {
+    public setItem = async (key: string, value: string): Promise<void> => {
         this.storage.setItem(key, value);
     }
 
-    public getItem = (key: string): string | null => {
+    public getItem = async (key: string): Promise<string | null> => {
         return this.storage.getItem(key);
     }
 }
