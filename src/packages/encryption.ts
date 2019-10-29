@@ -25,14 +25,7 @@ export class Encryption {
     public static encryptText = async (plainText: string, password: string): Promise<{ encBuffer: string; iv: string }> => {
         const ptUtf8 = Buffer.from(plainText, "UTF-8");
         const pwUtf8 = Buffer.from(password, "UTF-8");
-​
-        const getRandomValuesPolyfill = (array: any) => {
-            for (let i = 0, l = array.length; i < l; i++) {
-                array[i] = Math.floor(Math.random() * 256);
-            }
-            return array;
-        };
-​
+​​
         const encrypt = (text: any, eiv: any, ekey: any) => {
             const cipher = ncrypto.createCipheriv("aes-256-gcm", Buffer.from(ekey), Buffer.from(eiv));
             let encrypted = cipher.update(text);
@@ -43,7 +36,7 @@ export class Encryption {
         const hash = ncrypto.createHash("sha256");
         hash.update(pwUtf8);
         const pwHash = typedArrayToBuffer(await hash.digest());
-        const iv = getRandomValuesPolyfill(new Uint8Array(12));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
         return encrypt(ptUtf8, iv, pwHash);
     }
 ​
