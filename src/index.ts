@@ -24,6 +24,9 @@ import {
 } from "./packages";
 import { getCruxIDByAddress } from "./packages/name-service/utils";
 
+// Setup cache storage
+export let cacheStorage: storage.StorageService;
+
 export {
     encryption,
     errors,
@@ -176,6 +179,9 @@ export class CruxClient {
         this._nameService = this._options.nameService;
         if (this._options.privateKey) { this._keyPair =  utils.getKeyPairFromPrivKey(this._options.privateKey); }
         this.walletClientName = this._options.walletClientName;
+
+        // Assigning cacheStorage
+        cacheStorage = this._storage;
 
         log.info(`Config mode:`, config.CONFIG_MODE);
         log.info(`CruxPayPeer Initialised`);
