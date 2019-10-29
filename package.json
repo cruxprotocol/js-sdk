@@ -88,8 +88,6 @@
     "bip39": "^3.0.2",
     "bitcoinjs-lib": "^5.1.4",
     "blockstack": "^19.2.5",
-    "eciesjs": "^0.2.0",
-    "eventemitter3": "^4.0.0",
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
     "node-fetch": "^2.6.0",
