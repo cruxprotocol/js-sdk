@@ -10,7 +10,7 @@ export abstract class StorageService {
 
     public setJSON = async (key: string, jsonObj: object): Promise<void> => {
         const objString = JSON.stringify(jsonObj);
-        this.setItem(key, objString);
+        return this.setItem(key, objString);
     }
     public getJSON = async (key: string): Promise<object | null> => {
         const objString = await this.getItem(key);
