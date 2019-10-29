@@ -29,8 +29,8 @@ const sanitizePrivKey = (privKey: string): string => {
 const cachedFunctionCall = async (cacheKey: string, ttl: number = 300, fn: (...args: any[]) => any, paramArray: any[], skipConditional?: (returnValue: any) => Promise<boolean>): Promise<any> => {
     const storage = new LocalStorage();
     const storageCacheKey = `crux_cache_${cacheKey}`;
-    const cachedValue = storage.getItem(storageCacheKey);
-    const cachedExpiry = Number(storage.getItem(storageCacheKey + ":exp"));
+    const cachedValue = await storage.getItem(storageCacheKey);
+    const cachedExpiry = Number(await storage.getItem(storageCacheKey + ":exp"));
     if (cachedValue && cachedExpiry && (new Date(cachedExpiry) > new Date())) {
         log.debug(`using cachedValue from storage for key ${storageCacheKey}`);
         try {
@@ -43,8 +43,8 @@ const cachedFunctionCall = async (cacheKey: string, ttl: number = 300, fn: (...a
     const skipCache = skipConditional && await skipConditional(newValue) || false;
     if (newValue && !skipCache) {
         const stringValue = typeof newValue === "string" ? newValue : JSON.stringify(newValue);
-        storage.setItem(storageCacheKey, stringValue);
-        storage.setItem(storageCacheKey + ":exp", ((ttl * 1000) + Date.now()).toString());
+        await storage.setItem(storageCacheKey, stringValue);
+        await storage.setItem(storageCacheKey + ":exp", ((ttl * 1000) + Date.now()).toString());
     }
     return newValue;
 };
