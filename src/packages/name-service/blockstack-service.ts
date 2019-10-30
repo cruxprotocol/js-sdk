@@ -161,11 +161,14 @@ export class BlockstackService extends nameService.NameService {
     }
 
     public registerName = async (identityClaim: nameService.IIdentityClaim, subdomain: string): Promise<string> => {
-        const identityKeyPair = identityClaim.secrets.identityKeyPair;
+        const identityKeyPair: IBitcoinKeyPair = identityClaim.secrets.identityKeyPair;
 
         if (!identityKeyPair) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
+
+        // Publishing an empty addressMap while registering the name to be fail safe
+        await this._uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityKeyPair.privKey, {}, IdTranslator.blockstackDomainToCruxDomain(this._domain));
 
         const registeredSubdomain = await this._registerSubdomain(subdomain, identityKeyPair.address);
         this._identityCouple = getIdentityCoupleFromBlockstackId(new BlockstackId({
@@ -268,11 +271,11 @@ export class BlockstackService extends nameService.NameService {
     }
 
     private _storeMnemonic = async (mnemonic: string, storage: StorageService, encryptionKey: string): Promise<void> => {
-        storage.setItem(MNEMONIC_STORAGE_KEY, JSON.stringify(await Encryption.encryptText(mnemonic, encryptionKey)));
+        await storage.setItem(MNEMONIC_STORAGE_KEY, JSON.stringify(await Encryption.encryptText(mnemonic, encryptionKey)));
     }
 
     private _retrieveMnemonic = async (storage: StorageService, encryptionKey: string): Promise<string> => {
-        const encryptedMnemonic = JSON.parse(storage.getItem(MNEMONIC_STORAGE_KEY) as string) as {encBuffer: string, iv: string};
+        const encryptedMnemonic = JSON.parse(await storage.getItem(MNEMONIC_STORAGE_KEY) as string) as {encBuffer: string, iv: string};
         return await Encryption.decryptText(encryptedMnemonic.encBuffer, encryptedMnemonic.iv, encryptionKey);
     }
 

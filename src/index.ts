@@ -24,6 +24,9 @@ import {
 } from "./packages";
 import { getCruxIDByAddress } from "./packages/name-service/utils";
 
+// Setup cache storage
+export let cacheStorage: storage.StorageService;
+
 export {
     encryption,
     errors,
@@ -136,7 +139,7 @@ export class PayIDClaim implements ICruxPayClaim {
         await this.encrypt();
         const json = this.toJSON();
         // log.debug(`PayIDClaim being stored to storage:`, json)
-        storageService.setJSON("payIDClaim", json);
+        await storageService.setJSON("payIDClaim", json);
     }
 
     private _isEncrypted = (): boolean => {
@@ -177,6 +180,9 @@ export class CruxClient {
         if (this._options.privateKey) { this._keyPair =  utils.getKeyPairFromPrivKey(this._options.privateKey); }
         this.walletClientName = this._options.walletClientName;
 
+        // Assigning cacheStorage
+        cacheStorage = this._storage;
+
         log.info(`Config mode:`, config.CONFIG_MODE);
         log.info(`CruxPayPeer Initialised`);
     }
@@ -186,9 +192,9 @@ export class CruxClient {
         if (!this._configService) {
             throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ClientNotInitialized);
         }
-        if (this._hasPayIDClaimStored()) {
+        if (await this._hasPayIDClaimStored()) {
             log.debug("using the stored payIDClaim");
-            const payIDClaim = (this._storage.getJSON("payIDClaim") as ICruxPayClaim);
+            const payIDClaim = (await this._storage.getJSON("payIDClaim") as ICruxPayClaim);
             // log.debug(`Local payIDClaim:`, payIDClaim)
 
             // if a keyPair is provided, add a validation check on the cruxID stored
@@ -229,7 +235,7 @@ export class CruxClient {
 
     public updatePassword = async (oldEncryptionKey: string, newEncryptionKey: string): Promise<boolean> => {
         try {
-            if (this._hasPayIDClaimStored()) {
+            if (await this._hasPayIDClaimStored()) {
                 await (this._payIDClaim as PayIDClaim).decrypt(oldEncryptionKey);
                 try {
                     await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
@@ -349,9 +355,7 @@ export class CruxClient {
         try {
             const {assetAddressMap, success, failures} = await this._getAssetAddressMapFromCurrencyAddressMap(newAddressMap);
             await (this._payIDClaim as PayIDClaim).decrypt();
-            if (Object.keys(assetAddressMap).length !== 0) {
-                await (this._nameService as nameService.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, assetAddressMap);
-            }
+            await (this._nameService as nameService.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, assetAddressMap);
             await (this._payIDClaim as PayIDClaim).encrypt();
             return {success, failures};
         } catch (err) {
@@ -374,9 +378,8 @@ export class CruxClient {
                 return {};
             }
         } catch (err) {
-            if (err.errorCode && err.errorCode === 2107) {
-                const error =  errors.ErrorHelper.getPackageError(errors.PackageErrorCode.GetAddressMapFailed);
-                throw errors.CruxClientError.fromError(error);
+            if (err.errorCode && err.errorCode === errors.PackageErrorCode.GaiaEmptyResponse) {
+                return {};
             }
             throw errors.CruxClientError.fromError(err);
         }
@@ -473,8 +476,8 @@ export class CruxClient {
         }
     }
 
-    private _hasPayIDClaimStored = (): boolean => {
-        const payIDClaim = this._storage.getJSON("payIDClaim");
+    private _hasPayIDClaimStored = async (): Promise<boolean> => {
+        const payIDClaim = await this._storage.getJSON("payIDClaim");
         return Boolean(payIDClaim);
     }
 

@@ -49,7 +49,7 @@ describe('CruxClient tests', () => {
 
 		before(() => {
 			httpJSONRequestStub = sinon.stub(utils, 'httpJSONRequest').throws('unhandled in mocks')
-			
+
             requestFixtures.forEach(requestObj => {
               httpJSONRequestStub.withArgs(requestObj.request).returns(requestObj.response)
 			});
@@ -146,7 +146,7 @@ describe('CruxClient tests', () => {
 				} catch(error) {
 					raisedError = error
 				}
-				
+
 				// Expectations
 				expect(raisedError.errorCode).to.be.equal(PackageErrorCode.SubdomainLengthCheckFailure)
 
@@ -169,7 +169,7 @@ describe('CruxClient tests', () => {
 				} catch(error) {
 					raisedError = error
 				}
-				
+
 				// Expectations
 				expect(isCruxIDAvailableStub.calledWith(subdomain)).is.true
 				expect(isCruxIDAvailableStub.calledOnce).is.true
@@ -180,7 +180,7 @@ describe('CruxClient tests', () => {
 				// Mocks
 				const mockPayIDClaim = sampleUser['payIDClaim'];
 				localStorage.setItem('payIDClaim', JSON.stringify(mockPayIDClaim));
-				
+
 				// Initialising the CruxClient
 				let cruxClient = new CruxClient(walletOptions);
 				await cruxClient.init();
@@ -196,7 +196,7 @@ describe('CruxClient tests', () => {
 				} catch(error) {
 					raisedError = error
 				}
-				
+
 				// Expectations
 				expect(isCruxIDAvailableStub.calledWith(subdomain)).is.true
 				expect(isCruxIDAvailableStub.calledOnce).is.true
@@ -226,7 +226,7 @@ describe('CruxClient tests', () => {
 				} catch(error) {
 					raisedError = error
 				}
-				
+
 				// Expectations
 				let identityClaim = {secrets: sampleUser['decryptedPayIDClaim'].identitySecrets}
 				// @ts-ignore
@@ -260,7 +260,7 @@ describe('CruxClient tests', () => {
 				// registerCruxID
 				const subdomain = "test";
 				let registrationPromise = await cruxClient.registerCruxID(subdomain);
-				
+
 				// Expectations
 				const identityClaim = {secrets: sampleUser['decryptedPayIDClaim'].identitySecrets}
 				// @ts-ignore
@@ -277,9 +277,9 @@ describe('CruxClient tests', () => {
 				expect(nameServiceRegisterNameStub.calledOnce).is.true
 				expect(registrationPromise).to.be.undefined
 				// @ts-ignore
-				expect((cruxClient._storage.getJSON('payIDClaim')).virtualAddress).is.to.equal(virtualAddress);
+				expect((await cruxClient._storage.getJSON('payIDClaim')).virtualAddress).is.to.equal(virtualAddress);
 				// @ts-ignore
-				expect((cruxClient._storage.getJSON('payIDClaim')).identitySecrets).to.be.a('string');
+				expect((await cruxClient._storage.getJSON('payIDClaim')).identitySecrets).to.be.a('string');
 
 			})
 		})
@@ -381,7 +381,7 @@ describe('CruxClient tests', () => {
 					expect(raisesException).to.be.true
 					updateProfileStub.restore()
 				}
-			})			
+			})
 		})
 		describe("putAddressMap tests", () => {
 			it("all currencies provided exist in client mapping", async () => {
@@ -400,7 +400,7 @@ describe('CruxClient tests', () => {
 
 				// putAddressMap
 				const {success, failures} = await cruxClient.putAddressMap(mockedAddressMap)
-				
+
 				// Expectations
 				let decrpytedPayIDClaim = {secrets: sampleUser["decryptedPayIDClaim"].identitySecrets};
 				let assetIdMap = {"1d6e1a99-1e77-41e1-9ebb-0e216faa166a": sampleAddressMap["BTC"], "508b8f73-4b06-453e-8151-78cb8cfc3bc9": sampleAddressMap["ETH"]};
@@ -432,9 +432,9 @@ describe('CruxClient tests', () => {
 
 				// putAddressMap
 				const {success, failures} = await cruxClient.putAddressMap(mockedAddressMap)
-				
+
 				// Expectations
-				expect(nameServicePutAddressMappingStub.notCalled).is.true;
+				expect(nameServicePutAddressMappingStub.calledOnce).is.true;
 				expect(failures.zrx).to.include(PackageErrorCode.CurrencyDoesNotExistInClientMapping);
 				expect(success).is.empty;
 
@@ -460,7 +460,7 @@ describe('CruxClient tests', () => {
 
 				// putAddressMap
 				const {success, failures} = await cruxClient.putAddressMap(mockedAddressMap)
-				
+
 				// Expectations
 				let decrpytedPayIDClaim = {secrets: sampleUser["decryptedPayIDClaim"].identitySecrets};
 				let assetIdMap = {"1d6e1a99-1e77-41e1-9ebb-0e216faa166a": sampleAddressMap["BTC"]};
