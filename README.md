@@ -312,6 +312,49 @@ npm run-script wallet_demo
 ```
 Running the above command will build a [demo page](https://localhost:1234), here you can play around with all method that are exposed by the sdk.
 
+### Using the sdk in React Native
+
+After installing `@cruxpay/js-sdk` version `0.1.2` or higher, you will need to 
+1. Install and link  `react-native-get-random-values` which works as a polyfill for the global crypto.getRandomValues
+2. Next, you will have to install and link `@react-native-community/async-storage` so that you can use the [RNLocalStorage](https://gist.github.com/mascot6699/8a1a3cf2afa411f643fe9ec1bab3e9c2) implementation of `storage.StorageService` as shown below.
+
+```javascript
+// RNLocalStorage.js
+import { storage } from "@cruxpay/js-sdk/dist/cruxpay-sdk";
+import * as AsyncStorage from "react-native/Libraries/Storage/AsyncStorage";
+
+class RNLocalStorage extends storage.StorageService {
+
+    setItem = async (key, value) => AsyncStorage.setItem(key, value);
+
+    getItem = async (key) => AsyncStorage.getItem(key);
+}
+
+export {RNLocalStorage};
+```
+
+3. You can then use the sdk by providing an instance of `RNLocalStorage` as storage option and importing `react-native-get-random-values` before importing `dist/cruxpay-sdk.js` (the **bundled version** of installed sdk)
+
+```javascript
+import 'react-native-get-random-values';  // NOTE: necessary to imported first so that it can polyfill global crypto.getRandomValues
+import {CruxClient} from "@cruxpay/js-sdk/dist/cruxpay-sdk";  // NOTE: this is from dist folder
+import {RNLocalStorage} from "./RNLocalStorage";
+
+const storage = new RNLocalStorage();
+
+let cruxClientOptions = {
+  getEncryptionKey: () => 'fookey',
+  walletClientName: 'cruxdev',
+  storage: storage
+}
+const cruxClient = new CruxClient(cruxClientOptions);
+cruxClient.init().then(() => {
+    console.log('CruxClient initialized');
+}).catch((err) => {
+    console.log('CruxClient error', err);
+})
+```
+
 
 ### How can I contribute?
 
