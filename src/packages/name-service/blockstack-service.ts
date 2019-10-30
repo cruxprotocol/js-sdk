@@ -161,11 +161,14 @@ export class BlockstackService extends nameService.NameService {
     }
 
     public registerName = async (identityClaim: nameService.IIdentityClaim, subdomain: string): Promise<string> => {
-        const identityKeyPair = identityClaim.secrets.identityKeyPair;
+        const identityKeyPair: IBitcoinKeyPair = identityClaim.secrets.identityKeyPair;
 
         if (!identityKeyPair) {
             throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
+
+        // Publishing an empty addressMap while registering the name to be fail safe
+        await this._uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityKeyPair.privKey, {}, IdTranslator.blockstackDomainToCruxDomain(this._domain));
 
         const registeredSubdomain = await this._registerSubdomain(subdomain, identityKeyPair.address);
         this._identityCouple = getIdentityCoupleFromBlockstackId(new BlockstackId({

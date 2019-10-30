@@ -378,9 +378,8 @@ export class CruxClient {
                 return {};
             }
         } catch (err) {
-            if (err.errorCode && err.errorCode === 2107) {
-                const error =  errors.ErrorHelper.getPackageError(errors.PackageErrorCode.GetAddressMapFailed);
-                throw errors.CruxClientError.fromError(error);
+            if (err.errorCode && err.errorCode === errors.PackageErrorCode.GaiaEmptyResponse) {
+                return {};
             }
             throw errors.CruxClientError.fromError(err);
         }
