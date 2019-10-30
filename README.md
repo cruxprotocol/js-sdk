@@ -321,7 +321,7 @@ After installing `@cruxpay/js-sdk` version `0.1.2` or higher, you will need to
 ```javascript
 // RNLocalStorage.js
 import { storage } from "@cruxpay/js-sdk/dist/cruxpay-sdk";
-import * as AsyncStorage from "react-native/Libraries/Storage/AsyncStorage";
+import AsyncStorage from "@react-native-community/async-storage";
 
 class RNLocalStorage extends storage.StorageService {
 
