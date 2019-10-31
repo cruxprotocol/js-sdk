@@ -1,0 +1,13 @@
+{
+  "name": "@cruxpay/rn-sdk",
+  "version": "0.1.2",
+  "description": "CruxPay React Native SDK",
+  "unpkg": "dist/cruxpay-sdk-rn.js",
+  "main": "index.js",
+  "scripts": {
+    "build:js": "./node_modules/.bin/parcel build index.js -d dist --out-file cruxpay-sdk-rn.js --no-minify",
+    "publish:dev": "npm run build:js && npm publish --registry http://138.197.216.253:4873"
+  },
+  "author": "",
+  "license": "GPL-3.0"
+}
