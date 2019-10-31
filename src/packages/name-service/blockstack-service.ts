@@ -279,8 +279,16 @@ export class BlockstackService extends nameService.NameService {
         return await Encryption.decryptText(encryptedMnemonic.encBuffer, encryptedMnemonic.iv, encryptionKey);
     }
 
+    private _getRandomValuesPolyfill = (arraySize: any) => {
+        const array = new Uint8Array(arraySize);
+        for (let i = 0, l = array.length; i < l; i++) {
+            array[i] = Math.floor(Math.random() * 256);
+        }
+        return new Buffer(array);
+    }
+
     private _generateMnemonic = (): string => {
-        return blockstack.BlockstackWallet.generateMnemonic();
+        return bip39.generateMnemonic(128, this._getRandomValuesPolyfill);
     }
 
     private _generateIdentityKeyPair = async (mnemonic: string): Promise<IBitcoinKeyPair> => {

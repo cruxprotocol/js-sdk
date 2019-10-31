@@ -29,7 +29,14 @@ export class Encryption {
         const hash = ncrypto.createHash("sha256");
         hash.update(pwUtf8);
         const pwHash = typedArrayToBuffer(await hash.digest());
-        const iv = crypto.getRandomValues(new Uint8Array(12));
+        // const iv = crypto.getRandomValues(new Uint8Array(12));
+        const getRandomValuesPolyfill = (array: any) => {
+            for (let i = 0, l = array.length; i < l; i++) {
+                array[i] = Math.floor(Math.random() * 256);
+            }
+            return array;
+        };
+        const iv = getRandomValuesPolyfill(new Uint8Array(12));
         return encrypt(ptUtf8, iv, pwHash);
     }
 

@@ -87,7 +87,7 @@
     "@mojotech/json-type-validation": "^3.1.0",
     "bip39": "^3.0.2",
     "bitcoinjs-lib": "^5.1.4",
-    "blockstack": "^19.2.5",
+    "blockstack": "github:SanchayPahalwani/blockstack.js#master",
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
     "node-fetch": "^2.6.0",
