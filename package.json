@@ -20,7 +20,7 @@
     "build-prod": "npm run build-prod:js && npm run build-prod:dom",
     "checks": "tslint 'src/**/*.ts' && npm run typecheck && npm run test",
     "version-bump": "((./node_modules/.bin/git-branch-is release/dev || ./node_modules/.bin/git-branch-is master) && npm version patch) || true",
-    "recursive-version": "npm version $TYPE && cd react-native && npm version $TYPE",
+    "recursive-version": "cd react-native && export VERSION=$(npm version $TYPE) && cd ../ && git add . && git commit -m \"react-native $VERSION\" && npm version $TYPE",
     "publish:dev": "npm run build && npm run transpile && cross-env NODE_ENV=dev gulp config && npm publish --registry http://138.197.216.253:4873 && npm run publish-rn:dev",
     "publish-rn:dev": "cd react-native && npm run publish:dev",
     "publish:prod": "npm run build-prod && npm run transpile && cross-env NODE_ENV=prod gulp config && npm publish --access public && npm run publish-rn:prod",
