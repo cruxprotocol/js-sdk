@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "build:js": "./node_modules/.bin/parcel build index.js -d dist --out-file cruxpay-sdk-rn.js --no-minify",
-    "publish:dev": "npm run build:js && npm publish --registry http://138.197.216.253:4873"
+    "publish:dev": "npm run build:js && npm publish --registry http://138.197.216.253:4873",
+    "publish:prod": "npm run build:js && npm publish --access public"
   },
   "author": "",
   "license": "GPL-3.0"
