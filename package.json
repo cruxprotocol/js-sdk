@@ -60,7 +60,6 @@
     "@types/chai": "^4.2.3",
     "@types/expect": "^1.20.4",
     "@types/mocha": "^5.2.7",
-    "@types/node-fetch": "^2.5.2",
     "@types/request": "^2.48.3",
     "@types/sinon": "^7.0.13",
     "chai": "^4.2.0",
@@ -90,7 +89,6 @@
     "blockstack": "github:SanchayPahalwani/blockstack.js#master",
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
-    "node-fetch": "^2.6.0",
     "regenerator-runtime": "^0.13.3"
   }
 }
