@@ -2,6 +2,7 @@ import {Decoder, object, optional, string} from "@mojotech/json-type-validation"
 import * as bip39 from "bip39";
 import {bip32} from "bitcoinjs-lib";
 import * as blockstack from "blockstack";
+import * as ncrypto from 'crypto'
 import { getLogger, IAddress, IAddressMapping } from "../..";
 
 import { Encryption } from "../encryption";
@@ -15,6 +16,7 @@ import { StorageService } from "../storage";
 import * as utils from "../utils";
 import * as nameService from "./index";
 import { fetchNameDetails } from "./utils";
+import {randomBytes} from "crypto"
 
 const log = getLogger(__filename);
 export const MNEMONIC_STORAGE_KEY: string = "encryptedMnemonic";
@@ -280,7 +282,7 @@ export class BlockstackService extends nameService.NameService {
     }
 
     private _generateMnemonic = (): string => {
-        return blockstack.BlockstackWallet.generateMnemonic();
+        return bip39.generateMnemonic(128, ncrypto.randomBytes);
     }
 
     private _generateIdentityKeyPair = async (mnemonic: string): Promise<IBitcoinKeyPair> => {

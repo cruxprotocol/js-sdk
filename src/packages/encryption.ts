@@ -29,7 +29,7 @@ export class Encryption {
         const hash = ncrypto.createHash("sha256");
         hash.update(pwUtf8);
         const pwHash = typedArrayToBuffer(await hash.digest());
-        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const iv = ncrypto.randomBytes(12);
         return encrypt(ptUtf8, iv, pwHash);
     }
 
