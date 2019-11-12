@@ -310,7 +310,7 @@ npm run-script test
 ```bash
 npm run-script wallet_demo
 ```
-Running the above command will build a [demo page](https://localhost:1234), here you can play around with all method that are exposed by the sdk.
+Running the above command will build a [demo page](https://localhost:1234), where you can play around with all method that are exposed by the sdk.
 
 
 ### How can I contribute?
