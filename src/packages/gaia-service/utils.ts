@@ -15,6 +15,7 @@ interface gaiaData {
 
 export const getContentFromGaiaHub = async (blockstackId: string, filename: string, bnsNodes: string[]): Promise<any> => {
     const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackId, bnsNodes);
+    gaiaDetails.gaiaReadUrl = "https://gaia3.cruxpay.com/";
     const fileUrl = gaiaDetails.gaiaReadUrl + gaiaDetails.ownerAddress + "/" + filename;
     const options = {
         json: true,

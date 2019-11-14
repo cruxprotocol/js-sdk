@@ -2,7 +2,7 @@
     "CONFIG_MODE": "PROD",
     "BLOCKSTACK": {
         "SUBDOMAIN_REGISTRAR": "https://registrar.cruxpay.com",
-        "GAIA_HUB": "https://hub.cruxpay.com",
+        "GAIA_HUB": "https://hub3.cruxpay.com",
         "BNS_NODES": ["https://core.blockstack.org", "https://bns.cruxpay.com"]
     }
 }
