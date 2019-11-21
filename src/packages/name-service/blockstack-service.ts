@@ -1,12 +1,12 @@
-import {Decoder, object, optional, string} from "@mojotech/json-type-validation";
+import { Decoder, object, optional, string } from "@mojotech/json-type-validation";
 import * as bip39 from "bip39";
 import {bip32} from "bitcoinjs-lib";
 import * as blockstack from "blockstack";
 import { getLogger, IAddress, IAddressMapping } from "../..";
 
+import {randomBytes} from "crypto";
 import { Encryption } from "../encryption";
-import {ErrorHelper, PackageErrorCode} from "../error";
-
+import { ErrorHelper, PackageErrorCode } from "../error";
 import { PackageError } from "../error/package-error";
 import { GaiaService } from "../gaia-service";
 import { getContentFromGaiaHub } from "../gaia-service/utils";
@@ -280,7 +280,7 @@ export class BlockstackService extends nameService.NameService {
     }
 
     private _generateMnemonic = (): string => {
-        return blockstack.BlockstackWallet.generateMnemonic();
+        return bip39.generateMnemonic(128, randomBytes);
     }
 
     private _generateIdentityKeyPair = async (mnemonic: string): Promise<IBitcoinKeyPair> => {
