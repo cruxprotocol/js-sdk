@@ -20,16 +20,16 @@ const wallet_xrp_address = "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h"
 const wallet_xrp_sec_identifier = "12345"
 
 const sampleAddressMap: IAddressMapping = {
-    bitcoin: {
+    btc: {
         addressHash: wallet_btc_address
     },
-    ethereum: {
+    eth: {
         addressHash: wallet_eth_address
     },
-    tron: {
+    trx: {
         addressHash: wallet_trx_address
     },
-    ripple: {
+    xrp: {
         addressHash: wallet_xrp_address,
         secIdentifier: wallet_xrp_sec_identifier
     }
@@ -155,7 +155,7 @@ const getAssetMap = async () => {
         }
     } finally {
         doc.getElementById('assetMap').textContent = UIResponse
-    }    
+    }
 }
 const getAddressMap = async () => {
     let UIResponse: string = ""
@@ -170,12 +170,12 @@ const getAddressMap = async () => {
         }
     } finally {
         doc.getElementById('addressMap').textContent = UIResponse
-    }    
+    }
 }
 const putAddressMap = async () => {
     let UIResponse: string = ""
     let addressMap: IAddressMapping = {};
-    [].forEach.call(doc.getElementsByName('publishAddressOption'), (el: HTMLInputElement) => { 
+    [].forEach.call(doc.getElementsByName('publishAddressOption'), (el: HTMLInputElement) => {
         if (el.checked) {
             addressMap[el.attributes['currency'].nodeValue] = {
                 addressHash: el.attributes['addressHash'].nodeValue,
@@ -195,7 +195,7 @@ const putAddressMap = async () => {
         }
     } finally {
         doc.getElementById('putAddressMapAcknowledgement').textContent = UIResponse
-    }    
+    }
 }
 const getCruxIDState = async (): Promise<ICruxIDState> => {
     let UIResponse: string = ""
@@ -214,7 +214,7 @@ const getCruxIDState = async (): Promise<ICruxIDState> => {
     }
     return cruxIDStatus
 }
-const updatePassword = async () => { 
+const updatePassword = async () => {
     let UIResponse: string = ""
     let oldEncryptionKey = doc.getElementById('oldEncryptionKey').value
     let newEncryptionKey = doc.getElementById('newEncryptionKey').value
