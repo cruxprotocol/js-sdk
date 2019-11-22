@@ -187,7 +187,7 @@ export class CruxClient {
         log.info(`CruxPayPeer Initialised`);
     }
 
-    public async init() {
+    public init = async (): Promise<void> => {
         await this._setupConfigService();
         if (!this._configService) {
             throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ClientNotInitialized);
