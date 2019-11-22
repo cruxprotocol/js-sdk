@@ -1,4 +1,4 @@
-import {StorageService} from "./storage"
+import {StorageService} from "./storage";
 
 export class InMemStorage extends StorageService {
     private dataMemory: any;
