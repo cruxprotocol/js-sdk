@@ -59,22 +59,22 @@ const cruxClientOptions: ICruxPayPeerOptions = {
 
 // initialising the cruxClient
 const cruxClient = new CruxClient(cruxClientOptions)
-cruxClient.init()
-    .then(async () => {
-        let cruxIDStatus = await getCruxIDState()
-        if (cruxIDStatus.status.status === "DONE") {
-            [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => { el.style.display = "none" });
-            [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
-        }
-        // add hook to enable registered elements
-        doc.getElementById('init').style.display = "none"
-    })
-    .catch((error) => {
-        let message = "CruxClient Initialization Error: \n" + error
-        alert(message)
-        console.log(error);
-        doc.getElementById('init').innerHTML = message
-    })
+// cruxClient.init()
+//     .then(async () => {
+//         let cruxIDStatus = await getCruxIDState()
+//         if (cruxIDStatus.status.status === "DONE") {
+//             [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => { el.style.display = "none" });
+//             [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
+//         }
+//         // add hook to enable registered elements
+//         doc.getElementById('init').style.display = "none"
+//     })
+//     .catch((error) => {
+//         let message = "CruxClient Initialization Error: \n" + error
+//         alert(message)
+//         console.log(error);
+//         doc.getElementById('init').innerHTML = message
+//     })
 
 
 // SDK functional interface
@@ -232,6 +232,15 @@ const updatePassword = async () => {
     }
 }
 
+// getCruxIDState().then((cruxIDStatus) => {
+//     console.log("works!");
+//     if (cruxIDStatus.status.status === "DONE") {
+//         [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => { el.style.display = "none" });
+//         [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
+//     }
+//     // add hook to enable registered elements
+//     doc.getElementById('init').style.display = "none"
+// });
 
 // Declaring global variables to be accessible for (button clicks or debugging purposes)
 declare global {
