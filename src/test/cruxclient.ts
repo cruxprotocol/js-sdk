@@ -4,7 +4,7 @@ import requestFixtures from './requestMocks/cruxclient-reqmocks';
 import sinon from "sinon";
 import WebCrypto from "node-webcrypto-ossl";
 import { expect } from 'chai';
-import {CruxClient, PayIDClaim} from "../index";
+import {CruxClient, ICruxIDState, PayIDClaim} from "../index";
 import { ErrorHelper, PackageErrorCode } from '../packages/error';
 
 interface Global {
@@ -93,8 +93,7 @@ describe('CruxClient tests', () => {
 				it("getCruxIDState handling empty local storage",async () => {
 					localStorage.clear();
 					let cruxClient = new CruxClient(walletOptions);
-					await cruxClient.init()
-					let cruxIdState = await cruxClient.getCruxIDState()
+					let cruxIdState: ICruxIDState = await cruxClient.getCruxIDState()
 					expect(cruxIdState.status.cruxID).to.equal(undefined)
 				})
 			})
@@ -136,7 +135,6 @@ describe('CruxClient tests', () => {
 
 				// Initialising the CruxClient
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init();
 
 				// registerCruxID
 				const subdomain = "cs1";
@@ -156,7 +154,6 @@ describe('CruxClient tests', () => {
 
 				// Initialising the CruxClient
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init();
 
 				// stubbing runtime property
 				const isCruxIDAvailableStub = sinon.stub(cruxClient, 'isCruxIDAvailable').resolves(false);
@@ -183,7 +180,6 @@ describe('CruxClient tests', () => {
 
 				// Initialising the CruxClient
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init();
 
 				// stubbing runtime property
 				const isCruxIDAvailableStub = sinon.stub(cruxClient, 'isCruxIDAvailable').resolves(true);
@@ -209,7 +205,6 @@ describe('CruxClient tests', () => {
 
 				// Initialising the CruxClient
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init();
 
 				// stubbing runtime property
 				const isCruxIDAvailableStub = sinon.stub(cruxClient, 'isCruxIDAvailable').resolves(true);
@@ -248,7 +243,6 @@ describe('CruxClient tests', () => {
 
 				// Initialising the CruxClient
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init();
 
 				// stubbing runtime property
 				const isCruxIDAvailableStub = sinon.stub(cruxClient, 'isCruxIDAvailable').resolves(true);
@@ -289,7 +283,6 @@ describe('CruxClient tests', () => {
 				localStorage.clear();
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init()
 				let mockedSampleAddress = sampleUser['addressMapping']
 
 				let mockedRevserseClientMapping = {'1d6e1a99-1e77-41e1-9ebb-0e216faa166a': 'btc' }
@@ -307,7 +300,6 @@ describe('CruxClient tests', () => {
 				localStorage.clear();
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init()
 				let mockedSampleAddress = sampleUser['addressMapping']
 
 				let mockedClientMapping = {'1d6e1a99-1e77-41e1-9ebb-0e216faa166a': 'btc' }
@@ -331,7 +323,6 @@ describe('CruxClient tests', () => {
 				localStorage.clear();
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init()
 				let mockedSampleAddress = {"1234567-1e77-41e1-9ebb-0e216faa166a": {addressHash: "19m51F8YkjzK625csaNtKnM9pgByeMJRU3"}}
 
 				let mockedClientMapping = {'1d6e1a99-1e77-41e1-9ebb-0e216faa166a': 'btc' }
@@ -356,7 +347,6 @@ describe('CruxClient tests', () => {
 			it("positive case, get address map", async () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']));
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init()
 				let mockedClientMapping = {'1d6e1a99-1e77-41e1-9ebb-0e216faa166a': 'btc' }
 				let clientMappingStub = sinon.stub(cruxClient._configService, 'reverseClientAssetMapping').value(mockedClientMapping)
 				let addressMappingStub = sinon.stub(cruxClient._nameService, 'getAddressMapping').returns(sampleUser['addressMapping'])
@@ -369,7 +359,6 @@ describe('CruxClient tests', () => {
 			it("put address map, gaia upload call failed", async () => {
 				localStorage.setItem('payIDClaim', JSON.stringify(sampleUser['payIDClaim']))
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init()
 				let raisesException = false
 				let updateProfileStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').rejects(ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed))
 				try {
@@ -392,7 +381,6 @@ describe('CruxClient tests', () => {
 
 				// Initialising the CruxClient
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init();
 
 				// stubbing runtime property
 				// @ts-ignore
@@ -424,7 +412,6 @@ describe('CruxClient tests', () => {
 
 				// Initialising the CruxClient
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init();
 
 				// stubbing runtime property
 				// @ts-ignore
@@ -452,7 +439,6 @@ describe('CruxClient tests', () => {
 
 				// Initialising the CruxClient
 				let cruxClient = new CruxClient(walletOptions);
-				await cruxClient.init();
 
 				// stubbing runtime property
 				// @ts-ignore

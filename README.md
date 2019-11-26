@@ -29,7 +29,7 @@ To initialize the sdk, you need to minimally pass a javascript object with follo
 
 `**Note:** Cruxprotocol JS SDK is case insensetive for cryptocurrency symbols and will always output lowercase symbols.`
 
-Example below shows how to a cruxClient instance. Note that all [SDK Operation](#sdk-operation) can oly be run after `.init()` is called.   
+Example below shows how to a cruxClient instance. These are the [SDK Operation](#sdk-operation) exposed.   
 ```javascript
 import crypto from "crypto";
 
@@ -45,12 +45,6 @@ let cruxClientOptions = {
 }
 
 let cruxClient = new CruxClient(cruxClientOptions);
-cruxClient.init()
-.then(() => {
-    console.log('CruxClient initialized');
-}).catch((err) => {
-    console.log('CruxClient error', err);
-})
 ```
 That's it! now you can use the cruxClient object to perform operations defined in [SDK Operation](#sdk-operation).
 ```javascript
@@ -62,7 +56,6 @@ cruxClient.getCruxIDState().then((cruxIDState) => {
 Wallet clients are encouraged to surface the respective `ERROR_CODE` of the `CruxClientError` to their Users with any custom error messages. This will help in debugging any issues with the functionality.
 
 Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/error-handling.md) for more information on Error handling.
-
 
 
 ### SDK Operation

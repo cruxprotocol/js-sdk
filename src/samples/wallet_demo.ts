@@ -232,15 +232,15 @@ const updatePassword = async () => {
     }
 }
 
-// getCruxIDState().then((cruxIDStatus) => {
-//     console.log("works!");
-//     if (cruxIDStatus.status.status === "DONE") {
-//         [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => { el.style.display = "none" });
-//         [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
-//     }
-//     // add hook to enable registered elements
-//     doc.getElementById('init').style.display = "none"
-// });
+getCruxIDState().then((cruxIDStatus) => {
+    console.log("works!");
+    if (cruxIDStatus.status.status === "DONE") {
+        [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => { el.style.display = "none" });
+        [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
+    }
+    // add hook to enable registered elements
+    doc.getElementById('init').style.display = "none"
+});
 
 // Declaring global variables to be accessible for (button clicks or debugging purposes)
 declare global {
