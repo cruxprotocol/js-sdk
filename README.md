@@ -69,7 +69,7 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
 2. ##### getAssetMap()
     - Description: Get Wallet's asset map with currency symbols as the keys and asset object as the value.
     - Params: None
-    - Returns: [IResolvedClientAssetMapping](#iresolvedclientassetmapping) which has symbols and asset objects.
+    - Returns: Promise resolving to [IResolvedClientAssetMapping](#iresolvedclientassetmapping) which has symbols and asset objects.
 
 3. ##### registerCruxID(cruxID<onlySubdomain>)
     - Description: Reserves/registers the cruxID for the user. The user can link any blockchain address to his CruxID immediately after registration using [putAddressMap](#putaddressmap).

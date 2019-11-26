@@ -13,6 +13,8 @@ const doc = (document as {
 
 let walletClientName = "cruxdev"
 let encryptionKey = "fookey"
+// Value can be withoutInit or withInit
+let mode = "withoutInit"
 const wallet_btc_address = "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V"
 const wallet_eth_address = "0x0a2311594059b468c9897338b027c8782398b481"
 const wallet_trx_address = "TG3iFaVvUs34SGpWq8RG9gnagDLTe1jdyz"
@@ -36,21 +38,19 @@ const sampleAddressMap: IAddressMapping = {
 };
 
 const url = new URL(window.location.href);
+mode = url.searchParams.get("mode") || mode;
 encryptionKey = url.searchParams.get("overrideEncryptionKey") || encryptionKey;
 walletClientName = url.searchParams.get("walletClientName") || walletClientName;
 
 doc.getElementById('encryptionKey').textContent = `'${encryptionKey}'`;
+doc.getElementById('mode').textContent = `'${mode}'`;
 [].forEach.call(doc.getElementsByClassName('walletClientName'), (el: HTMLElement) => { el.textContent = walletClientName })
 doc.getElementById('currency').innerHTML = Object.keys(sampleAddressMap).map((currency) => { return `<option value="${currency}">${currency}</option>` }).join('\n')
 doc.getElementById('userAddresses').textContent = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; let secIdentifier = sampleAddressMap[currency].secIdentifier; return `${currency.toUpperCase()} - ${address} ${secIdentifier ? `(${secIdentifier})` : '' }` }).join('\n')
 doc.getElementById('publishAddresses').innerHTML = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; let secIdentifier = sampleAddressMap[currency].secIdentifier; return `<input type="checkbox" name="publishAddressOption" currency="${currency.toUpperCase()}" addressHash="${address}" secIdentifier="${secIdentifier}" checked>${currency.toUpperCase()}` }).join('\n')
 
 
-
-
 // --- @crux/js-sdk integration --- //
-
-
 // defining cruxClientOptions
 const cruxClientOptions: ICruxPayPeerOptions = {
     getEncryptionKey: () => encryptionKey,
@@ -59,22 +59,6 @@ const cruxClientOptions: ICruxPayPeerOptions = {
 
 // initialising the cruxClient
 const cruxClient = new CruxClient(cruxClientOptions)
-// cruxClient.init()
-//     .then(async () => {
-//         let cruxIDStatus = await getCruxIDState()
-//         if (cruxIDStatus.status.status === "DONE") {
-//             [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => { el.style.display = "none" });
-//             [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
-//         }
-//         // add hook to enable registered elements
-//         doc.getElementById('init').style.display = "none"
-//     })
-//     .catch((error) => {
-//         let message = "CruxClient Initialization Error: \n" + error
-//         alert(message)
-//         console.log(error);
-//         doc.getElementById('init').innerHTML = message
-//     })
 
 
 // SDK functional interface
@@ -232,15 +216,44 @@ const updatePassword = async () => {
     }
 }
 
-getCruxIDState().then((cruxIDStatus) => {
-    console.log("works!");
+function handleCruxIDStatus(cruxIDStatus) {
     if (cruxIDStatus.status.status === "DONE") {
-        [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => { el.style.display = "none" });
-        [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => { el.style.display = "block" });
+        [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => {
+            el.style.display = "none"
+        });
+        [].forEach.call(doc.getElementsByClassName('registered'), (el: HTMLElement) => {
+            el.style.display = "block"
+        });
     }
     // add hook to enable registered elements
     doc.getElementById('init').style.display = "none"
-});
+}
+
+function initError(error) {
+    let message = "CruxClient Initialization Error: \n" + error;
+    alert(message);
+    console.log(error);
+    doc.getElementById('init').innerHTML = message;
+}
+
+if (mode === "withoutInit") {
+    console.log("withoutInit mode");
+    getCruxIDState()
+        .then((cruxIDStatus) => {
+            handleCruxIDStatus(cruxIDStatus);
+        }).catch((error) => {
+            initError(error)
+        })
+} else {
+    console.log("withInit mode");
+    cruxClient.init()
+        .then(async () => {
+            let cruxIDStatus = await getCruxIDState();
+            handleCruxIDStatus(cruxIDStatus);
+        }).catch((error) => {
+            initError(error)
+        })
+}
 
 // Declaring global variables to be accessible for (button clicks or debugging purposes)
 declare global {
