@@ -202,45 +202,39 @@ export class CruxClient {
     }
 
     public updatePassword = async (oldEncryptionKey: string, newEncryptionKey: string): Promise<boolean> => {
-        return this.initPromise.then(async () => {
-            try {
-                if (await this._hasPayIDClaimStored()) {
-                    await (this._payIDClaim as PayIDClaim).decrypt(oldEncryptionKey);
-                    try {
-                        await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
-                    } catch (err) {
-                        await (this._payIDClaim as PayIDClaim).encrypt(oldEncryptionKey);
-                        return false;
-                    }
-                    await (this._payIDClaim as PayIDClaim).save(this._storage);
-                    return true;
-                } else {
-                    return true;
+        await this.initPromise;
+        try {
+            if (await this._hasPayIDClaimStored()) {
+                await (this._payIDClaim as PayIDClaim).decrypt(oldEncryptionKey);
+                try {
+                    await (this._payIDClaim as PayIDClaim).encrypt(newEncryptionKey);
+                } catch (err) {
+                    await (this._payIDClaim as PayIDClaim).encrypt(oldEncryptionKey);
+                    return false;
                 }
-            } catch (err) {
-                throw errors.CruxClientError.fromError(err);
+                await (this._payIDClaim as PayIDClaim).save(this._storage);
+                return true;
+            } else {
+                return true;
             }
-        }).catch((err) => {
-            throw err;
-        });
+        } catch (err) {
+            throw errors.CruxClientError.fromError(err);
+        }
     }
 
     public isCruxIDAvailable = async (cruxIDSubdomain: string): Promise<boolean> => {
-        return this.initPromise.then(async () => {
-            try {
+        await this.initPromise;
+        try {
                 identityUtils.validateSubdomain(cruxIDSubdomain);
                 return (this._nameService as nameService.NameService).getNameAvailability(cruxIDSubdomain);
             } catch (err) {
                 throw errors.CruxClientError.fromError(err);
             }
-        }).catch((err) => {
-            throw err;
-        });
     }
 
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
-        return this.initPromise.then(async () => {
-            try {
+        await this.initPromise;
+        try {
                 if (!(this._configService && this._nameService)) {
                     throw errors.ErrorHelper.getPackageError(errors.PackageErrorCode.ClientNotInitialized);
                 }
@@ -262,41 +256,35 @@ export class CruxClient {
             } catch (err) {
                 throw errors.CruxClientError.fromError(err);
             }
-        }).catch((err) => {
-            throw err;
-        });
     }
 
     public getCruxIDState = async (): Promise<ICruxIDState> => {
-        return this.initPromise.then(async () => {
-            try {
-                const fullCruxID = this.hasPayIDClaim() ? this.getPayIDClaim().virtualAddress : undefined;
-                if (!fullCruxID) {
-                    return {
-                        cruxID: null,
-                        status: {
-                            status: "NONE",
-                            statusDetail: "",
-                        },
-                    };
-                }
-                const status = await this._getIDStatus();
+        await this.initPromise;
+        try {
+            const fullCruxID = this.hasPayIDClaim() ? this.getPayIDClaim().virtualAddress : undefined;
+            if (!fullCruxID) {
                 return {
-                    cruxID: fullCruxID,
-                    status,
+                    cruxID: null,
+                    status: {
+                        status: "NONE",
+                        statusDetail: "",
+                    },
                 };
-            } catch (err) {
-                throw errors.CruxClientError.fromError(err);
             }
-        }).catch((err) => {
-            throw err;
-        });
+            const status = await this._getIDStatus();
+            return {
+                cruxID: fullCruxID,
+                status,
+            };
+        } catch (err) {
+            throw errors.CruxClientError.fromError(err);
+        }
     }
 
     public registerCruxID = async (cruxIDSubdomain: string): Promise<void> => {
         // TODO: add isCruxIDAvailable check before
-        return this.initPromise.then(async () => {
-            try {
+        await this.initPromise;
+        try {
                 // Subdomain validation
                 identityUtils.validateSubdomain(cruxIDSubdomain);
 
@@ -334,14 +322,11 @@ export class CruxClient {
             } catch (err) {
                 throw errors.CruxClientError.fromError(err);
             }
-        }).catch((err) => {
-            throw err;
-        });
     }
 
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {
-        return this.initPromise.then(async () => {
-            try {
+        await this.initPromise;
+        try {
                 const {assetAddressMap, success, failures} = await this._getAssetAddressMapFromCurrencyAddressMap(newAddressMap);
                 await (this._payIDClaim as PayIDClaim).decrypt();
                 await (this._nameService as nameService.NameService).putAddressMapping({secrets: (this._payIDClaim as PayIDClaim).identitySecrets}, assetAddressMap);
@@ -350,14 +335,11 @@ export class CruxClient {
             } catch (err) {
                 throw errors.CruxClientError.fromError(err);
             }
-        }).catch((err) => {
-            throw err;
-        });
     }
 
     public getAddressMap = async (): Promise<IAddressMapping> => {
-        return this.initPromise.then(async () => {
-            try {
+        await this.initPromise;
+        try {
                 const currencyAddressMap: IAddressMapping = {};
                 if (this._payIDClaim && this._payIDClaim.virtualAddress && this._configService) {
                     const userAssetIdToAddressMap = await (this._nameService as nameService.NameService).getAddressMapping(this._payIDClaim.virtualAddress);
@@ -375,22 +357,16 @@ export class CruxClient {
                 }
                 throw errors.CruxClientError.fromError(err);
             }
-        }).catch((err) => {
-            throw err;
-        });
     }
 
     public getAssetMap = async (): Promise<configurationService.IResolvedClientAssetMap> => {
-        return this.initPromise.then(async () => {
-            try {
+        await this.initPromise;
+        try {
                 // @ts-ignore
                 return this._configService.resolvedClientAssetMap as configurationService.IResolvedClientAssetMap;
             } catch (err) {
                 throw errors.CruxClientError.fromError(err);
             }
-        }).catch((err) => {
-            throw err;
-        });
     }
 
     public getAssetMapping = () => this.getAssetMap;    // For backward compatibility
