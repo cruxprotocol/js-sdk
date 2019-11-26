@@ -189,7 +189,9 @@ export class CruxClient {
         this.initPromise = this._init();
     }
 
-    public init = () => this._init;    // For backward compatibility
+    public init = async (): Promise<void> => {
+        return await this.initPromise;
+    }   // For backward compatibility
 
     public hasPayIDClaim = (): boolean =>  {
         return Boolean(this._payIDClaim);
