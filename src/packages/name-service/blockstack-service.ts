@@ -6,7 +6,7 @@ import { getLogger, IAddress, IAddressMapping } from "../..";
 
 import {randomBytes} from "crypto";
 import { Encryption } from "../encryption";
-import { ErrorHelper, PackageErrorCode } from "../error";
+import { ErrorHelper, PackageErrorCode, VError } from "../error";
 import { PackageError } from "../error/package-error";
 import { GaiaService } from "../gaia-service";
 import { getContentFromGaiaHub } from "../gaia-service/utils";
@@ -116,7 +116,7 @@ export class BlockstackService extends nameService.NameService {
         super();
         // TODO: Verify Domain against Registrar
         if (!options.domain) {
-            throw new Error("No wallet name sepcified!");
+            throw new VError(null, "No wallet name sepcified!");
         }
         this._domain = options.domain;
         this._gaiaHub = options.gaiaHub;
@@ -130,7 +130,7 @@ export class BlockstackService extends nameService.NameService {
         const identityKeyPair = identityClaim.secrets.identityKeyPair;
 
         if (!identityKeyPair) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindKeyPairToRestoreIdentity);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindKeyPairToRestoreIdentity);
         }
 
         // TODO: validate the correspondance of cruxID with the identityClaim
@@ -138,7 +138,7 @@ export class BlockstackService extends nameService.NameService {
         this._identityCouple = getIdentityCoupleFromCruxId(cruxId);
         const nameData: any = await fetchNameDetails(this._identityCouple.bsId.toString(), this._bnsNodes);
         if ( nameData.address && (nameData.address !== identityKeyPair.address)) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.IdentityMismatch);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.IdentityMismatch);
         }
 
         return {
@@ -164,7 +164,7 @@ export class BlockstackService extends nameService.NameService {
         const identityKeyPair: IBitcoinKeyPair = identityClaim.secrets.identityKeyPair;
 
         if (!identityKeyPair) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindKeyPairToRegisterName);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
 
         // Publishing an empty addressMap while registering the name to be fail safe
@@ -247,7 +247,7 @@ export class BlockstackService extends nameService.NameService {
 
     public putAddressMapping = async (identityClaim: nameService.IIdentityClaim, addressMapping: IAddressMapping): Promise<void> => {
         if (!identityClaim.secrets.identityKeyPair) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping);
         }
         const addressDecoder: Decoder<IAddress> = object({
             addressHash: string(),
@@ -258,7 +258,7 @@ export class BlockstackService extends nameService.NameService {
                 const addressObject: IAddress = addressDecoder.runWithException(addressMapping[currency]);
             }
         } catch (error) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.AddressMappingDecodingFailure);
+            throw ErrorHelper.getPackageError(error, PackageErrorCode.AddressMappingDecodingFailure);
         }
         await this._uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping, IdTranslator.blockstackDomainToCruxDomain(this._domain));
         return;
@@ -318,14 +318,14 @@ export class BlockstackService extends nameService.NameService {
         try {
             registrationAcknowledgement = await utils.httpJSONRequest(options);
         } catch (err) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainRegistrationFailed, err);
+            throw ErrorHelper.getPackageError(err, PackageErrorCode.SubdomainRegistrationFailed, err);
         }
 
         log.debug(`Subdomain registration acknowledgement:`, registrationAcknowledgement);
         if (registrationAcknowledgement && registrationAcknowledgement.status === true) {
             return name;
         } else {
-            throw ErrorHelper.getPackageError(PackageErrorCode.SubdomainRegistrationAcknowledgementFailed, JSON.stringify(registrationAcknowledgement));
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.SubdomainRegistrationAcknowledgementFailed, JSON.stringify(registrationAcknowledgement));
         }
     }
 
@@ -373,7 +373,7 @@ export class BlockstackService extends nameService.NameService {
             log.debug(`finalUrl is ${finalURL}`);
         } catch (error) {
             const packageErrorCode = BlockstackService.getUploadPackageErrorCodeForFilename(filename);
-            throw ErrorHelper.getPackageError(packageErrorCode, filename, error);
+            throw ErrorHelper.getPackageError(error, packageErrorCode, filename, error);
         }
         return finalURL;
     }
@@ -389,7 +389,7 @@ export class BlockstackService extends nameService.NameService {
                 throw error;
             } else {
                 const packageErrorCode = BlockstackService.getGetPackageErrorCodeForFilename(filename);
-                throw ErrorHelper.getPackageError(packageErrorCode, filename, error);
+                throw ErrorHelper.getPackageError(error, packageErrorCode, filename, error);
             }
         }
         return responseBody;

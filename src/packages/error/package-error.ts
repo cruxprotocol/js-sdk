@@ -1,9 +1,10 @@
-export class PackageError extends Error {
+import { VError } from "./base-error";
+export class PackageError extends VError {
     public errorCode: number;
-    constructor(message?: string, code?: number) {
-        super(message);
+    constructor(cause: Error | null, message?: string, code?: number) {
+        super(cause, message);
+        this.name = this.constructor.name;
         this.message = message || "";
         this.errorCode = code || 1000;
-        Object.setPrototypeOf(this, new.target.prototype);
     }
 }

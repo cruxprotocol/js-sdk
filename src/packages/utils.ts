@@ -2,7 +2,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import fetch, { RequestInit } from "node-fetch";
 import request from "request";
 import { cacheStorage, getLogger } from "../index";
-import { ErrorHelper, PackageErrorCode } from "./error";
+import { ErrorHelper, PackageErrorCode, VError } from "./error";
 import { IBitcoinKeyPair } from "./name-service/blockstack-service";
 
 const log = getLogger(__filename);
@@ -15,7 +15,7 @@ const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (
         fetch(url, fetchOptions)
             .then((res) => res.json())
             .then((json) => resolve(json))
-            .catch((err) => reject(new Error(err)));
+            .catch((err) => reject(new VError(null, err)));
     });
     return promise;
 };
@@ -86,7 +86,7 @@ const getKeyPairFromPrivKey = (privKey: string): IBitcoinKeyPair => {
         try {
             publicKey = bitcoin.ECPair.fromPrivateKey(Buffer.from(privateKey, "hex")).publicKey.toString("hex");
         } catch (error) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.InvalidPrivateKeyFormat);
+            throw ErrorHelper.getPackageError(error, PackageErrorCode.InvalidPrivateKeyFormat);
         }
     }
 

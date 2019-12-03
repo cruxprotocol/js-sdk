@@ -23,7 +23,7 @@ describe('Error Codes Tests',() => {
 describe('CruxClientError tests', () => {
     it('CruxClientError with undefined message returns "CruxClientError with errorCode 9000"', () => {
         let message
-        let cruxErrorClient1 = new CruxClientError(message)
+        let cruxErrorClient1 = new CruxClientError(null, message)
         let raisederror1 = CruxClientError.fromError(cruxErrorClient1)
         expect(raisederror1.errorCode).to.be.equal(9000)
         expect(raisederror1).to.be.an.instanceOf(CruxClientError)
