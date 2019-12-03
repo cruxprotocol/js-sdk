@@ -1,4 +1,4 @@
-import { getLogger } from "..";
+import { getLogger } from "./logger";
 
 const log = getLogger(__filename);
 

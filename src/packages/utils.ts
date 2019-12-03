@@ -1,8 +1,8 @@
 import * as bitcoin from "bitcoinjs-lib";
-// import fetch, { RequestInit } from "node-fetch";
 import request from "request";
-import { cacheStorage, getLogger } from "../index";
+import { cacheStorage} from "../index";
 import { ErrorHelper, PackageErrorCode } from "./error";
+import { getLogger } from "./logger";
 import { IBitcoinKeyPair } from "./name-service/blockstack-service";
 
 const log = getLogger(__filename);

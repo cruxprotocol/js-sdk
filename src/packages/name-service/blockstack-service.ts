@@ -2,7 +2,7 @@ import { Decoder, object, optional, string } from "@mojotech/json-type-validatio
 import * as bip39 from "bip39";
 import {bip32} from "bitcoinjs-lib";
 import * as blockstack from "blockstack";
-import { getLogger, IAddress, IAddressMapping } from "../..";
+import { IAddress, IAddressMapping } from "../..";
 
 import {randomBytes} from "crypto";
 import { Encryption } from "../encryption";
@@ -11,6 +11,7 @@ import { PackageError } from "../error/package-error";
 import { GaiaService } from "../gaia-service";
 import { getContentFromGaiaHub } from "../gaia-service/utils";
 import { BlockstackId, CRUX_DOMAIN_SUFFIX, CruxId, DEFAULT_BLOCKSTACK_NAMESPACE, IdTranslator } from "../identity-utils";
+import { getLogger } from "../logger";
 import { StorageService } from "../storage";
 import * as utils from "../utils";
 import * as nameService from "./index";
