@@ -1,6 +1,6 @@
 import * as blockstack from "blockstack";
 import { SECP256K1Client, TokenSigner } from "jsontokens";
-import { getLogger } from "../..";
+import { getLogger } from "../logger";
 import { sanitizePrivKey } from "../utils";
 
 const log = getLogger(__filename);

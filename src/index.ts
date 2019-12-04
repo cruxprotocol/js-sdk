@@ -1,16 +1,5 @@
-import Logger from "js-logger";
-import path from "path";
 import "regenerator-runtime/runtime";
 import config from "./config";
-
-// Setup logging configuration
-Logger.useDefaults();
-Logger.setLevel(config.CONFIG_MODE === "prod" ? Logger.INFO : Logger.DEBUG);
-export function getLogger(filename: string) {
-    return Logger.get("CruxPay: " + filename.slice(filename.lastIndexOf(path.sep) + 1, filename.length - 3));
-}
-const log = getLogger(__filename);
-
 // Importing packages
 import {
     blockstackService,
@@ -22,7 +11,10 @@ import {
     storage,
     utils,
 } from "./packages";
+import { getLogger } from "./packages/logger";
 import { getCruxIDByAddress } from "./packages/name-service/utils";
+
+const log = getLogger(__filename);
 
 // Setup cache storage
 export let cacheStorage: storage.StorageService;
