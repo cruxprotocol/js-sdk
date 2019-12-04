@@ -2,7 +2,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import fetch, { RequestInit } from "node-fetch";
 import request from "request";
 import { cacheStorage, getLogger } from "../index";
-import { CruxError, ErrorHelper, PackageErrorCode } from "./error";
+import { CruxBaseError, ErrorHelper, PackageErrorCode } from "./error";
 import { IBitcoinKeyPair } from "./name-service/blockstack-service";
 
 const log = getLogger(__filename);
@@ -15,7 +15,7 @@ const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (
         fetch(url, fetchOptions)
             .then((res) => res.json())
             .then((json) => resolve(json))
-            .catch((err) => reject(new CruxError(null, err)));
+            .catch((err) => reject(new CruxBaseError(null, err)));
     });
     return promise;
 };

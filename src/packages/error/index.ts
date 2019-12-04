@@ -5,7 +5,7 @@ import { ERROR_STRINGS } from "./error-string";
 import { PackageErrorCode } from "./package-error-code";
 
 export {
-    CruxBaseError as CruxError,
+    CruxBaseError,
     CruxClientError,
     ErrorHelper,
     ERROR_STRINGS,
