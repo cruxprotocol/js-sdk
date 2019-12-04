@@ -1,5 +1,5 @@
-import { VError } from "./base-error";
-export class PackageError extends VError {
+import { CruxBaseError } from "./base-error";
+export class PackageError extends CruxBaseError {
     public errorCode: number;
     constructor(cause: Error | null, message?: string, code?: number) {
         super(cause, message);
