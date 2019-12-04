@@ -1,7 +1,7 @@
-import { CruxBaseError } from "./base-error";
+import { BaseError } from "./base-error";
 import {PackageError} from "./package-error";
 
-export class CruxClientError extends CruxBaseError {
+export class CruxClientError extends BaseError {
 
     public static FALLBACK_ERROR_CODE: number = 9000;
 
@@ -20,14 +20,14 @@ export class CruxClientError extends CruxBaseError {
         } else if (error instanceof Error) {
             return new CruxClientError(error, msgPrefix + error.message);
         } else {
-            throw new CruxBaseError(null, `Wrong instance type: ${typeof (error)}`);
+            throw new BaseError(null, `Wrong instance type: ${typeof (error)}`);
         }
     }
     public errorCode: number;
 
     constructor(cause: Error | null, errorMessage: string, errorCode?: number) {
         const message = errorMessage || "";
-        super(cause, message);
+        super(cause, message, errorCode);
         this.name = this.constructor.name;
         this.errorCode = errorCode || CruxClientError.FALLBACK_ERROR_CODE;
     }

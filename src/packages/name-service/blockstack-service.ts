@@ -6,7 +6,7 @@ import { getLogger, IAddress, IAddressMapping } from "../..";
 
 import {randomBytes} from "crypto";
 import { Encryption } from "../encryption";
-import { CruxBaseError, ErrorHelper, PackageErrorCode } from "../error";
+import { BaseError, ErrorHelper, PackageErrorCode } from "../error";
 import { PackageError } from "../error/package-error";
 import { GaiaService } from "../gaia-service";
 import { getContentFromGaiaHub } from "../gaia-service/utils";
@@ -116,7 +116,7 @@ export class BlockstackService extends nameService.NameService {
         super();
         // TODO: Verify Domain against Registrar
         if (!options.domain) {
-            throw new CruxBaseError(null, "No wallet name sepcified!");
+            throw new BaseError(null, "No wallet name sepcified!");
         }
         this._domain = options.domain;
         this._gaiaHub = options.gaiaHub;
