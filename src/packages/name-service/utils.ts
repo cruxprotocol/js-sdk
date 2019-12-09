@@ -1,7 +1,7 @@
 import { AssertionError, deepStrictEqual } from "assert";
-import { getLogger } from "../..";
 import { ErrorHelper, PackageErrorCode } from "../error";
 import { BlockstackId, CRUX_DOMAIN_SUFFIX, DEFAULT_BLOCKSTACK_NAMESPACE, IdTranslator } from "../identity-utils";
+import { getLogger } from "../logger";
 import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);

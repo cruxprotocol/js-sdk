@@ -1,11 +1,10 @@
-import { getLogger } from "..";
 import config from "../config";
 import { ErrorHelper, PackageErrorCode } from "./error";
 import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "./gaia-service/utils";
 import * as identityUtils from "./identity-utils";
+import { getLogger } from "./logger";
 import { IIdentityClaim } from "./name-service";
 import * as blockstackService from "./name-service/blockstack-service";
-import { getCruxIDByAddress } from "./name-service/utils";
 
 const log = getLogger(__filename);
 const CONFIG_SUBDOMAIN = "_config";

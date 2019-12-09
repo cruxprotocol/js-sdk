@@ -1,6 +1,6 @@
 import * as blockstack from "blockstack";
-import { getLogger } from "../..";
 import { ErrorHelper, PackageErrorCode } from "../error";
+import { getLogger } from "../logger";
 import * as nameservice from "../name-service/blockstack-service";
 import { fetchNameDetails } from "../name-service/utils";
 import { cachedFunctionCall, httpJSONRequest } from "../utils";
