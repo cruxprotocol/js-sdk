@@ -28,7 +28,7 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: stri
         return Boolean(filename !== nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
     });
     if (responseBody.indexOf("BlobNotFound") > 0 || responseBody.indexOf("NoSuchKey") > 0) {
-        throw ErrorHelper.getPackageError(PackageErrorCode.GaiaEmptyResponse);
+        throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaEmptyResponse);
     } else {
         const content = responseBody[0].decodedToken.payload.claim;
         const pubKey = responseBody[0].decodedToken.payload.subject.publicKey;
@@ -40,13 +40,13 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: stri
         } catch (e) {
             // TODO: validate the token properly after publishing the subject
             log.error(e);
-            throw ErrorHelper.getPackageError(PackageErrorCode.TokenVerificationFailed, fileUrl);
+            throw ErrorHelper.getPackageError(e, PackageErrorCode.TokenVerificationFailed, fileUrl);
         }
 
         if (addressFromPub === gaiaDetails.ownerAddress) {
             finalContent = content;
         } else {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotValidateZoneFile);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotValidateZoneFile);
         }
     }
     return finalContent;
@@ -57,10 +57,10 @@ export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes
     nameData = await fetchNameDetails(blockstackId, bnsNodes);
     log.debug(nameData);
     if (!nameData) {
-        throw ErrorHelper.getPackageError(PackageErrorCode.BnsEmptyData);
+        throw ErrorHelper.getPackageError(null, PackageErrorCode.BnsEmptyData);
     }
     if (!nameData.address) {
-        throw ErrorHelper.getPackageError(PackageErrorCode.UserDoesNotExist);
+        throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
     }
     const bitcoinAddress = nameData.address;
     log.debug(`ID owner: ${bitcoinAddress}`);
@@ -94,6 +94,6 @@ export const getGaiaReadUrl = async (gaiaWriteURL: string): Promise<string> => {
         const gaiaReadURL = responseBody.read_url_prefix;
         return gaiaReadURL;
     } catch (err) {
-        throw ErrorHelper.getPackageError(PackageErrorCode.GaiaGetFileFailed, err);
+        throw ErrorHelper.getPackageError(err, PackageErrorCode.GaiaGetFileFailed, err);
     }
 };

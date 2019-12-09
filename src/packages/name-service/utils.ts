@@ -23,7 +23,7 @@ export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[])
                 deepStrictEqual(prevRes, res);
             } catch (e) {
                 if (e instanceof AssertionError) {
-                    throw ErrorHelper.getPackageError(PackageErrorCode.NameIntegrityCheckFailed);
+                    throw ErrorHelper.getPackageError(e, PackageErrorCode.NameIntegrityCheckFailed);
                 } else {
                     log.error(e);
                     throw e;
@@ -50,7 +50,7 @@ const bnsResolveName = async (baseUrl: string, blockstackId: string): Promise<ob
     try {
         nameData = await cachedFunctionCall(`${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => Boolean(data && data.status && data.status !== "registered_subdomain"));
     } catch (error) {
-        throw ErrorHelper.getPackageError(PackageErrorCode.BnsResolutionFailed, baseUrl, error);
+        throw ErrorHelper.getPackageError(error, PackageErrorCode.BnsResolutionFailed, baseUrl, error);
     }
     return nameData;
 };
@@ -86,7 +86,7 @@ const bnsFetchNamesByAddress = async (baseUrl: string, address: string): Promise
     try {
         namesData = ((await httpJSONRequest(options)) as {names: string[]});
     } catch (error) {
-        throw ErrorHelper.getPackageError(PackageErrorCode.GetNamesByAddressFailed, `${baseUrl}${url}`, error);
+        throw ErrorHelper.getPackageError(error, PackageErrorCode.GetNamesByAddressFailed, `${baseUrl}${url}`, error);
     }
     return namesData.names;
 };
@@ -116,7 +116,7 @@ const fetchPendingRegistrationsByAddress = async (walletClientName: string, regi
     try {
         registrationsArray = ((await httpJSONRequest(options)) as IPendingRegistration[]);
     } catch (error) {
-        throw ErrorHelper.getPackageError(PackageErrorCode.FetchPendingRegistrationsByAddressFailed, `${registrar}${url}`, error);
+        throw ErrorHelper.getPackageError(error, PackageErrorCode.FetchPendingRegistrationsByAddressFailed, `${registrar}${url}`, error);
     }
     return registrationsArray.map((registration) => {
         return registration.subdomainName;
