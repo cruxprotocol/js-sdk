@@ -44,6 +44,16 @@ const sanitizePrivKey = (privKey: string): string => {
     return privKey;
 };
 
+const getRandomHexString = (): string => {
+    const randomValues = crypto.getRandomValues(new Uint8Array(16));
+    let result: string = "";
+    let i: number;
+    for (i = 0; i < randomValues.length; i++) {
+        result = result + ((randomValues[i] * 16).toString(16).toUpperCase());
+    }
+    return result;
+};
+
 const cachedFunctionCall = async (cacheKey: string, ttl: number = 300, fn: (...args: any[]) => any, paramArray: any[], skipConditional?: (returnValue: any) => Promise<boolean>): Promise<any> => {
     const storage = cacheStorage;
     const storageCacheKey = `crux_cache_${cacheKey}`;
@@ -103,4 +113,5 @@ export {
     sanitizePrivKey,
     cachedFunctionCall,
     getKeyPairFromPrivKey,
+    getRandomHexString,
 };
