@@ -238,9 +238,10 @@ class CruxPayPeer extends EventEmitter {
         }
     }
 
-    public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
+    public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string, response: string): Promise<IAddress> => {
         try {
             let correspondingAssetId: string = "";
+            response = "Resolving Address";
             for (const i in this._clientMapping) {
                 if (i === walletCurrencySymbol) {
                     // @ts-ignore
@@ -258,6 +259,8 @@ class CruxPayPeer extends EventEmitter {
             }
             const address: IAddress = addressMap[correspondingAssetId] || addressMap[correspondingAssetId.toLowerCase()];
             log.debug(`Address:`, address);
+            console.log(response);
+            log.debug(response);
             return address;
         } catch (err) {
             throw errors.CruxClientError.fromError(err);
