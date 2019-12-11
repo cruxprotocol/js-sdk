@@ -52,7 +52,7 @@ export class Encryption {
             ptBuffer = decrypt(ctBuffer, iv, pwHash, 16);
         } catch (err) {
             if (err instanceof DOMException) {
-                throw ErrorHelper.getPackageError(PackageErrorCode.DecryptionFailed);
+                throw ErrorHelper.getPackageError(err, PackageErrorCode.DecryptionFailed);
             }
             throw err;
         }

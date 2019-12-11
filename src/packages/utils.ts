@@ -1,7 +1,7 @@
 import * as bitcoin from "bitcoinjs-lib";
 import request from "request";
 import { cacheStorage} from "../index";
-import { ErrorHelper, PackageErrorCode } from "./error";
+import { BaseError, ErrorHelper, PackageErrorCode } from "./error";
 import { getLogger } from "./logger";
 import { IBitcoinKeyPair } from "./name-service/blockstack-service";
 
@@ -15,7 +15,7 @@ const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (
         fetch(url, fetchOptions)
             .then((res) => res.json())
             .then((json) => resolve(json))
-            .catch((err) => reject(new Error(err)));
+            .catch((err) => reject(new BaseError(null, err)));
     });
     return promise;
 };
@@ -42,6 +42,16 @@ const sanitizePrivKey = (privKey: string): string => {
         privKey = privKey.slice(0, 64);
     }
     return privKey;
+};
+
+const getRandomHexString = (): string => {
+    const randomValues = crypto.getRandomValues(new Uint8Array(32));
+    let result: string = "";
+    let i: number;
+    for (i = 0; i < randomValues.length; i++) {
+        result = result + (randomValues[i].toString(16).toUpperCase());
+    }
+    return result;
 };
 
 const cachedFunctionCall = async (cacheKey: string, ttl: number = 300, fn: (...args: any[]) => any, paramArray: any[], skipConditional?: (returnValue: any) => Promise<boolean>): Promise<any> => {
@@ -86,7 +96,7 @@ const getKeyPairFromPrivKey = (privKey: string): IBitcoinKeyPair => {
         try {
             publicKey = bitcoin.ECPair.fromPrivateKey(Buffer.from(privateKey, "hex")).publicKey.toString("hex");
         } catch (error) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.InvalidPrivateKeyFormat);
+            throw ErrorHelper.getPackageError(error, PackageErrorCode.InvalidPrivateKeyFormat);
         }
     }
 
@@ -103,4 +113,5 @@ export {
     sanitizePrivKey,
     cachedFunctionCall,
     getKeyPairFromPrivKey,
+    getRandomHexString,
 };

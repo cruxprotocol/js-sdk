@@ -216,7 +216,7 @@ describe('CruxClient tests', () => {
                 // @ts-ignore
                 const nameServiceGenerateIdentityStub = sinon.stub(cruxClient._nameService, 'generateIdentity').resolves({secrets: sampleUser['decryptedPayIDClaim'].identitySecrets})
                 // @ts-ignore
-                const nameServiceRegisterNameStub = sinon.stub(cruxClient._nameService, 'registerName').rejects(ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed));
+                const nameServiceRegisterNameStub = sinon.stub(cruxClient._nameService, 'registerName').rejects(ErrorHelper.getPackageError(null, PackageErrorCode.GaiaProfileUploadFailed));
 
                 // registerCruxID
                 const subdomain = "test";
@@ -371,7 +371,7 @@ describe('CruxClient tests', () => {
                 let cruxClient = new CruxClient(walletOptions);
                 await cruxClient.init()
                 let raisesException = false
-                let updateProfileStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').rejects(ErrorHelper.getPackageError(PackageErrorCode.GaiaProfileUploadFailed))
+                let updateProfileStub = sinon.stub(cruxClient._nameService, 'putAddressMapping').rejects(ErrorHelper.getPackageError(null, PackageErrorCode.GaiaProfileUploadFailed))
                 try {
                     await cruxClient.putAddressMap(sampleAddressMap)
                 } catch(e) {
