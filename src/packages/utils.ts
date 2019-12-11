@@ -45,11 +45,11 @@ const sanitizePrivKey = (privKey: string): string => {
 };
 
 const getRandomHexString = (): string => {
-    const randomValues = crypto.getRandomValues(new Uint8Array(16));
+    const randomValues = crypto.getRandomValues(new Uint8Array(32));
     let result: string = "";
     let i: number;
     for (i = 0; i < randomValues.length; i++) {
-        result = result + ((randomValues[i] * 16).toString(16).toUpperCase());
+        result = result + (randomValues[i].toString(16).toUpperCase());
     }
     return result;
 };
