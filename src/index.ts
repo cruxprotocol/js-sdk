@@ -163,7 +163,12 @@ export class CruxClient {
         this._options = Object.assign({}, options);
         // TODO: Need to validate options
 
-        this._getEncryptionKey = this._options.getEncryptionKey;
+        if (this._options.getEncryptionKey) {
+            this._getEncryptionKey = this._options.getEncryptionKey;
+        } else {
+            const encryptionKeyConst = utils.getRandomHexString();
+            this._getEncryptionKey = (): string => encryptionKeyConst;
+        }
         // log.debug(`Encryption key:`, this._getEncryptionKey())
 
         // Setting up the default modules as fallbacks
