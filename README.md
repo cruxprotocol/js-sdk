@@ -125,13 +125,6 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     - Description: Returns details of the current registered CruxID(if any) for this instance of the user wallet and its registration status
     - Params: None
     - Returns: Promise resolving to [CruxIDState](#cruxidstate)
-    
-8. ##### updatePassword(oldEncryptionKey, newEncryptionKey)
-    - Description: As all the values were encrypted by the string we got from getEncryptionKey. Whenever the user changes his password. This function needs to be called so all data is re-encrypted.
-    - Params:
-        - oldEncryptionKey => hash returned by getEncryptionKey before password changed.
-        - newEncryptionKey => hash returned by getEncryptionKey after password changed.
-    - Returns: Promise resolving to _boolean_ indicating successful password updation.
 
 
 ### SDK Object Definition
