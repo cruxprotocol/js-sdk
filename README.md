@@ -25,7 +25,7 @@ To initialize the sdk, you need to minimally pass a javascript object with follo
     - To help you get started, you can use `cruxdev` as the value which is already configured for our dev test users. It has 5 pre-registered crypto symbols for a fast start. You can contact us at [telegram](https://t.me/cruxpay_integration) channel for registration of your own walletClientName.
 3. **privateKey (optional)**
     - Required to re-initialise the CruxClient with same user across different devices.
-    - For clients using HD derivation paths, recommended to use the path (`m/889'/0/0'`) for CruxPay keypair node derivation with respect to account indices.
+    - For clients using HD derivation paths, recommended to use the path (`m/889'/0'/0'`) for CruxPay keypair node derivation with respect to account indices.
 
 `**Note:** Cruxprotocol JS SDK is case insensetive for cryptocurrency symbols and will always output lowercase symbols.`
 
