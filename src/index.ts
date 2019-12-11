@@ -21,6 +21,7 @@ const log = getLogger(__filename);
 export let cacheStorage: storage.StorageService;
 
 export {
+    config,
     encryption,
     errors,
     storage,
