@@ -7,6 +7,7 @@ import {
     encryption,
     errors,
     identityUtils,
+    inmemStorage,
     nameService,
     storage,
     utils,
@@ -23,6 +24,7 @@ export {
     encryption,
     errors,
     storage,
+    inmemStorage,
     nameService,
     blockstackService,
 };
