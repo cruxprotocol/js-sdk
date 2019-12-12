@@ -25,7 +25,7 @@ To initialize the sdk, you need to minimally pass a javascript object with follo
     - To help you get started, you can use `cruxdev` as the value which is already configured for our dev test users. It has 5 pre-registered crypto symbols for a fast start. You can contact us at [telegram](https://t.me/cruxpay_integration) channel for registration of your own walletClientName.
 3. **privateKey (optional)**
     - Required to re-initialise the CruxClient with same user across different devices.
-    - For clients using HD derivation paths, recommended to use the path (`m/889'/0/0'`) for CruxPay keypair node derivation with respect to account indices.
+    - For clients using HD derivation paths, recommended to use the path (`m/889'/0'/0'`) for CruxPay keypair node derivation with respect to account indices.
 
 `**Note:** Cruxprotocol JS SDK is case insensetive for cryptocurrency symbols and will always output lowercase symbols.`
 
@@ -125,13 +125,6 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     - Description: Returns details of the current registered CruxID(if any) for this instance of the user wallet and its registration status
     - Params: None
     - Returns: Promise resolving to [CruxIDState](#cruxidstate)
-    
-8. ##### updatePassword(oldEncryptionKey, newEncryptionKey)
-    - Description: As all the values were encrypted by the string we got from getEncryptionKey. Whenever the user changes his password. This function needs to be called so all data is re-encrypted.
-    - Params:
-        - oldEncryptionKey => hash returned by getEncryptionKey before password changed.
-        - newEncryptionKey => hash returned by getEncryptionKey after password changed.
-    - Returns: Promise resolving to _boolean_ indicating successful password updation.
 
 
 ### SDK Object Definition
