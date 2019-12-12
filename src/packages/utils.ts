@@ -22,10 +22,11 @@ const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (
 };
 
 const translateRequestOptionsToFetchOptions = (options: any): { url: string, fetchOptions: RequestInit} => {
+    console.log(options);
     const fetchOptions = Object.assign({}, options);
     delete fetchOptions.baseUrl;
     delete fetchOptions.url;
-    console.log("*******");
+    console.log("***************************");
     let url: string = "";
     if (options.baseUrl) {
         url += options.baseUrl;
@@ -33,13 +34,13 @@ const translateRequestOptionsToFetchOptions = (options: any): { url: string, fet
     if (options.url) {
         url += options.url;
     }
-    if (options.body) {
-        fetchOptions.body = JSON.stringify(options.body);
+    if (options.pool) {
+        url += options.pool;
     }
-    // if (options.params) {
-    //     url += options.params;
+    // if (options.body) {
+    //     fetchOptions.body = JSON.stringify(options.body);
     // }
-    console.log(options.params);
+    console.log(url);
     return {url, fetchOptions};
 };
 
