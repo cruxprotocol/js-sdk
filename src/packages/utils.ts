@@ -10,6 +10,7 @@ const log = getLogger(__filename);
 /* istanbul ignore next */
 const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (request.UrlOptions & request.CoreOptions)): Promise<object> => {
     log.debug("network_call:", options);
+    console.log(options);
     const promise: Promise<object> = new Promise((resolve, reject) => {
         const { url, fetchOptions } = translateRequestOptionsToFetchOptions(options);
         fetch(url, fetchOptions)
@@ -24,6 +25,7 @@ const translateRequestOptionsToFetchOptions = (options: any): { url: string, fet
     const fetchOptions = Object.assign({}, options);
     delete fetchOptions.baseUrl;
     delete fetchOptions.url;
+    console.log("*******");
     let url: string = "";
     if (options.baseUrl) {
         url += options.baseUrl;
@@ -34,6 +36,10 @@ const translateRequestOptionsToFetchOptions = (options: any): { url: string, fet
     if (options.body) {
         fetchOptions.body = JSON.stringify(options.body);
     }
+    // if (options.params) {
+    //     url += options.params;
+    // }
+    console.log(options.params);
     return {url, fetchOptions};
 };
 

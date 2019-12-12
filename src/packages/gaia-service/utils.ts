@@ -13,8 +13,8 @@ interface gaiaData {
     ownerAddress: string;
 }
 
-export const getContentFromGaiaHub = async (blockstackId: string, filename: string, bnsNodes: string[]): Promise<any> => {
-    const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackId, bnsNodes);
+export const getContentFromGaiaHub = async (blockstackId: string, filename: string, bnsNodes: string[], tag?: string): Promise<any> => {
+    const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackId, bnsNodes, tag);
     const fileUrl = gaiaDetails.gaiaReadUrl + gaiaDetails.ownerAddress + "/" + filename;
     const options = {
         json: true,
@@ -52,9 +52,9 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: stri
     return finalContent;
 };
 
-export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes: string[]): Promise<gaiaData> => {
+export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes: string[], tag?: string): Promise<gaiaData> => {
     let nameData: any;
-    nameData = await fetchNameDetails(blockstackId, bnsNodes);
+    nameData = await fetchNameDetails(blockstackId, bnsNodes, tag);
     log.debug(nameData);
     if (!nameData) {
         throw ErrorHelper.getPackageError(null, PackageErrorCode.BnsEmptyData);

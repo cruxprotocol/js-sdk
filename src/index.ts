@@ -237,12 +237,13 @@ export class CruxClient {
                 }
                 walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
                 let correspondingAssetId: string = "";
+                const tag = "Resolving address";
                 correspondingAssetId = await this._translateSymbolToAssetId(walletCurrencySymbol);
                 if (!correspondingAssetId) {
                     throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.AssetIDNotAvailable);
                 }
 
-                const addressMap = await this._nameService.getAddressMapping(fullCruxID);
+                const addressMap = await this._nameService.getAddressMapping(fullCruxID, tag);
                 log.debug(`Address map: `, addressMap);
                 if (!addressMap[correspondingAssetId]) {
                     throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.AddressNotAvailable);

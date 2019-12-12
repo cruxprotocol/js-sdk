@@ -6,8 +6,8 @@ import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
 
-export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[]): Promise<object|undefined> => {
-    const nodeResponses = bnsNodes.map((baseUrl) => bnsResolveName(baseUrl, blockstackId));
+export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[], tag?: string): Promise<object|undefined> => {
+    const nodeResponses = bnsNodes.map((baseUrl) => bnsResolveName(baseUrl, blockstackId, tag));
     log.debug(`BNS node responses:`, nodeResponses);
 
     const responsesArr: object[] = await Promise.all(nodeResponses);
@@ -39,9 +39,17 @@ export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[])
     return response;
 };
 
-const bnsResolveName = async (baseUrl: string, blockstackId: string): Promise<object> => {
+const bnsResolveName = async (baseUrl: string, blockstackId: string, tag?: string): Promise<object> => {
+    if (tag) {
+        console.log("**");
+        console.log(tag);
+        tag = tag.toString();
+    }
     const options = {
         baseUrl,
+        params: {
+            'x_tag' : tag,
+        },
         json: true,
         method: "GET",
         url: `/v1/names/${blockstackId}`,
