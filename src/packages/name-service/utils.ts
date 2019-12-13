@@ -40,15 +40,18 @@ export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[],
 };
 
 const bnsResolveName = async (baseUrl: string, blockstackId: string, tag?: string): Promise<object> => {
-    const options = {
+    const options: any = {
         baseUrl,
         json: true,
         method: "GET",
-        qs: {
-            "x-tag": tag,
-        },
         url: `/v1/names/${blockstackId}`,
     };
+    if (tag) {
+        options.qs = {
+            "x-tag": tag,
+        };
+    }
+
     let nameData;
     try {
         nameData = await cachedFunctionCall(`${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => Boolean(data && data.status && data.status !== "registered_subdomain"));
