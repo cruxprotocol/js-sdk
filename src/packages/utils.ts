@@ -21,7 +21,6 @@ const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (
 };
 
 const translateRequestOptionsToFetchOptions = (options: any): { url: string, fetchOptions: RequestInit} => {
-    console.log(options);
     const fetchOptions = Object.assign({}, options);
     delete fetchOptions.baseUrl;
     delete fetchOptions.url;

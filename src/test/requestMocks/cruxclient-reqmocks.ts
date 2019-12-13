@@ -53,7 +53,6 @@ let requestResponseArray: { request: object, response: object }[] = [
       url: '/v1/names/_config.scatter_dev_crux.id',
       json: true,
       qs: sinon.match.any
-
     },
     response: {
       address: "14WfvwxX5G9Nb1C4pq2RHn2bUophFLzrgf",
