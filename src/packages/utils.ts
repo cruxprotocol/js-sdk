@@ -32,7 +32,13 @@ const translateRequestOptionsToFetchOptions = (options: any): { url: string, fet
         url += options.url;
     }
     if (options.qs) {
-        url += "?" + Object.values(options.qs).toString();
+        const str = [];
+        for (const p in options.qs) {
+            if (options.qs.hasOwnProperty(p)) {
+                str.push(p + "=" + options.qs[p]);
+            }
+        }
+        url += "?" + str.join("&");
     }
     if (options.body) {
         fetchOptions.body = JSON.stringify(options.body);
