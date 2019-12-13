@@ -240,7 +240,7 @@ export class CruxClient {
                 }
                 walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
                 let correspondingAssetId: string = "";
-                const tag = "?resolving_address";
+                const tag = "resolving_address";
                 correspondingAssetId = await this._translateSymbolToAssetId(walletCurrencySymbol);
                 if (!correspondingAssetId) {
                     throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.AssetIDNotAvailable);

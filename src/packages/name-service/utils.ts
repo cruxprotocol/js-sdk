@@ -44,7 +44,9 @@ const bnsResolveName = async (baseUrl: string, blockstackId: string, tag?: strin
         baseUrl,
         json: true,
         method: "GET",
-        qs: tag,
+        qs: {
+            "x-tag": tag,
+        },
         url: `/v1/names/${blockstackId}`,
     };
     let nameData;
