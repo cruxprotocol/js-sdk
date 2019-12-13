@@ -1,3 +1,5 @@
+import sinon from 'sinon'
+
 let requestResponseArray: { request: object, response: object }[] = [
 
   {
@@ -5,7 +7,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "registered",
@@ -26,7 +29,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "registered",
@@ -47,7 +51,9 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/_config.scatter_dev_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
+
     },
     response: {
       address: "14WfvwxX5G9Nb1C4pq2RHn2bUophFLzrgf",
@@ -64,7 +70,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/yadunandan.cruxdev_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: "16DfDLZajnAwRotCx4L1NEkAEAijwsntHV",
@@ -81,7 +88,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/yadunandan.cruxdev_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: "16DfDLZajnAwRotCx4L1NEkAEAijwsntHV",
@@ -98,7 +106,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/syedhassanashraf.cruxdev_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: "16DfDLZajnAwRotCx4L1NEkAEAijwsntHV",
@@ -115,7 +124,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/syedhassanashraf.cruxdev_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: "16DfDLZajnAwRotCx4L1NEkAEAijwsntHV",
@@ -132,7 +142,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/_config.scatter_dev_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: "14WfvwxX5G9Nb1C4pq2RHn2bUophFLzrgf",

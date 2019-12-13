@@ -1,10 +1,13 @@
+import sinon from 'sinon'
+
 let requestResponseArray: { request: object, response: object }[] = [
   {
     request: {
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "registered",
@@ -25,7 +28,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/cruxdev.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: "14WfvwxX5G9Nb1C4pq2RHn2bUophFLzrgf",
@@ -42,7 +46,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/cruxdev.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: "14WfvwxX5G9Nb1C4pq2RHn2bUophFLzrgf",
@@ -59,7 +64,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/umang.cruxdev_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "registered_subdomain",
@@ -76,7 +82,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/umang.cruxdev_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "registered_subdomain",
@@ -157,7 +164,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "registered",
@@ -178,7 +186,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/mocked_domain_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "available",
@@ -189,7 +198,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/mocked_domain_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "available"
@@ -201,7 +211,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/mocked_subdomain.mocked_domain_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "available",
@@ -212,7 +223,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/mocked_subdomain.mocked_domain_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "available"
@@ -224,7 +236,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/_config.mocked_domain_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "available",
@@ -235,7 +248,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/_config.mocked_domain_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "available"
@@ -246,7 +260,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/_config.cruxdev_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: '14WfvwxX5G9Nb1C4pq2RHn2bUophFLzrgf',
@@ -263,7 +278,8 @@ let requestResponseArray: { request: object, response: object }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/_config.cruxdev_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: '14WfvwxX5G9Nb1C4pq2RHn2bUophFLzrgf',
