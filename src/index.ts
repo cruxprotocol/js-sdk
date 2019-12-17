@@ -61,6 +61,7 @@ export interface ICruxPayPeerOptions {
     getEncryptionKey: () => string;
     privateKey?: string;
     storage?: storage.StorageService;
+    cacheStorage?: storage.StorageService;
     encryption?: typeof encryption.Encryption;
     nameService?: nameService.NameService;
     walletClientName: string;
@@ -175,14 +176,18 @@ export class CruxClient {
         // log.debug(`Encryption key:`, this._getEncryptionKey())
 
         // Setting up the default modules as fallbacks
-        this._storage =  this._options.storage || new storage.LocalStorage();
+        if (this._options.privateKey) {
+            this._keyPair =  utils.getKeyPairFromPrivKey(this._options.privateKey);
+            this._storage =  this._options.storage || new inmemStorage.InMemStorage();
+        } else {
+            this._storage =  this._options.storage || new storage.LocalStorage();
+        }
         this._encryption = this._options.encryption || encryption.Encryption;
         this._nameService = this._options.nameService;
-        if (this._options.privateKey) { this._keyPair =  utils.getKeyPairFromPrivKey(this._options.privateKey); }
         this.walletClientName = this._options.walletClientName;
 
         // Assigning cacheStorage
-        cacheStorage = this._storage;
+        cacheStorage = this._options.cacheStorage || new storage.LocalStorage();
 
         log.info(`Config mode:`, config.CONFIG_MODE);
         log.info(`CruxPayClient: constructor called`);
