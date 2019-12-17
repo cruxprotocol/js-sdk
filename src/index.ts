@@ -303,7 +303,9 @@ export class CruxClient {
                 }
 
                 let identityClaim: nameService.IIdentityClaim;
-                if (this._keyPair) {
+                if (this._payIDClaim) {
+                    identityClaim = {secrets: this._payIDClaim.identitySecrets};
+                } else if (this._keyPair) {
                     identityClaim = {secrets: {identityKeyPair: this._keyPair}};
                 } else {
                     identityClaim = await (this._nameService as nameService.NameService).generateIdentity(this._storage, await this._getEncryptionKey());
@@ -315,9 +317,7 @@ export class CruxClient {
                 this._setPayIDClaim(new PayIDClaim({virtualAddress: registeredPublicID, identitySecrets: identityClaim.secrets}, { getEncryptionKey: this._getEncryptionKey }));
                 // await this._payIDClaim.setPasscode(passcode)
                 await (this._payIDClaim as PayIDClaim).encrypt();
-                if (!this._keyPair) {
-                    await (this._payIDClaim as PayIDClaim).save(this._storage);
-                }
+                await (this._payIDClaim as PayIDClaim).save(this._storage);
                 return;
             } catch (err) {
                 throw errors.CruxClientError.fromError(err);
