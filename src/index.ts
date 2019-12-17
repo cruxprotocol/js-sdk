@@ -59,7 +59,7 @@ export class AddressMapping {
 
 export interface ICruxPayPeerOptions {
     getEncryptionKey: () => string;
-    privateKey?: string;
+    privateKey: string;
     storage?: storage.StorageService;
     cacheStorage?: storage.StorageService;
     encryption?: typeof encryption.Encryption;
@@ -176,18 +176,14 @@ export class CruxClient {
         // log.debug(`Encryption key:`, this._getEncryptionKey())
 
         // Setting up the default modules as fallbacks
-        if (this._options.privateKey) {
-            this._keyPair =  utils.getKeyPairFromPrivKey(this._options.privateKey);
-            this._storage =  this._options.storage || new inmemStorage.InMemStorage();
-        } else {
-            this._storage =  this._options.storage || new storage.LocalStorage();
-        }
+        this._keyPair =  utils.getKeyPairFromPrivKey(this._options.privateKey);
+        this._storage =  this._options.storage || new inmemStorage.InMemStorage();
         this._encryption = this._options.encryption || encryption.Encryption;
         this._nameService = this._options.nameService;
         this.walletClientName = this._options.walletClientName;
 
         // Assigning cacheStorage
-        cacheStorage = this._options.cacheStorage || new storage.LocalStorage();
+        cacheStorage = this._options.cacheStorage || new inmemStorage.InMemStorage();
 
         log.info(`Config mode:`, config.CONFIG_MODE);
         log.info(`CruxPayClient: constructor called`);
@@ -308,13 +304,7 @@ export class CruxClient {
                 }
 
                 let identityClaim: nameService.IIdentityClaim;
-                if (this._payIDClaim) {
-                    identityClaim = {secrets: this._payIDClaim.identitySecrets};
-                } else if (this._keyPair) {
-                    identityClaim = {secrets: {identityKeyPair: this._keyPair}};
-                } else {
-                    identityClaim = await (this._nameService as nameService.NameService).generateIdentity(this._storage, await this._getEncryptionKey());
-                }
+                identityClaim = {secrets: {identityKeyPair: this._keyPair}};
 
                 const registeredPublicID = await (this._nameService as nameService.NameService).registerName(identityClaim, cruxIDSubdomain);
 

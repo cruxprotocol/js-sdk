@@ -1,4 +1,4 @@
-import { CruxClient, IAddressMapping, ICruxIDState, ICruxPayPeerOptions, errors } from "../index";
+import { CruxClient, IAddressMapping, ICruxIDState, ICruxPayPeerOptions, errors, storage } from "../index";
 // TODO: add optional import statement to use the build
 
 const doc = (document as {
@@ -54,7 +54,9 @@ doc.getElementById('publishAddresses').innerHTML = Object.keys(sampleAddressMap)
 // defining cruxClientOptions
 const cruxClientOptions: ICruxPayPeerOptions = {
     getEncryptionKey: () => encryptionKey,
-    walletClientName: walletClientName
+    walletClientName: walletClientName,
+    privateKey: "ed423eefab9ce91a3ed3d3a3f69380970b3bc8c72034e7baefd309aa07bd6bdd",
+    cacheStorage: new storage.LocalStorage(),
 }
 
 // initialising the cruxClient
