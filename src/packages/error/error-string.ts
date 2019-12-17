@@ -36,6 +36,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.GaiaProfileUploadFailed]: "Unable to upload '{0}' to gaia: '{1}'",
     [PackageErrorCode.GaiaUploadFailed]: "Unable to upload '{0}' to gaia: '{1}'",
     [PackageErrorCode.GetNamesByAddressFailed]: "'{0}' failed with error '{1}'",
+    [PackageErrorCode.InvalidPrivateKeyFormat]: "Private key should be either hex encoded, base64 encoded or WIF (base58 - compressed) only",
     [PackageErrorCode.KeyPairMismatch]: "Invalid keyPair provided",
     [PackageErrorCode.NameIntegrityCheckFailed]: "Name resolution integrity check failed",
     [PackageErrorCode.SubdomainLengthCheckFailure]: "Validation failed: Subdomain length must be between 4 to 20",

@@ -25,11 +25,11 @@ To initialize the sdk, you need to minimally pass a javascript object with follo
     - To help you get started, you can use `cruxdev` as the value which is already configured for our dev test users. It has 5 pre-registered crypto symbols for a fast start. You can contact us at [telegram](https://t.me/cruxpay_integration) channel for registration of your own walletClientName.
 3. **privateKey (optional)**
     - Required to re-initialise the CruxClient with same user across different devices.
-    - For clients using HD derivation paths, recommended to use the path (`m/889'/0/0'`) for CruxPay keypair node derivation with respect to account indices.
+    - For clients using HD derivation paths, recommended to use the path (`m/889'/0'/0'`) for CruxPay keypair node derivation with respect to account indices.
 
 `**Note:** Cruxprotocol JS SDK is case insensetive for cryptocurrency symbols and will always output lowercase symbols.`
 
-Example below shows how to a cruxClient instance. Note that all [SDK Operation](#sdk-operation) can oly be run after `.init()` is called.   
+Example below shows how to a cruxClient instance. These are the [SDK Operation](#sdk-operation) exposed.   
 ```javascript
 import crypto from "crypto";
 
@@ -45,12 +45,6 @@ let cruxClientOptions = {
 }
 
 let cruxClient = new CruxClient(cruxClientOptions);
-cruxClient.init()
-.then(() => {
-    console.log('CruxClient initialized');
-}).catch((err) => {
-    console.log('CruxClient error', err);
-})
 ```
 That's it! now you can use the cruxClient object to perform operations defined in [SDK Operation](#sdk-operation).
 ```javascript

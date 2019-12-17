@@ -29,12 +29,13 @@
             display: block;
         }
     </style>
-    
+
     <h4>Demo Wallet</h4>
     <br><span class="helper">wallet client:</span> <span class="walletClientName"></span><br>
     <br><span class="helper">wallet addresses:</span><br>
     <pre id="userAddresses"></pre>
     <br><span class="helper">wallet encryption key:</span> <span id="encryptionKey"></span><br>
+    <br><span class="helper">Init Mode:</span> <span id="mode"></span><br>
 
     ========================
 
@@ -43,7 +44,7 @@
     <div id="init">
         Initialising cruxClient...
     </div>
-    
+
     <div class="registered unregistered">
         <br><span class="helper">cruxID status:</span><br>
         <pre id="cruxIDStatus"></pre>
@@ -54,7 +55,7 @@
         <input id="registrationId" placeholder="ankit" style="text-align: right;">@<span class="walletClientName"></span>.crux <button onclick="isCruxIDAvailable()">Check</button><br>
         <pre id='availability'></pre>
     </div>
-    
+
     <div class="unregistered">
         <br><span class="helper">cruxID registration:</span><br>
         <input id="newSubdomain" placeholder="ankit" style="text-align: right;">@<span class="walletClientName"></span>.crux <button onclick="registerCruxID()">Register</button>
@@ -80,13 +81,13 @@
         <button onclick="getAddressMap()">Get Public Addresses</button>
         <pre id="addressMap"></pre>
     </div>
-    
+
     <div class="registered">
         <br><span class="helper">publish address map:</span><br>
         <div id="publishAddresses"></div><br>
         <button onclick="putAddressMap()">Publish Address</button>
         <pre id="putAddressMapAcknowledgement"></pre>
-    </div>   
+    </div>
 
     <div class="registered">
         <br><span class="helper">change password (effectively encryptionKey):</span><br>

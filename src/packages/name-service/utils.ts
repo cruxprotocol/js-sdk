@@ -1,7 +1,7 @@
 import { AssertionError, deepStrictEqual } from "assert";
-import { getLogger } from "../..";
 import { ErrorHelper, PackageErrorCode } from "../error";
 import { BlockstackId, CRUX_DOMAIN_SUFFIX, DEFAULT_BLOCKSTACK_NAMESPACE, IdTranslator } from "../identity-utils";
+import { getLogger } from "../logger";
 import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
@@ -23,7 +23,7 @@ export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[])
                 deepStrictEqual(prevRes, res);
             } catch (e) {
                 if (e instanceof AssertionError) {
-                    throw ErrorHelper.getPackageError(PackageErrorCode.NameIntegrityCheckFailed);
+                    throw ErrorHelper.getPackageError(e, PackageErrorCode.NameIntegrityCheckFailed);
                 } else {
                     log.error(e);
                     throw e;
@@ -50,7 +50,7 @@ const bnsResolveName = async (baseUrl: string, blockstackId: string): Promise<ob
     try {
         nameData = await cachedFunctionCall(`${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => Boolean(data && data.status && data.status !== "registered_subdomain"));
     } catch (error) {
-        throw ErrorHelper.getPackageError(PackageErrorCode.BnsResolutionFailed, baseUrl, error);
+        throw ErrorHelper.getPackageError(error, PackageErrorCode.BnsResolutionFailed, baseUrl, error);
     }
     return nameData;
 };
@@ -67,7 +67,9 @@ export const getCruxIDByAddress = async (walletClientName: string, address: stri
     if (!bsId) {
         // Fetch any pending registrations on the address using the registrar
         const pendingSubdomains = await fetchPendingRegistrationsByAddress(walletClientName, registrar, address);
-        bsId = pendingSubdomains[0];
+        if (pendingSubdomains.length !== 0) {
+            bsId = new BlockstackId({domain: IdTranslator.cruxDomainToBlockstackDomain(walletClientName), subdomain: pendingSubdomains[0]}).toString();
+        }
     }
     return (bsId && IdTranslator.blockstackToCrux(BlockstackId.fromString(bsId)).toString()) || null;
 };
@@ -84,7 +86,7 @@ const bnsFetchNamesByAddress = async (baseUrl: string, address: string): Promise
     try {
         namesData = ((await httpJSONRequest(options)) as {names: string[]});
     } catch (error) {
-        throw ErrorHelper.getPackageError(PackageErrorCode.GetNamesByAddressFailed, `${baseUrl}${url}`, error);
+        throw ErrorHelper.getPackageError(error, PackageErrorCode.GetNamesByAddressFailed, `${baseUrl}${url}`, error);
     }
     return namesData.names;
 };
@@ -114,7 +116,7 @@ const fetchPendingRegistrationsByAddress = async (walletClientName: string, regi
     try {
         registrationsArray = ((await httpJSONRequest(options)) as IPendingRegistration[]);
     } catch (error) {
-        throw ErrorHelper.getPackageError(PackageErrorCode.FetchPendingRegistrationsByAddressFailed, `${registrar}${url}`, error);
+        throw ErrorHelper.getPackageError(error, PackageErrorCode.FetchPendingRegistrationsByAddressFailed, `${registrar}${url}`, error);
     }
     return registrationsArray.map((registration) => {
         return registration.subdomainName;

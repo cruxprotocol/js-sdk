@@ -1,11 +1,10 @@
-import { getLogger } from "..";
 import config from "../config";
 import { ErrorHelper, PackageErrorCode } from "./error";
 import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "./gaia-service/utils";
 import * as identityUtils from "./identity-utils";
+import { getLogger } from "./logger";
 import { IIdentityClaim } from "./name-service";
 import * as blockstackService from "./name-service/blockstack-service";
-import { getCruxIDByAddress } from "./name-service/utils";
 
 const log = getLogger(__filename);
 const CONFIG_SUBDOMAIN = "_config";
@@ -75,7 +74,7 @@ export class ConfigurationService {
 
     public getBlockstackServiceConfig = async (userCruxID?: string, identityClaim?: IIdentityClaim): Promise<blockstackService.IBlockstackServiceInputOptions> => {
         if (!(this.clientConfig && this.nameServiceConfig)) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.ClientNotInitialized);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.ClientNotInitialized);
         }
         let nsConfig: blockstackService.IBlockstackServiceInputOptions = this.nameServiceConfig;
 
@@ -98,7 +97,7 @@ export class ConfigurationService {
 
     public getBnsNodes = (): string[] => {
         if (!this.clientConfig) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
         let bnsNodes: string[];
         if (this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.bnsNodes) {
@@ -112,21 +111,21 @@ export class ConfigurationService {
 
     public getGaiaHub = (): string => {
         if (!this.clientConfig) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
         return (this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.gaiaHub) || config.BLOCKSTACK.GAIA_HUB;
     }
 
     public getSubdomainRegistrar = (): string => {
         if (!this.clientConfig) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
         return (this.clientConfig.nameserviceConfiguration && this.clientConfig.nameserviceConfiguration.subdomainRegistrar) || config.BLOCKSTACK.SUBDOMAIN_REGISTRAR;
     }
 
     private _setupNameServiceConfig = async () => {
         if (!this.clientConfig) {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
         const nsConfiguration: blockstackService.IBlockstackServiceInputOptions = {
             bnsNodes: this.getBnsNodes(),
@@ -154,7 +153,7 @@ export class ConfigurationService {
             });
             this.globalAssetMap = globalMapping;
         } else {
-            throw ErrorHelper.getPackageError(PackageErrorCode.CouldNotFindAssetListInClientConfig);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindAssetListInClientConfig);
         }
     }
 

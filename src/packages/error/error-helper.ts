@@ -3,9 +3,9 @@ import {PackageError} from "./package-error";
 import {PackageErrorCode} from "./package-error-code";
 
 export class ErrorHelper {
-    public static getPackageError(errorCode: PackageErrorCode, ...optionalArgs: any[]): PackageError {
+    public static getPackageError(cause: Error | null, errorCode: PackageErrorCode, ...optionalArgs: any[]): PackageError {
         const message = ErrorHelper.getErrorMessage(errorCode, ...optionalArgs);
-        return new PackageError(message, errorCode as number);
+        return new PackageError(cause, message, errorCode as number);
     }
 
     private static getErrorMessage(errorCode: PackageErrorCode, ...optionalArgs: any[]): string {
