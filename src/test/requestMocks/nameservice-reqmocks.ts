@@ -1,10 +1,13 @@
+import sinon from "sinon";
+
 let requestResponseArray: { request: object, response: any }[] = [
   {
     request: {
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "registered",
@@ -25,7 +28,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://bns.coinswitch.co',
       url: '/v1/names/devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: "registered",
@@ -46,7 +50,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/cs1.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: '1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ',
@@ -65,7 +70,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/cs1.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: '1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ',
@@ -84,7 +90,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/sanchay.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: '1LFJroFs7G2TiHLu2iD6VgUeSe6qrTMg3Z',
@@ -103,7 +110,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/sanchay.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: '1LFJroFs7G2TiHLu2iD6VgUeSe6qrTMg3Z',
@@ -123,7 +131,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/example.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response:
     {
@@ -137,7 +146,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/example.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response:
     {
@@ -235,7 +245,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/carol.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       more: 'failed to find parent domain\'s resolver',
@@ -247,7 +258,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/carol.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: 'available',
@@ -271,7 +283,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/carol1.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       more: 'failed to find parent domain\'s resolver',
@@ -283,7 +296,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/carol1.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: 'available',
@@ -307,7 +321,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/carol2.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       more: 'failed to find parent domain\'s resolver',
@@ -319,7 +334,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/carol2.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: 'available',
@@ -343,7 +359,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/carol3.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       more: 'failed to find parent domain\'s resolver',
@@ -355,7 +372,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/carol3.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       status: 'available',
@@ -379,7 +397,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://core.blockstack.org',
       url: '/v1/names/carol4.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: '1FnntbZKRLB7rZFvng9PDgvMMEXMek1jrv',
@@ -398,7 +417,8 @@ let requestResponseArray: { request: object, response: any }[] = [
       method: 'GET',
       baseUrl: 'https://bns.cruxpay.com',
       url: '/v1/names/carol4.devcoinswitch_crux.id',
-      json: true
+      json: true,
+      qs: sinon.match.any
     },
     response: {
       address: '1FnntbZKRLB7rZFvng9PDgvMMEXMek1jrv',

@@ -15,7 +15,7 @@ export abstract class NameService {
     public abstract getNameAvailability = async (name: string): Promise<boolean> => false;
     public abstract registerName = async (identityClaim: IIdentityClaim, name: string): Promise<string> => "";
     public abstract getRegistrationStatus = async (identityClaim: IIdentityClaim): Promise<CruxIDRegistrationStatus> => ({status: "", statusDetail: ""});
-    public abstract getAddressMapping = async (name: string): Promise<IAddressMapping> => ({});
+    public abstract getAddressMapping = async (name: string, tag?: string): Promise<IAddressMapping> => ({});
     public abstract putAddressMapping = async (identityClaim: IIdentityClaim, addressMapping: IAddressMapping): Promise<void> => {return; };
 }
 

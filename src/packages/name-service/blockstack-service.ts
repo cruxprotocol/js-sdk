@@ -265,10 +265,10 @@ export class BlockstackService extends nameService.NameService {
         return;
     }
 
-    public getAddressMapping = async (fullCruxId: string): Promise<IAddressMapping> => {
+    public getAddressMapping = async (fullCruxId: string, tag?: string): Promise<IAddressMapping> => {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
-        return await this._getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, cruxId.components.domain);
+        return await this._getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, cruxId.components.domain, tag);
     }
 
     private _storeMnemonic = async (mnemonic: string, storage: StorageService, encryptionKey: string): Promise<void> => {
@@ -379,11 +379,11 @@ export class BlockstackService extends nameService.NameService {
         return finalURL;
     }
 
-    private _getContentFromGaiaHub = async (blockstackId: string, filename: UPLOADABLE_JSON_FILES, prefix: string): Promise<any> => {
+    private _getContentFromGaiaHub = async (blockstackId: string, filename: UPLOADABLE_JSON_FILES, prefix: string, tag?: string): Promise<any> => {
         const filenameToFetch = `${prefix}_${filename}`;
         let responseBody: any;
         try {
-            responseBody = await getContentFromGaiaHub(blockstackId, filenameToFetch, this._bnsNodes);
+            responseBody = await getContentFromGaiaHub(blockstackId, filenameToFetch, this._bnsNodes, tag);
             log.debug(`Response from ${filenameToFetch}`, responseBody);
         } catch (error) {
             if (error instanceof PackageError && error.errorCode) {
