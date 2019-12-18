@@ -1,6 +1,6 @@
 ### CruxPay Official Documentation
 
-[https://cruxprotocol.github.io/js-sdk](https://cruxprotocol.github.io/js-sdk)
+[https://docs.cruxpay.com](https://docs.cruxpay.com)
 
 ### What is CruxPay?
 
