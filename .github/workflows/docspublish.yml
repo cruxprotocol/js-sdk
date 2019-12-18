@@ -14,7 +14,8 @@ jobs:
       with:
         node-version: 12
     - run: npm ci
-    - run: npm run docs
+    - run: npm run version-docs
+    - run: npm run copy-latest-docs
 
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@releases/v3

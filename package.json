@@ -7,7 +7,8 @@
   "types": "lib/exports.d.ts",
   "scripts": {
     "test": "cross-env NODE_ENV=dev npm run set-local-config && TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 5000 src/test/*.ts",
-    "docs": "./node_modules/.bin/typedoc --out docs/$npm_package_version src/index.ts",
+    "copy-latest-docs": "cp -a docs/$npm_package_version/. docs/",
+    "version-docs": "./node_modules/.bin/typedoc --out docs/$npm_package_version src/index.ts",
     "coverage": "cross-env NODE_ENV=dev npm run set-local-config && ./node_modules/.bin/nyc npm run test",
     "set-local-config": "gulp localConfig",
     "wallet_demo": "npm run set-local-config && ./node_modules/.bin/parcel src/samples/wallet_demo.html --https --no-cache",
