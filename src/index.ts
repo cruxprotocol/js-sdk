@@ -282,6 +282,29 @@ export class CruxClient {
         }
     }
 
+    /**
+     * ```ts
+     *  const sampleAddressMap: IAddressMapping = {
+     *      'BTC': {
+     *          addressHash: '1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX'
+     *      },
+     *      'ETH': {
+     *          addressHash: '0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8'
+     *      },
+     *  }
+     *  // Advised to pipe the method putAddressMap to registerCruxID call
+     *  await cruxClient.registerCruxID("bob")
+     *      .then(() => {
+     *          return cruxClient.putAddressMap(sampleAddressMap)
+     *              .catch((addressUpdationError) => {
+     *                  // Handling addressUpdation error
+     *              })
+     *      })
+     *      .catch((registrationError) => {
+     *          // Handling registration error
+     *      })
+     * ```
+     */
     public registerCruxID = async (cruxIDSubdomain: string): Promise<void> => {
         // TODO: add isCruxIDAvailable check before
         await this.initPromise;
@@ -370,7 +393,8 @@ export class CruxClient {
             }
     }
 
-    public getAssetMapping = () => this.getAssetMap;    // For backward compatibility
+    // tslint:disable-next-line: member-ordering
+    public getAssetMapping = this.getAssetMap;    // For backward compatibility
 
     protected _setPayIDClaim = (payIDClaim: PayIDClaim): void => {
         this._payIDClaim = payIDClaim;

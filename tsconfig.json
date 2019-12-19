@@ -64,6 +64,14 @@
   "exclude": [
     "src/test",
     "src/samples"
-  ]
+  ],
+  "typedocOptions": {
+    "mode": "file",
+    "excludePrivate": true,
+    "excludeNotExported": true,
+    "excludeProtected": true,
+    "excludeExternals": true,
+    // "theme": "minimal",
+  }
 
 }

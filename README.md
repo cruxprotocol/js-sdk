@@ -1,3 +1,7 @@
+### CruxPay Official Documentation
+
+[https://docs.cruxpay.com](https://docs.cruxpay.com)
+
 ### What is CruxPay?
 
 [CruxPay](https://cruxpay.com/) is a protocol which aims to link any blockchain address to a human-readable name, and let users interact with each other and dApps with ease.
@@ -13,17 +17,13 @@ First you need to get cruxpay sdk into your project. This can be done using the 
 
 ### SDK Initialisation: 
 To initialize the sdk, you need to minimally pass a javascript object with following details:-
-1. **getEncryptionKey**
-    - function reference that return a **constant string** which will be used to encrypt all data that is stored in localStorage. 
-    - This should change for each user, so we recommend it is related to user’s password like a sha256 hash of it. 
-    - For example check `getPassHashedEncryptionKey` function in code example below.
-2. **walletClientName**
+1. **walletClientName**
     - walletClientName is the key which identifies the wallet specific configurations stored in gaiaHub like 
         1. Subdomain Registrar Information
         2. BNS(BlockStack Name Service) Node
         3. Currency symbol map of your wallet
     - To help you get started, you can use `cruxdev` as the value which is already configured for our dev test users. It has 5 pre-registered crypto symbols for a fast start. You can contact us at [telegram](https://t.me/cruxpay_integration) channel for registration of your own walletClientName.
-3. **privateKey (optional)**
+2. **privateKey (optional)**
     - Required to re-initialise the CruxClient with same user across different devices.
     - For clients using HD derivation paths, recommended to use the path (`m/889'/0'/0'`) for CruxPay keypair node derivation with respect to account indices.
 
@@ -31,15 +31,7 @@ To initialize the sdk, you need to minimally pass a javascript object with follo
 
 Example below shows how to a cruxClient instance. These are the [SDK Operation](#sdk-operation) exposed.   
 ```javascript
-import crypto from "crypto";
-
-function getPassHashedEncryptionKey() {
-    let user_password = getUserPassword();  // to be implemented by wallet
-    return crypto.createHash('sha256').update(user_password).digest();
-}
-
 let cruxClientOptions = {
-    getEncryptionKey: getPassHashedEncryptionKey,     
     walletClientName: 'cruxdev',
     privateKey: "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f"  // (optional parameter)
 }
@@ -52,6 +44,7 @@ cruxClient.getCruxIDState().then((cruxIDState) => {
     console.log(cruxIDState);
 })
 ```
+
 
 Wallet clients are encouraged to surface the respective `ERROR_CODE` of the `CruxClientError` to their Users with any custom error messages. This will help in debugging any issues with the functionality.
 
@@ -116,7 +109,7 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     - Description: Helps to update 2 things:-
         - publish/change list of publicly accessible currency addresses.
         - change the value of addressHash and/or secIdentifier to another one.
-    - Note: The addresses are now publicly linked and can be resolved. To get which currencies can be part of newAddressMap please call `getAssetMapping()`.
+    - Note: The addresses are now publicly linked and can be resolved. To get which currencies can be part of newAddressMap please call `getAssetMap()`.
     - Params:
         - newAddressMap of type [IAddressMapping](#iaddressmapping) has modified map has symbols and addresses a user wants to publically expose with CruxID.
     - Returns: Promise resolving to {success: [IPutAddressMapSuccess](#iputaddressmapSuccess), failures: [IPutAddressMapFailures](#iputaddressmapfailures)}
@@ -125,148 +118,6 @@ Refer [error-handling.md](https://github.com/cruxprotocol/js-sdk/blob/master/err
     - Description: Returns details of the current registered CruxID(if any) for this instance of the user wallet and its registration status
     - Params: None
     - Returns: Promise resolving to [CruxIDState](#cruxidstate)
-
-
-### SDK Object Definition
-
-
-1. ##### CruxID
-    - Example: `devtest@cruxdev.crux`
-    - Type: String
-    - Description: User’s unique human readable ID, created by the wallet using the sdk. In the above example (`devtest@cruxdev.crux`), `devtest` is subdomain part of CruxID and `cruxdev` is the domain part of CruxID.
-
-2. ##### CruxIDRegistrationStatus
-    - Example:
-        ```
-        {
-            status: "PENDING",
-            statusDetail: "Your subdomain was registered in transaction"
-        }
-        ```
-    - Type: javascript object
-    - Description: Defines the status in the registration process of the CruxID. It has 2 subcomponent.
-        - status: 
-            - Type: string
-            - Description: which can have the following values [UNKNOWN, PENDING, REJECTED, DONE]
-        - statusDetail:
-            - Type: string
-            - Description: which contains further details/reason about the status.
-
-3. ##### CruxIDState
-    
-    - Example:
-    ```
-    {
-       cruxID: <CruxID>,
-       registration_status: <CruxIDRegistrationStatus>
-    }
-    ```
-    - Type: javascript object
-    - Description: Return the current registered ID and its status.
-
-4. ##### IAddress
-    - Example:
-    ```
-    {
-       addressHash: string,
-       secIdentifier: string, # optional
-    }
-    ```
-    - Type: javascript object
-    - Description: Address object. Here, **secIdentifier** is an optional field and can be skipped or sent as empty string if not required by blockchain or blockchain supports yet you don’t want to add it.
-
-5. ##### walletCurrencySymbol
-
-    - Type: String
-    - Description: Wallet’s currency symbol for any crypto.
-
-6. ##### IAddressMapping
-
-    - Example: 
-    ```
-    {
-        'BTC': {
-            addressHash: '1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX'
-        },
-        'ETH': {
-            addressHash: '0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8'
-        },
-        'XLM': {
-            addressHash: 'GA2XP4KMY4KWNPW4KUCUKYUF2J7Y6HO5HLPUEA3VPVSMYCM3TGNEZP5S',
-        },
-        'EOS': {
-            addressHash: 'cocoinswitch',
-            secIdentifier: '108660'    
-        }
-    }
-    ```
-    - Type: javascript object
-    - Description: Map of [walletCurrencySymbol](#walletcurrencysymbol) to [IAddress](#iaddress). You can see in above example, the exchange can skip secIdentifier for currency with memo/tag if it so desires(like its done for XLM above).
-
-7. ##### IGlobalAsset
-    - Example:
-    ```
-    {
-        "assetId":"d79b9ece-a918-4523-b2bc-74071675b54a",
-        "symbol":"ltc",
-        "name":"Litecoin",
-        "assetType":null,
-        "decimals":8,
-        "assetIdentifierName":null,
-        "assetIdentifierValue":null,
-        "parentAssetId":null
-    }
-    ```
-    - Type: javascript object
-    - Description: Asset object. Describing properties of asset.
-
-8. ##### IResolvedClientAssetMapping
-
-    - Example: 
-    ```
-    {
-        'ltc': {
-            "assetId":"d79b9ece-a918-4523-b2bc-74071675b54a",
-            "symbol":"ltc",
-            "name":"Litecoin",
-            "assetType":null,
-            "decimals":8,
-            "assetIdentifierName":null,
-            "assetIdentifierValue":null,
-            "parentAssetId":null
-        },
-        'btc': {
-            "assetId":"d78c26f8-7c13-4909-bf62-57d7623f8ee8",
-            "symbol":"btc",
-            "name":"Bitcoin",
-            "assetType":null,
-            "decimals":8,
-            "assetIdentifierName":null,
-            "assetIdentifierValue":null,
-            "parentAssetId":null
-        },
-    }
-    ```
-    - Type: javascript object
-    - Description: Map of [walletCurrencySymbol](#walletcurrencysymbol) to [IGlobalAsset](#iglobalasset).
-
-9. ##### IPutAddressMapFailures
-    - Example:
-    ```
-    {
-        "monero": "4011: Currency does not exist in wallet's client mapping"
-    }
-    ```
-
-10. ##### IPutAddressMapSuccess
-    - Example:
-    ```
-    {
-        "eth": {
-            "addressHash": "0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8"
-        }
-    }
-    ```
 
 
 ### Building
@@ -297,6 +148,11 @@ npm run-script test
 npm run-script wallet_demo
 ```
 Running the above command will build a [demo page](https://localhost:1234), here you can play around with all method that are exposed by the sdk.
+
+
+### References
+
+Find references to all available methods at [https://cruxprotocol.github.io/js-sdk](https://cruxprotocol.github.io/js-sdk).
 
 
 ### How can I contribute?
