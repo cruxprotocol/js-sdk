@@ -4,6 +4,7 @@ import { cacheStorage} from "../index";
 import { BaseError, ErrorHelper, PackageErrorCode } from "./error";
 import { getLogger } from "./logger";
 import { IBitcoinKeyPair } from "./name-service/blockstack-service";
+import { LocalStorage } from "./storage";
 
 const log = getLogger(__filename);
 

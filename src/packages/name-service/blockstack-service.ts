@@ -150,17 +150,6 @@ export class BlockstackService extends nameService.NameService {
 
     }
 
-    public generateIdentity = async (storage: StorageService, encryptionKey: string): Promise<nameService.IIdentityClaim> => {
-        const newMnemonic = this._generateMnemonic();
-        await this._storeMnemonic(newMnemonic, storage, encryptionKey);
-        const identityKeyPair = await this._generateIdentityKeyPair(newMnemonic);
-        return {
-            secrets: {
-                identityKeyPair,
-            },
-        };
-    }
-
     public registerName = async (identityClaim: nameService.IIdentityClaim, subdomain: string): Promise<string> => {
         const identityKeyPair: IBitcoinKeyPair = identityClaim.secrets.identityKeyPair;
 
@@ -282,19 +271,6 @@ export class BlockstackService extends nameService.NameService {
 
     private _generateMnemonic = (): string => {
         return bip39.generateMnemonic(128, randomBytes);
-    }
-
-    private _generateIdentityKeyPair = async (mnemonic: string): Promise<IBitcoinKeyPair> => {
-        const wallet = new blockstack.BlockstackWallet(bip32.fromSeed(bip39.mnemonicToSeedSync(mnemonic)));
-        // Using the first identity key pair for now
-        // TODO: need to validate the name registration on the address if already available
-        const { address, key, keyID} = wallet.getIdentityKeyPair(0);
-        const identityKeyPair: IBitcoinKeyPair = {
-            address,
-            privKey: utils.sanitizePrivKey(key),
-            pubKey: keyID,
-        };
-        return identityKeyPair;
     }
 
     private _registerSubdomain = async (name: string, bitcoinAddress: string): Promise<string> => {
