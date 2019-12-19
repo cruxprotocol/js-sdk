@@ -392,7 +392,8 @@ export class CruxClient {
             }
     }
 
-    public getAssetMapping = () => this.getAssetMap;    // For backward compatibility
+    // tslint:disable-next-line: member-ordering
+    public getAssetMapping = this.getAssetMap;    // For backward compatibility
 
     protected _setPayIDClaim = (payIDClaim: PayIDClaim): void => {
         this._payIDClaim = payIDClaim;
