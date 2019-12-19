@@ -105,7 +105,6 @@ export class PayIDClaim implements ICruxPayClaim {
         if (!this._isEncrypted()) {
             if (!encryptionKey) {
                 encryptionKey = await this._getEncryptionKey();
-                console.log(encryptionKey);
             }
             this.identitySecrets = JSON.stringify(await this._encryption.encryptJSON(this.identitySecrets as object, encryptionKey));
         }
@@ -118,7 +117,6 @@ export class PayIDClaim implements ICruxPayClaim {
             const encryptedObj = JSON.parse(this.identitySecrets as string);
             if (!encryptionKey) {
                 encryptionKey = await this._getEncryptionKey();
-                console.log(encryptionKey);
             }
             this.identitySecrets = (await this._encryption.decryptJSON(encryptedObj.encBuffer, encryptedObj.iv, encryptionKey) as nameService.IIdentityClaim);
         }
@@ -130,13 +128,6 @@ export class PayIDClaim implements ICruxPayClaim {
             virtualAddress: this.virtualAddress,
         }));
         return json;
-    }
-
-    public save = async (storageService: storage.StorageService): Promise<void> => {
-        await this.encrypt();
-        const json = this.toJSON();
-        // log.debug(`PayIDClaim being stored to storage:`, json)
-        await storageService.setJSON("payIDClaim", json);
     }
 
     private _isEncrypted = (): boolean => {

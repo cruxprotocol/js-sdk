@@ -12,7 +12,6 @@ const doc = (document as {
 // Demo wallet artifacts
 
 let walletClientName = "cruxdev"
-let encryptionKey = "fookey"
 // Value can be withoutInit or withInit
 let mode = "withoutInit"
 const wallet_btc_address = "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V"
@@ -39,10 +38,8 @@ const sampleAddressMap: IAddressMapping = {
 
 const url = new URL(window.location.href);
 mode = url.searchParams.get("mode") || mode;
-encryptionKey = url.searchParams.get("overrideEncryptionKey") || encryptionKey;
 walletClientName = url.searchParams.get("walletClientName") || walletClientName;
 
-doc.getElementById('encryptionKey').textContent = `'${encryptionKey}'`;
 doc.getElementById('mode').textContent = `'${mode}'`;
 [].forEach.call(doc.getElementsByClassName('walletClientName'), (el: HTMLElement) => { el.textContent = walletClientName })
 doc.getElementById('currency').innerHTML = Object.keys(sampleAddressMap).map((currency) => { return `<option value="${currency}">${currency}</option>` }).join('\n')
@@ -53,10 +50,9 @@ doc.getElementById('publishAddresses').innerHTML = Object.keys(sampleAddressMap)
 // --- @crux/js-sdk integration --- //
 // defining cruxClientOptions
 const cruxClientOptions: ICruxClientOptions = {
-    getEncryptionKey: () => encryptionKey,
     walletClientName: walletClientName,
-    privateKey: "850433f3a2f12f0fb890041e1daed6bd491a973ec569936d41ac62cb8441ee5101",
     cacheStorage: new storage.LocalStorage(),
+    // privateKey: "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37f7c6f",
 }
 
 // initialising the cruxClient
@@ -251,7 +247,6 @@ declare global {
         getAddressMap: Function;
         putAddressMap: Function;
         getCruxIDState: Function;
-        updatePassword: Function;
     }
 }
 
