@@ -8,10 +8,21 @@ import { ConfigurationService } from '../packages/configuration-service';
 import requestFixtures from './requestMocks/config-reqmocks';
 import { BlockstackService } from '../packages/name-service/blockstack-service';
 import * as gaiaUtils from '../packages/gaia-service/utils';
-import { errors } from '..';
+import { errors, cacheStorage } from '..';
+import { LocalStorage } from '../packages/storage';
 var assert = require('chai').assert
 
 describe("Configuration Tests", () => {
+    beforeEach(() => {
+      // @ts-ignore
+      cacheStorage = new LocalStorage();
+    })
+
+    afterEach(() => {
+      // @ts-ignore
+      cacheStorage = undefined;
+    })
+
     describe("after init tests", () => {
       
         let httpJSONRequestStub: sinon.SinonStub

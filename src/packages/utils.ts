@@ -4,6 +4,7 @@ import { cacheStorage} from "../index";
 import { BaseError, ErrorHelper, PackageErrorCode } from "./error";
 import { getLogger } from "./logger";
 import { IBitcoinKeyPair } from "./name-service/blockstack-service";
+import { LocalStorage } from "./storage";
 
 const log = getLogger(__filename);
 
@@ -30,6 +31,15 @@ const translateRequestOptionsToFetchOptions = (options: any): { url: string, fet
     }
     if (options.url) {
         url += options.url;
+    }
+    if (options.qs) {
+        const str = [];
+        for (const p in options.qs) {
+            if (options.qs.hasOwnProperty(p)) {
+                str.push(p + "=" + options.qs[p]);
+            }
+        }
+        url += "?" + str.join("&");
     }
     if (options.body) {
         fetchOptions.body = JSON.stringify(options.body);

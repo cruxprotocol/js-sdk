@@ -6,8 +6,8 @@ import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
 
-export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[]): Promise<object|undefined> => {
-    const nodeResponses = bnsNodes.map((baseUrl) => bnsResolveName(baseUrl, blockstackId));
+export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[], tag?: string): Promise<object|undefined> => {
+    const nodeResponses = bnsNodes.map((baseUrl) => bnsResolveName(baseUrl, blockstackId, tag));
     log.debug(`BNS node responses:`, nodeResponses);
 
     const responsesArr: object[] = await Promise.all(nodeResponses);
@@ -39,13 +39,20 @@ export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[])
     return response;
 };
 
-const bnsResolveName = async (baseUrl: string, blockstackId: string): Promise<object> => {
-    const options = {
+const bnsResolveName = async (baseUrl: string, blockstackId: string, tag?: string): Promise<object> => {
+    const options: any = {
         baseUrl,
         json: true,
         method: "GET",
+        qs: null,
         url: `/v1/names/${blockstackId}`,
     };
+    if (tag) {
+        options.qs = {
+            "x-tag": tag,
+        };
+    }
+
     let nameData;
     try {
         nameData = await cachedFunctionCall(`${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => Boolean(data && data.status && data.status !== "registered_subdomain"));

@@ -8,6 +8,8 @@ import sinon from 'sinon';
 import requestFixtures from "./requestMocks/nameservice-reqmocks";
 import * as blockstack from 'blockstack';
 import config from '../config';
+import { cacheStorage } from '..';
+import { LocalStorage } from '../packages/storage';
 
 
 
@@ -17,6 +19,8 @@ describe('getContentFromGaiaHub tests', () => {
     let publicKeyToAddressStub: sinon.SinonStub;
 
     beforeEach(() => {
+        // @ts-ignore
+        cacheStorage = new LocalStorage();
         httpJSONRequestStub = sinon.stub(utils, 'httpJSONRequest').throws('unhandled in mocks')
         verifyProfileTokenStub = sinon.stub(blockstack, 'verifyProfileToken').resolves("mocked verification")
         publicKeyToAddressStub = sinon.stub(blockstack, 'publicKeyToAddress').resolves("mocked public address")
@@ -31,6 +35,8 @@ describe('getContentFromGaiaHub tests', () => {
         verifyProfileTokenStub.restore()
         publicKeyToAddressStub.restore()
         localStorage.clear()
+        // @ts-ignore
+        cacheStorage = undefined;
     });
     it('if it fails to get file content throws filename specific error', async () => {
         let request = {
