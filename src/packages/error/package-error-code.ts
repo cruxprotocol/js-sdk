@@ -41,6 +41,7 @@ export enum PackageErrorCode {
     ExistingCruxIDFound = 4012,
     CruxIDUnavailable = 4013,
     InvalidPrivateKeyFormat = 4014,
+    PrivateKeyRequired = 4015,
     // Internal errors
     CouldNotFindBlockstackConfigurationServiceClientConfig = 5001,
     CouldNotFindKeyPairToRestoreIdentity = 5002,

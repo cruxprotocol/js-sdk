@@ -7,7 +7,7 @@ import { blockstackService, errors } from "../packages";
 import * as utils from "../packages/utils";
 import requestFixtures from "./requestMocks/nameservice-reqmocks";
 import * as blockstack from 'blockstack';
-import { IAddressMapping } from '../index';
+import { IAddressMapping, cacheStorage } from '../index';
 import { sanitizePrivKey } from "../packages/utils";
 import { UPLOADABLE_JSON_FILES } from '../packages/name-service/blockstack-service';
 import { getCruxIDByAddress } from '../packages/name-service/utils';
@@ -55,6 +55,8 @@ describe('BlockstackService tests', () => {
   }
 
   beforeEach(() => {
+    // @ts-ignore
+    cacheStorage = new LocalStorage();
     localStorage.clear();
     
     // Handling mock stubs
@@ -75,20 +77,11 @@ describe('BlockstackService tests', () => {
     connectToGaiaHubStub.restore()
     uploadToGaiaHubStub.restore()
     localStorage.clear()
+    // @ts-ignore
+    cacheStorage = undefined;
   })
 
   // Test cases
-
-  describe('generateIdentity tests', () => {
-    it('always generates a proper identity claim (mnemonic and a keypair)', async () => {
-      let generatedIdentityClaim = await blkstkService.generateIdentity(new LocalStorage(), "fooKey")
-      expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('pubKey').to.be.a('string')
-      expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('privKey').to.be.a('string')
-      expect(generatedIdentityClaim).haveOwnProperty('secrets').haveOwnProperty('identityKeyPair').haveOwnProperty('address').to.be.a('string')
-      // @ts-ignore
-      expect(localStorage.getItem(blockstackService.MNEMONIC_STORAGE_KEY)).is.not.undefined
-    })
-  })
 
   describe('restoreIdentity tests', () => {
     it('given cruxID and identityClaim with mnemonic, should return the corresponding full identityClaim', async () => {

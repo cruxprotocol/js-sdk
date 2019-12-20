@@ -39,6 +39,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.InvalidPrivateKeyFormat]: "Private key should be either hex encoded, base64 encoded or WIF (base58 - compressed) only",
     [PackageErrorCode.KeyPairMismatch]: "Invalid keyPair provided",
     [PackageErrorCode.NameIntegrityCheckFailed]: "Name resolution integrity check failed",
+    [PackageErrorCode.PrivateKeyRequired]: "CruxClient should be intantiated with a private key",
     [PackageErrorCode.SubdomainLengthCheckFailure]: "Validation failed: Subdomain length must be between 4 to 20",
     [PackageErrorCode.SubdomainRegexMatchFailure]: "Validation failed: Subdomain should start with alphabet and end with alphabet or number. Allowed characters are lowercase alphabets, numbers, - and _",
     [PackageErrorCode.SubdomainRegistrationAcknowledgementFailed]: "Register call to registrar failed: '{0}'",

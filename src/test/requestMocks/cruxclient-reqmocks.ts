@@ -217,6 +217,40 @@ let requestResponseArray: { request: object, response: object }[] = [
       read_url_prefix: "https://gaia.cruxpay.com/"
     }
   },
+  {
+    request: {
+      "baseUrl":"https://core.blockstack.org",
+      "json":true,
+      "method":"GET",
+      "url":"/v1/addresses/bitcoin/16DfDLZajnAwRotCx4L1NEkAEAijwsntHV"
+    },
+    response: {
+      names: ["yadunandan.devcoinswitch.id"]
+    }
+  },
+  {
+    request: {
+      "baseUrl":"https://bns.cruxpay.com",
+      "json":true,
+      "method":"GET",
+      "url":"/v1/addresses/bitcoin/16DfDLZajnAwRotCx4L1NEkAEAijwsntHV"
+    },
+    response: {
+      names: ["yadunandan.devcoinswitch.id"]
+    }
+  },
+  {
+    request: {
+      "baseUrl":"https://registrar.coinswitch.co:4000",
+      "headers":{
+        "x-domain-name":"scatter_dev_crux"
+      },
+      "json":true,
+      "method":"GET",
+      "url":"/subdomain/16DfDLZajnAwRotCx4L1NEkAEAijwsntHV"
+    },
+    response: []
+  }
 
 ]
   

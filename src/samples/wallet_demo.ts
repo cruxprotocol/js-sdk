@@ -1,4 +1,4 @@
-import { CruxClient, IAddressMapping, ICruxIDState, ICruxPayPeerOptions, errors } from "../index";
+import { CruxClient, IAddressMapping, ICruxIDState, ICruxClientOptions, errors, storage } from "../index";
 // TODO: add optional import statement to use the build
 
 const doc = (document as {
@@ -12,7 +12,6 @@ const doc = (document as {
 // Demo wallet artifacts
 
 let walletClientName = "cruxdev"
-let encryptionKey = "fookey"
 // Value can be withoutInit or withInit
 let mode = "withoutInit"
 const wallet_btc_address = "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V"
@@ -39,10 +38,8 @@ const sampleAddressMap: IAddressMapping = {
 
 const url = new URL(window.location.href);
 mode = url.searchParams.get("mode") || mode;
-encryptionKey = url.searchParams.get("overrideEncryptionKey") || encryptionKey;
 walletClientName = url.searchParams.get("walletClientName") || walletClientName;
 
-doc.getElementById('encryptionKey').textContent = `'${encryptionKey}'`;
 doc.getElementById('mode').textContent = `'${mode}'`;
 [].forEach.call(doc.getElementsByClassName('walletClientName'), (el: HTMLElement) => { el.textContent = walletClientName })
 doc.getElementById('currency').innerHTML = Object.keys(sampleAddressMap).map((currency) => { return `<option value="${currency}">${currency}</option>` }).join('\n')
@@ -52,9 +49,10 @@ doc.getElementById('publishAddresses').innerHTML = Object.keys(sampleAddressMap)
 
 // --- @crux/js-sdk integration --- //
 // defining cruxClientOptions
-const cruxClientOptions: ICruxPayPeerOptions = {
-    getEncryptionKey: () => encryptionKey,
-    walletClientName: walletClientName
+const cruxClientOptions: ICruxClientOptions = {
+    walletClientName: walletClientName,
+    cacheStorage: new storage.LocalStorage(),
+    // privateKey: "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37f7c6f",
 }
 
 // initialising the cruxClient
@@ -198,23 +196,6 @@ const getCruxIDState = async (): Promise<ICruxIDState> => {
     }
     return cruxIDStatus
 }
-const updatePassword = async () => {
-    let UIResponse: string = ""
-    let oldEncryptionKey = doc.getElementById('oldEncryptionKey').value
-    let newEncryptionKey = doc.getElementById('newEncryptionKey').value
-    try {
-        await cruxClient.updatePassword(oldEncryptionKey, newEncryptionKey)
-        UIResponse = 'updated password successfully!'
-    } catch (e) {
-        if (e instanceof errors.CruxClientError) {
-            UIResponse = `${e.errorCode}: ${e}`
-        } else {
-            UIResponse = e
-        }
-    } finally {
-        doc.getElementById('passwordUpdateAcknowledgement').textContent = UIResponse
-    }
-}
 
 function handleCruxIDStatus(cruxIDStatus) {
     if (cruxIDStatus.status.status === "DONE") {
@@ -266,7 +247,6 @@ declare global {
         getAddressMap: Function;
         putAddressMap: Function;
         getCruxIDState: Function;
-        updatePassword: Function;
     }
 }
 
@@ -278,4 +258,3 @@ window.getAssetMap = getAssetMap;
 window.getAddressMap = getAddressMap;
 window.putAddressMap = putAddressMap;
 window.getCruxIDState = getCruxIDState;
-window.updatePassword = updatePassword;
