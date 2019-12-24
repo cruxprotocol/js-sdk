@@ -1,7 +1,7 @@
 import { DomainRegistrationStatus } from ".";
-import { IClientAssetMapping, IGlobalAssetList } from "../packages/configuration-service";
-import { getLogger } from "../packages/logger";
-import { IBlockstackServiceInputOptions } from "../packages/name-service/blockstack-service";
+import { IClientAssetMapping, IGlobalAssetList } from "../../packages/configuration-service";
+import { getLogger } from "../../packages/logger";
+import { IBlockstackServiceInputOptions } from "../../packages/name-service/blockstack-service";
 
 const log = getLogger(__filename);
 

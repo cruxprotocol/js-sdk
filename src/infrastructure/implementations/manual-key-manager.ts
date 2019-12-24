@@ -1,6 +1,6 @@
 import { PubkeyHashSigner } from "blockstack";
 import { TokenSigner } from "jsontokens";
-import { IKeyManager } from "../../domain-entities";
+import { IKeyManager } from "../../core/interfaces/key-manager";
 import { getLogger } from "../../packages/logger";
 import { getKeyPairFromPrivKey } from "../../packages/utils";
 

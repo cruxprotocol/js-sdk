@@ -1,11 +1,10 @@
 import { CruxOnBoardingClient, ICruxOnBoardingClientOptions, errors } from "../index";
 import { ManualKeyManager } from "../infrastructure/implementations/manual-key-manager";
 import { BlockstackCruxDomainRepository } from "../infrastructure/implementations/blockstack-crux-domain-repository";
-import { BlockstackCruxAssetTranslatorRepository } from "../infrastructure/implementations/blockstack-crux-asset-translator-repository";
 import { LocalStorage } from "../packages/storage";
-import { DomainRegistrationStatus } from "../domain-entities";
 import { IGlobalAssetList, IClientAssetMapping } from "../packages/configuration-service";
 import { IBlockstackServiceInputOptions } from "../packages/name-service/blockstack-service";
+import { DomainRegistrationStatus } from "../core/entities";
 
 const doc = (document as {
     getElementById: Function,

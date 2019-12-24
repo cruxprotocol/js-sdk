@@ -1,5 +1,5 @@
 import { publicKeyToAddress, uploadToGaiaHub, wrapProfileToken } from "blockstack";
-import { IKeyManager } from "../../domain-entities";
+import { IKeyManager } from "../../core/interfaces/key-manager";
 import { getLogger } from "../../packages/logger";
 import { getRandomHexString } from "../../packages/utils";
 

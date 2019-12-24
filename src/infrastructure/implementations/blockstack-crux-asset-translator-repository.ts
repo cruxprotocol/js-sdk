@@ -1,5 +1,6 @@
-import { ICruxAssetTranslatorRepository, IKeyManager } from "../../domain-entities";
-import { CruxAssetTranslator } from "../../domain-entities/crux-asset-translator";
+import { CruxAssetTranslator } from "../../core/entities/crux-asset-translator";
+import { ICruxAssetTranslatorRepository } from "../../core/interfaces/crux-asset-translator-repository";
+import { IKeyManager } from "../../core/interfaces/key-manager";
 import { getLogger } from "../../packages/logger";
 
 const log = getLogger(__filename);

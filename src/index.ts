@@ -1,7 +1,10 @@
 import "regenerator-runtime/runtime";
 import config from "./config";
-import { DomainRegistrationStatus, ICruxAssetTranslatorRepository, ICruxDomainRepository, IKeyManager } from "./domain-entities";
-import { CruxDomain } from "./domain-entities/crux-domain";
+import { DomainRegistrationStatus } from "./core/entities";
+import { CruxDomain } from "./core/entities/crux-domain";
+import { ICruxAssetTranslatorRepository } from "./core/interfaces/crux-asset-translator-repository";
+import { ICruxDomainRepository } from "./core/interfaces/crux-domain-repository";
+import { IKeyManager } from "./core/interfaces/key-manager";
 import { BlockstackCruxAssetTranslatorRepository } from "./infrastructure/implementations/blockstack-crux-asset-translator-repository";
 import { BlockstackCruxDomainRepository } from "./infrastructure/implementations/blockstack-crux-domain-repository";
 // Importing packages

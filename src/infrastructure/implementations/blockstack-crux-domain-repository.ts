@@ -1,7 +1,9 @@
 import { publicKeyToAddress, transactions} from "blockstack";
-import { CruxDomain } from "../../domain-entities/crux-domain";
-import { CruxSpec } from "../../domain-entities/crux-spec";
-import { DomainRegistrationStatus, ICruxDomainRepository, IKeyManager } from "../../domain-entities/index";
+import { CruxDomain } from "../../core/entities/crux-domain";
+import { CruxSpec } from "../../core/entities/crux-spec";
+import { DomainRegistrationStatus } from "../../core/entities/index";
+import { IKeyManager } from "../../core/interfaces/key-manager";
+import { ICruxDomainRepository } from "../../core/interfaces/crux-domain-repository";
 import { IClientConfig } from "../../packages/configuration-service";
 import { BaseError, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { getContentFromGaiaHub } from "../../packages/gaia-service/utils";
