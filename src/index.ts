@@ -2,6 +2,8 @@ import "regenerator-runtime/runtime";
 import config from "./config";
 import { DomainRegistrationStatus, ICruxAssetTranslatorRepository, ICruxDomainRepository, IKeyManager } from "./domain-entities";
 import { CruxDomain } from "./domain-entities/crux-domain";
+import { BlockstackCruxAssetTranslatorRepository } from "./infrastructure/implementations/blockstack-crux-asset-translator-repository";
+import { BlockstackCruxDomainRepository } from "./infrastructure/implementations/blockstack-crux-domain-repository";
 // Importing packages
 import {
     blockstackService,
@@ -17,8 +19,6 @@ import {
 import { IClientAssetMapping } from "./packages/configuration-service";
 import { getLogger } from "./packages/logger";
 import { getCruxIDByAddress } from "./packages/name-service/utils";
-import { BlockstackCruxDomainRepository } from "./infrastructure/implementations/blockstack-crux-domain-repository";
-import { BlockstackCruxAssetTranslatorRepository } from "./infrastructure/implementations/blockstack-crux-asset-translator-repository";
 
 const log = getLogger(__filename);
 
