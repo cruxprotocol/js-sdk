@@ -246,7 +246,7 @@ declare global {
         getAssetMap: Function;
         getAddressMap: Function;
         putAddressMap: Function;
-        getCruxDomainState: Function;
+        getCruxIDState: Function;
     }
 }
 
@@ -257,4 +257,4 @@ window.resolveCurrencyAddressForCruxID = resolveCurrencyAddressForCruxID;
 window.getAssetMap = getAssetMap;
 window.getAddressMap = getAddressMap;
 window.putAddressMap = putAddressMap;
-window.getCruxDomainState = getCruxIDState;
+window.getCruxIDState = getCruxIDState;
