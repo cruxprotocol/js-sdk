@@ -71,7 +71,7 @@ export const getCruxDomainByAddress = async (address: string, bnsNodes: string[]
         const regex = new RegExp(`(.+)_crux\.${DEFAULT_BLOCKSTACK_NAMESPACE}`);
         const match = domain.match(regex);
         return match && match[1];
-    }).filter((id) => id != null);
+    }).filter((id) => id != null) as string[];
     return bsIdArray;
 };
 
