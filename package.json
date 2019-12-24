@@ -12,6 +12,7 @@
     "coverage": "cross-env NODE_ENV=dev npm run set-local-config && ./node_modules/.bin/nyc npm run test",
     "set-local-config": "gulp localConfig",
     "wallet_demo": "npm run set-local-config && ./node_modules/.bin/parcel src/samples/wallet_demo.html --https --no-cache",
+    "onboarding_demo": "npm run set-local-config && ./node_modules/.bin/parcel src/samples/onboarding_demo.html --https --no-cache",
     "typecheck": "./node_modules/.bin/tsc --noEmit",
     "transpile": "./node_modules/.bin/tsc || true",
     "build:js": "npm run set-local-config && ./node_modules/.bin/parcel build src/index.ts -d dist --out-file cruxpay-sdk.js --no-minify",
@@ -92,6 +93,7 @@
     "blockstack": "^19.2.5",
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
-    "regenerator-runtime": "^0.13.3"
+    "regenerator-runtime": "^0.13.3",
+    "src": "^1.1.2"
   }
 }

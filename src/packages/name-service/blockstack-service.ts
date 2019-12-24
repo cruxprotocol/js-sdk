@@ -1,7 +1,5 @@
 import { Decoder, object, optional, string } from "@mojotech/json-type-validation";
 import * as bip39 from "bip39";
-import {bip32} from "bitcoinjs-lib";
-import * as blockstack from "blockstack";
 import { IAddress, IAddressMapping } from "../..";
 
 import {randomBytes} from "crypto";

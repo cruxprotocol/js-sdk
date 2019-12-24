@@ -12,6 +12,8 @@ export enum PackageErrorCode {
     KeyPairMismatch = 1010,
     DifferentWalletCruxID = 1011,
     GetAddressMapFailed = 1012,
+    GetDomainsByAddressFailed = 1013,
+    DomainNotRegistered = 1014,
     // 2000s: Gaia errors
     GaiaUploadFailed = 2001,
     GaiaCruxPayUploadFailed = 2002,
@@ -50,4 +52,5 @@ export enum PackageErrorCode {
     CouldNotFindAssetListInClientConfig = 5005,
     CouldNotFindKeyPairToRegisterName = 5006,
     ClientNotInitialized = 5007,
+    MissingCruxDomain = 5008,
 }

@@ -54,8 +54,8 @@ const sanitizePrivKey = (privKey: string): string => {
     return privKey;
 };
 
-const getRandomHexString = (): string => {
-    const randomValues = crypto.getRandomValues(new Uint8Array(32));
+const getRandomHexString = (length: number = 32): string => {
+    const randomValues = crypto.getRandomValues(new Uint8Array(length));
     let result: string = "";
     let i: number;
     for (i = 0; i < randomValues.length; i++) {
