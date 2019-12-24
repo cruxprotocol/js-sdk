@@ -93,6 +93,6 @@
     "blockstack": "^19.2.5",
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
-    "regenerator-runtime": "^0.13.3",
+    "regenerator-runtime": "^0.13.3"
   }
 }
