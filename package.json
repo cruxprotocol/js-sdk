@@ -94,6 +94,5 @@
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
     "regenerator-runtime": "^0.13.3",
-    "src": "^1.1.2"
   }
 }
