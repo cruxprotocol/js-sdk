@@ -7,7 +7,7 @@ import { ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { getLogger } from "../../packages/logger";
 const log = getLogger(__filename);
 export interface IManualCruxAssetTranslatorRepositoryOptions extends ICruxAssetTranslatorRepositoryOptions {
-    assetMapping: IClientAssetMapping;
+    assetMapping?: IClientAssetMapping;
 }
 export class ManualCruxAssetTranslatorRepository implements ICruxAssetTranslatorRepository {
     private _assetMapping: IClientAssetMapping;

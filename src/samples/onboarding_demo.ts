@@ -106,6 +106,7 @@ doc.getElementById('clientAssets').textContent = Object.keys(sampleAssetMapping)
 const cruxOnBoardingClientOptions: ICruxOnBoardingClientOptions = {
     cacheStorage: new LocalStorage(),
     // configKey: "9d642ba222d8fa887c108472883d702511b9e06d004f456a78d85a740b789dd2",
+    // assetMapping: sampleAssetMapping,
 }
 
 // initialising the cruxOnBoardingClient

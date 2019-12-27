@@ -36,11 +36,13 @@ export class CruxOnBoardingClient {
         setCacheStorage(options.cacheStorage || new InMemStorage());
         // set the repository constructors to be used further in the client
         this._cruxDomainRepository = BlockstackCruxDomainRepository;
-        this._cruxAssetTranslatorRepository = BlockstackCruxAssetTranslatorRepository;
+        this._cruxAssetTranslatorRepository = options.assetMapping ? ManualCruxAssetTranslatorRepository : BlockstackCruxAssetTranslatorRepository;
         // set the keyManagers if available
         this._configKeyManager =  typeof options.configKey === "string" ? new ManualKeyManager(options.configKey) : options.configKey;
         // set the domainContext if domain is provided
         this._domainContext = options.domain;
+        // set the assetMappingOverride if provided
+        this._assetMapping = options.assetMapping;
         this._initPromise = this._init();
         log.info("CruxOnBoardingClient initialised");
     }
