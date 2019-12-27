@@ -23,6 +23,9 @@ export class BlockstackCruxAssetTranslatorRepository implements ICruxAssetTransl
     }
     public get = async (): Promise<CruxAssetTranslator|undefined> => {
         const clientConfig = await BlockstackService.getClientConfig(this._domainContext, this._bnsNodes);
+        if (!clientConfig) {
+            return;
+        }
         return new CruxAssetTranslator(clientConfig.assetMapping, clientConfig.assetList);
     }
     public save = async (cruxAssetTranslator: CruxAssetTranslator, keyManager: IKeyManager): Promise<CruxAssetTranslator> => {
