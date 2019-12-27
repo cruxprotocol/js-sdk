@@ -4,6 +4,7 @@ import { LocalStorage } from "../packages/storage";
 import { IGlobalAssetList, IClientAssetMapping } from "../packages/configuration-service";
 import { IBlockstackServiceInputOptions } from "../packages/name-service/blockstack-service";
 import { DomainRegistrationStatus } from "../core/entities/crux-domain";
+import { ManualKeyManager } from "../infrastructure/implementations/manual-key-manager";
 
 const doc = (document as {
     getElementById: Function,
@@ -102,9 +103,34 @@ doc.getElementById('clientAssets').textContent = Object.keys(sampleAssetMapping)
 
 // ----- @crux/js-sdk integration --- //
 
+// ManualKeyManager
+let signatureRequestsCount = 0;
+const manualKeyManager = new ManualKeyManager("03c2156930598a7e4832ebb8b435abcc657b1f14b7953b2145ae25268dd6141c1f", (payload: any): Promise<string> => {
+    doc.getElementById("signer").style.display = "block";
+    const signatureRequests = doc.getElementById("signatureRequests");
+    const index = signatureRequestsCount;
+    const payloadString = JSON.stringify(payload);
+    console.log(payloadString);
+    signatureRequests.innerHTML += `
+        <br><pre id="payload_${index}" style="overflow-x:scroll;">${payloadString}</pre><br>
+        <textarea id="signature_${index}" rows="10" cols="50%"></textarea><br>
+    `
+    signatureRequestsCount += 1;
+    const signaturePromise = new Promise<string>((resolve, reject) => {
+        const submitSignatures = doc.getElementById("submitSignatures");
+        submitSignatures.addEventListener('click', () => {
+            const signature = doc.getElementById(`signature_${index}`);
+            doc.getElementById("signer").style.display = "none";
+            resolve(signature.value);
+        })
+    })
+    return signaturePromise;
+});
+
 // defining cruxOnBoardingClientOptions
 const cruxOnBoardingClientOptions: ICruxOnBoardingClientOptions = {
     cacheStorage: new LocalStorage(),
+    // configKey: manualKeyManager,
     // configKey: "9d642ba222d8fa887c108472883d702511b9e06d004f456a78d85a740b789dd2",
     // assetMapping: sampleAssetMapping,
 }

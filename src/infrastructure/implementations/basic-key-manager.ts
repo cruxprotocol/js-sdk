@@ -10,7 +10,7 @@ export class BasicKeyManager implements IKeyManager {
         const keyPair = getKeyPairFromPrivKey(privateKey);
         this._privateKey = keyPair.privKey;
         this._publicKey = keyPair.pubKey;
-        log.info("ManualKeyManager initialised");
+        log.info("BasicKeyManager initialised");
     }
     public signWebToken = async (payload: any): Promise<string> => {
         const signedMsg = new TokenSigner("ES256K", this._privateKey).sign(payload);
