@@ -1,7 +1,7 @@
 import { CruxAssetTranslator } from "../entities/crux-asset-translator";
 import { IKeyManager } from "./key-manager";
 export interface ICruxAssetTranslatorRepository {
-    get: (domain: string) => Promise<CruxAssetTranslator|undefined>;
+    get: () => Promise<CruxAssetTranslator|undefined>;
     save: (cruxAssetTranslator: CruxAssetTranslator, keyManager: IKeyManager) => Promise<CruxAssetTranslator>;
     restore: (keyManager: IKeyManager) => Promise<CruxAssetTranslator|undefined>;
 }
