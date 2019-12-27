@@ -1,8 +1,9 @@
+import { config } from "../../index";
 import globalAssetList from "../global-asset-list.json";
 export const CruxSpec = {
     blockstack: class blockstack {
-        public static gaiaWriteURL: string = "https://hub.cruxpay.com";
-        public static bnsNodes: string[] = ["https://bns.cruxpay.com"];
+        public static gaiaWriteURL: string = config.BLOCKSTACK.GAIA_HUB;
+        public static bnsNodes: string[] = config.BLOCKSTACK.BNS_NODES;
         public static getDomainBlockstackID = (domain: string): string => {
             return `${domain}_crux.id`;
         }
