@@ -15,7 +15,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
     private _bnsNodes: string[];
     private _domainContext?: string;
     constructor(options?: IBlockstackCruxDomainRepositoryOptions) {
-        this._bnsNodes = options && options.bnsNodes || CruxSpec.blockstack.bnsNodes;
+        this._bnsNodes = options && options.bnsNodes && [...new Set([...CruxSpec.blockstack.bnsNodes, ...options.bnsNodes])] || CruxSpec.blockstack.bnsNodes;
         this._domainContext = options && options.domainContext;
         log.info("BlockstackCruxDomainRepository initialised");
     }

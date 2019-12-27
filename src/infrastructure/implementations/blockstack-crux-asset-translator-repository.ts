@@ -14,7 +14,7 @@ export class BlockstackCruxAssetTranslatorRepository implements ICruxAssetTransl
     private _bnsNodes: string[];
     private _domainContext: string;
     constructor(options?: IBlockstackCruxAssetTranslatorRepositoryOptions) {
-        this._bnsNodes = options && options.bnsNodes || CruxSpec.blockstack.bnsNodes;
+        this._bnsNodes = options && options.bnsNodes && [...new Set([...CruxSpec.blockstack.bnsNodes, ...options.bnsNodes])] || CruxSpec.blockstack.bnsNodes;
         if (!options || !options.domainContext) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingDomainContext);
         }
