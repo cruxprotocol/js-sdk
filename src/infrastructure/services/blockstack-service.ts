@@ -70,8 +70,8 @@ export class BlockstackService {
         const configSubdomainAddress = publicKeyToAddress(await keyManager.getPubKey());
         const registeredBlockstackIDs = await BlockstackService.getRegisteredIDsByAddress(configSubdomainAddress, bnsNodes);
         const registeredDomainArray = registeredBlockstackIDs
-            .map((blockstackID: string) => blockstackID.match(new RegExp("^([0-9]|[a-z]|-|_)+.(.+)_crux.id$")))
-            .map((match) => match && match[2])
+            .map((blockstackID: string) => blockstackID.match(new RegExp("^_config.(.+)_crux.id$")))
+            .map((match) => match && match[1])
             .filter((domain) => domain !== undefined) as string[];
         if (domainContext && registeredDomainArray.includes(domainContext)) {
             return domainContext;
