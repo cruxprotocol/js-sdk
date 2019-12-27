@@ -329,7 +329,7 @@ export class CruxClient {
         await this.initPromise;
         try {
                 if (!this._authenticated) {
-                    throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.ConfigKeyManagerRequired);
+                    throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.PrivateKeyRequired);
                 }
                 const {assetAddressMap, success, failures} = await this._getAssetAddressMapFromCurrencyAddressMap(newAddressMap);
                 await (this._payIDClaim as PayIDClaim).decrypt();
@@ -345,7 +345,7 @@ export class CruxClient {
         await this.initPromise;
         try {
                 if (!this._authenticated) {
-                    throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.ConfigKeyManagerRequired);
+                    throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.PrivateKeyRequired);
                 }
                 const currencyAddressMap: IAddressMapping = {};
                 if (this._payIDClaim && this._payIDClaim.virtualAddress && this._configService) {
