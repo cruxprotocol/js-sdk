@@ -1,8 +1,10 @@
 import { CruxAssetTranslator } from "../entities/crux-asset-translator";
 import { IKeyManager } from "./key-manager";
-// CruxAssetTranslator
 export interface ICruxAssetTranslatorRepository {
-    create: (domain: string, keyManager: IKeyManager) => Promise<CruxAssetTranslator>;
-    get: (domain: string) => Promise<CruxAssetTranslator>;
-    save: (cruxAssetTranslator: CruxAssetTranslator, keyManager: IKeyManager) => Promise<void>;
+    get: (domain: string) => Promise<CruxAssetTranslator|undefined>;
+    save: (cruxAssetTranslator: CruxAssetTranslator, keyManager: IKeyManager) => Promise<CruxAssetTranslator>;
+    restore: (keyManager: IKeyManager) => Promise<CruxAssetTranslator|undefined>;
 }
+// tslint:disable-next-line: no-empty-interface
+export interface ICruxAssetTranslatorRepositoryOptions {}
+export type ICruxAssetTranslatorRepositoryConstructor = new (options?: ICruxAssetTranslatorRepositoryOptions) => ICruxAssetTranslatorRepository;

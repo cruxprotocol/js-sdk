@@ -1,0 +1,2042 @@
+[
+    {
+        "symbol": "BNB",
+        "name": "Binance Coin",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xB8c77482e45F1F44dE1745F52C74426C631bDD52",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "7c3baa3c-f5e8-490a-88a1-e0a052b7caa4"
+    },
+    {
+        "symbol": "USDT",
+        "name": "Tether",
+        "decimals": null,
+        "assetIdentifierName": "Property ID",
+        "assetIdentifierValue": 394,
+        "parentAssetId": null,
+        "assetType": "OMNI",
+        "assetId": "c0a38c0b-f249-4d4b-a17d-d03a95e09fa6"
+    },
+    {
+        "symbol": "ZEL",
+        "name": "ZelCash",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "d7eecb5a-b370-4a40-af1a-ce5910e89c33"
+    },
+    {
+        "symbol": "TESTNET",
+        "name": "Test Coin",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "cb80d38c-cae1-4e39-bddc-171e0d009fec"
+    },
+    {
+        "symbol": "BTCZ",
+        "name": "BitcoinZ",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "0ccadfd4-7ab3-40d9-afdd-28cf75eed7d5"
+    },
+    {
+        "symbol": "BTX",
+        "name": "Bitcore",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "cced16b1-4326-42e2-a5dd-bf9cae4d3517"
+    },
+    {
+        "symbol": "HUSH",
+        "name": "Hush",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "ef025446-52a0-42aa-bebe-060aa1678617"
+    },
+    {
+        "symbol": "SONM",
+        "name": "Sonm",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x983f6d60db79ea8ca4eb9968c6aff8cfa04b3c63",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "8900d824-c0db-460f-b64f-e81f4e95a8ba"
+    },
+    {
+        "symbol": "ZIL",
+        "name": "Zilliqa",
+        "decimals": 12,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x05f4a42e251f2d52b8ed15e9fedaacfcef1fad27",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "2f907203-347d-436e-8180-1684586f8826"
+    },
+    {
+        "symbol": "0X",
+        "name": "0x",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xe41d2489571d322189246dafa5ebde1f4699f498",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "5d61cd00-ab51-403a-8804-133ecbb15a2a"
+    },
+    {
+        "symbol": "KCS",
+        "name": "KuCoin",
+        "decimals": 6,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x039b5649a59967e3e936d7471f9c3700100ee1ab",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "69317f2b-37da-477c-af45-c4a939f7c7c0"
+    },
+    {
+        "symbol": "KNC",
+        "name": "Kyber",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xdd974d5c2e2928dea5f71b9825b8b646686bd200",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "5ff04c4e-ed84-4c56-b18b-c8c0a1de3e4e"
+    },
+    {
+        "symbol": "ENG",
+        "name": "Enigma",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xf0ee6b27b759c9893ce4f094b49ad28fd15a23e4",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "c9e5e717-e3f5-45eb-80c8-fd8f721e56a1"
+    },
+    {
+        "symbol": "SUB",
+        "name": "Substratum",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x8d75959f1e61ec2571aa72798237101f084de63a",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "734f8ecf-f505-4535-9d02-b70160df8406"
+    },
+    {
+        "symbol": "STX",
+        "name": "Stox",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x006BeA43Baa3f7A6f765F14f10A1a1b08334EF45",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "de2ed866-46b9-48a8-b582-df5a9dfd29d4"
+    },
+    {
+        "symbol": "XSG",
+        "name": "Snowgem",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "3e083bd5-d5b7-4918-b05e-cd76fe2979c8"
+    },
+    {
+        "symbol": "BTCP",
+        "name": "Bitcoin Private",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "6a980721-ec24-4248-b3be-2fb49202be87"
+    },
+    {
+        "symbol": "ANON",
+        "name": "Anon",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "142e9a63-26fb-45cf-83e6-3f08417cd089"
+    },
+    {
+        "symbol": "ZEN",
+        "name": "Horizen",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "200de082-92d0-4473-892c-85feddc999c7"
+    },
+    {
+        "symbol": "SAFE",
+        "name": "Safecoin",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "f35cac77-92d5-4912-a79f-a83a258b39ce"
+    },
+    {
+        "symbol": "KMD",
+        "name": "Komodo",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "3d247a88-fb3d-43e1-95d3-b4cf67d20b16"
+    },
+    {
+        "symbol": "XZC",
+        "name": "Zcoin",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "90ea7839-016f-4cd0-b88c-2c738f7740e4"
+    },
+    {
+        "symbol": "ZERO",
+        "name": "Zero",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "ab840712-a824-43f5-adff-5ecf55463dff"
+    },
+    {
+        "symbol": "ABT",
+        "name": "ArcBlock",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xb98d4c97425d9908e66e53a6fdf673acca0be986",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "0c232e93-055f-4ca3-9a8e-90f9a2a20339"
+    },
+    {
+        "symbol": "ADX",
+        "name": "AdEx",
+        "decimals": 4,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x4470bb87d77b963a013db939be332f927f2b992e",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "72ef492d-56dc-457f-bd58-19d87c73df3c"
+    },
+    {
+        "symbol": "AE",
+        "name": "Aeternity",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x5ca9a71b1d01849c0a95490cc00559717fcf0d1d",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "05098835-7b2c-4b5b-9f25-7b49b058bc97"
+    },
+    {
+        "symbol": "BBO",
+        "name": "Bigbom",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x84f7c44b6fed1080f647e354d552595be2cc602f",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "2c73dcac-8050-405f-a0b0-d0a5b208bbbe"
+    },
+    {
+        "symbol": "BLZ",
+        "name": "Bluzelle",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x5732046a883704404f284ce41ffadd5b007fd668",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "444f5384-05d0-4cf1-b373-3a4b33780796"
+    },
+    {
+        "symbol": "COFI",
+        "name": "CoinFi",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x3136ef851592acf49ca4c825131e364170fa32b3",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "143399ca-3803-4f49-9fd8-3b4d2687d08c"
+    },
+    {
+        "symbol": "DGX",
+        "name": "Digix Gold",
+        "decimals": 9,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x4f3afec4e5a3f2a6a1a411def7d7dfe50ee057bf",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "7a45b108-27ae-4634-b5e8-1c1c663bf1e8"
+    },
+    {
+        "symbol": "ELEC",
+        "name": "Electrify",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xd49ff13661451313ca1553fd6954bd1d9b6e02b9",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "5cfb209c-2117-4702-bb0c-6e3fcda7c776"
+    },
+    {
+        "symbol": "ELF",
+        "name": "Aelf",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xbf2179859fc6D5BEE9Bf9158632Dc51678a4100e",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "11d58e2f-8baf-452e-8041-71ae5a9f6d48"
+    },
+    {
+        "symbol": "ENJ",
+        "name": "EnjinCoin",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "090fc3e1-6c48-45ca-8bd4-fcef4def8865"
+    },
+    {
+        "symbol": "IOST",
+        "name": "IOST",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xfa1a856cfa3409cfa145fa4e20eb270df3eb21ab",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "aa6a5fa4-c7c2-43b6-9f57-95329d1ce339"
+    },
+    {
+        "symbol": "DENT",
+        "name": "DENT",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x3597bfd533a99c9aa083587b074434e61eb0a258",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "551ec9bb-62a2-4032-8dce-13ec418b743a"
+    },
+    {
+        "symbol": "LEND",
+        "name": "ETHLend",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x80fB784B7eD66730e8b1DBd9820aFD29931aab03",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "1cb6816b-5f99-44c1-959a-85bad7eeae67"
+    },
+    {
+        "symbol": "LRC",
+        "name": "Loopring",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xEF68e7C694F40c8202821eDF525dE3782458639f",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "091914bb-d5c3-439f-be08-a315ed752e0c"
+    },
+    {
+        "symbol": "QASH",
+        "name": "QASH",
+        "decimals": 6,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x618e75ac90b12c6049ba3b27f5d5f8651b0037f6",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "2c633f27-9c57-4fd7-9005-5d3422b64f2f"
+    },
+    {
+        "symbol": "ICN",
+        "name": "Iconomi",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x888666CA69E0f178DED6D75b5726Cee99A87D698",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "08ef14a3-b162-4cd4-aec7-d23a94f8c4ad"
+    },
+    {
+        "symbol": "RDN",
+        "name": "Raiden Token",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "a250b8e7-4214-42d9-9567-2cbd4dad5b1a"
+    },
+    {
+        "symbol": "REQ",
+        "name": "Request Network",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x8f8221afbb33998d8584a2b05749ba73c37a938a",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "01f9b537-d73a-48d2-acde-8b2639186bf3"
+    },
+    {
+        "symbol": "SALT",
+        "name": "SALT",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x4156D3342D5c385a87D264F90653733592000581",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "432ffb34-df15-42ac-ab92-0cf4aa66eb10"
+    },
+    {
+        "symbol": "EDO",
+        "name": "Eidoo",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xced4e93198734ddaff8492d525bd258d49eb388e",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "b5c10674-fa95-422a-a6dd-a54ededc54e5"
+    },
+    {
+        "symbol": "DCN",
+        "name": "Dentacoin",
+        "decimals": 0,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x08d32b0da63e2C3bcF8019c9c5d849d7a9d791e6",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "34b3952b-b8b2-4a62-b54d-259df3619e02"
+    },
+    {
+        "symbol": "WAX",
+        "name": "WAX",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x39Bb259F66E1C59d5ABEF88375979b4D20D98022",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "c3b8a66c-0eec-4b75-8519-e9ae9283fca1"
+    },
+    {
+        "symbol": "WINGS",
+        "name": "Wings",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x667088b212ce3d06a1b553a7221E1fD19000d9aF",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "9fd3e932-6140-43e7-bbe9-7dcfae10fd4a"
+    },
+    {
+        "symbol": "DATA",
+        "name": "Data",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x69b148395ce0015c13e36bffbad63f49ef874e03",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "6f15f5df-d526-4670-8afc-26a7fafb5154"
+    },
+    {
+        "symbol": "KIN",
+        "name": "KIN",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x818fc6c2ec5986bc6e2cbf00939d90556ab12ce5",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "39c343cb-65a9-4d58-9f59-f32f99441661"
+    },
+    {
+        "symbol": "ZCL",
+        "name": "Zclassic",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "0cd4eda8-f694-4187-8848-28b18a6880ad"
+    },
+    {
+        "symbol": "SRN",
+        "name": "Sirin",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x68d57c9a1c35f63e2c83ee8e49a64e9d70528d25",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "ac446d9c-23b8-4e5d-88db-30d3c016b624"
+    },
+    {
+        "symbol": "AOA",
+        "name": "Aurora",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x9ab165d795019b6d8b3e971dda91071421305e5a",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "322050b1-f66e-4185-a4f4-ffa6a813b944"
+    },
+    {
+        "symbol": "THETA",
+        "name": "Theta",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x3883f5e181fccaF8410FA61e12b59BAd963fb645",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "0adc10ed-445d-45ab-b588-d668e3fb4177"
+    },
+    {
+        "symbol": "CONI",
+        "name": "Coni",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x2c949199cff14aeaf1b33d64db01f48fb57f592f",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "18c2a6bd-d40c-4d22-8c34-d12e5a3f9639"
+    },
+    {
+        "symbol": "TOK",
+        "name": "Tokok",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x9a49f02e128a8e989b443a8f94843c0918bf45e7",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "1e869b44-2b13-4ded-b201-5c464071ea5e"
+    },
+    {
+        "symbol": "GENX",
+        "name": "Genesis",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "bbc4eb28-3a10-4a3b-8623-065c2890dfa4"
+    },
+    {
+        "symbol": "POR",
+        "name": "Proof Of Review",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x08c507046e12cd1538741d067d28411f2b922062",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "20bbade4-f8d7-49ab-b682-d3862e5dac8f"
+    },
+    {
+        "symbol": "BZE",
+        "name": "BZEdge",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "af9ba7d8-de7a-4a37-9ed6-d829dc1c1633"
+    },
+    {
+        "symbol": "BTH",
+        "name": "Bithereum",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "958ec377-3ba6-47e7-a601-2b2907e96beb"
+    },
+    {
+        "symbol": "ADT",
+        "name": "AdToken",
+        "decimals": 9,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xd0d6d6c5fe4a677d343cc433536bb717bae167dd",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "140a8992-1cfb-4a21-b9e9-3653a9d9be85"
+    },
+    {
+        "symbol": "MFT",
+        "name": "Mainframe Token",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xdf2c7238198ad8b389666574f2d8bc411a4b7428",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "ce755fe9-8109-4b8b-8abe-e5fe546bc95f"
+    },
+    {
+        "symbol": "ATL",
+        "name": "ATLANT",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x78b7fada55a64dd895d8c8c35779dd8b67fa8a05",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "0005456f-6aca-4efe-82ba-08b49bc85856"
+    },
+    {
+        "symbol": "ARN",
+        "name": "Aeron",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xBA5F11b16B155792Cf3B2E6880E8706859A8AEB6",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "2676f307-9170-4c1c-a01c-9128af0a3e0e"
+    },
+    {
+        "symbol": "BRD",
+        "name": "Bread",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x558ec3152e2eb2174905cd19aea4e34a23de9ad6",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "86668c56-7e69-4844-8528-cd3cf0d4df5a"
+    },
+    {
+        "symbol": "QKC",
+        "name": "QuarkChain Token",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xea26c4ac16d4a5a106820bc8aee85fd0b7b2b664",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "2b78f8bb-5eb4-4af2-89d4-f744ce25b3ea"
+    },
+    {
+        "symbol": "EURS",
+        "name": "STASIS EURS",
+        "decimals": 2,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xdb25f211ab05b1c97d595516f45794528a807ad8",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "ae162a66-b51d-4b14-8227-1a890729fc08"
+    },
+    {
+        "symbol": "CMM",
+        "name": "Commercium",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "e6c40bad-ac41-4977-aa4f-3ac48cdaeb67"
+    },
+    {
+        "symbol": "GRS",
+        "name": "Groestlcoin",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "600a73a1-2894-47e2-9167-fc2d0f7a06b3"
+    },
+    {
+        "symbol": "GUNTHY",
+        "name": "GUNTHY",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x3684b581db1f94b721ee0022624329feb16ab653",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "a5fab581-faed-47c3-a0e6-de19142dd38b"
+    },
+    {
+        "symbol": "MTL",
+        "name": "Metal",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xF433089366899D83a9f26A773D59ec7eCF30355e",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "3727ffd9-4d05-4736-9b55-6f4f0200e4df"
+    },
+    {
+        "symbol": "AGI",
+        "name": "SingularityNET",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x8eb24319393716668d768dcec29356ae9cffe285",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "4ef1e6f8-8573-4262-9b9f-e74c3e943388"
+    },
+    {
+        "symbol": "AMB",
+        "name": "Ambrosus",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x4dc3643dbc642b72c158e7f3d2ff232df61cb6ce",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "47de53af-7326-4f38-bc49-608eda072aae"
+    },
+    {
+        "symbol": "BCPT",
+        "name": "BlockMason Credit Protocol",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x1c4481750daa5ff521a2a7490d9981ed46465dbd",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "036e86b5-b459-4254-9ce6-3b103bb2d534"
+    },
+    {
+        "symbol": "CDT",
+        "name": "Blox",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x177d39ac676ed1c67a2b268ad7f1e58826e5b0af",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "638a8afd-3dad-47a7-b388-b7c3eeb123ff"
+    },
+    {
+        "symbol": "CELR",
+        "name": "CelerToken",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x4f9254c83eb525f9fcf346490bbb3ed28a81c667",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "dc4c541f-1de1-4bcc-8ab2-2061857aadf8"
+    },
+    {
+        "symbol": "STREAMR",
+        "name": "Streamr DATAcoin",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x0cf0ee63788a0849fe5297f3407f701e122cc023",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "94622fd9-fa73-4b8a-acaa-7188dfa709fd"
+    },
+    {
+        "symbol": "DLT",
+        "name": "Agrello",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x07e3c70653548B04f0A75970C1F81B4CBbFB606f",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "0d04166b-0dbb-4bc3-b4ff-cd9725e4014d"
+    },
+    {
+        "symbol": "DOCK",
+        "name": "Dock",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xe5dada80aa6477e85d09747f2842f7993d0df71c",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "dfbf84ea-3a6b-4e86-bc46-2eb9ff390e9f"
+    },
+    {
+        "symbol": "EVX",
+        "name": "Everex",
+        "decimals": 4,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xf3db5fa2c66b7af3eb0c0b782510816cbe4813b8",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "3f505cc4-247e-4c14-9e7c-8bf526ebf2e1"
+    },
+    {
+        "symbol": "GTO",
+        "name": "Gifto",
+        "decimals": 5,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xc5bbae50781be1669306b9e001eff57a2957b09d",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "69d095a1-3344-4151-884a-5ddad8a61317"
+    },
+    {
+        "symbol": "GVT",
+        "name": "Genesis Vision",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x103c3a209da59d3e7c4a89307e66521e081cfdf0",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "c280f62e-3e4a-4f60-b7c0-ce23f6c62296"
+    },
+    {
+        "symbol": "HOT",
+        "name": "HoloToken",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x6c6ee5e31d828de241282b9606c8e98ea48526e2",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "4e5a34ce-571b-424a-b478-0d8d9929fbff"
+    },
+    {
+        "symbol": "INS",
+        "name": "Insolar",
+        "decimals": 10,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x5b2e4a700dfbc560061e957edec8f6eeeb74a320",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "421691d1-34c0-4305-b03e-283ee63f1684"
+    },
+    {
+        "symbol": "IOTX",
+        "name": "IoTeX",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x6fb3e0a217407efff7ca062d46c26e5d60a14d69",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "87b01a4d-07c4-4701-8ea1-5860ee547656"
+    },
+    {
+        "symbol": "KEY",
+        "name": "SelfKey",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x4cc19356f2d37338b9802aa8e8fc58b0373296e7",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "90fe24c6-6ab9-4e49-a233-2789d18f29e9"
+    },
+    {
+        "symbol": "MTH",
+        "name": "Monetha",
+        "decimals": 5,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xaf4dce16da2877f8c9e00544c93b62ac40631f16",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "172922a0-557b-436f-9264-8032a45f725f"
+    },
+    {
+        "symbol": "OAX",
+        "name": "oax",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x701c244b988a513c945973defa05de933b23fe1d",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "95e2b5ad-d9b9-48a4-aef7-83e32a0c2032"
+    },
+    {
+        "symbol": "OST",
+        "name": "OST",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x8eb24319393716668d768dcec29356ae9cffe285",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "a6a4b0e0-3035-48df-8010-8bac30202815"
+    },
+    {
+        "symbol": "REN",
+        "name": "Ren",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x408e41876cccdc0f92210600ef50372656052a38",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "50ce501d-7b39-4d85-a190-a20afbd9b8ed"
+    },
+    {
+        "symbol": "SNGLS",
+        "name": "SingularDTV",
+        "decimals": 0,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xaec2e87e0a235266d9c5adc9deb4b2e29b54d009",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "747e2359-86ed-4751-a753-de17f9236300"
+    },
+    {
+        "symbol": "TNT",
+        "name": "Tierion",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x08f5a9235b08173b7569f83645d2c7fb55e8ccd8",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "652f01f5-0985-479d-8960-696e471a5105"
+    },
+    {
+        "symbol": "VIBE",
+        "name": "VIBE",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xe8ff5c9c75deb346acac493c463c8950be03dfba",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "e2ba9847-0f03-4de3-ad14-64308913334c"
+    },
+    {
+        "symbol": "TAEL",
+        "name": "Tael",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x286bda1413a2df81731d4930ce2f862a35a609fe",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "807e58fb-f02a-49fa-9d14-af3a3db54c70"
+    },
+    {
+        "symbol": "WPR",
+        "name": "WePower",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x4CF488387F035FF08c371515562CBa712f9015d4",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "91afb004-b898-484d-bc59-f2c2f288d912"
+    },
+    {
+        "symbol": "DIBI",
+        "name": "Dibicoin",
+        "decimals": 3,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xf39e4b22050334aaf04259d30d73e78bfee8ab58",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "eafab11d-849e-479f-9600-16f29aedcd47"
+    },
+    {
+        "symbol": "BZX",
+        "name": "Bitcoin Zero",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "7f41fa08-a858-439e-a69d-56a767aba929"
+    },
+    {
+        "symbol": "FUEL",
+        "name": "Etherparty",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xea38eaa3c86c8f9b751533ba2e562deb9acded40",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "b55759c9-1acc-4fc2-be21-d56741de5140"
+    },
+    {
+        "symbol": "AXE",
+        "name": "Axe",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "2f3100b1-e43d-4396-bcdc-e865a720c812"
+    },
+    {
+        "symbol": "LEO",
+        "name": "Unus Sed Leo",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x2af5d2ad76741191d15dfe7bf6ac92d4bd912ca3",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "1c0ac4b6-d7ed-4faf-a4ce-dcb021389c6e"
+    },
+    {
+        "symbol": "BXY",
+        "name": "Beaxy",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x827d53c8170af52625f414bde00326fc8a085e86",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "06d75333-df38-49b3-91f2-b537702f0e3e"
+    },
+    {
+        "symbol": "USDS",
+        "name": "StableUSD",
+        "decimals": 6,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xa4bdb11dc0a2bec88d24a3aa1e6bb17201112ebe",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "55087f3f-a385-4219-825a-18fa6ee56a9f"
+    },
+    {
+        "symbol": "NUKE",
+        "name": "Half Life",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xc58c0Fca06908E66540102356f2E91edCaEB8D81",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "a2f25f45-ca0e-492f-87d3-129a92bae5d9"
+    },
+    {
+        "symbol": "SIN",
+        "name": "SINOVATE",
+        "decimals": null,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null,
+        "assetType": null,
+        "assetId": "92a30868-760f-4d35-bcd6-cad347ab5e5e"
+    },
+    {
+        "symbol": "GCSTAR",
+        "name": "GCSTAR",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xb2d25d27f3f8f2265bedc400f00dac8b7521106a",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "a44d35c5-4de2-4b89-976e-8aac1269a460"
+    },
+    {
+        "symbol": "GCTGT",
+        "name": "GCTGT",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xed1a361830628c87ca3e283450101b833ae26114",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "5b10f7af-5cf3-4985-9590-13ade7b6eb53"
+    },
+    {
+        "symbol": "GCWAL",
+        "name": "GCWAL",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x0bd0e8e9ce51945e3295f12a344ccaf6893f43f9",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "5309cedf-e984-4e7e-aab9-522e4031509a"
+    },
+    {
+        "symbol": "GCBEST",
+        "name": "GCBEST",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x1388f1635aed7fc09526bd66f317e88aea888dd5",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "5c9dcfac-8337-4301-8390-e0c43774a422"
+    },
+    {
+        "symbol": "GCHD",
+        "name": "GCHD",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xa33d3b1bc1bf9fd9987c9e3f5e81722e12767a72",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "a27d9d46-0f01-4b59-99cc-39e36da07825"
+    },
+    {
+        "symbol": "LOWES",
+        "name": "GCLOWE",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x1675c092306d147d65ee81976d5d3bec99a3bb91",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "8e329a0d-b267-44b4-bf1d-6bb9c36d9a78"
+    },
+    {
+        "symbol": "DMME",
+        "name": "DMme",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x9556f8ee795d991ff371f547162d5efb2769425f",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "assetType": "ERC20",
+        "assetId": "548b3397-f0a8-411a-a8b2-c266d38385a1"
+    },
+    {
+        "assetId": "b7683297-2194-4ce5-93ac-ac881f84b04f",
+        "symbol": "ARK",
+        "name": "Ark",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "eaa860f3-cd65-407f-bc43-591393293f20",
+        "symbol": "AST",
+        "name": "AirSwap Token",
+        "assetType": "ERC20",
+        "decimals": 4,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x27054b13b1B798B345b591a4d22e6562d47eA75a",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "5d07ccc2-a9de-495a-a981-cd7394c7deee",
+        "symbol": "APPC",
+        "name": "AppCoins",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x1a7a8bd9106f2b8d977e08582dc7d24c723ab0db",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "e1423643-722d-4b3d-b3bc-472c237b9e84",
+        "symbol": "ANT",
+        "name": "Aragon Network Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x960b236A07cf122663c4303350609A66A7B288C0",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "19bd1501-9a8e-4500-9a93-129f9c23d31d",
+        "symbol": "REP",
+        "name": "Reputation",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x1985365e9f78359a9B6AD760e32412f4a445E862",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "65023c5f-8cf6-448c-bc00-498a64e85ba2",
+        "symbol": "BNT",
+        "name": "Bancor Network Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x1F573D6Fb3F13d689FF844B4cE37794d79a7FF1C",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "0ae676cf-68b7-42ba-b54f-2672afd4f921",
+        "symbol": "BAT",
+        "name": "Basic Attention Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x0D8775F648430679A709E98d2b0Cb6250d2887EF",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "d88f558a-7a0e-4cd4-8629-07e5f7326a3c",
+        "symbol": "BNB",
+        "name": "Binance Coin",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "d78c26f8-7c13-4909-bf62-57d7623f8ee8",
+        "symbol": "BTC",
+        "name": "Bitcoin",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "aa841d73-3105-485d-9af9-870bc42d6284",
+        "symbol": "BCH",
+        "name": "Bitcoin Cash",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "bf8d2a6f-0628-4d39-b7d0-2b32a20d556f",
+        "symbol": "BSV",
+        "name": "Bitcoin SV",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "578b7fa7-f12f-4503-b0ff-cc66ed1bc0df",
+        "symbol": "BTG",
+        "name": "Bitcoin Gold",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "11d2d19d-bfea-4abf-a52d-4600982f47a6",
+        "symbol": "BTT",
+        "name": "BitTorrent",
+        "assetType": "TRC10",
+        "decimals": 6,
+        "assetIdentifierName": "Asset ID",
+        "assetIdentifierValue": "1002000",
+        "parentAssetId": "ab212c90-a2ab-48cf-873c-a7b6e97d8935"
+    },
+    {
+        "assetId": "c72972bd-7e85-40b4-83e5-9634f827214e",
+        "symbol": "ADA",
+        "name": "Cardano",
+        "assetType": null,
+        "decimals": 5,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "ac9895e5-ea39-4483-a614-00462f04e986",
+        "symbol": "LINK",
+        "name": "ChainLink Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x514910771af9ca656af840dff83e8264ecf986ca",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "a6d02462-e1b0-4135-bb64-49e567217a5f",
+        "symbol": "CVC",
+        "name": "Civic",
+        "assetType": "ERC20",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x41e5560054824ea6b0732e656e3ad64e20e94e45",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "f653b133-c106-41d1-b821-5ad4fc84e05e",
+        "symbol": "CND",
+        "name": "Cindicator Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xd4c435f5b09f855c3317c8524cb1f586e42795fa",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "9ba604b1-c9ae-4600-aad4-e3a7c2903388",
+        "symbol": "ATOM",
+        "name": "Cosmos",
+        "assetType": null,
+        "decimals": 6,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "7d965a5c-9268-417a-972a-7b62fd690fad",
+        "symbol": "DAI",
+        "name": "DAI",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "5ed4d7ac-f741-4af0-bca9-3c02acd00beb",
+        "symbol": "DASH",
+        "name": "Dash",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "0f484fe3-e603-4508-93ac-d048ac9a552d",
+        "symbol": "MANA",
+        "name": "Decentraland",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x0F5D2fB29fb7d3CFeE444a200298f468908cC942",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "78466ff1-5a36-4210-9a26-dc8585f75b1e",
+        "symbol": "DCR",
+        "name": "Decred",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "97c3dc32-c042-475c-b173-008289c772f7",
+        "symbol": "DGB",
+        "name": "DigiByte",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "cfa80d98-11b9-47b9-b928-7e8323295820",
+        "symbol": "DGD",
+        "name": "Digix",
+        "assetType": "ERC20",
+        "decimals": 9,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xE0B7927c4aF23765Cb51314A0E0521A9645F0E2A",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "e9e1f0f5-cc4e-4369-ab01-8477e7b971e5",
+        "symbol": "DNT",
+        "name": "district0x Network Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x0abdace70d3790235af448c88547603b945604ea",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "0a2f3bb6-5190-4c02-85a9-5eecea9ed912",
+        "symbol": "DOGE",
+        "name": "Dogecoin",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "948a4b55-be93-4caa-ab6e-9b2076a0a958",
+        "symbol": "EOS",
+        "name": "EOS",
+        "assetType": null,
+        "decimals": 4,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+        "symbol": "ETH",
+        "name": "Ethereum",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "b38a1576-a704-479b-96fa-b9a83bda7ed5",
+        "symbol": "ETC",
+        "name": "Ethereum Classic",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "d7cf1afe-47f0-458a-9a5a-eea031ad2e05",
+        "symbol": "ETHOS",
+        "name": "Ethos",
+        "assetType": "ERC20",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x5Af2Be193a6ABCa9c8817001F45744777Db30756",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "8b9f7abb-a364-4996-9819-3c45272fe95e",
+        "symbol": "GAS",
+        "name": "GAS",
+        "assetType": "NEOUtilityToken",
+        "decimals": 18,
+        "assetIdentifierName": "Asset ID",
+        "assetIdentifierValue": "602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7",
+        "parentAssetId": "aae85fa5-7d6a-427c-8088-37df459d55b8"
+    },
+    {
+        "assetId": "8b123456-a364-4996-9819-3c45272fe95e",
+        "symbol": "FISH",
+        "name": "NeoFish",
+        "assetType": "NEP5",
+        "decimals": 4,
+        "assetIdentifierName": "Asset ID",
+        "assetIdentifierValue": "833ff069a6f04488192bbfd9334699719c8c9c63",
+        "parentAssetId": "aae85fa5-7d6a-427c-8088-37df459d55b8"
+    },
+    {
+        "assetId": "8118483c-1484-4223-85c9-6d1632ba610b",
+        "symbol": "GUSD",
+        "name": "Gemini Dollar",
+        "assetType": "ERC20",
+        "decimals": 2,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "85508230-6a6c-4c39-a256-4f25bd44d898",
+        "symbol": "GNO",
+        "name": "Gnosis Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x6810e776880C02933D47DB1b9fc05908e5386b96",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "d74d3574-0e02-47f8-945d-d5da3da24c05",
+        "symbol": "GNT",
+        "name": "Golem Network Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xa74476443119A942dE498590Fe1f2454d7D4aC0d",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "03d284a9-6896-4f9b-9ce4-b5f6dba5600d",
+        "symbol": "FUN",
+        "name": "FunFair",
+        "assetType": "ERC20",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x419D0d8BdD9aF5e606Ae2232ed285Aff190E711b",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "b14a6498-de43-4115-81a6-4a88660508f4",
+        "symbol": "RLC",
+        "name": "iEx.ec Network Token",
+        "assetType": "ERC20",
+        "decimals": 9,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x607F4C5BB672230e8672085532f7e901544a7375",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "a9b1c316-298b-4615-9e13-5408e6ff9043",
+        "symbol": "LSK",
+        "name": "Lisk",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "d79b9ece-a918-4523-b2bc-74071675b54a",
+        "symbol": "LTC",
+        "name": "Litecoin",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "8380065d-4c64-4736-a3e0-841c205ee6d7",
+        "symbol": "LUN",
+        "name": "Lunyr Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xfa05A73FfE78ef8f1a739473e462c54bae6567D9",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "48826f18-c591-46ec-bd05-03c97bec3f15",
+        "symbol": "LOOM",
+        "name": "LoomToken",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xa4e8c3ec456107ea67d3075bf9e3df3a75823db0",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "ec93bb71-0bb5-4412-af66-8c905d73033d",
+        "symbol": "MKR",
+        "name": "Maker",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "7d443286-3ed9-424d-a296-87a4616aa692",
+        "symbol": "MCO",
+        "name": "Monaco",
+        "assetType": "ERC20",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xB63B606Ac810a52cCa15e44bB630fd42D8d1d83d",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "d4b874c4-7cf7-456f-8225-eb20e33767f2",
+        "symbol": "XMR",
+        "name": "Monero",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "e4f66cbc-c2ef-4462-8226-c944936804ff",
+        "symbol": "NANO",
+        "name": "Nano",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "aae85fa5-7d6a-427c-8088-37df459d55b8",
+        "symbol": "NEO",
+        "name": "NEO",
+        "assetType": "NEOGoverningToken",
+        "decimals": 18,
+        "assetIdentifierName": "Asset ID",
+        "assetIdentifierValue": "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b",
+        "parentAssetId": null
+    },
+    {
+        "assetId": "7333c9c9-976a-4045-b6fa-176ac13ddf6d",
+        "symbol": "XEM",
+        "name": "NEM",
+        "assetType": null,
+        "decimals": 6,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "9dbafbf2-5974-4308-ae7d-eb2957dab8e0",
+        "symbol": "NMR",
+        "name": "Numeraire",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x1776e1F26f98b1A5dF9cD347953a26dd3Cb46671",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "1c70b1cd-0bc2-4ea4-a3d2-c031fcdd04e5",
+        "symbol": "OMG",
+        "name": "OMGToken",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xd26114cd6EE289AccF82350c8d8487fedB8A0C07",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "af9c0656-580e-4700-bec8-13d24d2ead87",
+        "symbol": "ONT",
+        "name": "Ontology",
+        "assetType": null,
+        "decimals": 1,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "14a75048-0658-44c9-9501-d7a290358835",
+        "symbol": "ONG",
+        "name": "Ontology Gas",
+        "assetType": null,
+        "decimals": 9,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "87330131-52aa-46c7-8700-1cd7d6c25501",
+        "symbol": "PAX",
+        "name": "PAX",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x8e870d67f660d95d5be530380d0ec0bd388289e1",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "a7c58707-15dc-45ae-ac28-775c5eb6be73",
+        "symbol": "POE",
+        "name": "Po.et",
+        "assetType": "ERC20",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x0e0989b1f9b8a38983c2ba8053269ca62ec9b195",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "002d16b6-8393-4369-83f1-46d8d1f8939e",
+        "symbol": "POLY",
+        "name": "Polymath",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x9992eC3cF6A55b00978cdDF2b27BC6882d88D1eC",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "669c5f7e-f3da-4fd6-87e2-039f9f6281d8",
+        "symbol": "PPT",
+        "name": "Populous Platform",
+        "assetType": "ERC20",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xd4fa1460F537bb9085d22C7bcCB5DD450Ef28e3a",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "1103e34a-6955-4d16-8b5c-91b9ea54c229",
+        "symbol": "POWR",
+        "name": "Power Ledger",
+        "assetType": "ERC20",
+        "decimals": 6,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x595832f8fc6bf59c85c527fec3740a1b7a361269",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "16e3dbc3-4db5-4593-8cb3-4f0a12b99aad",
+        "symbol": "QSP",
+        "name": "Quantstamp Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x99ea4dB9EE77ACD40B119BD1dC4E33e1C070b80d",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "dfb13a51-6bf7-48df-8db8-84021d70e6b0",
+        "symbol": "QTUM",
+        "name": "Qtum",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "a08cecb9-8e5d-415e-83f0-184be79f68ba",
+        "symbol": "RVN",
+        "name": "Ravencoin",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "abe0030a-d8e3-4518-879f-cd9939b7d8ab",
+        "symbol": "XRP",
+        "name": "Ripple",
+        "assetType": null,
+        "decimals": 6,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "29ba5109-4e56-4946-9c0a-03261d1573eb",
+        "symbol": "RCN",
+        "name": "Ripio Credit Network Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xf970b8e36e23f7fc3fd752eea86f8be8d83375a6",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "2bb2b950-9583-4d54-b3f6-1ff5b8e076df",
+        "symbol": "SNT",
+        "name": "Status Network",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x744d70FDBE2Ba4CF95131626614a1763DF805B9E",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "b8edc3ba-6606-4a63-b8f6-58b491c2e40a",
+        "symbol": "XLM",
+        "name": "Stellar Lumens",
+        "assetType": null,
+        "decimals": 7,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "619bd3ce-b74e-4c05-91a9-a4ea7a771a76",
+        "symbol": "STORJ",
+        "name": "StorjToken",
+        "assetType": "ERC20",
+        "decimals": 8,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xB64ef51C888972c908CFacf59B47C1AfBC0Ab8aC",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "17ec53b2-741c-448a-b3b1-b3c082c58cd2",
+        "symbol": "STORM",
+        "name": "Storm Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xD0a4b8946Cb52f0661273bfbC6fD0E0C75Fc6433",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "73b1618a-d61f-4dd4-87c3-853a967d4490",
+        "symbol": "PAY",
+        "name": "TenX Pay Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xB97048628DB6B661D4C2aA833e95Dbe1A905B280",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "5e414e43-e6fe-4de0-8fc7-8e56282cf90f",
+        "symbol": "USDT",
+        "name": "Tether USD",
+        "assetType": "ERC20",
+        "decimals": 6,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "b0115257-13f2-4fb1-8796-07becdcacf8f",
+        "symbol": "XTZ",
+        "name": "Tezos",
+        "assetType": null,
+        "decimals": 3,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "ab212c90-a2ab-48cf-873c-a7b6e97d8935",
+        "symbol": "TRX",
+        "name": "TRON",
+        "assetType": null,
+        "decimals": 6,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "29cb1dc7-37b1-427a-89b3-98734fc1311b",
+        "symbol": "TUSD",
+        "name": "TrueUSD",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x0000000000085d4780B73119b644AE5ecd22b376",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "23fab390-e6cb-4676-a5f1-e1c5317366e5",
+        "symbol": "USDC",
+        "name": "USD Coin",
+        "assetType": "ERC20",
+        "decimals": 6,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "b3e4cc24-5af1-4ed3-b989-15a79f0282de",
+        "symbol": "VET",
+        "name": "VeChain",
+        "assetType": null,
+        "decimals": 18,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "97b02406-2331-4ee2-99db-8751ca6c1782",
+        "symbol": "VTHO",
+        "name": "VeThor",
+        "assetType": "VIP180",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x0000000000000000000000000000456E65726779",
+        "parentAssetId": "b3e4cc24-5af1-4ed3-b989-15a79f0282de"
+    },
+    {
+        "assetId": "4afe61e1-7209-4a87-9f2a-b2a73ebc9b93",
+        "symbol": "VIB",
+        "name": "Viberate",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x2C974B2d0BA1716E644c1FC59982a89DDD2fF724",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "948f056c-d1f7-418f-b0c1-e449cd8ad215",
+        "symbol": "WAVES",
+        "name": "Waves",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "65705c19-c6d5-445e-8235-29a0da22ee89",
+        "symbol": "ZEC",
+        "name": "Zcash",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "ed919ad4-c0d0-42a7-a2b3-9728cbb81f26",
+        "symbol": "ZRX",
+        "name": "0x Protocol Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xE41d2489571d322189246DaFA5ebDe1F4699F498",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "0fcdab6b-9ca8-48d9-9254-32b078a2b31e",
+        "symbol": "LIFE",
+        "name": "PureLifeCoin",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xff18dbc487b4c2e3222d115952babfda8ba52f5f",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "163be021-9a85-41c8-ad8c-bdbf779e8dcd",
+        "symbol": "VBK",
+        "name": "VeriBlock",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "0b10f26b-b4aa-43f1-b085-79f2e04e057a",
+        "symbol": "VEIL",
+        "name": "Veil",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+    {
+        "assetId": "bb0e2008-8e7b-4fee-b1cd-0fa8148e2284",
+        "symbol": "HPT",
+        "name": "HuobiPoolToken",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xa66Daa57432024023DB65477BA87D4E7F5f95213",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "a96765ca-eba7-47f6-9b4b-cdb513751481",
+        "symbol": "HTB",
+        "name": "Hotbit Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x6be61833FC4381990e82D7D4a9F4c9B3F67eA941",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "c79f65ff-0bf2-4350-a93d-8a9aba318505",
+        "symbol": "ZB",
+        "name": " ZBToken",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xBd0793332e9fB844A52a205A233EF27a5b34B927",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "cd7b2dfd-cad6-4555-8c0e-14f05657534e",
+        "symbol": "MX",
+        "name": "MX Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x11eeF04c884E24d9B7B4760e7476D06ddF797f36",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "9a5809f8-679d-4a7a-9d58-8ba3d50e5535",
+        "symbol": "BF",
+        "name": "BitForex Token",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x5b71BEE9D961b1B848f8485EEC8d8787f80217F5",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "e53d2a02-00f9-4d63-827f-a673f6961ecc",
+        "symbol": "OKB",
+        "name": "OKB",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x75231F58b43240C9718Dd58B4967c5114342a86c",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "11e33d88-2a73-4176-838b-47302662b1db",
+        "symbol": "BUSD",
+        "name": "Binance USD",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x4Fabb145d64652a948d72533023f6E7A623C7C53",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "936c485e-587e-406d-8e60-deec09f878f9",
+        "symbol": "HT",
+        "name": "HuobiToken",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x6f259637dcD74C767781E37Bc6133cd6A68aa161",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "5c1562d4-14ca-11ea-8d71-362b9e155667",
+        "symbol": "DAI",
+        "name": "DAI",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "01446739-1bd4-4d97-8113-df9ec19b54ef",
+        "symbol": "VTX",
+        "name": "VOLENTIX",
+        "assetType": "EOSToken",
+        "decimals": 8,
+        "assetIdentifierName": "Account Name",
+        "assetIdentifierValue": "volentixgsys",
+        "parentAssetId": "948a4b55-be93-4caa-ab6e-9b2076a0a958"
+    },
+    {
+        "assetId": "62176ba4-7928-4e79-8afe-046f192cfcdd",
+        "symbol": "EOSDT",
+        "name": "EOSDT",
+        "assetType": "EOSToken",
+        "decimals": 9,
+        "assetIdentifierName": "Account Name",
+        "assetIdentifierValue": "eosdtsttoken",
+        "parentAssetId": "948a4b55-be93-4caa-ab6e-9b2076a0a958"
+    },
+    {
+        "assetId": "129a9628-fda7-47d0-8b11-f6871b0fd03b",
+        "symbol": "PLR",
+        "name": "PILLAR",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xe3818504c1b32bf1557b16c238b2e01fd3149c17",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "352f1cca-d28d-41f9-8819-47cebe7c8f3a",
+        "symbol": "EDG",
+        "name": "Edgeless",
+        "assetType": "ERC20",
+        "decimals": 0,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x08711d3b02c8758f2fb3ab4e80228418a7f8e39c",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "efd69854-7b54-4753-9f2a-2a0c79d6c819",
+        "symbol": "VERI",
+        "name": "Veritaseum",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0x8f3470A7388c05eE4e7AF3d01D8C722b0FF52374",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    },
+    {
+        "assetId": "f21a6cce-ffeb-45ad-885f-efa0680cd231",
+        "symbol": "WETH",
+        "name": "Wrapped Ether",
+        "assetType": "ERC20",
+        "decimals": 18,
+        "assetIdentifierName": "Contract Address",
+        "assetIdentifierValue": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+        "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+    }
+]

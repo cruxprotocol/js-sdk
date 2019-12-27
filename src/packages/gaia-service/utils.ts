@@ -7,9 +7,9 @@ import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
 
-interface gaiaData {
+interface IGaiaDetails {
     gaiaReadUrl: string;
-    gaiaWriteUrl: string | undefined;
+    gaiaWriteUrl: string;
     ownerAddress: string;
 }
 
@@ -52,7 +52,7 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: stri
     return finalContent;
 };
 
-export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes: string[], tag?: string): Promise<gaiaData> => {
+export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes: string[], tag?: string): Promise<IGaiaDetails> => {
     let nameData: any;
     nameData = await fetchNameDetails(blockstackId, bnsNodes, tag);
     log.debug(nameData);
@@ -65,17 +65,19 @@ export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes
     const bitcoinAddress = nameData.address;
     log.debug(`ID owner: ${bitcoinAddress}`);
     let gaiaRead: string;
-    let gaiaWrite: string | undefined;
+    let gaiaWrite: string;
     if (nameData.zonefile.match(new RegExp("(.+)https:\/\/hub.cruxpay.com\/hub\/(.+)\/profile.json"))) {
         gaiaWrite = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/hub\/(.+)\/profile.json", "s"))[2];
         gaiaRead = await getGaiaReadUrl(gaiaWrite as string);
     } else if (nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json"))) {
+        // TODO: remove this case and purge the testcases using this path
         gaiaRead = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/(.+)\/profile.json", "s"))[2] + "/";
+        gaiaWrite = "https://hub.blockstack.org";
     } else {
         gaiaWrite = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1)[0];
         gaiaRead = await getGaiaReadUrl(gaiaWrite as string);
     }
-    const gaiaDetails: gaiaData = {
+    const gaiaDetails: IGaiaDetails = {
         gaiaReadUrl: gaiaRead,
         gaiaWriteUrl: gaiaWrite,
         ownerAddress: bitcoinAddress,

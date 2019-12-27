@@ -101,6 +101,7 @@ export class IdTranslator {
         return domain + CRUX_DOMAIN_SUFFIX;
     }
     public static blockstackDomainToCruxDomain = (domain: string): string => {
+        // TODO: add validation on the input domain;
         return domain.slice(0, -5);
     }
     public static cruxToBlockstack = (cruxId: CruxId): BlockstackId => {

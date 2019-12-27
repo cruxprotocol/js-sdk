@@ -1,12 +1,5 @@
 import "regenerator-runtime/runtime";
 import config from "./config";
-import { DomainRegistrationStatus } from "./core/entities";
-import { CruxDomain } from "./core/entities/crux-domain";
-import { ICruxAssetTranslatorRepository } from "./core/interfaces/crux-asset-translator-repository";
-import { ICruxDomainRepository } from "./core/interfaces/crux-domain-repository";
-import { IKeyManager } from "./core/interfaces/key-manager";
-import { BlockstackCruxAssetTranslatorRepository } from "./infrastructure/implementations/blockstack-crux-asset-translator-repository";
-import { BlockstackCruxDomainRepository } from "./infrastructure/implementations/blockstack-crux-domain-repository";
 // Importing packages
 import {
     blockstackService,
@@ -19,7 +12,6 @@ import {
     storage,
     utils,
 } from "./packages";
-import { IClientAssetMapping } from "./packages/configuration-service";
 import { getLogger } from "./packages/logger";
 import { getCruxIDByAddress } from "./packages/name-service/utils";
 
@@ -27,6 +19,10 @@ const log = getLogger(__filename);
 
 // Setup cache storage
 export let cacheStorage: storage.StorageService;
+
+export const setCacheStorage = (storageService: storage.StorageService) => {
+    cacheStorage = storageService;
+};
 
 export {
     config,
@@ -333,7 +329,7 @@ export class CruxClient {
         await this.initPromise;
         try {
                 if (!this._authenticated) {
-                    throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.PrivateKeyRequired);
+                    throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.ConfigKeyManagerRequired);
                 }
                 const {assetAddressMap, success, failures} = await this._getAssetAddressMapFromCurrencyAddressMap(newAddressMap);
                 await (this._payIDClaim as PayIDClaim).decrypt();
@@ -349,7 +345,7 @@ export class CruxClient {
         await this.initPromise;
         try {
                 if (!this._authenticated) {
-                    throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.PrivateKeyRequired);
+                    throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.ConfigKeyManagerRequired);
                 }
                 const currencyAddressMap: IAddressMapping = {};
                 if (this._payIDClaim && this._payIDClaim.virtualAddress && this._configService) {
@@ -492,127 +488,4 @@ export class CruxClient {
         return (this._configService.reverseClientAssetMapping as configurationService.IReverseClientAssetMapping)[assetId];
     }
 
-}
-
-// DDD Experimental Stuff
-export interface ICruxOnBoardingClientOptions {
-    cruxDomainRepository?: ICruxDomainRepository;
-    cruxAssetTranslatorRepository?: ICruxAssetTranslatorRepository;
-    configKeyManager?: IKeyManager;
-    cacheStorage?: storage.StorageService;
-}
-
-export class CruxOnBoardingClient {
-    private _initPromise: Promise<void>;
-    private _cruxDomainRepository: ICruxDomainRepository;
-    private _cruxAssetTranslatorRepository: ICruxAssetTranslatorRepository;
-    private _configKeyManager?: IKeyManager;
-    private _cruxDomain?: CruxDomain;
-
-    constructor(options: ICruxOnBoardingClientOptions) {
-        cacheStorage = options.cacheStorage || new inmemStorage.InMemStorage();
-        this._cruxDomainRepository = options.cruxDomainRepository || new BlockstackCruxDomainRepository({});
-        this._cruxAssetTranslatorRepository = options.cruxAssetTranslatorRepository || new BlockstackCruxAssetTranslatorRepository();
-        this._configKeyManager = options.configKeyManager;
-        // restore the wallet on-boarding client with the key provided
-        this._initPromise = this._init();
-        log.info("CruxOnBoardingClient initialised");
-    }
-
-    public isCruxDomainAvailable = async (domain: string): Promise<boolean> => {
-        return this._cruxDomainRepository.find(domain);
-    }
-
-    // todo
-    public registerCruxDomain = async (domain: string): Promise<void> => {
-        if (!this._configKeyManager) {
-            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.PrivateKeyRequired);
-        }
-        await this._initPromise;
-        this._cruxDomain = await this._cruxDomainRepository.create(domain, this._configKeyManager);
-        return;
-    }
-
-    public getCruxDomainState = async (): Promise<DomainRegistrationStatus> => {
-        await this._initPromise;
-        if (!this._cruxDomain) {
-            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.MissingCruxDomain);
-        }
-        return this._cruxDomain.status;
-    }
-
-    public getNameServiceConfig = async () => {
-        await this._initPromise;
-        if (!this._cruxDomain) {
-            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.MissingCruxDomain);
-        }
-        return this._cruxDomain.nameServiceConfig;
-    }
-
-    public getAssetMap = async (): Promise<IClientAssetMapping> => {
-        await this._initPromise;
-        if (!this._cruxDomain) {
-            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.MissingCruxDomain);
-        }
-        return this._cruxDomain.assetMap;
-    }
-
-    public getGlobalAssetList = async (): Promise<configurationService.IGlobalAssetList> => {
-        await this._initPromise;
-        if (!this._cruxDomain) {
-            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.MissingCruxDomain);
-        }
-        return this._cruxDomain.assetList;
-    }
-
-    public putNameServiceConfig = async (newNameServiceConfig: blockstackService.IBlockstackServiceInputOptions): Promise<void> => {
-        await this._initPromise;
-        if (!this._cruxDomain) {
-            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.MissingCruxDomain);
-        }
-        if (!this._configKeyManager) {
-            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.PrivateKeyRequired);
-        }
-        this._cruxDomain.nameServiceConfig = newNameServiceConfig;
-        await this._cruxDomainRepository.save(this._cruxDomain, this._configKeyManager);
-        return;
-    }
-
-    public putAssetMap = async (newAssetMap: IClientAssetMapping): Promise<void> => {
-        await this._initPromise;
-        if (!this._cruxDomain) {
-            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.MissingCruxDomain);
-        }
-        if (!this._configKeyManager) {
-            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.PrivateKeyRequired);
-        }
-        this._cruxDomain.assetMap = newAssetMap;
-        await this._cruxDomainRepository.save(this._cruxDomain, this._configKeyManager);
-        return;
-    }
-
-    public putGlobalAssetList = async (newAssetList: configurationService.IGlobalAssetList): Promise<void> => {
-        await this._initPromise;
-        if (!this._cruxDomain) {
-            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.MissingCruxDomain);
-        }
-        if (!this._configKeyManager) {
-            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.PrivateKeyRequired);
-        }
-        this._cruxDomain.assetList = newAssetList;
-        await this._cruxDomainRepository.save(this._cruxDomain, this._configKeyManager);
-        return;
-    }
-
-    private _init = async () => {
-        await this._restoreCruxDomain();
-    }
-
-    private _restoreCruxDomain = async () => {
-        // find the cruxdomain associated with the keyManager
-        const cruxDomain = await this._cruxDomainRepository.get(undefined, this._configKeyManager);
-        if (cruxDomain) {
-            this._cruxDomain = cruxDomain;
-        }
-    }
 }

@@ -42,7 +42,7 @@
     ========================
 
     <h5>CruxPay Wallet OnBoarding Interface</h5>
-
+    <!-- TODO: make dropdown to select the domain context -->
     <div id="init">
         Initialising cruxOnBoardingClient...
     </div>
@@ -66,7 +66,7 @@
 
     <div class="registered">
         <br><span class="helper">fetch wallet asset map:</span><br>
-        <button onclick="getAssetMap()">Get Supported Assets</button>
+        <button onclick="getAssetMapping()">Get Supported Assets</button>
         <pre id="assetMap"></pre>
     </div>
 
@@ -78,21 +78,21 @@
 
     <div class="registered">
         <br><span class="helper">fetch global asset list:</span><br>
-        <button onclick="getGlobalAssetList()">Get Global Asset List</button>
+        <button onclick="getAssetList()">Get Global Asset List</button>
         <pre id="globalAssetList"></pre>
     </div>
 
     <div class="registered">
         <br><span class="helper">publish asset map:</span><br>
         <div id="publishAssetMap"></div><br>
-        <button onclick="putAssetMap()">Publish Asset Map</button>
+        <button onclick="putAssetMapping()">Publish Asset Map</button>
         <pre id="putAssetMapAcknowledgement"></pre>
     </div>
 
     <div class="registered">
         <br><span class="helper">publish global asset list:</span><br>
         <div id="publishGlobalAssetList"></div><br>
-        <button onclick="putGlobalAssetList()">Publish Global Asset List</button>
+        <button onclick="putAssetList()">Publish Global Asset List</button>
         <pre id="putGlobalAssetListAcknowledgement"></pre>
     </div>
 

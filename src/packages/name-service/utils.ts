@@ -6,7 +6,18 @@ import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
 
-export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[], tag?: string): Promise<object|undefined> => {
+export interface INameDetailsObject {
+    address?: string;
+    blockchain?: string;
+    did?: string;
+    last_txid?: string;
+    status?: string;
+    zonefile?: string;
+    zonefile_hash?: string;
+    more?: string;
+}
+
+export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[], tag?: string): Promise<INameDetailsObject> => {
     const nodeResponses = bnsNodes.map((baseUrl) => bnsResolveName(baseUrl, blockstackId, tag));
     log.debug(`BNS node responses:`, nodeResponses);
 
@@ -62,19 +73,6 @@ const bnsResolveName = async (baseUrl: string, blockstackId: string, tag?: strin
     return nameData;
 };
 
-export const getCruxDomainByAddress = async (address: string, bnsNodes: string[]): Promise<string[]|null> => {
-    const nodePromises = bnsNodes.map((baseUrl) => bnsFetchDomainsByAddress(baseUrl, address));
-    const responseArr: string[][] = await Promise.all(nodePromises);
-    const commonDomains = [...(responseArr.map((arr) => new Set(arr)).reduce((a, b) => new Set([...a].filter((x) => b.has(x)))))];
-    console.log(commonDomains);
-    const bsIdArray = commonDomains.map((domain) => {
-        const regex = new RegExp(`(.+)_crux\.${DEFAULT_BLOCKSTACK_NAMESPACE}`);
-        const match = domain.match(regex);
-        return match && match[1];
-    }).filter((id) => id != null) as string[];
-    return bsIdArray;
-};
-
 export const getCruxIDByAddress = async (walletClientName: string, address: string, bnsNodes: string[], registrar: string): Promise<string|null> => {
     const nodePromises = bnsNodes.map((baseUrl) => bnsFetchNamesByAddress(baseUrl, address));
     const responseArr: string[][] = await Promise.all(nodePromises);
@@ -92,23 +90,6 @@ export const getCruxIDByAddress = async (walletClientName: string, address: stri
         }
     }
     return (bsId && IdTranslator.blockstackToCrux(BlockstackId.fromString(bsId)).toString()) || null;
-};
-
-const bnsFetchDomainsByAddress = async (baseUrl: string, address: string): Promise<string[]> => {
-    const url = `/v1/addresses/bitcoin/${address}`;
-    const options = {
-        baseUrl,
-        json: true,
-        method: "GET",
-        url,
-    };
-    let namesData: {names: string[]};
-    try {
-        namesData = ((await httpJSONRequest(options)) as {names: string[]});
-    } catch (error) {
-        throw ErrorHelper.getPackageError(error, PackageErrorCode.GetNamesByAddressFailed, `${baseUrl}${url}`, error);
-    }
-    return namesData.names;
 };
 
 const bnsFetchNamesByAddress = async (baseUrl: string, address: string): Promise<string[]> => {

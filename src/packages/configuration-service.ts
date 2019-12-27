@@ -13,11 +13,11 @@ export interface IGlobalAsset {
     assetId: string;
     symbol: string;
     name: string;
-    assetType: string;
-    decimals: number;
-    assetIdentifierName: string;
-    assetIdentifierValue: string;
-    parentAssetId: string;
+    assetType: string|null;
+    decimals: number|null;
+    assetIdentifierName: string|null;
+    assetIdentifierValue: number|string|null;
+    parentAssetId: string|null;
 }
 
 export interface IGlobalAssetList extends Array<IGlobalAsset> {}
