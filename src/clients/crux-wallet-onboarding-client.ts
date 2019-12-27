@@ -48,7 +48,7 @@ export class CruxOnBoardingClient {
         this._domainContext = domain;
     }
     public isCruxDomainAvailable = async (domain: string): Promise<boolean> => {
-        return new this._cruxDomainRepository().find(domain);
+        return this._getCruxDomainRepository().find(domain);
     }
     public registerCruxDomain = async (domain: string): Promise<void> => {
         // TODO: implementation of auto registration of domain on blockchain
