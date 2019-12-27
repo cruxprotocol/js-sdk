@@ -7,25 +7,28 @@ export enum DomainRegistrationStatus {
     REGISTERED = "REGISTERED",
     REJECTED = "REJECTED",
 }
+export interface ICruxDomainConfig {
+    nameserviceConfig?: IBlockstackServiceInputOptions;
+}
 export class CruxDomain {
     public domain: string;
-    private _nameserviceConfig?: IBlockstackServiceInputOptions;
+    private _domainConfig: ICruxDomainConfig = {};
     private _status: DomainRegistrationStatus;
 
     constructor(domain: string, status: DomainRegistrationStatus, nameServiceConfig: IBlockstackServiceInputOptions|undefined) {
         this.domain = domain;
         this._status = status;
-        this._nameserviceConfig = nameServiceConfig;
+        this._domainConfig.nameserviceConfig = nameServiceConfig;
         log.info("CruxDomain initialised");
     }
     get status() {
         return this._status;
     }
-    get nameServiceConfig() {
-        return this._nameserviceConfig;
+    get config() {
+        return this._domainConfig;
     }
-    set nameServiceConfig(newNameServiceConfig: IBlockstackServiceInputOptions|undefined) {
+    set config(domainConfig: ICruxDomainConfig) {
         // TODO: validate the newClientConfig
-        this._nameserviceConfig = newNameServiceConfig;
+        this._domainConfig = domainConfig;
     }
 }

@@ -1,10 +1,9 @@
-import { PubkeyHashSigner } from "blockstack";
 import { TokenSigner } from "jsontokens";
 import { IKeyManager } from "../../core/interfaces/key-manager";
 import { getLogger } from "../../packages/logger";
 import { getKeyPairFromPrivKey } from "../../packages/utils";
 const log = getLogger(__filename);
-export class ManualKeyManager implements IKeyManager {
+export class BasicKeyManager implements IKeyManager {
     private _privateKey: string;
     private _publicKey: string;
     constructor(privateKey: string) {

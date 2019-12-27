@@ -37,7 +37,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
     }
     public save = async (cruxDomain: CruxDomain, configKeyManager: IKeyManager): Promise<CruxDomain> => {
         const clientConfig = await BlockstackService.getClientConfig(cruxDomain.domain, this._bnsNodes);
-        clientConfig.nameserviceConfiguration = cruxDomain.nameServiceConfig;
+        clientConfig.nameserviceConfiguration = cruxDomain.config.nameserviceConfig;
         await BlockstackService.putClientConfig(cruxDomain.domain, clientConfig, this._bnsNodes, configKeyManager);
         return cruxDomain;
     }

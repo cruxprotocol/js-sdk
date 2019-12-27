@@ -5,10 +5,10 @@ import { ICruxAssetTranslatorRepository, ICruxAssetTranslatorRepositoryConstruct
 import { ICruxDomainRepository, ICruxDomainRepositoryConstructor } from "../core/interfaces/crux-domain-repository";
 import { IKeyManager } from "../core/interfaces/key-manager";
 import { setCacheStorage } from "../index";
+import { BasicKeyManager } from "../infrastructure/implementations/basic-key-manager";
 import { BlockstackCruxAssetTranslatorRepository } from "../infrastructure/implementations/blockstack-crux-asset-translator-repository";
 import { BlockstackCruxDomainRepository } from "../infrastructure/implementations/blockstack-crux-domain-repository";
 import { ManualCruxAssetTranslatorRepository } from "../infrastructure/implementations/manual-crux-asset-translator-repository";
-import { ManualKeyManager } from "../infrastructure/implementations/manual-key-manager";
 import { IClientAssetMapping, IGlobalAssetList } from "../packages/configuration-service";
 import { ErrorHelper, PackageErrorCode } from "../packages/error";
 import { InMemStorage } from "../packages/inmem-storage";
@@ -38,7 +38,7 @@ export class CruxOnBoardingClient {
         this._cruxDomainRepository = BlockstackCruxDomainRepository;
         this._cruxAssetTranslatorRepository = options.assetMapping ? ManualCruxAssetTranslatorRepository : BlockstackCruxAssetTranslatorRepository;
         // set the keyManagers if available
-        this._configKeyManager =  typeof options.configKey === "string" ? new ManualKeyManager(options.configKey) : options.configKey;
+        this._configKeyManager =  typeof options.configKey === "string" ? new BasicKeyManager(options.configKey) : options.configKey;
         // set the domainContext if domain is provided
         this._domainContext = options.domain;
         // set the assetMappingOverride if provided
@@ -60,9 +60,9 @@ export class CruxOnBoardingClient {
         await this._initPromise;
         return this._getCruxDomain().status;
     }
-    public getNameServiceConfig = async () => {
+    public getNameServiceConfig = async (): Promise<IBlockstackServiceInputOptions|undefined> => {
         await this._initPromise;
-        return this._getCruxDomain().nameServiceConfig;
+        return this._getCruxDomain().config.nameserviceConfig;
     }
     public getAssetMapping = async (): Promise<IClientAssetMapping> => {
         await this._initPromise;
@@ -75,7 +75,7 @@ export class CruxOnBoardingClient {
     public putNameServiceConfig = async (newNameServiceConfig: IBlockstackServiceInputOptions): Promise<void> => {
         await this._initPromise;
         const cruxDomain = this._getCruxDomain();
-        cruxDomain.nameServiceConfig = newNameServiceConfig;
+        cruxDomain.config.nameserviceConfig = newNameServiceConfig;
         this._cruxDomain = await this._getCruxDomainRepository().save(cruxDomain, this._getConfigKeyManager());
         return;
     }
