@@ -99,6 +99,6 @@ export class CruxOnBoardingClient {
         return this._configKeyManager;
     }
     private _restoreCruxDomain = async (): Promise<void> => {
-        this._cruxDomain = await this._cruxDomainRepository.restore(this._getConfigKeyManager(), this._domainContext);
+        this._cruxDomain = await this._cruxDomainRepository.getWithKey(this._getConfigKeyManager(), this._domainContext);
     }
 }

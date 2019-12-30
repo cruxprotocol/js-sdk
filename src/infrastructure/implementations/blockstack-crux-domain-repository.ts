@@ -36,7 +36,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
         await BlockstackService.putClientConfig(cruxDomain.domainId.components.domain, cruxDomain.config, this._bnsNodes, configKeyManager);
         return cruxDomain;
     }
-    public restore = async (keyManager: IKeyManager, domainId?: CruxDomainId): Promise<CruxDomain|undefined> => {
+    public getWithKey = async (keyManager: IKeyManager, domainId?: CruxDomainId): Promise<CruxDomain|undefined> => {
         const associatedDomain = await BlockstackService.restoreDomain(keyManager, this._bnsNodes, domainId && domainId.components.domain);
         if (!associatedDomain) {
             return;
