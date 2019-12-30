@@ -7,6 +7,7 @@ import { BasicKeyManager } from "../infrastructure/implementations/basic-key-man
 import { BlockstackCruxDomainRepository } from "../infrastructure/implementations/blockstack-crux-domain-repository";
 import { IClientAssetMapping, IGlobalAssetList } from "../packages/configuration-service";
 import { ErrorHelper, PackageErrorCode } from "../packages/error";
+import { CruxDomainId } from "../packages/identity-utils";
 import { InMemStorage } from "../packages/inmem-storage";
 import { getLogger } from "../packages/logger";
 import { IBlockstackServiceInputOptions } from "../packages/name-service/blockstack-service";
@@ -23,7 +24,7 @@ export class CruxOnBoardingClient {
     private _cruxDomainRepository: ICruxDomainRepository;
     private _configKeyManager?: IKeyManager;
     private _cruxDomain?: CruxDomain;
-    private _domainContext?: string;
+    private _domainContext?: CruxDomainId;
     constructor(options: ICruxOnBoardingClientOptions) {
         setCacheStorage(options.cacheStorage || new InMemStorage());
         // set the repository constructors to be used further in the client
@@ -31,15 +32,15 @@ export class CruxOnBoardingClient {
         // set the keyManagers if available
         this._configKeyManager =  typeof options.configKey === "string" ? new BasicKeyManager(options.configKey) : options.configKey;
         // set the domainContext if domain is provided
-        this._domainContext = options.domain;
+        this._domainContext = options.domain ? new CruxDomainId(options.domain) : undefined;
         this._initPromise = this._init();
         log.info("CruxOnBoardingClient initialised");
     }
     set domain(domain: string) {
-        this._domainContext = domain;
+        this._domainContext = new CruxDomainId(domain);
     }
     public isCruxDomainAvailable = async (domain: string): Promise<boolean> => {
-        return this._cruxDomainRepository.find(domain);
+        return this._cruxDomainRepository.find(new CruxDomainId(domain));
     }
     public registerCruxDomain = async (domain: string): Promise<void> => {
         // TODO: implementation of auto registration of domain on blockchain

@@ -1,4 +1,5 @@
 import { IClientConfig } from "../../packages/configuration-service";
+import { CruxDomainId } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 const log = getLogger(__filename);
 export enum DomainRegistrationStatus {
@@ -8,12 +9,12 @@ export enum DomainRegistrationStatus {
     REJECTED = "REJECTED",
 }
 export class CruxDomain {
-    public domain: string;
+    public domainId: CruxDomainId;
     private _domainConfig: IClientConfig;
     private _status: DomainRegistrationStatus;
 
-    constructor(domain: string, status: DomainRegistrationStatus, domainConfig: IClientConfig) {
-        this.domain = domain;
+    constructor(domain: CruxDomainId, status: DomainRegistrationStatus, domainConfig: IClientConfig) {
+        this.domainId = domain;
         this._status = status;
         this._domainConfig = domainConfig;
         log.info("CruxDomain initialised");
