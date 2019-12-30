@@ -5,7 +5,7 @@ export interface ICruxDomainRepository {
     create: (domain: string, keyManager: IKeyManager) => Promise<CruxDomain>;
     get: (domain: string) => Promise<CruxDomain|undefined>;
     save: (cruxDomain: CruxDomain, keyManager: IKeyManager) => Promise<CruxDomain>;
-    restore: (keyManager: IKeyManager) => Promise<CruxDomain|undefined>;
+    restore: (keyManager: IKeyManager, domainContext?: string) => Promise<CruxDomain|undefined>;
 }
 // tslint:disable-next-line: no-empty-interface
 export interface ICruxDomainRepositoryOptions {}

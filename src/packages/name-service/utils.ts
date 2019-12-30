@@ -78,7 +78,7 @@ export const getCruxIDByAddress = async (walletClientName: string, address: stri
     const responseArr: string[][] = await Promise.all(nodePromises);
     const commonNames = [...(responseArr.map((arr) => new Set(arr)).reduce((a, b) => new Set([...a].filter((x) => b.has(x)))))];
     let bsId = commonNames.find((name) => {
-        const regex = new RegExp(`(.+)\.${IdTranslator.cruxDomainToBlockstackDomain(walletClientName)}.${DEFAULT_BLOCKSTACK_NAMESPACE}`);
+        const regex = new RegExp(`(.+)\.${IdTranslator.cruxDomainStringToBlockstackDomainString(walletClientName)}.${DEFAULT_BLOCKSTACK_NAMESPACE}`);
         const match = name.match(regex);
         return match && match[0];
     });
@@ -86,7 +86,7 @@ export const getCruxIDByAddress = async (walletClientName: string, address: stri
         // Fetch any pending registrations on the address using the registrar
         const pendingSubdomains = await fetchPendingRegistrationsByAddress(walletClientName, registrar, address);
         if (pendingSubdomains.length !== 0) {
-            bsId = new BlockstackId({domain: IdTranslator.cruxDomainToBlockstackDomain(walletClientName), subdomain: pendingSubdomains[0]}).toString();
+            bsId = new BlockstackId({domain: IdTranslator.cruxDomainStringToBlockstackDomainString(walletClientName), subdomain: pendingSubdomains[0]}).toString();
         }
     }
     return (bsId && IdTranslator.blockstackToCrux(BlockstackId.fromString(bsId)).toString()) || null;

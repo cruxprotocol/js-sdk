@@ -53,7 +53,7 @@ interface IdentityCouple {
 
 const getIdentityCoupleFromCruxId = (cruxId: CruxId): IdentityCouple => {
     return {
-        bsId: IdTranslator.cruxToBlockstack(cruxId),
+        bsId: IdTranslator.cruxToBlockstack(cruxId) as BlockstackId,
         cruxId,
     };
 };
@@ -61,7 +61,7 @@ const getIdentityCoupleFromCruxId = (cruxId: CruxId): IdentityCouple => {
 const getIdentityCoupleFromBlockstackId = (blockstackId: BlockstackId): IdentityCouple => {
     return {
         bsId: blockstackId,
-        cruxId: IdTranslator.blockstackToCrux(blockstackId),
+        cruxId: IdTranslator.blockstackToCrux(blockstackId) as CruxId,
     };
 };
 
@@ -156,7 +156,7 @@ export class BlockstackService extends nameService.NameService {
         }
 
         // Publishing an empty addressMap while registering the name to be fail safe
-        await this._uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityKeyPair.privKey, {}, IdTranslator.blockstackDomainToCruxDomain(this._domain));
+        await this._uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityKeyPair.privKey, {}, IdTranslator.blockstackDomainStringToCruxDomainString(this._domain));
 
         const registeredSubdomain = await this._registerSubdomain(subdomain, identityKeyPair.address);
         this._identityCouple = getIdentityCoupleFromBlockstackId(new BlockstackId({
@@ -248,7 +248,7 @@ export class BlockstackService extends nameService.NameService {
         } catch (error) {
             throw ErrorHelper.getPackageError(error, PackageErrorCode.AddressMappingDecodingFailure);
         }
-        await this._uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping, IdTranslator.blockstackDomainToCruxDomain(this._domain));
+        await this._uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping, IdTranslator.blockstackDomainStringToCruxDomainString(this._domain));
         return;
     }
 

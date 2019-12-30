@@ -1,5 +1,5 @@
+import { IClientConfig } from "../../packages/configuration-service";
 import { getLogger } from "../../packages/logger";
-import { IBlockstackServiceInputOptions } from "../../packages/name-service/blockstack-service";
 const log = getLogger(__filename);
 export enum DomainRegistrationStatus {
     AVAILABLE = "AVAILABLE",
@@ -7,18 +7,15 @@ export enum DomainRegistrationStatus {
     REGISTERED = "REGISTERED",
     REJECTED = "REJECTED",
 }
-export interface ICruxDomainConfig {
-    nameserviceConfig?: IBlockstackServiceInputOptions;
-}
 export class CruxDomain {
     public domain: string;
-    private _domainConfig: ICruxDomainConfig = {};
+    private _domainConfig: IClientConfig;
     private _status: DomainRegistrationStatus;
 
-    constructor(domain: string, status: DomainRegistrationStatus, nameServiceConfig: IBlockstackServiceInputOptions|undefined) {
+    constructor(domain: string, status: DomainRegistrationStatus, domainConfig: IClientConfig) {
         this.domain = domain;
         this._status = status;
-        this._domainConfig.nameserviceConfig = nameServiceConfig;
+        this._domainConfig = domainConfig;
         log.info("CruxDomain initialised");
     }
     get status() {
@@ -27,7 +24,7 @@ export class CruxDomain {
     get config() {
         return this._domainConfig;
     }
-    set config(domainConfig: ICruxDomainConfig) {
+    set config(domainConfig: IClientConfig) {
         // TODO: validate the newClientConfig
         this._domainConfig = domainConfig;
     }

@@ -10,10 +10,15 @@ import { fetchNameDetails, INameDetailsObject } from "../../packages/name-servic
 import { httpJSONRequest } from "../../packages/utils";
 import { GaiaService } from "./gaia-service";
 const log = getLogger(__filename);
+export interface IBlockstackInfrastructure {
+    bnsNodes: string[];
+    gaiaHub: string;
+}
 export class BlockstackService {
+    public static infrastructure: IBlockstackInfrastructure = CruxSpec.blockstack.infrastructure;
     public static getDomainRegistrationStatus = async (domain: string, bnsNodes: string[]): Promise<DomainRegistrationStatus> => {
         // TODO: interpret the domain registration status from blockchain/BNS node
-        const domainBlockstackID = CruxSpec.blockstack.getDomainBlockstackID(domain);
+        const domainBlockstackID = CruxSpec.idTranslator.cruxDomainStringToBlockstackDomainString(domain);
         const nameDetails = await fetchNameDetails(domainBlockstackID, bnsNodes);
         if (!nameDetails) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.BnsResolutionFailed);

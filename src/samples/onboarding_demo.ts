@@ -130,9 +130,8 @@ const manualKeyManager = new ManualKeyManager("03c2156930598a7e4832ebb8b435abcc6
 // defining cruxOnBoardingClientOptions
 const cruxOnBoardingClientOptions: ICruxOnBoardingClientOptions = {
     cacheStorage: new LocalStorage(),
-    // configKey: manualKeyManager,
+    configKey: manualKeyManager,
     // configKey: "9d642ba222d8fa887c108472883d702511b9e06d004f456a78d85a740b789dd2",
-    // assetMapping: sampleAssetMapping,
 }
 
 // initialising the cruxOnBoardingClient

@@ -33,7 +33,7 @@ describe('ID Translation Tests', () => {
         } catch (e) {
             raisedError = e;
         }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.BlockstackIdInvalidDomainForTranslation)
+        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.InvalidBlockstackDomainForTranslation)
     })
 
     it('blockstack id which cant be translated because of namespace', () => {

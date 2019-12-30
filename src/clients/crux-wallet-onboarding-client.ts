@@ -1,14 +1,10 @@
-import { CruxAssetTranslator } from "../core/entities/crux-asset-translator";
 import { DomainRegistrationStatus } from "../core/entities/crux-domain";
 import { CruxDomain } from "../core/entities/crux-domain";
-import { ICruxAssetTranslatorRepository, ICruxAssetTranslatorRepositoryConstructor } from "../core/interfaces/crux-asset-translator-repository";
-import { ICruxDomainRepository, ICruxDomainRepositoryConstructor } from "../core/interfaces/crux-domain-repository";
+import { ICruxDomainRepository } from "../core/interfaces/crux-domain-repository";
 import { IKeyManager } from "../core/interfaces/key-manager";
 import { setCacheStorage } from "../index";
 import { BasicKeyManager } from "../infrastructure/implementations/basic-key-manager";
-import { BlockstackCruxAssetTranslatorRepository } from "../infrastructure/implementations/blockstack-crux-asset-translator-repository";
 import { BlockstackCruxDomainRepository } from "../infrastructure/implementations/blockstack-crux-domain-repository";
-import { ManualCruxAssetTranslatorRepository } from "../infrastructure/implementations/manual-crux-asset-translator-repository";
 import { IClientAssetMapping, IGlobalAssetList } from "../packages/configuration-service";
 import { ErrorHelper, PackageErrorCode } from "../packages/error";
 import { InMemStorage } from "../packages/inmem-storage";
@@ -21,28 +17,21 @@ export interface ICruxOnBoardingClientOptions {
     cacheStorage?: StorageService;
     configKey?: string|IKeyManager;
     domain?: string;
-    assetMapping?: IClientAssetMapping;
 }
 export class CruxOnBoardingClient {
     private _initPromise: Promise<void>;
-    private _cruxDomainRepository: ICruxDomainRepositoryConstructor;
-    private _cruxAssetTranslatorRepository: ICruxAssetTranslatorRepositoryConstructor;
+    private _cruxDomainRepository: ICruxDomainRepository;
     private _configKeyManager?: IKeyManager;
     private _cruxDomain?: CruxDomain;
-    private _cruxAssetTranslator?: CruxAssetTranslator;
     private _domainContext?: string;
-    private _assetMapping?: IClientAssetMapping;
     constructor(options: ICruxOnBoardingClientOptions) {
         setCacheStorage(options.cacheStorage || new InMemStorage());
         // set the repository constructors to be used further in the client
-        this._cruxDomainRepository = BlockstackCruxDomainRepository;
-        this._cruxAssetTranslatorRepository = options.assetMapping ? ManualCruxAssetTranslatorRepository : BlockstackCruxAssetTranslatorRepository;
+        this._cruxDomainRepository = new BlockstackCruxDomainRepository();
         // set the keyManagers if available
         this._configKeyManager =  typeof options.configKey === "string" ? new BasicKeyManager(options.configKey) : options.configKey;
         // set the domainContext if domain is provided
         this._domainContext = options.domain;
-        // set the assetMappingOverride if provided
-        this._assetMapping = options.assetMapping;
         this._initPromise = this._init();
         log.info("CruxOnBoardingClient initialised");
     }
@@ -50,7 +39,7 @@ export class CruxOnBoardingClient {
         this._domainContext = domain;
     }
     public isCruxDomainAvailable = async (domain: string): Promise<boolean> => {
-        return this._getCruxDomainRepository().find(domain);
+        return this._cruxDomainRepository.find(domain);
     }
     public registerCruxDomain = async (domain: string): Promise<void> => {
         // TODO: implementation of auto registration of domain on blockchain
@@ -62,40 +51,39 @@ export class CruxOnBoardingClient {
     }
     public getNameServiceConfig = async (): Promise<IBlockstackServiceInputOptions|undefined> => {
         await this._initPromise;
-        return this._getCruxDomain().config.nameserviceConfig;
+        return this._getCruxDomain().config.nameserviceConfiguration;
     }
     public getAssetMapping = async (): Promise<IClientAssetMapping> => {
         await this._initPromise;
-        return this._getCruxAssetTranslator().assetMapping;
+        return this._getCruxDomain().config.assetMapping;
     }
     public getAssetList = async (): Promise<IGlobalAssetList> => {
         await this._initPromise;
-        return this._getCruxAssetTranslator().assetList;
+        return this._getCruxDomain().config.assetList;
     }
     public putNameServiceConfig = async (newNameServiceConfig: IBlockstackServiceInputOptions): Promise<void> => {
         await this._initPromise;
         const cruxDomain = this._getCruxDomain();
-        cruxDomain.config.nameserviceConfig = newNameServiceConfig;
-        this._cruxDomain = await this._getCruxDomainRepository().save(cruxDomain, this._getConfigKeyManager());
+        cruxDomain.config.nameserviceConfiguration = newNameServiceConfig;
+        this._cruxDomain = await this._cruxDomainRepository.save(cruxDomain, this._getConfigKeyManager());
         return;
     }
     public putAssetMapping = async (newAssetMapping: IClientAssetMapping): Promise<void> => {
         await this._initPromise;
-        const cruxAssetTranslator = this._getCruxAssetTranslator();
-        cruxAssetTranslator.assetMapping = newAssetMapping;
-        this._cruxAssetTranslator = await this._getCruxAssetTranslatorRepository().save(cruxAssetTranslator, this._getConfigKeyManager());
+        const cruxDomain = this._getCruxDomain();
+        cruxDomain.config.assetMapping = newAssetMapping;
+        this._cruxDomain = await this._cruxDomainRepository.save(cruxDomain, this._getConfigKeyManager());
         return;
     }
     public putAssetList = async (newAssetList: IGlobalAssetList): Promise<void> => {
         await this._initPromise;
-        const cruxAssetTranslator = this._getCruxAssetTranslator();
-        cruxAssetTranslator.assetList = newAssetList;
-        this._cruxAssetTranslator = await this._getCruxAssetTranslatorRepository().save(cruxAssetTranslator, this._getConfigKeyManager());
+        const cruxDomain = this._getCruxDomain();
+        cruxDomain.config.assetList = newAssetList;
+        this._cruxDomain = await this._cruxDomainRepository.save(cruxDomain, this._getConfigKeyManager());
         return;
     }
     private _init = async (): Promise<void> => {
         await this._restoreCruxDomain();
-        await this._restoreCruxAssetTranslator();
     }
     private _getCruxDomain = (): CruxDomain => {
         if (!this._cruxDomain) {
@@ -103,51 +91,13 @@ export class CruxOnBoardingClient {
         }
         return this._cruxDomain;
     }
-    private _getCruxAssetTranslator = (): CruxAssetTranslator => {
-        if (!this._cruxAssetTranslator) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingCruxAssetTranslator);
-        }
-        return this._cruxAssetTranslator;
-    }
     private _getConfigKeyManager = (): IKeyManager => {
         if (!this._configKeyManager) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.ConfigKeyManagerRequired);
         }
         return this._configKeyManager;
     }
-    private _getCruxDomainRepository = () => {
-        // Handling multiple variants of CruxDomainRepositories
-        let cruxDomainRepository: ICruxDomainRepository;
-        if (this._cruxDomainRepository.name === BlockstackCruxDomainRepository.name) {
-            cruxDomainRepository = new this._cruxDomainRepository({domainContext: this._domainContext});
-        } else {
-            cruxDomainRepository = new this._cruxDomainRepository();
-        }
-        return cruxDomainRepository;
-    }
-    private _getCruxAssetTranslatorRepository = () => {
-        // Handling multiple variants of CruxAssetTranslatorRepositories
-        let cruxAssetTranslatorRepository: ICruxAssetTranslatorRepository;
-        if (this._cruxAssetTranslatorRepository.name === BlockstackCruxAssetTranslatorRepository.name) {
-            cruxAssetTranslatorRepository = new this._cruxAssetTranslatorRepository({domainContext: this._getCruxDomain().domain});
-        } else if (this._cruxAssetTranslatorRepository.name === ManualCruxAssetTranslatorRepository.name) {
-            cruxAssetTranslatorRepository = new this._cruxAssetTranslatorRepository({assetMapping: this._getAssetMappingOverride()});
-        } else {
-            cruxAssetTranslatorRepository = new this._cruxAssetTranslatorRepository();
-        }
-        return cruxAssetTranslatorRepository;
-    }
-    private _getAssetMappingOverride = (): IClientAssetMapping => {
-        if (!this._assetMapping) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.AssetMappingRequired);
-        }
-        return this._assetMapping;
-    }
     private _restoreCruxDomain = async (): Promise<void> => {
-        this._cruxDomain = await this._getCruxDomainRepository().restore(this._getConfigKeyManager());
-    }
-    private _restoreCruxAssetTranslator = async (): Promise<void> => {
-        const cruxAssetTranslatorRepository = this._getCruxAssetTranslatorRepository();
-        this._cruxAssetTranslator = await cruxAssetTranslatorRepository.restore(this._getConfigKeyManager());
+        this._cruxDomain = await this._cruxDomainRepository.restore(this._getConfigKeyManager(), this._domainContext);
     }
 }
