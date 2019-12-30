@@ -1,4 +1,4 @@
-import { IdTranslator } from "../../packages/identity-utils";
+import { BlockstackId, IdTranslator } from "../../packages/identity-utils";
 import globalAssetList from "../global-asset-list.json";
 export const CruxSpec = {
     blockstack: class blockstack {
@@ -8,6 +8,10 @@ export const CruxSpec = {
         }
         public static getConfigBlockstackID = (domain: string): string => {
             return `${CruxSpec.blockstack.configSubdomain}.${domain}_crux.id`;
+        }
+        public static getCruxPayFilename = (blockstackId: BlockstackId): string => {
+            const cruxDomainString: string = IdTranslator.blockstackToCrux(blockstackId).components.domain;
+            return `${cruxDomainString}_cruxpay.json`;
         }
     },
     globalAssetList,

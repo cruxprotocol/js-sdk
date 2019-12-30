@@ -1,4 +1,5 @@
 import { publicKeyToAddress } from "blockstack";
+import { IAddressMapping } from "../..";
 import config from "../../config";
 import { DomainRegistrationStatus } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
@@ -7,6 +8,7 @@ import { IKeyManager } from "../../core/interfaces/key-manager";
 import { IClientConfig } from "../../packages/configuration-service";
 import { ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "../../packages/gaia-service/utils";
+import { BlockstackId, CruxDomainId, IdTranslator } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { fetchNameDetails, INameDetailsObject } from "../../packages/name-service/utils";
 import { httpJSONRequest } from "../../packages/utils";
@@ -84,5 +86,22 @@ export class BlockstackService {
         } else if (registeredDomainArray.length === 1) {
             return registeredDomainArray[0];
         }
+    }
+    public static getAddressMap = async (blockstackID: BlockstackId, bnsNodes: string[]): Promise<IAddressMapping> => {
+        const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(blockstackID);
+        return getContentFromGaiaHub(blockstackID.toString(), cruxPayFileName, bnsNodes);
+    }
+    public static getBlockstackIdFromKeyManager = async (keyManager: IKeyManager, walletClientName: string, bnsNodes: string[]): Promise<BlockstackId|undefined> => {
+        const userSubdomainOwnerAddress = publicKeyToAddress(await keyManager.getPubKey());
+        const registeredBlockstackIDs = await BlockstackService.getRegisteredIDsByAddress(userSubdomainOwnerAddress, bnsNodes);
+        const registeredDomainArray = registeredBlockstackIDs
+            .map((blockstackID: string) => blockstackID.match(new RegExp(`(.+)\.${IdTranslator.cruxToBlockstack(new CruxDomainId(walletClientName)).toString()}`)))
+            .map((match) => match && match[0])
+            .filter((domain) => domain !== undefined) as string[];
+        if (registeredDomainArray.length > 1) {
+            log.error(`More than one cruxIDs associated with: ${userSubdomainOwnerAddress}`);
+        }
+        return registeredDomainArray[0] ? BlockstackId.fromString(registeredDomainArray[0]) : undefined;
+        // return registeredDomainArray[0];
     }
 }
