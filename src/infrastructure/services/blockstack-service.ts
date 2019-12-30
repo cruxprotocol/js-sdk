@@ -1,6 +1,8 @@
 import { publicKeyToAddress } from "blockstack";
+import config from "../../config";
 import { DomainRegistrationStatus } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
+import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import { IKeyManager } from "../../core/interfaces/key-manager";
 import { IClientConfig } from "../../packages/configuration-service";
 import { ErrorHelper, PackageErrorCode } from "../../packages/error";
@@ -10,12 +12,11 @@ import { fetchNameDetails, INameDetailsObject } from "../../packages/name-servic
 import { httpJSONRequest } from "../../packages/utils";
 import { GaiaService } from "./gaia-service";
 const log = getLogger(__filename);
-export interface IBlockstackInfrastructure {
-    bnsNodes: string[];
-    gaiaHub: string;
-}
 export class BlockstackService {
-    public static infrastructure: IBlockstackInfrastructure = CruxSpec.blockstack.infrastructure;
+    public static infrastructure: ICruxBlockstackInfrastructure = {
+        bnsNodes: config.BLOCKSTACK.BNS_NODES,
+        gaiaHub: config.BLOCKSTACK.GAIA_HUB,
+    };
     public static getDomainRegistrationStatus = async (domain: string, bnsNodes: string[]): Promise<DomainRegistrationStatus> => {
         // TODO: interpret the domain registration status from blockchain/BNS node
         const domainBlockstackID = CruxSpec.idTranslator.cruxDomainStringToBlockstackDomainString(domain);
