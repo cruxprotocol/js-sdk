@@ -50,8 +50,7 @@
     "all": true
   },
   "pre-push": [
-    "version-bump",
-    "checks"
+    "version-bump"
   ],
   "keywords": [
     "cruxpay",
