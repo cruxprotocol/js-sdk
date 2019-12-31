@@ -1,5 +1,5 @@
 // Importing packages
-import { CruxAssetTranslator, IPutAddressMapSuccess, IPutAddressMapFailures } from "../core/entities/crux-asset-translator";
+import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess } from "../core/entities/crux-asset-translator";
 import { CruxUser, IAddress, IAddressMapping } from "../core/entities/crux-user";
 import { ICruxAssetTranslatorRepository, ICruxAssetTranslatorRepositoryConstructor } from "../core/interfaces/crux-asset-translator-repository";
 import { ICruxUserRepository } from "../core/interfaces/crux-user-repository";

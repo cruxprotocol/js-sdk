@@ -6,6 +6,7 @@ import { CruxSpec } from "../../core/entities/crux-spec";
 import { IAddress, IAddressMapping } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import { IKeyManager } from "../../core/interfaces/key-manager";
+import { errors } from "../../packages";
 import { IClientConfig } from "../../packages/configuration-service";
 import { ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "../../packages/gaia-service/utils";
@@ -94,6 +95,9 @@ export class BlockstackService {
     }
     public static putAddressMap = async (addressMapping: IAddressMapping, walletClientName: string, keyManager: IKeyManager, bnsNodes: string[]): Promise<string> => {
         const blockstackID = await BlockstackService.getBlockstackIdFromKeyManager(keyManager, walletClientName, bnsNodes);
+        if (!blockstackID) {
+            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.UserDoesNotExist);
+        }
         const addressDecoder: Decoder<IAddress> = object({
             addressHash: string(),
             secIdentifier: optional(string()),

@@ -34,7 +34,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepositoryOptions 
         const addressMap = await BlockstackService.getAddressMap(blockstackID, this._bnsNodes);
         return new CruxUser(cruxID, addressMap);
     }
-    public save = async (cruxUser: CruxUser, keyManager: IKeyManager): Promise<CruxUser> {
+    public save = async (cruxUser: CruxUser, keyManager: IKeyManager): Promise<CruxUser> => {
         await BlockstackService.putAddressMap(cruxUser.addressMap, this._walletClientName, keyManager, this._bnsNodes);
         return cruxUser;
     }
