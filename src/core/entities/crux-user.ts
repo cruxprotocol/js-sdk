@@ -24,10 +24,10 @@ export class CruxUser {
     get addressMap() {
         return this._addressMap;
     }
-    set addressmap(addressMap: IAddressMapping) {
+    set addressMap(addressMap: IAddressMapping) {
         this._addressMap = addressMap;
     }
-    public getAddress(assetId: string): IAddress|undefined {
-        return this._addressMap[assetId];
+    public getAddress(assetId: string): IAddress {
+        return this._addressMap[assetId] || this._addressMap[assetId.toLowerCase()];
     }
 }

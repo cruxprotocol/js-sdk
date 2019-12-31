@@ -1,4 +1,5 @@
 import { CruxClient, IAddressMapping, ICruxIDState, ICruxClientOptions, errors, storage } from "../index";
+import { CruxPayClient } from "../clients/crux-pay-client";
 // TODO: add optional import statement to use the build
 
 const doc = (document as {
@@ -56,7 +57,7 @@ const cruxClientOptions: ICruxClientOptions = {
 }
 
 // initialising the cruxClient
-const cruxClient = new CruxClient(cruxClientOptions)
+const cruxClient = new CruxPayClient(cruxClientOptions)
 
 
 // SDK functional interface

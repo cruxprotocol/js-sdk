@@ -21,7 +21,7 @@ export class BlockstackService {
     };
     public static getDomainRegistrationStatus = async (domain: string, bnsNodes: string[]): Promise<DomainRegistrationStatus> => {
         // TODO: interpret the domain registration status from blockchain/BNS node
-        const domainBlockstackID = CruxSpec.idTranslator.cruxDomainStringToBlockstackDomainString(domain);
+        const domainBlockstackID = CruxSpec.idTranslator.cruxDomainToBlockstackDomain(new CruxDomainId(domain)).toString();
         const nameDetails = await fetchNameDetails(domainBlockstackID, bnsNodes);
         if (!nameDetails) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.BnsResolutionFailed);
