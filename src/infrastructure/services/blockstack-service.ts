@@ -91,12 +91,12 @@ export class BlockstackService {
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(blockstackID);
         return getContentFromGaiaHub(blockstackID.toString(), cruxPayFileName, bnsNodes);
     }
-    public static getBlockstackIdFromKeyManager = async (keyManager: IKeyManager, walletClientName: string, bnsNodes: string[]): Promise<BlockstackId|undefined> => {
+    public static getBlockstackIdFromKeyManager = async (keyManager: IKeyManager, cruxDomainId: CruxDomainId, bnsNodes: string[]): Promise<BlockstackId|undefined> => {
         const userSubdomainOwnerAddress = publicKeyToAddress(await keyManager.getPubKey());
         const registeredBlockstackIDs = await BlockstackService.getRegisteredIDsByAddress(userSubdomainOwnerAddress, bnsNodes);
-        console.log(IdTranslator.cruxToBlockstack(new CruxDomainId(walletClientName)).toString());
+        console.log(IdTranslator.cruxToBlockstack(cruxDomainId).toString());
         const registeredDomainArray = registeredBlockstackIDs
-            .map((blockstackID: string) => blockstackID.match(new RegExp(`(.+)\.${IdTranslator.cruxToBlockstack(new CruxDomainId(walletClientName)).toString()}`)))
+            .map((blockstackID: string) => blockstackID.match(new RegExp(`(.+)\.${IdTranslator.cruxToBlockstack(cruxDomainId).toString()}`)))
             .map((match) => match && match[0])
             .filter((domain) => domain !== undefined) as string[];
         if (registeredDomainArray.length > 1) {

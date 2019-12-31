@@ -52,11 +52,7 @@ export class CruxPayClient {
     constructor(options: ICruxClientOptions) {
         setCacheStorage(options.cacheStorage || new inmemStorage.InMemStorage());
         this.walletClientName = options.walletClientName;
-        // this._cruxAssetTranslator = new CruxAssetTranslator(cruxDomai);
-        const cruxUserRepositoryOptions =  {
-            walletClientName: this.walletClientName,
-        };
-        this._cruxUserRepository = new BlockstackCruxUserRepository(cruxUserRepositoryOptions);
+        this._cruxUserRepository = new BlockstackCruxUserRepository({cruxDomainId: new CruxDomainId(this.walletClientName)});
         this._initPromise = this._init(options);
     }
 
