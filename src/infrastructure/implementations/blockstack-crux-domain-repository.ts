@@ -25,7 +25,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
         const domainRegistrationStatus = await this.getDomainRegistrationStatus(domainId.components.domain, this.bnsNodes);
         return domainRegistrationStatus === DomainRegistrationStatus.AVAILABLE ? true : false;
     }
-    public create = async (domainId: CruxDomainId, keyManager: IKeyManager): Promise<CruxDomain> => {
+    public create = async (domainId: CruxDomainId, identityKeyManager: IKeyManager): Promise<CruxDomain> => {
         // TODO: register the domain on bitcoin blockchain and _config subdomain on domain provided SubdomainRegistrar service
         throw ErrorHelper.getPackageError(null, PackageErrorCode.IsNotSupported);
     }
@@ -41,7 +41,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
         await this.putClientConfig(cruxDomain.domainId.components.domain, cruxDomain.config, this.bnsNodes, configKeyManager);
         return cruxDomain;
     }
-    public getWithKey = async (keyManager: IKeyManager, domainId?: CruxDomainId): Promise<CruxDomain|undefined> => {
+    public getWithConfigKeyManager = async (keyManager: IKeyManager, domainId?: CruxDomainId): Promise<CruxDomain|undefined> => {
         const associatedDomain = await BlockstackService.restoreDomain(keyManager, this.bnsNodes, domainId && domainId.components.domain);
         if (!associatedDomain) {
             return;
