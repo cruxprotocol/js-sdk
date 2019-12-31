@@ -1,5 +1,6 @@
 import { CruxDomain } from "../../core/entities/crux-domain";
 import { DomainRegistrationStatus } from "../../core/entities/crux-domain";
+import { CruxSpec } from "../../core/entities/crux-spec";
 import { ICruxDomainRepository, ICruxDomainRepositoryOptions } from "../../core/interfaces/crux-domain-repository";
 import { IKeyManager } from "../../core/interfaces/key-manager";
 import { IClientConfig } from "../../packages/configuration-service";
@@ -38,7 +39,14 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
         return new CruxDomain(domainId, domainRegistrationStatus, domainClientConfig);
     }
     public save = async (cruxDomain: CruxDomain, configKeyManager: IKeyManager): Promise<CruxDomain> => {
-        await this.putClientConfig(cruxDomain.domainId.components.domain, cruxDomain.config, this.bnsNodes, configKeyManager);
+        const newConfig: IClientConfig = {
+            assetList: CruxSpec.globalAssetList.filter((asset) => {
+                return Object.values(cruxDomain.config.assetMapping).includes(asset.assetId);
+            }),
+            assetMapping: cruxDomain.config.assetMapping,
+            nameserviceConfiguration: cruxDomain.config.nameserviceConfiguration,
+        };
+        await this.putClientConfig(cruxDomain.domainId.components.domain, newConfig, this.bnsNodes, configKeyManager);
         return cruxDomain;
     }
     public getWithConfigKeyManager = async (keyManager: IKeyManager, domainId?: CruxDomainId): Promise<CruxDomain|undefined> => {

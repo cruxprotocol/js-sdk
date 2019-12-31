@@ -58,10 +58,6 @@ export class CruxOnBoardingClient {
         await this.initPromise;
         return this.getCruxDomain().config.assetMapping;
     }
-    public getAssetList = async (): Promise<IGlobalAssetList> => {
-        await this.initPromise;
-        return this.getCruxDomain().config.assetList;
-    }
     public putNameServiceConfig = async (newNameServiceConfig: IBlockstackServiceInputOptions): Promise<void> => {
         await this.initPromise;
         const cruxDomain = this.getCruxDomain();
@@ -73,13 +69,6 @@ export class CruxOnBoardingClient {
         await this.initPromise;
         const cruxDomain = this.getCruxDomain();
         cruxDomain.config.assetMapping = newAssetMapping;
-        this.cruxDomain = await this.cruxDomainRepository.save(cruxDomain, this.getConfigKeyManager());
-        return;
-    }
-    public putAssetList = async (newAssetList: IGlobalAssetList): Promise<void> => {
-        await this.initPromise;
-        const cruxDomain = this.getCruxDomain();
-        cruxDomain.config.assetList = newAssetList;
         this.cruxDomain = await this.cruxDomainRepository.save(cruxDomain, this.getConfigKeyManager());
         return;
     }

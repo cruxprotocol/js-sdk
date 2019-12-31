@@ -236,38 +236,6 @@ const putAssetMapping = async () => {
         doc.getElementById('putAssetMapAcknowledgement').textContent = UIResponse
     }
 }
-const getAssetList = async () => {
-    let UIResponse: string = ""
-    try {
-        let assetList = await cruxOnBoardingClient.getAssetList()
-        UIResponse = JSON.stringify(assetList, undefined, 4)
-    } catch (e) {
-        if (e instanceof errors.CruxClientError) {
-            UIResponse = `${e.errorCode}: ${e}`
-        } else {
-            UIResponse = e
-        }
-    } finally {
-        doc.getElementById('globalAssetList').textContent = UIResponse
-    }
-}
-const putAssetList = async () => {
-    let UIResponse: string = ""
-    const assetList: IGlobalAssetList = sampleAssetList;
-    try {
-        doc.getElementById('putGlobalAssetListAcknowledgement').textContent = "Publishing your global asset list..."
-        await cruxOnBoardingClient.putAssetList(assetList)
-        UIResponse = `successfully published Global Asset List!`
-    } catch (e) {
-        if (e instanceof errors.CruxClientError) {
-            UIResponse = `${e.errorCode}: ${e}`
-        } else {
-            UIResponse = e
-        }
-    } finally {
-        doc.getElementById('putGlobalAssetListAcknowledgement').textContent = UIResponse
-    }
-}
 const getNameServiceConfig = async () => {
     let UIResponse: string = ""
     try {
@@ -335,8 +303,6 @@ declare global {
         registercruxDomain: Function;
         getAssetMapping: Function;
         putAssetMapping: Function;
-        getAssetList: Function;
-        putAssetList: Function;
         getNameServiceConfig: Function;
         putNameServiceConfig: Function;
         getCruxDomainState: Function;
@@ -347,8 +313,6 @@ window.iscruxDomainAvailable = iscruxDomainAvailable;
 window.registercruxDomain = registercruxDomain;
 window.getAssetMapping = getAssetMapping;
 window.putAssetMapping = putAssetMapping;
-window.getAssetList = getAssetList;
-window.putAssetList = putAssetList;
 window.getNameServiceConfig = getNameServiceConfig;
 window.putNameServiceConfig = putNameServiceConfig;
 window.getCruxDomainState = getCruxDomainState;
