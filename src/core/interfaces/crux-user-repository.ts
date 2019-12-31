@@ -7,7 +7,7 @@ export interface ICruxUserRepository {
     // create: (cruxID: CruxId, keyManager: IKeyManager) => Promise<CruxUser>;
     getByCruxId: (cruxID: CruxId) => Promise<CruxUser|undefined>;
     getWithKey: (keyManager: IKeyManager) => Promise<CruxUser|undefined>;
-    // save: (cruxUser: CruxUser, keyManager: IKeyManager) => Promise<CruxUser>;
+    save: (cruxUser: CruxUser, keyManager: IKeyManager) => Promise<CruxUser>;
     // restore: (keyManager: IKeyManager) => Promise<CruxUser|undefined>;
 }
 // tslint:disable-next-line: no-empty-interface

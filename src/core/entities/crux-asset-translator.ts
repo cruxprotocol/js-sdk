@@ -1,6 +1,6 @@
-
-import { IAddressMapping } from "../..";
+import { errors } from "../../packages";
 import { getLogger } from "../../packages/logger";
+import { IAddress, IAddressMapping } from "./crux-user";
 const log = getLogger(__filename);
 // export class CruxAssetTranslator {
 //     private _assetMapping: IClientAssetMapping;
@@ -32,6 +32,14 @@ export interface IReverseClientAssetMapping {
     [assetId: string]: string;
 }
 
+export interface IPutAddressMapSuccess {
+    [currency: string]: IAddress;
+}
+
+export interface IPutAddressMapFailures {
+    [currency: string]: string;
+}
+
 export class CruxAssetTranslator {
     private _assetMapping: IClientAssetMapping;
     private _reverseAssetMap: IReverseClientAssetMapping;
@@ -56,11 +64,36 @@ export class CruxAssetTranslator {
     public assetIdToSymbol(assetId: string): string {
         return this._reverseAssetMap[assetId];
     }
+
+    // TODO: What should we be returning when calling below two methods?
+
     public assetIdAddressMapToSymbolAddressMap(userAssetIdToAddressMap: IAddressMapping): IAddressMapping {
         const currencyAddressMap: IAddressMapping = {};
         for (const assetId of Object.keys(userAssetIdToAddressMap)) {
             currencyAddressMap[this.assetIdToSymbol(assetId)] = userAssetIdToAddressMap[assetId];
         }
         return currencyAddressMap;
+    }
+    public symbolAddressMapToAssetIdAddressMap(currencyAddressMap: IAddressMapping): {success: IPutAddressMapSuccess, failures: IPutAddressMapFailures, assetAddressMap: IAddressMapping} {
+        const lowerCurrencyAddressMap = Object.assign({}, currencyAddressMap);
+        const assetAddressMap: IAddressMapping = {};
+        const success: IPutAddressMapSuccess = {};
+        const failures: IPutAddressMapFailures = {};
+        for (let walletCurrencySymbol of Object.keys(lowerCurrencyAddressMap)) {
+            lowerCurrencyAddressMap[walletCurrencySymbol.toLowerCase()] = lowerCurrencyAddressMap[walletCurrencySymbol];
+            walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
+            const assetId = this.symbolToAssetId(walletCurrencySymbol);
+            if (assetId) {
+                assetAddressMap[assetId] = lowerCurrencyAddressMap[walletCurrencySymbol];
+                success[walletCurrencySymbol] = lowerCurrencyAddressMap[walletCurrencySymbol];
+            } else {
+                failures[walletCurrencySymbol] = `${errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping}: ${errors.ERROR_STRINGS[errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping]}`;
+            }
+        }
+        return {
+            assetAddressMap,
+            failures,
+            success,
+        };
     }
 }

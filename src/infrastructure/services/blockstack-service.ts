@@ -1,8 +1,9 @@
+import { Decoder, object, optional, string } from "@mojotech/json-type-validation";
 import { publicKeyToAddress } from "blockstack";
-import { IAddressMapping } from "../..";
 import config from "../../config";
 import { DomainRegistrationStatus } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
+import { IAddress, IAddressMapping } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import { IKeyManager } from "../../core/interfaces/key-manager";
 import { IClientConfig } from "../../packages/configuration-service";
@@ -91,6 +92,25 @@ export class BlockstackService {
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(blockstackID);
         return getContentFromGaiaHub(blockstackID.toString(), cruxPayFileName, bnsNodes);
     }
+    public static putAddressMap = async (addressMapping: IAddressMapping, walletClientName: string, keyManager: IKeyManager, bnsNodes: string[]): Promise<string> => {
+        const blockstackID = await BlockstackService.getBlockstackIdFromKeyManager(keyManager, walletClientName, bnsNodes);
+        const addressDecoder: Decoder<IAddress> = object({
+            addressHash: string(),
+            secIdentifier: optional(string()),
+        });
+        try {
+            for ( const currency of Object.keys(addressMapping) ) {
+                const addressObject: IAddress = addressDecoder.runWithException(addressMapping[currency]);
+            }
+        } catch (error) {
+            throw ErrorHelper.getPackageError(error, PackageErrorCode.AddressMappingDecodingFailure);
+        }
+        const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(blockstackID);
+        const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackID.toString(), bnsNodes);
+        const finalURL = await new GaiaService(gaiaDetails.gaiaWriteUrl).uploadContentToGaiaHub(cruxPayFileName, addressMapping, keyManager);
+        log.info(`Address Map for ${blockstackID} saved to: ${finalURL}`);
+        return finalURL;
+    }
     public static getBlockstackIdFromKeyManager = async (keyManager: IKeyManager, walletClientName: string, bnsNodes: string[]): Promise<BlockstackId|undefined> => {
         const userSubdomainOwnerAddress = publicKeyToAddress(await keyManager.getPubKey());
         const registeredBlockstackIDs = await BlockstackService.getRegisteredIDsByAddress(userSubdomainOwnerAddress, bnsNodes);
@@ -103,6 +123,5 @@ export class BlockstackService {
             log.error(`More than one cruxIDs associated with: ${userSubdomainOwnerAddress}`);
         }
         return registeredDomainArray[0] ? BlockstackId.fromString(registeredDomainArray[0]) : undefined;
-        // return registeredDomainArray[0];
     }
 }

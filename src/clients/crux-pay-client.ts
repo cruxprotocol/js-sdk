@@ -1,5 +1,5 @@
 // Importing packages
-import { CruxAssetTranslator } from "../core/entities/crux-asset-translator";
+import { CruxAssetTranslator, IPutAddressMapSuccess, IPutAddressMapFailures } from "../core/entities/crux-asset-translator";
 import { CruxUser, IAddress, IAddressMapping } from "../core/entities/crux-user";
 import { ICruxAssetTranslatorRepository, ICruxAssetTranslatorRepositoryConstructor } from "../core/interfaces/crux-asset-translator-repository";
 import { ICruxUserRepository } from "../core/interfaces/crux-user-repository";
@@ -128,6 +128,25 @@ export class CruxPayClient {
             if (err.errorCode && err.errorCode === errors.PackageErrorCode.GaiaEmptyResponse) {
                 return {};
             }
+            throw errors.CruxClientError.fromError(err);
+        }
+    }
+
+    public putAddressMap = async (newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {
+        await this._initPromise;
+        try {
+            if (!this._keyManager) {
+                throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.PrivateKeyRequired);
+            }
+            const {assetAddressMap, success, failures} = this._getCruxAssetTranslator().symbolAddressMapToAssetIdAddressMap(newAddressMap);
+            if (!this._cruxUser) {
+                throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.UserDoesNotExist);
+            }
+            const cruxUser = this._cruxUser;
+            cruxUser.addressMap = newAddressMap;
+            this._cruxUser = await this._cruxUserRepository.save(cruxUser, this._keyManager);
+            return {success, failures};
+        } catch (err) {
             throw errors.CruxClientError.fromError(err);
         }
     }
