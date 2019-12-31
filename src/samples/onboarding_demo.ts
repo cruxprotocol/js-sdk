@@ -1,10 +1,11 @@
 import { CruxOnBoardingClient, ICruxOnBoardingClientOptions } from "../clients/crux-wallet-onboarding-client";
 import { errors } from "../index";
 import { LocalStorage } from "../packages/storage";
-import { IGlobalAssetList, IClientAssetMapping } from "../packages/configuration-service";
+import { IClientAssetMapping } from "../packages/configuration-service";
 import { IBlockstackServiceInputOptions } from "../packages/name-service/blockstack-service";
 import { DomainRegistrationStatus } from "../core/entities/crux-domain";
 import { ManualKeyManager } from "../infrastructure/implementations/manual-key-manager";
+import { CruxSpec } from "../core/entities/crux-spec";
 
 const doc = (document as {
     getElementById: Function,
@@ -298,6 +299,7 @@ getCruxDomainState()
 
 declare global {
     interface Window {
+        CruxSpec: typeof CruxSpec;
         cruxOnBoardingClient: CruxOnBoardingClient;
         iscruxDomainAvailable: Function;
         registercruxDomain: Function;
@@ -308,6 +310,7 @@ declare global {
         getCruxDomainState: Function;
     }
 }
+window.CruxSpec = CruxSpec;
 window.cruxOnBoardingClient = cruxOnBoardingClient;
 window.iscruxDomainAvailable = iscruxDomainAvailable;
 window.registercruxDomain = registercruxDomain;
