@@ -4,7 +4,7 @@ import { CruxUser, IAddress, IAddressMapping } from "../core/entities/crux-user"
 import { ICruxAssetTranslatorRepository, ICruxAssetTranslatorRepositoryConstructor } from "../core/interfaces/crux-asset-translator-repository";
 import { ICruxUserRepository } from "../core/interfaces/crux-user-repository";
 import { IKeyManager } from "../core/interfaces/key-manager";
-import { setCacheStorage } from "../index";
+import {ICruxIDState, setCacheStorage} from "../index";
 import { BasicKeyManager } from "../infrastructure/implementations/basic-key-manager";
 import { BlockstackCruxAssetTranslatorRepository } from "../infrastructure/implementations/blockstack-crux-asset-translator-repository";
 import { BlockstackCruxDomainRepository } from "../infrastructure/implementations/blockstack-crux-domain-repository";
@@ -87,6 +87,30 @@ export class CruxPayClient {
     //     log.info(`CruxPayClient: constructor called`);
     //     this.initPromise = this._init();
     // }
+    public getCruxIDState = async (): Promise<ICruxIDState> => {
+        await this._initPromise;
+        try {
+            if (!this._cruxUser) {
+                if (this._keyManager) {
+                    return {
+                        cruxID: null,
+                        status: {
+                            status: "NONE",
+                            statusDetail: "",
+                        },
+                    };
+                } else {
+                    throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.PrivateKeyRequired);
+                }
+            }
+            return {
+                cruxID: this._cruxUser.cruxID.toString(),
+                status : this._cruxUser.registrationStatus,
+            };
+        } catch (err) {
+            throw errors.CruxClientError.fromError(err);
+        }
+    }
 
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
         await this._initPromise;
@@ -146,10 +170,6 @@ export class CruxPayClient {
         return this._cruxAssetTranslator;
     }
 
-    private _getCruxUserByKeyManager = async (keyManger: IKeyManager): Promise<CruxUser|undefined> => {
-        return await this._cruxUserRepository.getWithKey(keyManger);
-    }
-
     private _init = async (options: ICruxClientOptions): Promise<void> => {
         const cruxDomain = await new BlockstackCruxDomainRepository().get(new CruxDomainId(this.walletClientName));
         if (!cruxDomain) {
@@ -157,7 +177,7 @@ export class CruxPayClient {
         }
         if (options.privateKey) {
             this._keyManager = new BasicKeyManager(options.privateKey);
-            this._cruxUser = await this._getCruxUserByKeyManager(this._keyManager);
+            this._cruxUser = await this._cruxUserRepository.getWithKey(this._keyManager);
         }
         this._cruxAssetTranslator = await new CruxAssetTranslator(cruxDomain.config.assetMapping);
     }

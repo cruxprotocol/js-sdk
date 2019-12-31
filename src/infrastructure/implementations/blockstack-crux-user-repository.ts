@@ -1,7 +1,7 @@
 import { CruxSpec } from "src/core/entities/crux-spec";
 import { IKeyManager } from "src/core/interfaces/key-manager";
 import { CruxUser } from "../../core/entities/crux-user";
-import { ICruxUserRepositoryOptions } from "../../core/interfaces/crux-user-repository";
+import {ICruxUserRepository, ICruxUserRepositoryOptions} from "../../core/interfaces/crux-user-repository";
 import {CruxDomainId, CruxId, IdTranslator} from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { BlockstackService } from "../services/blockstack-service";
@@ -12,7 +12,7 @@ export interface IBlockstackCruxUserRepositoryOptions extends ICruxUserRepositor
     cruxDomainId: CruxDomainId;
 }
 
-export class BlockstackCruxUserRepository implements ICruxUserRepositoryOptions {
+export class BlockstackCruxUserRepository implements ICruxUserRepository {
     private _bnsNodes: string[];
     private _cruxDomainId: CruxDomainId;
     constructor(options: IBlockstackCruxUserRepositoryOptions) {
@@ -22,8 +22,9 @@ export class BlockstackCruxUserRepository implements ICruxUserRepositoryOptions 
     }
     public getByCruxId = async (cruxID: CruxId): Promise<CruxUser|undefined> => {
         const blockstackID = IdTranslator.cruxIdToBlockstackId(cruxID);
+        const registrationStatus = await BlockstackService.getCruxIdRegistrationStatus(cruxID, this._bnsNodes)
         const addressMap = await BlockstackService.getAddressMap(blockstackID, this._bnsNodes);
-        return new CruxUser(cruxID, addressMap);
+        return new CruxUser(cruxID, addressMap, registrationStatus);
     }
     public getWithKey = async (keyManager: IKeyManager): Promise<CruxUser|undefined> => {
         const blockstackID = await BlockstackService.getBlockstackIdFromKeyManager(keyManager, this._cruxDomainId, this._bnsNodes);
@@ -31,7 +32,6 @@ export class BlockstackCruxUserRepository implements ICruxUserRepositoryOptions 
             return;
         }
         const cruxID = IdTranslator.blockstackIdToCruxId(blockstackID);
-        const addressMap = await BlockstackService.getAddressMap(blockstackID, this._bnsNodes);
-        return new CruxUser(cruxID, addressMap);
+        return this.getByCruxId(cruxID);
     }
 }

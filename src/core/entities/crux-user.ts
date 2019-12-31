@@ -12,15 +12,21 @@ export interface IAddressMapping {
     [currency: string]: IAddress;
 }
 
+export interface ICruxUserRegistrationStatus {
+    status: string;
+    statusDetail: string;
+}
+
 export class CruxUser {
     public cruxID: CruxId;
+    public registrationStatus: ICruxUserRegistrationStatus;
     private _addressMap: IAddressMapping;
 
-    constructor(cruxID: CruxId, addressMap: IAddressMapping) {
+    constructor(cruxID: CruxId, addressMap: IAddressMapping, registrationStatus: ICruxUserRegistrationStatus) {
         this.cruxID = cruxID;
         this._addressMap = addressMap;
+        this.registrationStatus = registrationStatus;
     }
-
     get addressMap() {
         return this._addressMap;
     }
