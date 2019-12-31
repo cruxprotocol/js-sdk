@@ -101,6 +101,7 @@ export interface GenericDomainComponents {
     namespace: string;
 }
 
+// CruxDomainId("cruxdev")
 export class CruxDomainId {
     public static fromString = (stringRepresentation: string) => {
         const arrayCruxId = stringRepresentation.split(/[.@]/);
@@ -162,7 +163,7 @@ export class IdTranslator {
         if (cruxDomain.components.namespace !== DEFAULT_CRUX_NAMESPACE) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CruxDomainNamespaceValidation, cruxDomain.components.namespace);
         }
-        return new BlockstackDomain(cruxDomain.components.domain);
+        return new BlockstackDomain(IdTranslator.cruxDomainStringToBlockstackDomainString(cruxDomain.components.domain));
     }
     public static blockstackDomainToCruxDomain = (blockstackDomain: BlockstackDomain): CruxDomainId => {
         if (blockstackDomain.components.namespace !== DEFAULT_BLOCKSTACK_NAMESPACE) {

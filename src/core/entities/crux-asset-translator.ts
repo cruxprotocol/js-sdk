@@ -1,4 +1,5 @@
-import { IClientAssetMapping, IGlobalAssetList } from "../../packages/configuration-service";
+
+import { IAddressMapping } from "../..";
 import { getLogger } from "../../packages/logger";
 const log = getLogger(__filename);
 // export class CruxAssetTranslator {
@@ -23,10 +24,24 @@ const log = getLogger(__filename);
 //     }
 // }
 
+export interface IClientAssetMapping {
+    [currencySymbol: string]: string;
+}
+
+export interface IReverseClientAssetMapping {
+    [assetId: string]: string;
+}
+
 export class CruxAssetTranslator {
     private _assetMapping: IClientAssetMapping;
+    private _reverseAssetMap: IReverseClientAssetMapping;
     constructor(assetMapping: IClientAssetMapping) {
         this._assetMapping = assetMapping;
+        this._reverseAssetMap = {};
+        for (let walletCurrencySymbol of Object.keys(this._assetMapping)) {
+            walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
+            this._reverseAssetMap[this._assetMapping[walletCurrencySymbol]] = walletCurrencySymbol;
+        }
     }
     get assetMapping() {
         return this._assetMapping;
@@ -39,7 +54,13 @@ export class CruxAssetTranslator {
         return this._assetMapping[currencySymbol];
     }
     public assetIdToSymbol(assetId: string): string {
-        // TODO
-        return "";
+        return this._reverseAssetMap[assetId];
+    }
+    public assetIdAddressMapToSymbolAddressMap(userAssetIdToAddressMap: IAddressMapping): IAddressMapping {
+        const currencyAddressMap: IAddressMapping = {};
+        for (const assetId of Object.keys(userAssetIdToAddressMap)) {
+            currencyAddressMap[this.assetIdToSymbol(assetId)] = userAssetIdToAddressMap[assetId];
+        }
+        return currencyAddressMap;
     }
 }

@@ -53,12 +53,12 @@ doc.getElementById('publishAddresses').innerHTML = Object.keys(sampleAddressMap)
 const cruxClientOptions: ICruxClientOptions = {
     walletClientName: walletClientName,
     cacheStorage: new storage.LocalStorage(),
-    // privateKey: "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37f7c6f",
+    privateKey: "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37f7c6f",
 }
 
 // initialising the cruxClient
 const cruxClient = new CruxPayClient(cruxClientOptions)
-
+// const cruxClient = new CruxClient(cruxClientOptions)
 
 // SDK functional interface
 
@@ -144,6 +144,8 @@ const getAddressMap = async () => {
     let UIResponse: string = ""
     try {
         let addressMap = await cruxClient.getAddressMap()
+        console.log("addressMap: ");
+        console.log(addressMap);
         UIResponse = JSON.stringify(addressMap, undefined, 4)
     } catch (e) {
         if (e instanceof errors.CruxClientError) {

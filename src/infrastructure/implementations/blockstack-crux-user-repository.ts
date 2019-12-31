@@ -25,13 +25,13 @@ export class BlockstackCruxUserRepository implements ICruxUserRepositoryOptions 
         const addressMap = await BlockstackService.getAddressMap(blockstackID, this._bnsNodes);
         return new CruxUser(cruxID, addressMap);
     }
-    // public getWithKey = async (keyManager: IKeyManager): Promise<CruxUser|undefined> => {
-    //     const blockstackID = await BlockstackService.getBlockstackIdFromKeyManager(keyManager, this._walletClientName, this._bnsNodes);
-    //     if (!blockstackID) {
-    //         return;
-    //     }
-    //     const cruxID = IdTranslator.blockstackIdToCruxId(blockstackID);
-    //     const addressMap = await BlockstackService.getAddressMap(blockstackID, this._bnsNodes);
-    //     return new CruxUser(cruxID, addressMap);
-    // }
+    public getWithKey = async (keyManager: IKeyManager): Promise<CruxUser|undefined> => {
+        const blockstackID = await BlockstackService.getBlockstackIdFromKeyManager(keyManager, this._walletClientName, this._bnsNodes);
+        if (!blockstackID) {
+            return;
+        }
+        const cruxID = IdTranslator.blockstackIdToCruxId(blockstackID);
+        const addressMap = await BlockstackService.getAddressMap(blockstackID, this._bnsNodes);
+        return new CruxUser(cruxID, addressMap);
+    }
 }

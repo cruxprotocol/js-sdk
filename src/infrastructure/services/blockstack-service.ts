@@ -94,6 +94,7 @@ export class BlockstackService {
     public static getBlockstackIdFromKeyManager = async (keyManager: IKeyManager, walletClientName: string, bnsNodes: string[]): Promise<BlockstackId|undefined> => {
         const userSubdomainOwnerAddress = publicKeyToAddress(await keyManager.getPubKey());
         const registeredBlockstackIDs = await BlockstackService.getRegisteredIDsByAddress(userSubdomainOwnerAddress, bnsNodes);
+        console.log(IdTranslator.cruxToBlockstack(new CruxDomainId(walletClientName)).toString());
         const registeredDomainArray = registeredBlockstackIDs
             .map((blockstackID: string) => blockstackID.match(new RegExp(`(.+)\.${IdTranslator.cruxToBlockstack(new CruxDomainId(walletClientName)).toString()}`)))
             .map((match) => match && match[0])
