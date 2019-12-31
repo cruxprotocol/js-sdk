@@ -2,6 +2,7 @@ import { AssertionError, deepStrictEqual } from "assert";
 import { ErrorHelper, PackageErrorCode } from "../error";
 import { BlockstackId, CRUX_DOMAIN_SUFFIX, DEFAULT_BLOCKSTACK_NAMESPACE, IdTranslator } from "../identity-utils";
 import { getLogger } from "../logger";
+import { StorageService } from "../storage";
 import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
@@ -17,8 +18,8 @@ export interface INameDetailsObject {
     more?: string;
 }
 
-export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[], tag?: string): Promise<INameDetailsObject> => {
-    const nodeResponses = bnsNodes.map((baseUrl) => bnsResolveName(baseUrl, blockstackId, tag));
+export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[], tag?: string, cacheStorage?: StorageService): Promise<INameDetailsObject> => {
+    const nodeResponses = bnsNodes.map((baseUrl) => bnsResolveName(baseUrl, blockstackId, tag, cacheStorage));
     log.debug(`BNS node responses:`, nodeResponses);
 
     const responsesArr: object[] = await Promise.all(nodeResponses);
@@ -50,7 +51,7 @@ export const fetchNameDetails = async (blockstackId: string, bnsNodes: string[],
     return response;
 };
 
-const bnsResolveName = async (baseUrl: string, blockstackId: string, tag?: string): Promise<object> => {
+const bnsResolveName = async (baseUrl: string, blockstackId: string, tag?: string, cacheStorage?: StorageService): Promise<object> => {
     const options: any = {
         baseUrl,
         json: true,
@@ -66,7 +67,7 @@ const bnsResolveName = async (baseUrl: string, blockstackId: string, tag?: strin
 
     let nameData;
     try {
-        nameData = await cachedFunctionCall(`${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => Boolean(data && data.status && data.status !== "registered_subdomain"));
+        nameData = await cachedFunctionCall(cacheStorage, `${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => Boolean(data && data.status && data.status !== "registered_subdomain"));
     } catch (error) {
         throw ErrorHelper.getPackageError(error, PackageErrorCode.BnsResolutionFailed, baseUrl, error);
     }

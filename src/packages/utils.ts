@@ -4,7 +4,7 @@ import { cacheStorage} from "../index";
 import { BaseError, ErrorHelper, PackageErrorCode } from "./error";
 import { getLogger } from "./logger";
 import { IBitcoinKeyPair } from "./name-service/blockstack-service";
-import { LocalStorage } from "./storage";
+import { StorageService } from "./storage";
 
 const log = getLogger(__filename);
 
@@ -64,8 +64,12 @@ const getRandomHexString = (length: number = 32): string => {
     return result;
 };
 
-const cachedFunctionCall = async (cacheKey: string, ttl: number = 300, fn: (...args: any[]) => any, paramArray: any[], skipConditional?: (returnValue: any) => Promise<boolean>): Promise<any> => {
-    const storage = cacheStorage;
+const cachedFunctionCall = async (store: StorageService|undefined, cacheKey: string, ttl: number = 300, fn: (...args: any[]) => any, paramArray: any[], skipConditional?: (returnValue: any) => Promise<boolean>): Promise<any> => {
+    const storage = store || cacheStorage; // TODO: Falling back to the singleton variable for backward compatibility. Can be removed
+    if (!storage) {
+        log.info("cacheStorage is missing, making a direct call");
+        return fn.apply(fn, paramArray);
+    }
     const storageCacheKey = `crux_cache_${cacheKey}`;
     const cachedValue = await storage.getItem(storageCacheKey);
     const cachedExpiry = Number(await storage.getItem(storageCacheKey + ":exp"));

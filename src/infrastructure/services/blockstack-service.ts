@@ -9,6 +9,7 @@ import { ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "../../packages/gaia-service/utils";
 import { getLogger } from "../../packages/logger";
 import { fetchNameDetails, INameDetailsObject } from "../../packages/name-service/utils";
+import { StorageService } from "../../packages/storage";
 import { httpJSONRequest } from "../../packages/utils";
 import { GaiaService } from "./gaia-service";
 const log = getLogger(__filename);
@@ -17,10 +18,10 @@ export class BlockstackService {
         bnsNodes: config.BLOCKSTACK.BNS_NODES,
         gaiaHub: config.BLOCKSTACK.GAIA_HUB,
     };
-    public static getDomainRegistrationStatus = async (domain: string, bnsNodes: string[]): Promise<DomainRegistrationStatus> => {
+    public static getDomainRegistrationStatus = async (domain: string, bnsNodes: string[], cacheStorage?: StorageService): Promise<DomainRegistrationStatus> => {
         // TODO: interpret the domain registration status from blockchain/BNS node
         const domainBlockstackID = CruxSpec.idTranslator.cruxDomainStringToBlockstackDomainString(domain);
-        const nameDetails = await fetchNameDetails(domainBlockstackID, bnsNodes);
+        const nameDetails = await fetchNameDetails(domainBlockstackID, bnsNodes, undefined, cacheStorage);
         if (!nameDetails) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.BnsResolutionFailed);
         }
@@ -59,15 +60,15 @@ export class BlockstackService {
         }
         return domainRegistrationStatus;
     }
-    public static getClientConfig = async (domain: string, bnsNodes: string[]): Promise<IClientConfig> => {
+    public static getClientConfig = async (domain: string, bnsNodes: string[], cacheStorage?: StorageService): Promise<IClientConfig> => {
         const configBlockstackID = CruxSpec.blockstack.getConfigBlockstackID(domain);
         const domainConfigFileName = CruxSpec.blockstack.getDomainConfigFileName(domain);
-        return getContentFromGaiaHub(configBlockstackID, domainConfigFileName, bnsNodes);
+        return getContentFromGaiaHub(configBlockstackID, domainConfigFileName, bnsNodes, undefined, cacheStorage);
     }
-    public static putClientConfig = async (domain: string, clientConfig: IClientConfig, bnsNodes: string[], keyManager: IKeyManager): Promise<string> => {
+    public static putClientConfig = async (domain: string, clientConfig: IClientConfig, bnsNodes: string[], keyManager: IKeyManager, cacheStorage?: StorageService): Promise<string> => {
         const configBlockstackID = CruxSpec.blockstack.getConfigBlockstackID(domain);
         const domainConfigFileName = CruxSpec.blockstack.getDomainConfigFileName(domain);
-        const gaiaDetails = await getGaiaDataFromBlockstackID(configBlockstackID, bnsNodes);
+        const gaiaDetails = await getGaiaDataFromBlockstackID(configBlockstackID, bnsNodes, undefined, cacheStorage);
         const finalURL = await new GaiaService(gaiaDetails.gaiaWriteUrl).uploadContentToGaiaHub(domainConfigFileName, clientConfig, keyManager);
         log.info(`clientConfig saved to: ${finalURL}`);
         return finalURL;

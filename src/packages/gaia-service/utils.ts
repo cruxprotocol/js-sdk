@@ -3,6 +3,7 @@ import { ErrorHelper, PackageErrorCode } from "../error";
 import { getLogger } from "../logger";
 import * as nameservice from "../name-service/blockstack-service";
 import { fetchNameDetails } from "../name-service/utils";
+import { StorageService } from "../storage";
 import { cachedFunctionCall, httpJSONRequest } from "../utils";
 
 const log = getLogger(__filename);
@@ -13,8 +14,8 @@ interface IGaiaDetails {
     ownerAddress: string;
 }
 
-export const getContentFromGaiaHub = async (blockstackId: string, filename: string, bnsNodes: string[], tag?: string): Promise<any> => {
-    const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackId, bnsNodes, tag);
+export const getContentFromGaiaHub = async (blockstackId: string, filename: string, bnsNodes: string[], tag?: string, cacheStorage?: StorageService): Promise<any> => {
+    const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackId, bnsNodes, tag, cacheStorage);
     const fileUrl = gaiaDetails.gaiaReadUrl + gaiaDetails.ownerAddress + "/" + filename;
     const options = {
         json: true,
@@ -24,7 +25,7 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: stri
 
     let finalContent: any;
     const cacheTTL = filename === nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG ? 3600 : undefined;
-    const responseBody: any = await cachedFunctionCall(options.url, cacheTTL, httpJSONRequest, [options], async (data) => {
+    const responseBody: any = await cachedFunctionCall(cacheStorage, options.url, cacheTTL, httpJSONRequest, [options], async (data) => {
         return Boolean(filename !== nameservice.UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
     });
     if (responseBody.indexOf("BlobNotFound") > 0 || responseBody.indexOf("NoSuchKey") > 0) {
@@ -52,9 +53,9 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: stri
     return finalContent;
 };
 
-export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes: string[], tag?: string): Promise<IGaiaDetails> => {
+export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes: string[], tag?: string, cacheStorage?: StorageService): Promise<IGaiaDetails> => {
     let nameData: any;
-    nameData = await fetchNameDetails(blockstackId, bnsNodes, tag);
+    nameData = await fetchNameDetails(blockstackId, bnsNodes, tag, cacheStorage);
     log.debug(nameData);
     if (!nameData) {
         throw ErrorHelper.getPackageError(null, PackageErrorCode.BnsEmptyData);
@@ -68,14 +69,14 @@ export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes
     let gaiaWrite: string;
     if (nameData.zonefile.match(new RegExp("(.+)https:\/\/hub.cruxpay.com\/hub\/(.+)\/profile.json"))) {
         gaiaWrite = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/hub\/(.+)\/profile.json", "s"))[2];
-        gaiaRead = await getGaiaReadUrl(gaiaWrite as string);
+        gaiaRead = await getGaiaReadUrl(gaiaWrite as string, cacheStorage);
     } else if (nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json"))) {
         // TODO: remove this case and purge the testcases using this path
         gaiaRead = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/(.+)\/profile.json", "s"))[2] + "/";
         gaiaWrite = "https://hub.blockstack.org";
     } else {
         gaiaWrite = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1)[0];
-        gaiaRead = await getGaiaReadUrl(gaiaWrite as string);
+        gaiaRead = await getGaiaReadUrl(gaiaWrite as string, cacheStorage);
     }
     const gaiaDetails: IGaiaDetails = {
         gaiaReadUrl: gaiaRead,
@@ -85,14 +86,14 @@ export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes
     return gaiaDetails;
 };
 
-export const getGaiaReadUrl = async (gaiaWriteURL: string): Promise<string> => {
+export const getGaiaReadUrl = async (gaiaWriteURL: string, cacheStorage?: StorageService): Promise<string> => {
     const options = {
         json: true,
         method: "GET",
         url: gaiaWriteURL + "/hub_info" ,
     };
     try {
-        const responseBody: any = await cachedFunctionCall(options.url, 3600, httpJSONRequest, [options]);
+        const responseBody: any = await cachedFunctionCall(cacheStorage, options.url, 3600, httpJSONRequest, [options]);
         const gaiaReadURL = responseBody.read_url_prefix;
         return gaiaReadURL;
     } catch (err) {

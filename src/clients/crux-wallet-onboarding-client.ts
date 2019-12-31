@@ -2,7 +2,6 @@ import { DomainRegistrationStatus } from "../core/entities/crux-domain";
 import { CruxDomain } from "../core/entities/crux-domain";
 import { ICruxDomainRepository } from "../core/interfaces/crux-domain-repository";
 import { IKeyManager } from "../core/interfaces/key-manager";
-import { setCacheStorage } from "../index";
 import { BasicKeyManager } from "../infrastructure/implementations/basic-key-manager";
 import { BlockstackCruxDomainRepository } from "../infrastructure/implementations/blockstack-crux-domain-repository";
 import { IClientAssetMapping, IGlobalAssetList } from "../packages/configuration-service";
@@ -20,15 +19,16 @@ export interface ICruxOnBoardingClientOptions {
     domain?: string;
 }
 export class CruxOnBoardingClient {
+    private _cacheStorage?: StorageService;
     private _initPromise: Promise<void>;
     private _cruxDomainRepository: ICruxDomainRepository;
     private _configKeyManager?: IKeyManager;
     private _cruxDomain?: CruxDomain;
     private _domainContext?: CruxDomainId;
     constructor(options: ICruxOnBoardingClientOptions) {
-        setCacheStorage(options.cacheStorage || new InMemStorage());
+        this._cacheStorage = options.cacheStorage || new InMemStorage();
         // set the repository constructors to be used further in the client
-        this._cruxDomainRepository = new BlockstackCruxDomainRepository();
+        this._cruxDomainRepository = new BlockstackCruxDomainRepository({cacheStorage: this._cacheStorage});
         // set the keyManagers if available
         this._configKeyManager =  typeof options.configKey === "string" ? new BasicKeyManager(options.configKey) : options.configKey;
         // set the domainContext if domain is provided
