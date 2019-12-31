@@ -14,15 +14,15 @@ export interface IBlockstackCruxDomainRepositoryOptions extends ICruxDomainRepos
     cacheStorage?: StorageService;
 }
 export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
-    private _cacheStorage?: StorageService;
-    private _bnsNodes: string[];
+    private cacheStorage?: StorageService;
+    private bnsNodes: string[];
     constructor(options?: IBlockstackCruxDomainRepositoryOptions) {
-        this._cacheStorage = options && options.cacheStorage;
-        this._bnsNodes = options && options.bnsNodes && [...new Set([...BlockstackService.infrastructure.bnsNodes, ...options.bnsNodes])] || BlockstackService.infrastructure.bnsNodes;
+        this.cacheStorage = options && options.cacheStorage;
+        this.bnsNodes = options && options.bnsNodes && [...new Set([...BlockstackService.infrastructure.bnsNodes, ...options.bnsNodes])] || BlockstackService.infrastructure.bnsNodes;
         log.info("BlockstackCruxDomainRepository initialised");
     }
     public find = async (domainId: CruxDomainId): Promise<boolean> => {
-        const domainRegistrationStatus = await this._getDomainRegistrationStatus(domainId.components.domain, this._bnsNodes);
+        const domainRegistrationStatus = await this.getDomainRegistrationStatus(domainId.components.domain, this.bnsNodes);
         return domainRegistrationStatus === DomainRegistrationStatus.AVAILABLE ? true : false;
     }
     public create = async (domainId: CruxDomainId, keyManager: IKeyManager): Promise<CruxDomain> => {
@@ -30,32 +30,32 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
         throw ErrorHelper.getPackageError(null, PackageErrorCode.IsNotSupported);
     }
     public get = async (domainId: CruxDomainId): Promise<CruxDomain|undefined> => {
-        const domainRegistrationStatus = await this._getDomainRegistrationStatus(domainId.components.domain, this._bnsNodes);
+        const domainRegistrationStatus = await this.getDomainRegistrationStatus(domainId.components.domain, this.bnsNodes);
         if (domainRegistrationStatus === DomainRegistrationStatus.AVAILABLE) {
             return;
         }
-        const domainClientConfig = await this._getClientConfig(domainId.components.domain, this._bnsNodes);
+        const domainClientConfig = await this.getClientConfig(domainId.components.domain, this.bnsNodes);
         return new CruxDomain(domainId, domainRegistrationStatus, domainClientConfig);
     }
     public save = async (cruxDomain: CruxDomain, configKeyManager: IKeyManager): Promise<CruxDomain> => {
-        await this._putClientConfig(cruxDomain.domainId.components.domain, cruxDomain.config, this._bnsNodes, configKeyManager);
+        await this.putClientConfig(cruxDomain.domainId.components.domain, cruxDomain.config, this.bnsNodes, configKeyManager);
         return cruxDomain;
     }
     public getWithKey = async (keyManager: IKeyManager, domainId?: CruxDomainId): Promise<CruxDomain|undefined> => {
-        const associatedDomain = await BlockstackService.restoreDomain(keyManager, this._bnsNodes, domainId && domainId.components.domain);
+        const associatedDomain = await BlockstackService.restoreDomain(keyManager, this.bnsNodes, domainId && domainId.components.domain);
         if (!associatedDomain) {
             return;
         }
-        const domainClientConfig = await this._getClientConfig(associatedDomain, this._bnsNodes);
+        const domainClientConfig = await this.getClientConfig(associatedDomain, this.bnsNodes);
         return new CruxDomain(new CruxDomainId(associatedDomain), DomainRegistrationStatus.REGISTERED, domainClientConfig);
     }
-    private _getDomainRegistrationStatus = async (domain: string, bnsNodes: string[]) => {
-        return BlockstackService.getDomainRegistrationStatus(domain, bnsNodes, this._cacheStorage);
+    private getDomainRegistrationStatus = async (domain: string, bnsNodes: string[]) => {
+        return BlockstackService.getDomainRegistrationStatus(domain, bnsNodes, this.cacheStorage);
     }
-    private _getClientConfig = async (domain: string, bnsNodes: string[]) => {
-        return BlockstackService.getClientConfig(domain, bnsNodes, this._cacheStorage);
+    private getClientConfig = async (domain: string, bnsNodes: string[]) => {
+        return BlockstackService.getClientConfig(domain, bnsNodes, this.cacheStorage);
     }
-    private _putClientConfig = async (domain: string, clientConfig: IClientConfig, bnsNodes: string[], keyManager: IKeyManager) => {
-        return BlockstackService.putClientConfig(domain, clientConfig, bnsNodes, keyManager, this._cacheStorage);
+    private putClientConfig = async (domain: string, clientConfig: IClientConfig, bnsNodes: string[], keyManager: IKeyManager) => {
+        return BlockstackService.putClientConfig(domain, clientConfig, bnsNodes, keyManager, this.cacheStorage);
     }
 }

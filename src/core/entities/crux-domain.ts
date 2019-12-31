@@ -10,23 +10,23 @@ export enum DomainRegistrationStatus {
 }
 export class CruxDomain {
     public domainId: CruxDomainId;
-    private _domainConfig: IClientConfig;
-    private _status: DomainRegistrationStatus;
+    private domainConfig: IClientConfig;
+    private registrationStatus: DomainRegistrationStatus;
 
-    constructor(domain: CruxDomainId, status: DomainRegistrationStatus, domainConfig: IClientConfig) {
+    constructor(domain: CruxDomainId, registrationStatus: DomainRegistrationStatus, domainConfig: IClientConfig) {
         this.domainId = domain;
-        this._status = status;
-        this._domainConfig = domainConfig;
+        this.registrationStatus = registrationStatus;
+        this.domainConfig = domainConfig;
         log.info("CruxDomain initialised");
     }
     get status() {
-        return this._status;
+        return this.registrationStatus;
     }
     get config() {
-        return this._domainConfig;
+        return this.domainConfig;
     }
     set config(domainConfig: IClientConfig) {
         // TODO: validate the newClientConfig
-        this._domainConfig = domainConfig;
+        this.domainConfig = domainConfig;
     }
 }
