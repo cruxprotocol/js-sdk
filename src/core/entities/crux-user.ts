@@ -17,6 +17,13 @@ export interface ICruxUserRegistrationStatus {
     statusDetail: string;
 }
 
+export enum SubdomainRegistrationStatus {
+    NONE = "NONE",
+    PENDING = "PENDING",
+    DONE = "DONE",
+    REJECT = "REJECT",
+}
+
 export class CruxUser {
     public cruxID: CruxId;
     public registrationStatus: ICruxUserRegistrationStatus;

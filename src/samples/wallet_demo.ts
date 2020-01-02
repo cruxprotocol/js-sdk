@@ -12,7 +12,7 @@ const doc = (document as {
 
 // Demo wallet artifacts
 
-let walletClientName = "cruxdev"
+let walletClientName = "zel"
 // Value can be withoutInit or withInit
 let mode = "withoutInit"
 const wallet_btc_address = "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V"
