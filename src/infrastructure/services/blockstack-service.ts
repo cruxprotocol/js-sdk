@@ -155,7 +155,7 @@ export class BlockstackService {
                 statusDetail,
             };
         }
-        const registrarApiClient = new BlockstackSubdomainRegistrarApiClient("asd", blockstackId.components.domain);
+        const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(config.BLOCKSTACK.SUBDOMAIN_REGISTRAR, blockstackId.components.domain);
         const registrarStatus = registrarApiClient.getSubdomainStatus(cruxId.components.subdomain);
         const registrationStatus = getStatusObjectFromResponse(registrarStatus);
         return registrationStatus;
