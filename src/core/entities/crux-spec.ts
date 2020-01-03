@@ -3,6 +3,7 @@ import { IClientAssetMapping, IGlobalAsset, IGlobalAssetList } from "../../packa
 import { BaseError } from "../../packages/error";
 import { BlockstackId, IdTranslator } from "../../packages/identity-utils";
 import { IBlockstackServiceInputOptions } from "../../packages/name-service/blockstack-service";
+import { IAddress, IAddressMapping } from "../entities/crux-user";
 import globalAssetList from "../global-asset-list.json";
 import { ICruxBlockstackInfrastructure } from "../interfaces";
 const assetIdRegex = new RegExp(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$`);
@@ -50,6 +51,13 @@ export class Validations {
         if (nameServiceConfig.bnsNodes) {
             nameServiceConfig.bnsNodes.forEach(Validations.validateURL);
         }
+    }
+    public static validateAddressMap = (addressMap: IAddressMapping) => {
+        for (const assetId in addressMap) {
+            if (addressMap.hasOwnProperty(assetId)) {
+                Validations.validateAssetId(assetId);
+            }
+          }
     }
 }
 export const CruxSpec = {
