@@ -1,8 +1,10 @@
+import config from "../../config";
 import { IClientAssetMapping, IGlobalAsset, IGlobalAssetList } from "../../packages/configuration-service";
 import { BaseError } from "../../packages/error";
 import { IdTranslator } from "../../packages/identity-utils";
 import { IBlockstackServiceInputOptions } from "../../packages/name-service/blockstack-service";
 import globalAssetList from "../global-asset-list.json";
+import { ICruxBlockstackInfrastructure } from "../interfaces";
 const assetIdRegex = new RegExp(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$`);
 const urlRegex = new RegExp(`^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$`);
 export class Validations {
@@ -46,6 +48,10 @@ export class Validations {
 }
 export const CruxSpec = {
     blockstack: class blockstack {
+        public static infrastructure: ICruxBlockstackInfrastructure = {
+            bnsNodes: config.BLOCKSTACK.BNS_NODES,
+            gaiaHub: config.BLOCKSTACK.GAIA_HUB,
+        };
         public static configSubdomain: string = "_config";
         public static getDomainConfigFileName = (domain: string): string => {
             return `${domain}_client-config.json`;
