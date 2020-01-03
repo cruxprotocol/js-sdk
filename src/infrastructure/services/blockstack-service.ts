@@ -116,7 +116,7 @@ export class BlockstackService {
     }
     public getAddressMap = async (blockstackID: BlockstackId): Promise<IAddressMapping> => {
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(blockstackID);
-        return getContentFromGaiaHub(blockstackID.toString(), cruxPayFileName, this.bnsNodes);
+        return getContentFromGaiaHub(blockstackID.toString(), cruxPayFileName, this.bnsNodes, undefined, this.cacheStorage);
     }
     public putAddressMap = async (addressMapping: IAddressMapping, cruxDomainId: CruxDomainId, keyManager: IKeyManager): Promise<string> => {
         const blockstackID = await this.getBlockstackIdFromKeyManager(keyManager, cruxDomainId);
@@ -135,7 +135,7 @@ export class BlockstackService {
             throw ErrorHelper.getPackageError(error, PackageErrorCode.AddressMappingDecodingFailure);
         }
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(blockstackID);
-        const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackID.toString(), this.bnsNodes);
+        const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackID.toString(), this.bnsNodes, undefined, this.cacheStorage);
         const finalURL = await new GaiaService(gaiaDetails.gaiaWriteUrl).uploadContentToGaiaHub(cruxPayFileName, addressMapping, keyManager);
         log.info(`Address Map for ${blockstackID} saved to: ${finalURL}`);
         return finalURL;
@@ -186,7 +186,7 @@ export class BlockstackService {
     public getCruxIdRegistrationStatus = async (cruxId: CruxId): Promise<ICruxUserRegistrationStatus> => {
         log.debug("====getRegistrationStatus====");
         const blockstackId = IdTranslator.cruxToBlockstack(cruxId);
-        const nameData: any = await fetchNameDetails(blockstackId.toString(), this.bnsNodes);
+        const nameData: any = await fetchNameDetails(blockstackId.toString(), this.bnsNodes, undefined, this.cacheStorage);
         let status: SubdomainRegistrationStatus;
         let statusDetail: string = "";
         if (nameData.status === "registered_subdomain") {
