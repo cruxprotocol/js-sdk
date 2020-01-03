@@ -4,21 +4,26 @@ import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxUserRepository, ICruxUserRepositoryOptions} from "../../core/interfaces/crux-user-repository";
 import {CruxDomainId, CruxId, IdTranslator} from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
+import { StorageService } from "../../packages/storage";
 import { BlockstackService } from "../services/blockstack-service";
 const log = getLogger(__filename);
 
 export interface IBlockstackCruxUserRepositoryOptions extends ICruxUserRepositoryOptions {
     blockstackInfrastructure: ICruxBlockstackInfrastructure;
     bnsOverrides?: string[];
+    cacheStorage?: StorageService;
 }
 
 export class BlockstackCruxUserRepository implements ICruxUserRepository {
+    private cacheStorage?: StorageService;
     private blockstackService: BlockstackService;
     constructor(options: IBlockstackCruxUserRepositoryOptions) {
+        this.cacheStorage = options && options.cacheStorage;
         this.blockstackService = new BlockstackService({
             bnsOverrides: options.bnsOverrides,
+            cacheStorage: this.cacheStorage,
             infrastructure: options?.blockstackInfrastructure,
-        })
+        });
         log.info("BlockstackCruxUserRepository initialised");
     }
     public create = async (cruxId: CruxId, keyManager: IKeyManager): Promise<CruxUser> => {

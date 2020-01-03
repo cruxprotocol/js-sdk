@@ -242,7 +242,7 @@ if (mode === "withoutInit") {
 // Declaring global variables to be accessible for (button clicks or debugging purposes)
 declare global {
     interface Window {
-        wallet: CruxClient;
+        wallet: CruxWalletClient;
         isCruxIDAvailable: Function;
         registerCruxID: Function;
         resolveCurrencyAddressForCruxID: Function;
