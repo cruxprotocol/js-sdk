@@ -1,8 +1,9 @@
 // Importing packages
 import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../core/entities/crux-asset-translator";
 import { CruxDomain } from "../core/entities/crux-domain";
+import { CruxSpec } from "../core/entities/crux-spec";
 import { CruxUser, IAddress, IAddressMapping } from "../core/entities/crux-user";
-import { ICruxAssetTranslatorRepository, ICruxAssetTranslatorRepositoryConstructor } from "../core/interfaces/crux-asset-translator-repository";
+import { ICruxBlockstackInfrastructure } from "../core/interfaces";
 import { ICruxUserRepository } from "../core/interfaces/crux-user-repository";
 import { IKeyManager } from "../core/interfaces/key-manager";
 import { ICruxIDState, setCacheStorage } from "../index";
@@ -22,6 +23,7 @@ export interface ICruxClientOptions {
     // getEncryptionKey?: () => string;
     privateKey?: string;
     cacheStorage?: storage.StorageService;
+    blockstackInfrastructure?: ICruxBlockstackInfrastructure;
     // encryption?: typeof encryption.Encryption;
     // nameService?: nameService.NameService;
     walletClientName: string;
@@ -29,6 +31,7 @@ export interface ICruxClientOptions {
 
 export class CruxWalletClient {
     public walletClientName: string;
+    private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
     private _initPromise: Promise<void>;
     private _cruxUser?: CruxUser;
     private cruxDomain?: CruxDomain;
@@ -39,8 +42,9 @@ export class CruxWalletClient {
 
     constructor(options: ICruxClientOptions) {
         setCacheStorage(options.cacheStorage || new inmemStorage.InMemStorage());
+        this.cruxBlockstackInfrastructure = options.blockstackInfrastructure || CruxSpec.blockstack.infrastructure;
         this.walletClientName = options.walletClientName;
-        this._cruxUserRepository = new BlockstackCruxUserRepository();
+        this._cruxUserRepository = new BlockstackCruxUserRepository({blockstackInfrastructure: this.cruxBlockstackInfrastructure});
         this._initPromise = this._init(options);
     }
 
@@ -80,7 +84,7 @@ export class CruxWalletClient {
             if (!assetId) {
                 throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.AssetIDNotAvailable);
             }
-            const address =  cruxUser.getAddress(assetId);
+            const address =  cruxUser.getAddressFromAsset(assetId);
             if (!address) {
                 throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.AddressNotAvailable);
             }
@@ -97,7 +101,7 @@ export class CruxWalletClient {
                 throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.PrivateKeyRequired);
             }
             if (this._cruxUser) {
-                const assetIdAddressMap = this._cruxUser.addressMap;
+                const assetIdAddressMap = this._cruxUser.getAddressMap();
                 return this._getCruxAssetTranslator().assetIdAddressMapToSymbolAddressMap(assetIdAddressMap);
             }
             return {};
@@ -190,7 +194,7 @@ export class CruxWalletClient {
     }
 
     private _init = async (options: ICruxClientOptions): Promise<void> => {
-        this.cruxDomain = await new BlockstackCruxDomainRepository().get(new CruxDomainId(this.walletClientName));
+        this.cruxDomain = await new BlockstackCruxDomainRepository({blockstackInfrastructure: this.cruxBlockstackInfrastructure}).get(new CruxDomainId(this.walletClientName));
         if (!this.cruxDomain) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }

@@ -27,20 +27,20 @@ export enum SubdomainRegistrationStatus {
 export class CruxUser {
     public cruxID: CruxId;
     public registrationStatus: ICruxUserRegistrationStatus;
-    private _addressMap: IAddressMapping;
+    private addressMap: IAddressMapping;
 
     constructor(cruxID: CruxId, addressMap: IAddressMapping, registrationStatus: ICruxUserRegistrationStatus) {
         this.cruxID = cruxID;
-        this._addressMap = addressMap;
+        this.addressMap = addressMap;
         this.registrationStatus = registrationStatus;
     }
-    get addressMap() {
-        return this._addressMap;
+    public getAddressMap(): IAddressMapping {
+        return this.addressMap;
     }
-    set addressMap(addressMap: IAddressMapping) {
-        this._addressMap = addressMap;
+    public setAddressMap(addressMap: IAddressMapping) {
+        this.addressMap = addressMap;
     }
-    public getAddress(assetId: string): IAddress {
-        return this._addressMap[assetId] || this._addressMap[assetId.toLowerCase()];
+    public getAddressFromAsset(assetId: string): IAddress {
+        return this.addressMap[assetId] || this.addressMap[assetId.toLowerCase()];
     }
 }
