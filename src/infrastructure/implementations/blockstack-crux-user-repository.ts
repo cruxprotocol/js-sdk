@@ -22,7 +22,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         this.blockstackService = new BlockstackService({
             bnsOverrides: options.bnsOverrides,
             cacheStorage: this.cacheStorage,
-            infrastructure: options?.blockstackInfrastructure,
+            infrastructure: options.blockstackInfrastructure,
         });
         log.info("BlockstackCruxUserRepository initialised");
     }

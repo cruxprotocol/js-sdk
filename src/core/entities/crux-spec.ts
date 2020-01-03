@@ -57,6 +57,7 @@ export const CruxSpec = {
         public static infrastructure: ICruxBlockstackInfrastructure = {
             bnsNodes: config.BLOCKSTACK.BNS_NODES,
             gaiaHub: config.BLOCKSTACK.GAIA_HUB,
+            subdomainRegistrar: config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
         };
         public static configSubdomain: string = "_config";
         public static getDomainConfigFileName = (domain: string): string => {
