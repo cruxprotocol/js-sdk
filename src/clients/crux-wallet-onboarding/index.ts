@@ -1,17 +1,18 @@
-import { DomainRegistrationStatus } from "../core/entities/crux-domain";
-import { CruxDomain } from "../core/entities/crux-domain";
-import { ICruxDomainRepository } from "../core/interfaces/crux-domain-repository";
-import { IKeyManager } from "../core/interfaces/key-manager";
-import { BasicKeyManager } from "../infrastructure/implementations/basic-key-manager";
-import { BlockstackCruxDomainRepository } from "../infrastructure/implementations/blockstack-crux-domain-repository";
-import { IClientAssetMapping, IGlobalAssetList } from "../packages/configuration-service";
-import { ErrorHelper, PackageErrorCode } from "../packages/error";
-import { CruxDomainId } from "../packages/identity-utils";
-import { InMemStorage } from "../packages/inmem-storage";
-import { getLogger } from "../packages/logger";
-import { IBlockstackServiceInputOptions } from "../packages/name-service/blockstack-service";
-import { StorageService } from "../packages/storage";
-import { cloneValue } from "../packages/utils";
+import { DomainRegistrationStatus } from "../../core/entities/crux-domain";
+import { CruxDomain } from "../../core/entities/crux-domain";
+import { ICruxDomainRepository } from "../../core/interfaces/crux-domain-repository";
+import { IKeyManager } from "../../core/interfaces/key-manager";
+import { BasicKeyManager } from "../../infrastructure/implementations/basic-key-manager";
+import { BlockstackCruxDomainRepository } from "../../infrastructure/implementations/blockstack-crux-domain-repository";
+import { IClientAssetMapping } from "../../packages/configuration-service";
+import { ErrorHelper, PackageErrorCode } from "../../packages/error";
+import { CruxDomainId } from "../../packages/identity-utils";
+import { InMemStorage } from "../../packages/inmem-storage";
+import { getLogger } from "../../packages/logger";
+import { IBlockstackServiceInputOptions } from "../../packages/name-service/blockstack-service";
+import { StorageService } from "../../packages/storage";
+import { cloneValue } from "../../packages/utils";
+import { throwCruxOnBoardingClientError } from "./utils";
 const log = getLogger(__filename);
 // DDD Experimental Stuff
 export interface ICruxOnBoardingClientOptions {
@@ -40,25 +41,31 @@ export class CruxOnBoardingClient {
     set domain(domain: string) {
         this.domainContext = new CruxDomainId(domain);
     }
+    @throwCruxOnBoardingClientError
     public isCruxDomainAvailable = async (domain: string): Promise<boolean> => {
         return this.cruxDomainRepository.find(new CruxDomainId(domain));
     }
+    @throwCruxOnBoardingClientError
     public registerCruxDomain = async (domain: string): Promise<void> => {
         // TODO: implementation of auto registration of domain on blockchain
         throw ErrorHelper.getPackageError(null, PackageErrorCode.IsNotSupported);
     }
+    @throwCruxOnBoardingClientError
     public getCruxDomainState = async (): Promise<DomainRegistrationStatus> => {
         await this.initPromise;
         return this.getCruxDomain().status;
     }
+    @throwCruxOnBoardingClientError
     public getNameServiceConfig = async (): Promise<IBlockstackServiceInputOptions|undefined> => {
         await this.initPromise;
         return this.getCruxDomain().config.nameserviceConfiguration;
     }
+    @throwCruxOnBoardingClientError
     public getAssetMapping = async (): Promise<IClientAssetMapping> => {
         await this.initPromise;
         return this.getCruxDomain().config.assetMapping;
     }
+    @throwCruxOnBoardingClientError
     public putNameServiceConfig = async (newNameServiceConfig: IBlockstackServiceInputOptions): Promise<void> => {
         await this.initPromise;
         const cruxDomain = cloneValue(this.getCruxDomain());
@@ -66,6 +73,7 @@ export class CruxOnBoardingClient {
         this.cruxDomain = await this.cruxDomainRepository.save(cruxDomain, this.getConfigKeyManager());
         return;
     }
+    @throwCruxOnBoardingClientError
     public putAssetMapping = async (newAssetMapping: IClientAssetMapping): Promise<void> => {
         await this.initPromise;
         // TODO: fix object cloning to retain old state in case of failed save operation
