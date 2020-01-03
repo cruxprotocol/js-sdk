@@ -41,7 +41,7 @@ export class CruxDomain {
         try {
             CruxSpec.validations.validateAssetList(domainConfig.assetList);
             CruxSpec.validations.validateAssetMapping(domainConfig.assetMapping);
-            if (domainConfig.nameserviceConfiguration) {CruxSpec.validations.validateNameServiceConfig(domainConfig.nameserviceConfiguration);}
+            if (domainConfig.nameserviceConfiguration) {CruxSpec.validations.validateNameServiceConfig(domainConfig.nameserviceConfiguration); }
         } catch (e) {
             throw new BaseError(e, `Domain config validation failed!`);
         }
