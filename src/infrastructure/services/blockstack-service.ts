@@ -10,7 +10,14 @@ import { errors } from "../../packages";
 import { IClientConfig } from "../../packages/configuration-service";
 import { ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "../../packages/gaia-service/utils";
-import { BlockstackDomain, BlockstackId, CruxDomainId, CruxId, IdTranslator, validateSubdomain } from "../../packages/identity-utils";
+import {
+    BlockstackDomainId,
+    BlockstackId,
+    CruxDomainId,
+    CruxId,
+    IdTranslator,
+    validateSubdomain
+} from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import * as nameService from "../../packages/name-service";
 import {
@@ -18,7 +25,8 @@ import {
     SubdomainRegistrationStatusDetail,
 } from "../../packages/name-service/blockstack-service";
 import { fetchNameDetails, INameDetailsObject } from "../../packages/name-service/utils";
-import {default as utils, httpJSONRequest} from "../../packages/utils";
+import { StorageService } from "../../packages/storage";
+import { httpJSONRequest } from "../../packages/utils";
 import {BlockstackSubdomainRegistrarApiClient} from "./api-clients";
 import { GaiaService } from "./gaia-service";
 
@@ -29,10 +37,10 @@ export class BlockstackService {
         bnsNodes: config.BLOCKSTACK.BNS_NODES,
         gaiaHub: config.BLOCKSTACK.GAIA_HUB,
     };
-    public static getDomainRegistrationStatus = async (domain: string, bnsNodes: string[]): Promise<DomainRegistrationStatus> => {
+    public static getDomainRegistrationStatus = async (domain: string, bnsNodes: string[], cacheStorage?: StorageService): Promise<DomainRegistrationStatus> => {
         // TODO: interpret the domain registration status from blockchain/BNS node
         const domainBlockstackID = CruxSpec.idTranslator.cruxDomainToBlockstackDomain(new CruxDomainId(domain)).toString();
-        const nameDetails = await fetchNameDetails(domainBlockstackID, bnsNodes);
+        const nameDetails = await fetchNameDetails(domainBlockstackID, bnsNodes, undefined, cacheStorage);
         if (!nameDetails) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.BnsResolutionFailed);
         }
@@ -71,15 +79,15 @@ export class BlockstackService {
         }
         return domainRegistrationStatus;
     }
-    public static getClientConfig = async (domain: string, bnsNodes: string[]): Promise<IClientConfig> => {
+    public static getClientConfig = async (domain: string, bnsNodes: string[], cacheStorage?: StorageService): Promise<IClientConfig> => {
         const configBlockstackID = CruxSpec.blockstack.getConfigBlockstackID(domain);
         const domainConfigFileName = CruxSpec.blockstack.getDomainConfigFileName(domain);
-        return getContentFromGaiaHub(configBlockstackID, domainConfigFileName, bnsNodes);
+        return getContentFromGaiaHub(configBlockstackID, domainConfigFileName, bnsNodes, undefined, cacheStorage);
     }
-    public static putClientConfig = async (domain: string, clientConfig: IClientConfig, bnsNodes: string[], keyManager: IKeyManager): Promise<string> => {
+    public static putClientConfig = async (domain: string, clientConfig: IClientConfig, bnsNodes: string[], keyManager: IKeyManager, cacheStorage?: StorageService): Promise<string> => {
         const configBlockstackID = CruxSpec.blockstack.getConfigBlockstackID(domain);
         const domainConfigFileName = CruxSpec.blockstack.getDomainConfigFileName(domain);
-        const gaiaDetails = await getGaiaDataFromBlockstackID(configBlockstackID, bnsNodes);
+        const gaiaDetails = await getGaiaDataFromBlockstackID(configBlockstackID, bnsNodes, undefined, cacheStorage);
         const finalURL = await new GaiaService(gaiaDetails.gaiaWriteUrl).uploadContentToGaiaHub(domainConfigFileName, clientConfig, keyManager);
         log.info(`clientConfig saved to: ${finalURL}`);
         return finalURL;
@@ -137,7 +145,7 @@ export class BlockstackService {
         if (registeredDomainArray[0]) {
             return BlockstackId.fromString(registeredDomainArray[0]);
         }
-        const blockstackDomain: BlockstackDomain = IdTranslator.cruxDomainToBlockstackDomain(cruxDomainId);
+        const blockstackDomain: BlockstackDomainId = IdTranslator.cruxDomainToBlockstackDomain(cruxDomainId);
         // Fetch any pending registrations on the address using the registrar
         const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(config.BLOCKSTACK.SUBDOMAIN_REGISTRAR, blockstackDomain.components.domain);
         const pendingSubdomains = await registrarApiClient.fetchPendingRegistrationsByAddress(userSubdomainOwnerAddress);

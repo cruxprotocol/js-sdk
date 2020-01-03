@@ -1,10 +1,11 @@
-import { CruxOnBoardingClient, ICruxOnBoardingClientOptions } from "../clients/crux-wallet-onboarding-client";
-import { errors } from "../index";
+import { CruxOnBoardingClient, ICruxOnBoardingClientOptions } from "../clients/crux-wallet-onboarding";
+import { CruxOnBoardingClientError } from "../clients/crux-wallet-onboarding/utils";
 import { LocalStorage } from "../packages/storage";
-import { IGlobalAssetList, IClientAssetMapping } from "../packages/configuration-service";
+import { IClientAssetMapping } from "../packages/configuration-service";
 import { IBlockstackServiceInputOptions } from "../packages/name-service/blockstack-service";
 import { DomainRegistrationStatus } from "../core/entities/crux-domain";
 import { ManualKeyManager } from "../infrastructure/implementations/manual-key-manager";
+import { CruxSpec } from "../core/entities/crux-spec";
 
 const doc = (document as {
     getElementById: Function,
@@ -129,9 +130,9 @@ const manualKeyManager = new ManualKeyManager("03c2156930598a7e4832ebb8b435abcc6
 
 // defining cruxOnBoardingClientOptions
 const cruxOnBoardingClientOptions: ICruxOnBoardingClientOptions = {
-    cacheStorage: new LocalStorage(),
-    configKey: manualKeyManager,
-    // configKey: "9d642ba222d8fa887c108472883d702511b9e06d004f456a78d85a740b789dd2",
+    // cacheStorage: new LocalStorage(),
+    // configKey: manualKeyManager,
+    configKey: "9d642ba222d8fa887c108472883d702511b9e06d004f456a78d85a740b789dd2",
 }
 
 // initialising the cruxOnBoardingClient
@@ -168,7 +169,7 @@ const iscruxDomainAvailable = async () => {
         let available = await cruxOnBoardingClient.isCruxDomainAvailable(cruxDomain)
         UIResponse = available ? "available" : "unavailable"
     } catch (e) {
-        if (e instanceof errors.CruxClientError) {
+        if (e instanceof CruxOnBoardingClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -188,14 +189,14 @@ const registercruxDomain = async () => {
             await cruxOnBoardingClient.putAssetMapping(sampleAssetMapping)
             UIResponse += `\nsuccessfully registered: ${cruxDomain}`
         } catch (e_1) {
-            if (e_1 instanceof errors.CruxClientError) {
+            if (e_1 instanceof CruxOnBoardingClientError) {
                 UIResponse += `\n${e_1.errorCode}: ${e_1}`
             } else {
                 UIResponse += '\n' + e_1
             }
         }
     } catch (e) {
-        if (e instanceof errors.CruxClientError) {
+        if (e instanceof CruxOnBoardingClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -210,7 +211,7 @@ const getAssetMapping = async () => {
         let assetMap = await cruxOnBoardingClient.getAssetMapping()
         UIResponse = JSON.stringify(assetMap, undefined, 4)
     } catch (e) {
-        if (e instanceof errors.CruxClientError) {
+        if (e instanceof CruxOnBoardingClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -227,7 +228,7 @@ const putAssetMapping = async () => {
         await cruxOnBoardingClient.putAssetMapping(newAssetMap)
         UIResponse = `successfully published asset map!`
     } catch (e) {
-        if (e instanceof errors.CruxClientError) {
+        if (e instanceof CruxOnBoardingClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -236,45 +237,13 @@ const putAssetMapping = async () => {
         doc.getElementById('putAssetMapAcknowledgement').textContent = UIResponse
     }
 }
-const getAssetList = async () => {
-    let UIResponse: string = ""
-    try {
-        let assetList = await cruxOnBoardingClient.getAssetList()
-        UIResponse = JSON.stringify(assetList, undefined, 4)
-    } catch (e) {
-        if (e instanceof errors.CruxClientError) {
-            UIResponse = `${e.errorCode}: ${e}`
-        } else {
-            UIResponse = e
-        }
-    } finally {
-        doc.getElementById('globalAssetList').textContent = UIResponse
-    }
-}
-const putAssetList = async () => {
-    let UIResponse: string = ""
-    const assetList: IGlobalAssetList = sampleAssetList;
-    try {
-        doc.getElementById('putGlobalAssetListAcknowledgement').textContent = "Publishing your global asset list..."
-        await cruxOnBoardingClient.putAssetList(assetList)
-        UIResponse = `successfully published Global Asset List!`
-    } catch (e) {
-        if (e instanceof errors.CruxClientError) {
-            UIResponse = `${e.errorCode}: ${e}`
-        } else {
-            UIResponse = e
-        }
-    } finally {
-        doc.getElementById('putGlobalAssetListAcknowledgement').textContent = UIResponse
-    }
-}
 const getNameServiceConfig = async () => {
     let UIResponse: string = ""
     try {
         let nameServiceConfig = await cruxOnBoardingClient.getNameServiceConfig()
         UIResponse = nameServiceConfig ? JSON.stringify(nameServiceConfig, undefined, 4): "{}";
     } catch (e) {
-        if (e instanceof errors.CruxClientError) {
+        if (e instanceof CruxOnBoardingClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -290,7 +259,7 @@ const putNameServiceConfig = async () => {
         await cruxOnBoardingClient.putNameServiceConfig(sampleNameserviceConfig)
         UIResponse = `successfully published NameServiceConfig!`
     } catch (e) {
-        if (e instanceof errors.CruxClientError) {
+        if (e instanceof CruxOnBoardingClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -306,7 +275,7 @@ const getCruxDomainState = async (): Promise<DomainRegistrationStatus> => {
         cruxDomainStatus = await cruxOnBoardingClient.getCruxDomainState()
         UIResponse = JSON.stringify(cruxDomainStatus, undefined, 4)
     } catch (e) {
-        if (e instanceof errors.CruxClientError) {
+        if (e instanceof CruxOnBoardingClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -330,25 +299,23 @@ getCruxDomainState()
 
 declare global {
     interface Window {
+        CruxSpec: typeof CruxSpec;
         cruxOnBoardingClient: CruxOnBoardingClient;
         iscruxDomainAvailable: Function;
         registercruxDomain: Function;
         getAssetMapping: Function;
         putAssetMapping: Function;
-        getAssetList: Function;
-        putAssetList: Function;
         getNameServiceConfig: Function;
         putNameServiceConfig: Function;
         getCruxDomainState: Function;
     }
 }
+window.CruxSpec = CruxSpec;
 window.cruxOnBoardingClient = cruxOnBoardingClient;
 window.iscruxDomainAvailable = iscruxDomainAvailable;
 window.registercruxDomain = registercruxDomain;
 window.getAssetMapping = getAssetMapping;
 window.putAssetMapping = putAssetMapping;
-window.getAssetList = getAssetList;
-window.putAssetList = putAssetList;
 window.getNameServiceConfig = getNameServiceConfig;
 window.putNameServiceConfig = putNameServiceConfig;
 window.getCruxDomainState = getCruxDomainState;

@@ -101,7 +101,6 @@ export interface GenericDomainComponents {
     namespace: string;
 }
 
-// CruxDomainId("cruxdev")
 export class CruxDomainId {
     public static fromString = (stringRepresentation: string) => {
         const arrayCruxId = stringRepresentation.split(/[.@]/);
@@ -129,14 +128,12 @@ export class CruxDomainId {
     }
 }
 
-export class BlockstackDomain {
+export class BlockstackDomainId {
     public static fromString = (stringRepresentation: string) => {
         const arrayBsId = stringRepresentation.split(".");
         let bsDomain: string = "";
         let bsNamespace: string = "";
         if (arrayBsId.length === 2) {
-            [bsDomain, bsNamespace] = arrayBsId;
-        } else if (arrayBsId.length === 2) {
             [bsDomain, bsNamespace] = arrayBsId;
         } else {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.BlockstackDomainInvalidStructure);
@@ -144,7 +141,7 @@ export class BlockstackDomain {
         if (bsNamespace !== DEFAULT_BLOCKSTACK_NAMESPACE) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.BlockstackDomainNamespaceValidation, bsNamespace);
         }
-        return new BlockstackDomain(bsDomain);
+        return new BlockstackDomainId(bsDomain);
     }
     public components: GenericDomainComponents;
     constructor(domain: string) {
@@ -159,17 +156,17 @@ export class BlockstackDomain {
 }
 
 export class IdTranslator {
-    public static cruxDomainToBlockstackDomain = (cruxDomain: CruxDomainId): BlockstackDomain => {
+    public static cruxDomainToBlockstackDomain = (cruxDomain: CruxDomainId): BlockstackDomainId => {
         if (cruxDomain.components.namespace !== DEFAULT_CRUX_NAMESPACE) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CruxDomainNamespaceValidation, cruxDomain.components.namespace);
         }
-        return new BlockstackDomain(IdTranslator.cruxDomainStringToBlockstackDomainString(cruxDomain.components.domain));
+        return new BlockstackDomainId(IdTranslator.cruxDomainStringToBlockstackDomainString(cruxDomain.components.domain));
     }
-    public static blockstackDomainToCruxDomain = (blockstackDomain: BlockstackDomain): CruxDomainId => {
+    public static blockstackDomainToCruxDomain = (blockstackDomain: BlockstackDomainId): CruxDomainId => {
         if (blockstackDomain.components.namespace !== DEFAULT_BLOCKSTACK_NAMESPACE) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CruxDomainNamespaceValidation, blockstackDomain.components.namespace);
         }
-        return new CruxDomainId(blockstackDomain.components.domain);
+        return new CruxDomainId(IdTranslator.blockstackDomainStringToCruxDomainString(blockstackDomain.components.domain));
     }
     public static cruxIdToBlockstackId = (cruxId: CruxId): BlockstackId => {
         if (cruxId.components.namespace !== DEFAULT_CRUX_NAMESPACE) {
@@ -205,15 +202,15 @@ export class IdTranslator {
     public static cruxDomainStringToBlockstackDomainString = (cruxDomainString: string): string => {
         return `${cruxDomainString}_crux`;
     }
-    public static cruxToBlockstack = (crux: CruxId|CruxDomainId): BlockstackId|BlockstackDomain => {
+    public static cruxToBlockstack = (crux: CruxId|CruxDomainId): BlockstackId|BlockstackDomainId => {
         if (crux instanceof CruxDomainId) {
             return IdTranslator.cruxDomainToBlockstackDomain(crux);
         } else {
             return IdTranslator.cruxIdToBlockstackId(crux);
         }
     }
-    public static blockstackToCrux = (crux: BlockstackId|BlockstackDomain): CruxId|CruxDomainId => {
-        if (crux instanceof BlockstackDomain) {
+    public static blockstackToCrux = (crux: BlockstackId|BlockstackDomainId): CruxId|CruxDomainId => {
+        if (crux instanceof BlockstackDomainId) {
             return IdTranslator.blockstackDomainToCruxDomain(crux);
         } else {
             return IdTranslator.blockstackIdToCruxId(crux);

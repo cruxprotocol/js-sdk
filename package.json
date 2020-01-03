@@ -62,6 +62,7 @@
   "devDependencies": {
     "@babel/core": "^7.6.0",
     "@types/chai": "^4.2.3",
+    "@types/cloner": "^0.4.0",
     "@types/expect": "^1.20.4",
     "@types/mocha": "^5.2.7",
     "@types/request": "^2.48.3",
@@ -93,6 +94,7 @@
     "bip39": "^3.0.2",
     "bitcoinjs-lib": "^5.1.4",
     "blockstack": "^19.2.5",
+    "cloner": "^0.4.0",
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
     "regenerator-runtime": "^0.13.3",

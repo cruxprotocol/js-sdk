@@ -4,19 +4,19 @@ import { getLogger } from "../../packages/logger";
 import { getKeyPairFromPrivKey } from "../../packages/utils";
 const log = getLogger(__filename);
 export class BasicKeyManager implements IKeyManager {
-    private _privateKey: string;
-    private _publicKey: string;
+    private privateKey: string;
+    private publicKey: string;
     constructor(privateKey: string) {
         const keyPair = getKeyPairFromPrivKey(privateKey);
-        this._privateKey = keyPair.privKey;
-        this._publicKey = keyPair.pubKey;
+        this.privateKey = keyPair.privKey;
+        this.publicKey = keyPair.pubKey;
         log.info("BasicKeyManager initialised");
     }
     public signWebToken = async (payload: any): Promise<string> => {
-        const signedMsg = new TokenSigner("ES256K", this._privateKey).sign(payload);
+        const signedMsg = new TokenSigner("ES256K", this.privateKey).sign(payload);
         return signedMsg;
     }
     public getPubKey = async (): Promise<string> => {
-        return this._publicKey;
+        return this.publicKey;
     }
 }
