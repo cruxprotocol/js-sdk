@@ -1,31 +1,26 @@
 import { errors } from "../../packages";
+import { IGlobalAssetList } from "../../packages/configuration-service";
 import { getLogger } from "../../packages/logger";
 import { IAddress, IAddressMapping } from "./crux-user";
 const log = getLogger(__filename);
-// export class CruxAssetTranslator {
-//     private _assetMapping: IClientAssetMapping;
-//     private _assetList: IGlobalAssetList;
-//     constructor(assetMapping: IClientAssetMapping, assetList: IGlobalAssetList) {
-//         this._assetMapping = assetMapping;
-//         this._assetList = assetList;
-//         log.info("CruxAssetTranslator initialised");
-//     }
-//     get assetMapping() {
-//         return this._assetMapping;
-//     }
-//     set assetMapping(assetMapping: IClientAssetMapping) {
-//         this._assetMapping = assetMapping;
-//     }
-//     get assetList() {
-//         return this._assetList;
-//     }
-//     set assetList(assetList: IGlobalAssetList) {
-//         this._assetList = assetList;
-//     }
-// }
 
 export interface IClientAssetMapping {
     [currencySymbol: string]: string;
+}
+
+export interface IGlobalAsset {
+    assetId: string;
+    symbol: string;
+    name: string;
+    assetType: string|null;
+    decimals: number|null;
+    assetIdentifierName: string|null;
+    assetIdentifierValue: number|string|null;
+    parentAssetId: string|null;
+}
+
+export interface IResolvedClientAssetMap {
+    [currencySymbol: string]: IGlobalAsset;
 }
 
 export interface IReverseClientAssetMapping {
@@ -63,6 +58,15 @@ export class CruxAssetTranslator {
     }
     public assetIdToSymbol(assetId: string): string {
         return this._reverseAssetMap[assetId];
+    }
+
+    public assetIdAssetMapToSymbolAssetMap(assetIdAssetMap: IGlobalAssetList): IResolvedClientAssetMap {
+        const symbolAssetMap: IResolvedClientAssetMap = {};
+        const currencySymbol = undefined;
+        assetIdAssetMap.forEach((asset) => {
+            symbolAssetMap[this.assetIdToSymbol(asset.assetId)] = asset;
+        });
+        return symbolAssetMap;
     }
 
     // TODO: What should we be returning when calling below two methods?

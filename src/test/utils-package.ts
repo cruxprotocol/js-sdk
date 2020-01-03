@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import 'mocha';
-import {CruxPayClient} from "../clients/crux-pay-client";
 import { getKeyPairFromPrivKey } from '../packages/utils';
 import { PackageErrorCode } from '../packages/error';
 
@@ -34,11 +33,6 @@ describe('Utils tests', () => {
             expect(keyPair.privKey).is.a('string')
             expect(keyPair.pubKey).is.a('string')
             expect(keyPair.address).is.a('string')
-        })
-        it('lolwa', async () => {
-            let myClient = new CruxPayClient({walletClientName: 'testwallet', privateKey: "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f"})
-            const idState = await myClient.getCruxIDState()
-            console.log(idState)
         })
         it('incorrect hex should throw error', () => {
             let raisedError;

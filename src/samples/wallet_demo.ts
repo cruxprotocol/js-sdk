@@ -1,5 +1,5 @@
 import { CruxClient, IAddressMapping, ICruxIDState, ICruxClientOptions, errors, storage } from "../index";
-import { CruxPayClient } from "../clients/crux-pay-client";
+import { CruxWalletClient } from "../clients/crux-wallet-client";
 // TODO: add optional import statement to use the build
 
 const doc = (document as {
@@ -12,7 +12,7 @@ const doc = (document as {
 
 // Demo wallet artifacts
 
-let walletClientName = "zel"
+let walletClientName = "cruxdev"
 // Value can be withoutInit or withInit
 let mode = "withoutInit"
 const wallet_btc_address = "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V"
@@ -57,7 +57,7 @@ const cruxClientOptions: ICruxClientOptions = {
 }
 
 // initialising the cruxClient
-const cruxClient = new CruxPayClient(cruxClientOptions)
+const cruxClient = new CruxWalletClient(cruxClientOptions)
 // const cruxClient = new CruxClient(cruxClientOptions)
 
 // SDK functional interface

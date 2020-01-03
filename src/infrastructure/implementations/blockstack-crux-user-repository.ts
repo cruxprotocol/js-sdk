@@ -9,15 +9,12 @@ const log = getLogger(__filename);
 
 export interface IBlockstackCruxUserRepositoryOptions extends ICruxUserRepositoryOptions {
     bnsNodes?: string[];
-    cruxDomainId: CruxDomainId;
 }
 
 export class BlockstackCruxUserRepository implements ICruxUserRepository {
     private _bnsNodes: string[];
-    private _cruxDomainId: CruxDomainId;
-    constructor(options: IBlockstackCruxUserRepositoryOptions) {
+    constructor(options?: IBlockstackCruxUserRepositoryOptions) {
         this._bnsNodes = options && options.bnsNodes && [...new Set([...BlockstackService.infrastructure.bnsNodes, ...options.bnsNodes])] || BlockstackService.infrastructure.bnsNodes;
-        this._cruxDomainId = options && options.cruxDomainId;
         log.info("BlockstackCruxUserRepository initialised");
     }
     public create = async (cruxId: CruxId, keyManager: IKeyManager): Promise<CruxUser> => {
@@ -36,8 +33,8 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         }
         return new CruxUser(cruxID, addressMap, registrationStatus);
     }
-    public getWithKey = async (keyManager: IKeyManager): Promise<CruxUser|undefined> => {
-        const blockstackID = await BlockstackService.getBlockstackIdFromKeyManager(keyManager, this._cruxDomainId, this._bnsNodes);
+    public getWithKey = async (keyManager: IKeyManager, cruxDomainId: CruxDomainId): Promise<CruxUser|undefined> => {
+        const blockstackID = await BlockstackService.getBlockstackIdFromKeyManager(keyManager, cruxDomainId, this._bnsNodes);
         if (!blockstackID) {
             return;
         }
@@ -45,7 +42,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         return this.getByCruxId(cruxID);
     }
     public save = async (cruxUser: CruxUser, keyManager: IKeyManager): Promise<CruxUser> => {
-        await BlockstackService.putAddressMap(cruxUser.addressMap, this._cruxDomainId, keyManager, this._bnsNodes);
+        await BlockstackService.putAddressMap(cruxUser.addressMap, new CruxDomainId(cruxUser.cruxID.components.domain), keyManager, this._bnsNodes);
         return cruxUser;
     }
 }

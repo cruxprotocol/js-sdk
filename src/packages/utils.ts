@@ -87,6 +87,10 @@ const cachedFunctionCall = async (cacheKey: string, ttl: number = 300, fn: (...a
     return newValue;
 };
 
+const cloneValue = (obj: any): any => {
+    return Object.assign({}, obj);
+};
+
 const getKeyPairFromPrivKey = (privKey: string): IBitcoinKeyPair => {
     let privateKey: string;
     // Convert the WIF format to hex
@@ -124,4 +128,5 @@ export {
     cachedFunctionCall,
     getKeyPairFromPrivKey,
     getRandomHexString,
+    cloneValue,
 };

@@ -10,7 +10,7 @@ import { errors } from "../../packages";
 import { IClientConfig } from "../../packages/configuration-service";
 import { ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { getContentFromGaiaHub, getGaiaDataFromBlockstackID } from "../../packages/gaia-service/utils";
-import { BlockstackId, CruxDomainId, CruxId, IdTranslator, validateSubdomain, BlockstackDomain } from "../../packages/identity-utils";
+import { BlockstackDomain, BlockstackId, CruxDomainId, CruxId, IdTranslator, validateSubdomain } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import * as nameService from "../../packages/name-service";
 import {

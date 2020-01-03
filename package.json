@@ -21,6 +21,7 @@
     "build": "npm run build:js && npm run build:dom",
     "build-prod:js": "cross-env NODE_ENV=prod npm run set-local-config && cross-env NODE_ENV=prod ./node_modules/.bin/parcel build src/index.ts -d dist --out-file cruxpay-sdk.js --no-minify",
     "build-prod:dom": "cross-env NODE_ENV=prod npm run set-local-config && cross-env NODE_ENV=prod ./node_modules/.bin/parcel build src/cruxpay-sdk-dom.ts -d dist --out-file cruxpay-sdk-dom.js --no-minify --no-cache --detailed-report",
+    "build-crux-explorer-client-prod:dom": "cross-env NODE_ENV=prod npm run set-local-config && cross-env NODE_ENV=prod ./node_modules/.bin/parcel build src/exports/crux-explorer-client-dom.ts -d dist --out-file crux-explorer-client-dom.js --no-minify --no-cache --detailed-report",
     "build-prod": "npm run build-prod:js && npm run build-prod:dom",
     "checks": "npm run validate_lockfile && ./node_modules/.bin/tslint 'src/**/*.ts' && npm run typecheck && npm run test",
     "version-bump": "((./node_modules/.bin/git-branch-is release/dev || ./node_modules/.bin/git-branch-is master) && npm version patch) || true",
