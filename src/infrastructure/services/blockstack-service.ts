@@ -16,7 +16,7 @@ import {
     CruxDomainId,
     CruxId,
     IdTranslator,
-    validateSubdomain
+    validateSubdomain,
 } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import * as nameService from "../../packages/name-service";

@@ -80,7 +80,7 @@ export class CruxWalletClient {
             if (!assetId) {
                 throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.AssetIDNotAvailable);
             }
-            const address =  cruxUser.getAddress(assetId);
+            const address =  cruxUser.getAddressFromAsset(assetId);
             if (!address) {
                 throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.AddressNotAvailable);
             }
@@ -97,7 +97,7 @@ export class CruxWalletClient {
                 throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.PrivateKeyRequired);
             }
             if (this._cruxUser) {
-                const assetIdAddressMap = this._cruxUser.addressMap;
+                const assetIdAddressMap = this._cruxUser.getAddressMap();
                 return this._getCruxAssetTranslator().assetIdAddressMapToSymbolAddressMap(assetIdAddressMap);
             }
             return {};

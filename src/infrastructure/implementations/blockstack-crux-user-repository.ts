@@ -42,7 +42,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         return this.getByCruxId(cruxID);
     }
     public save = async (cruxUser: CruxUser, keyManager: IKeyManager): Promise<CruxUser> => {
-        await BlockstackService.putAddressMap(cruxUser.addressMap, new CruxDomainId(cruxUser.cruxID.components.domain), keyManager, this._bnsNodes);
+        await BlockstackService.putAddressMap(cruxUser.getAddressMap(), new CruxDomainId(cruxUser.cruxID.components.domain), keyManager, this._bnsNodes);
         return cruxUser;
     }
 }
