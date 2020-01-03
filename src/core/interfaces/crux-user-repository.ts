@@ -1,5 +1,5 @@
 import { CruxDomainId, CruxId } from "../../packages/identity-utils";
-import { CruxUser, IAddress } from "../entities/crux-user";
+import { CruxUser } from "../entities/crux-user";
 import { IKeyManager } from "./key-manager";
 
 export interface ICruxUserRepository {
