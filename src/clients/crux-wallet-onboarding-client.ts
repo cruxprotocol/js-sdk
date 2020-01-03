@@ -11,6 +11,7 @@ import { InMemStorage } from "../packages/inmem-storage";
 import { getLogger } from "../packages/logger";
 import { IBlockstackServiceInputOptions } from "../packages/name-service/blockstack-service";
 import { StorageService } from "../packages/storage";
+import { cloneValue } from "../packages/utils";
 const log = getLogger(__filename);
 // DDD Experimental Stuff
 export interface ICruxOnBoardingClientOptions {
@@ -60,14 +61,15 @@ export class CruxOnBoardingClient {
     }
     public putNameServiceConfig = async (newNameServiceConfig: IBlockstackServiceInputOptions): Promise<void> => {
         await this.initPromise;
-        const cruxDomain = this.getCruxDomain();
+        const cruxDomain = cloneValue(this.getCruxDomain());
         cruxDomain.config.nameserviceConfiguration = newNameServiceConfig;
         this.cruxDomain = await this.cruxDomainRepository.save(cruxDomain, this.getConfigKeyManager());
         return;
     }
     public putAssetMapping = async (newAssetMapping: IClientAssetMapping): Promise<void> => {
         await this.initPromise;
-        const cruxDomain = this.getCruxDomain();
+        // TODO: fix object cloning to retain old state in case of failed save operation
+        const cruxDomain = cloneValue(this.getCruxDomain());
         cruxDomain.config.assetMapping = newAssetMapping;
         this.cruxDomain = await this.cruxDomainRepository.save(cruxDomain, this.getConfigKeyManager());
         return;

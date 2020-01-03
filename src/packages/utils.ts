@@ -1,4 +1,5 @@
 import * as bitcoin from "bitcoinjs-lib";
+import * as cloner from "cloner";
 import request from "request";
 import { cacheStorage} from "../index";
 import { BaseError, ErrorHelper, PackageErrorCode } from "./error";
@@ -91,6 +92,10 @@ const cachedFunctionCall = async (store: StorageService|undefined, cacheKey: str
     return newValue;
 };
 
+const cloneValue = (obj: any): any => {
+    return cloner.deep.copy(obj);
+};
+
 const getKeyPairFromPrivKey = (privKey: string): IBitcoinKeyPair => {
     let privateKey: string;
     // Convert the WIF format to hex
@@ -128,4 +133,5 @@ export {
     cachedFunctionCall,
     getKeyPairFromPrivKey,
     getRandomHexString,
+    cloneValue,
 };
