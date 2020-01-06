@@ -1,5 +1,5 @@
-import { CruxId } from "src/packages/identity-utils";
 import { BaseError } from "../../packages/error";
+import { CruxId } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { CruxSpec } from "./crux-spec";
 
@@ -36,11 +36,11 @@ export enum SubdomainRegistrationStatusDetail {
 export class CruxUser {
     public cruxID: CruxId;
     public registrationStatus: ICruxUserRegistrationStatus;
-    private addressMap: IAddressMapping;
+    private addressMap!: IAddressMapping;
 
     constructor(cruxID: CruxId, addressMap: IAddressMapping, registrationStatus: ICruxUserRegistrationStatus) {
         this.cruxID = cruxID;
-        this.addressMap = addressMap;
+        this.setAddressMap(addressMap);
         this.registrationStatus = this.setRegistrationStatus(registrationStatus);
     }
     public getAddressMap(): IAddressMapping {
@@ -48,7 +48,7 @@ export class CruxUser {
     }
     public setAddressMap(addressMap: IAddressMapping) {
         try {
-            CruxSpec.validations.validateAddressMap(addressMap);
+            CruxSpec.validations.validateAssetIdAddressMap(addressMap);
         } catch (error) {
             throw new BaseError(error, `Address Map validation failed!`);
         }

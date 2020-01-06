@@ -52,7 +52,7 @@ export class Validations {
             nameServiceConfig.bnsNodes.forEach(Validations.validateURL);
         }
     }
-    public static validateAddressMap = (addressMap: IAddressMapping) => {
+    public static validateAssetIdAddressMap = (addressMap: IAddressMapping) => {
         for (const assetId in addressMap) {
             if (addressMap.hasOwnProperty(assetId)) {
                 Validations.validateAssetId(assetId);

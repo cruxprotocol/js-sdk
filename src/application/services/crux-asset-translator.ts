@@ -39,10 +39,9 @@ export class CruxAssetTranslator {
     private _assetMapping: IClientAssetMapping;
     private _reverseAssetMap: IReverseClientAssetMapping;
     constructor(assetMapping: IClientAssetMapping) {
-        this._assetMapping = assetMapping;
+        this._assetMapping = this.getLowerAssetMapping(assetMapping);
         this._reverseAssetMap = {};
-        for (let walletCurrencySymbol of Object.keys(this._assetMapping)) {
-            walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
+        for (const walletCurrencySymbol of Object.keys(this._assetMapping)) {
             this._reverseAssetMap[this._assetMapping[walletCurrencySymbol]] = walletCurrencySymbol;
         }
     }
@@ -60,10 +59,9 @@ export class CruxAssetTranslator {
         return this._reverseAssetMap[assetId];
     }
 
-    public assetIdAssetMapToSymbolAssetMap(assetIdAssetMap: IGlobalAssetList): IResolvedClientAssetMap {
+    public assetIdAssetListToSymbolAssetMap(assetIdAssetList: IGlobalAssetList): IResolvedClientAssetMap {
         const symbolAssetMap: IResolvedClientAssetMap = {};
-        const currencySymbol = undefined;
-        assetIdAssetMap.forEach((asset) => {
+        assetIdAssetList.forEach((asset) => {
             symbolAssetMap[this.assetIdToSymbol(asset.assetId)] = asset;
         });
         return symbolAssetMap;
@@ -79,12 +77,12 @@ export class CruxAssetTranslator {
         return currencyAddressMap;
     }
     public symbolAddressMapToAssetIdAddressMap(currencyAddressMap: IAddressMapping): {success: IPutAddressMapSuccess, failures: IPutAddressMapFailures, assetAddressMap: IAddressMapping} {
-        const lowerCurrencyAddressMap = Object.assign({}, currencyAddressMap);
+        const lowerCurrencyAddressMap: IAddressMapping = {};
         const assetAddressMap: IAddressMapping = {};
         const success: IPutAddressMapSuccess = {};
         const failures: IPutAddressMapFailures = {};
-        for (let walletCurrencySymbol of Object.keys(lowerCurrencyAddressMap)) {
-            lowerCurrencyAddressMap[walletCurrencySymbol.toLowerCase()] = lowerCurrencyAddressMap[walletCurrencySymbol];
+        for (let walletCurrencySymbol of Object.keys(currencyAddressMap)) {
+            lowerCurrencyAddressMap[walletCurrencySymbol.toLowerCase()] = currencyAddressMap[walletCurrencySymbol];
             walletCurrencySymbol = walletCurrencySymbol.toLowerCase();
             const assetId = this.symbolToAssetId(walletCurrencySymbol);
             if (assetId) {
@@ -99,5 +97,13 @@ export class CruxAssetTranslator {
             failures,
             success,
         };
+    }
+
+    private getLowerAssetMapping(assetMapping: IClientAssetMapping): IClientAssetMapping {
+        const lowerAssetMapping: IClientAssetMapping = {};
+        for (const currencySymbol of Object.keys(assetMapping)) {
+            lowerAssetMapping[currencySymbol.toLowerCase()] = assetMapping[currencySymbol];
+        }
+        return lowerAssetMapping;
     }
 }
