@@ -22,7 +22,7 @@ export class BlockstackSubdomainRegistrarApiClient {
             url: `/status/${subdomain}`,
         };
         log.debug("registration query params", options);
-        return await utils.httpJSONRequest(options);
+        return utils.httpJSONRequest(options);
     }
     public registerSubdomain = async (name: string, gaiaHubUrl: string, ownerAdderss: string): Promise<string> => {
         const options = {

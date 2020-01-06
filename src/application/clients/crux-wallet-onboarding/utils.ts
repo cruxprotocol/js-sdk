@@ -1,4 +1,4 @@
-import { ClientError } from "../../packages/error/client-error";
+import { ClientError } from "../../../packages/error/client-error";
 export class CruxOnBoardingClientError extends ClientError {}
 // Decorator to convert errors into CruxOnBoardingClientError
 export const throwCruxOnBoardingClientError = (target: any, prop: any, descriptor?: { value?: any; }): any => {

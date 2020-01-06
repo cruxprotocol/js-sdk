@@ -3,6 +3,7 @@ import { publicKeyToAddress } from "blockstack";
 import { DomainRegistrationStatus } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
 import { IAddress, IAddressMapping, ICruxUserRegistrationStatus } from "../../core/entities/crux-user";
+import { SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import { IKeyManager } from "../../core/interfaces/key-manager";
 import { errors } from "../../packages";
@@ -18,11 +19,6 @@ import {
     validateSubdomain,
 } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
-import { CruxIDRegistrationStatus } from "../../packages/name-service";
-import {
-    SubdomainRegistrationStatus,
-    SubdomainRegistrationStatusDetail,
-} from "../../packages/name-service/blockstack-service";
 import { fetchNameDetails, INameDetailsObject } from "../../packages/name-service/utils";
 import { StorageService } from "../../packages/storage";
 import { httpJSONRequest } from "../../packages/utils";
@@ -114,28 +110,17 @@ export class BlockstackService {
             return registeredDomainArray[0];
         }
     }
-    public getAddressMap = async (blockstackID: BlockstackId): Promise<IAddressMapping> => {
+    public getAddressMap = async (blockstackID: BlockstackId, tag?: string): Promise<IAddressMapping> => {
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(blockstackID);
-        return getContentFromGaiaHub(blockstackID.toString(), cruxPayFileName, this.bnsNodes);
+        return getContentFromGaiaHub(blockstackID.toString(), cruxPayFileName, this.bnsNodes, tag, this.cacheStorage);
     }
     public putAddressMap = async (addressMapping: IAddressMapping, cruxDomainId: CruxDomainId, keyManager: IKeyManager): Promise<string> => {
         const blockstackID = await this.getBlockstackIdFromKeyManager(keyManager, cruxDomainId);
         if (!blockstackID) {
             throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.UserDoesNotExist);
         }
-        const addressDecoder: Decoder<IAddress> = object({
-            addressHash: string(),
-            secIdentifier: optional(string()),
-        });
-        try {
-            for ( const currency of Object.keys(addressMapping) ) {
-                const addressObject: IAddress = addressDecoder.runWithException(addressMapping[currency]);
-            }
-        } catch (error) {
-            throw ErrorHelper.getPackageError(error, PackageErrorCode.AddressMappingDecodingFailure);
-        }
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(blockstackID);
-        const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackID.toString(), this.bnsNodes);
+        const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackID.toString(), this.bnsNodes, undefined, this.cacheStorage);
         const finalURL = await new GaiaService(gaiaDetails.gaiaWriteUrl).uploadContentToGaiaHub(cruxPayFileName, addressMapping, keyManager);
         log.info(`Address Map for ${blockstackID} saved to: ${finalURL}`);
         return finalURL;
@@ -143,11 +128,10 @@ export class BlockstackService {
     public getBlockstackIdFromKeyManager = async (keyManager: IKeyManager, cruxDomainId: CruxDomainId): Promise<BlockstackId|undefined> => {
         const userSubdomainOwnerAddress = publicKeyToAddress(await keyManager.getPubKey());
         const registeredBlockstackIDs = await this.getRegisteredIDsByAddress(userSubdomainOwnerAddress);
-        console.log(IdTranslator.cruxToBlockstack(cruxDomainId).toString());
         const registeredDomainArray = registeredBlockstackIDs
             .map((blockstackID: string) => blockstackID.match(new RegExp(`(.+)\.${IdTranslator.cruxToBlockstack(cruxDomainId).toString()}`)))
             .map((match) => match && match[0])
-            .filter((domain) => domain !== undefined).filter(Boolean) as string[];
+            .filter(Boolean) as string[];
         if (registeredDomainArray.length > 1) {
             log.error(`More than one cruxIDs associated with: ${userSubdomainOwnerAddress}`);
         }
@@ -186,9 +170,9 @@ export class BlockstackService {
     public getCruxIdRegistrationStatus = async (cruxId: CruxId): Promise<ICruxUserRegistrationStatus> => {
         log.debug("====getRegistrationStatus====");
         const blockstackId = IdTranslator.cruxToBlockstack(cruxId);
-        const nameData: any = await fetchNameDetails(blockstackId.toString(), this.bnsNodes);
+        const nameData: any = await fetchNameDetails(blockstackId.toString(), this.bnsNodes, undefined, this.cacheStorage);
         let status: SubdomainRegistrationStatus;
-        let statusDetail: string = "";
+        let statusDetail: SubdomainRegistrationStatusDetail = SubdomainRegistrationStatusDetail.NONE;
         if (nameData.status === "registered_subdomain") {
             // if (nameData.address === identityClaim.secrets.identityKeyPair.address) {
             status = SubdomainRegistrationStatus.DONE;
@@ -208,8 +192,8 @@ export class BlockstackService {
     }
 }
 
-const getStatusObjectFromResponse = (body: any): CruxIDRegistrationStatus =>  {
-    let status: CruxIDRegistrationStatus;
+const getStatusObjectFromResponse = (body: any): ICruxUserRegistrationStatus =>  {
+    let status: ICruxUserRegistrationStatus;
     const rawStatus = body.status;
     log.info(body);
     if (rawStatus && rawStatus.includes("Your subdomain was registered in transaction")) {
@@ -236,7 +220,7 @@ const getStatusObjectFromResponse = (body: any): CruxIDRegistrationStatus =>  {
             default:
                 status = {
                     status: SubdomainRegistrationStatus.NONE,
-                    statusDetail: "",
+                    statusDetail: SubdomainRegistrationStatusDetail.NONE,
                 };
                 break;
         }
