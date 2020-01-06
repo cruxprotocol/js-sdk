@@ -131,7 +131,7 @@ export class BlockstackService {
         const registeredDomainArray = registeredBlockstackIDs
             .map((blockstackID: string) => blockstackID.match(new RegExp(`(.+)\.${IdTranslator.cruxToBlockstack(cruxDomainId).toString()}`)))
             .map((match) => match && match[0])
-            .filter((domain) => domain !== undefined).filter(Boolean) as string[];
+            .filter(Boolean) as string[];
         if (registeredDomainArray.length > 1) {
             log.error(`More than one cruxIDs associated with: ${userSubdomainOwnerAddress}`);
         }
