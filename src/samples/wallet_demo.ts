@@ -1,5 +1,5 @@
 import { CruxClient, IAddressMapping, ICruxIDState, ICruxClientOptions, errors, storage } from "../index";
-import { CruxWalletClient } from "../clients/crux-wallet-client";
+import { CruxWalletClient } from "../application/clients/crux-wallet-client";
 // TODO: add optional import statement to use the build
 
 const doc = (document as {

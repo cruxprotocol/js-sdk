@@ -1,7 +1,7 @@
+import { IAddress, IAddressMapping } from "../../core/entities/crux-user";
 import { errors } from "../../packages";
 import { IGlobalAssetList } from "../../packages/configuration-service";
 import { getLogger } from "../../packages/logger";
-import { IAddress, IAddressMapping } from "./crux-user";
 const log = getLogger(__filename);
 
 export interface IClientAssetMapping {

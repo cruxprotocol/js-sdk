@@ -1,20 +1,20 @@
 // Importing packages
-import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../core/entities/crux-asset-translator";
-import { CruxDomain } from "../core/entities/crux-domain";
-import { CruxSpec } from "../core/entities/crux-spec";
-import { CruxUser, IAddress, IAddressMapping } from "../core/entities/crux-user";
-import { ICruxBlockstackInfrastructure } from "../core/interfaces";
-import { ICruxUserRepository } from "../core/interfaces/crux-user-repository";
-import { IKeyManager } from "../core/interfaces/key-manager";
-import { ICruxIDState, setCacheStorage } from "../index";
-import { BasicKeyManager } from "../infrastructure/implementations/basic-key-manager";
-import { BlockstackCruxDomainRepository } from "../infrastructure/implementations/blockstack-crux-domain-repository";
-import { BlockstackCruxUserRepository } from "../infrastructure/implementations/blockstack-crux-user-repository";
-import { BaseError, CruxClientError, ErrorHelper, PackageErrorCode } from "../packages/error";
-import { CruxDomainId, CruxId, InputIDComponents } from "../packages/identity-utils";
-import { InMemStorage } from "../packages/inmem-storage";
-import { StorageService } from "../packages/storage";
-import { cloneValue } from "../packages/utils";
+import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
+import { CruxDomain } from "../../core/entities/crux-domain";
+import { CruxSpec } from "../../core/entities/crux-spec";
+import { CruxUser, IAddress, IAddressMapping } from "../../core/entities/crux-user";
+import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
+import { ICruxUserRepository } from "../../core/interfaces/crux-user-repository";
+import { IKeyManager } from "../../core/interfaces/key-manager";
+import { ICruxIDState, setCacheStorage } from "../../index";
+import { BasicKeyManager } from "../../infrastructure/implementations/basic-key-manager";
+import { BlockstackCruxDomainRepository } from "../../infrastructure/implementations/blockstack-crux-domain-repository";
+import { BlockstackCruxUserRepository } from "../../infrastructure/implementations/blockstack-crux-user-repository";
+import { BaseError, CruxClientError, ErrorHelper, PackageErrorCode } from "../../packages/error";
+import { CruxDomainId, CruxId, InputIDComponents } from "../../packages/identity-utils";
+import { InMemStorage } from "../../packages/inmem-storage";
+import { StorageService } from "../../packages/storage";
+import { cloneValue } from "../../packages/utils";
 
 export const throwCruxClientError = (target: any, prop: any, descriptor?: { value?: any; }): any => {
     let fn: any;
@@ -95,7 +95,8 @@ export class CruxWalletClient {
     @throwCruxClientError
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
         await this._initPromise;
-        const cruxUser = await this._getCruxUserByID(fullCruxID);
+        const tag = "resolving_address";
+        const cruxUser = await this._getCruxUserByID(fullCruxID, tag);
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
@@ -176,9 +177,9 @@ export class CruxWalletClient {
         return this._getCruxAssetTranslator().assetIdAssetMapToSymbolAssetMap(this.getCruxDomain().config.assetList);
     }
 
-    private _getCruxUserByID = async (cruxIdString: string): Promise<CruxUser|undefined> => {
+    private _getCruxUserByID = async (cruxIdString: string, tag?: string): Promise<CruxUser|undefined> => {
         const cruxId = CruxId.fromString(cruxIdString);
-        return await this._cruxUserRepository.getByCruxId(cruxId);
+        return await this._cruxUserRepository.getByCruxId(cruxId, tag);
     }
 
     private _getCruxAssetTranslator = () => {

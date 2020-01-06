@@ -110,9 +110,9 @@ export class BlockstackService {
             return registeredDomainArray[0];
         }
     }
-    public getAddressMap = async (blockstackID: BlockstackId): Promise<IAddressMapping> => {
+    public getAddressMap = async (blockstackID: BlockstackId, tag?: string): Promise<IAddressMapping> => {
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(blockstackID);
-        return getContentFromGaiaHub(blockstackID.toString(), cruxPayFileName, this.bnsNodes, undefined, this.cacheStorage);
+        return getContentFromGaiaHub(blockstackID.toString(), cruxPayFileName, this.bnsNodes, tag, this.cacheStorage);
     }
     public putAddressMap = async (addressMapping: IAddressMapping, cruxDomainId: CruxDomainId, keyManager: IKeyManager): Promise<string> => {
         const blockstackID = await this.getBlockstackIdFromKeyManager(keyManager, cruxDomainId);

@@ -1,4 +1,4 @@
-import { CruxExplorerClient } from "../clients/crux-explorer-client";
+import { CruxExplorerClient } from "../application/clients/crux-explorer-client";
 import { CruxSpec } from "../core/entities/crux-spec";
 
 declare global {
