@@ -28,6 +28,9 @@ export class Validations {
         } catch (e) {
             throw new BaseError(e, `Invalid AssetID: ${assetId}`);
         }
+        if (!CruxSpec.globalAssetList.map((asset) => asset.assetId).includes(assetId)) {
+            throw new BaseError(null, `AssetID: ${assetId} is not recognized.`);
+        }
     }
     public static validateGlobalAsset = (assetObject: IGlobalAsset) => {
         // TODO: add validations for all fields

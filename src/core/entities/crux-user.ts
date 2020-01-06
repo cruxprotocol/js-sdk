@@ -58,7 +58,7 @@ export class CruxUser {
         this.addressMap = addressMap;
     }
     public getAddressFromAsset(assetId: string): IAddress {
-        return this.addressMap[assetId] || this.addressMap[assetId.toLowerCase()];
+        return this.addressMap[assetId];
     }
     private setRegistrationStatus = (registrationStatus: ICruxUserRegistrationStatus) => {
         // validate and set the registrationStatus
