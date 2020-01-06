@@ -1,4 +1,5 @@
 import { CruxClient, IAddressMapping, ICruxIDState, ICruxClientOptions, errors, storage } from "../index";
+import { CruxWalletClient } from "../application/clients/crux-wallet-client";
 // TODO: add optional import statement to use the build
 
 const doc = (document as {
@@ -52,12 +53,12 @@ doc.getElementById('publishAddresses').innerHTML = Object.keys(sampleAddressMap)
 const cruxClientOptions: ICruxClientOptions = {
     walletClientName: walletClientName,
     cacheStorage: new storage.LocalStorage(),
-    // privateKey: "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37f7c6f",
+    privateKey: "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37f7c6f",
 }
 
 // initialising the cruxClient
-const cruxClient = new CruxClient(cruxClientOptions)
-
+const cruxClient = new CruxWalletClient(cruxClientOptions)
+// const cruxClient = new CruxClient(cruxClientOptions)
 
 // SDK functional interface
 
@@ -239,7 +240,7 @@ if (mode === "withoutInit") {
 // Declaring global variables to be accessible for (button clicks or debugging purposes)
 declare global {
     interface Window {
-        wallet: CruxClient;
+        wallet: CruxWalletClient;
         isCruxIDAvailable: Function;
         registerCruxID: Function;
         resolveCurrencyAddressForCruxID: Function;

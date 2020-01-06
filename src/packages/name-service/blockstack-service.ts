@@ -39,7 +39,7 @@ export enum SubdomainRegistrationStatus {
     REJECT = "REJECT",
 }
 
-enum SubdomainRegistrationStatusDetail {
+export enum SubdomainRegistrationStatusDetail {
     NONE = "Subdomain not registered with this registrar.",
     PENDING_REGISTRAR = "Subdomain registration pending on registrar.",
     PENDING_BLOCKCHAIN = "Subdomain registration pending on blockchain.",
