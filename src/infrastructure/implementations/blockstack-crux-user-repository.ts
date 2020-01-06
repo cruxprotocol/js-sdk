@@ -31,7 +31,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         return new CruxUser(cruxId, {}, registrationStatus);
     }
     public find = async (cruxID: CruxId): Promise<boolean> => {
-        return await this.blockstackService.isCruxIdAvailable(cruxID);
+        return this.blockstackService.isCruxIdAvailable(cruxID);
     }
     public getByCruxId = async (cruxID: CruxId, tag?: string): Promise<CruxUser|undefined> => {
         const blockstackID = IdTranslator.cruxIdToBlockstackId(cruxID);

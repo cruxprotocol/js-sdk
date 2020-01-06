@@ -56,7 +56,7 @@ export class CruxWalletClient {
     private _initPromise: Promise<void>;
     private _cruxUser?: CruxUser;
     private cruxDomain?: CruxDomain;
-    private _cruxUserRepository: ICruxUserRepository;
+    private _cruxUserRepository!: ICruxUserRepository;
     private _cruxAssetTranslator?: CruxAssetTranslator;
     private _keyManager?: IKeyManager;
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
@@ -69,7 +69,6 @@ export class CruxWalletClient {
         if (options.privateKey) {
             this._keyManager = typeof options.privateKey === "string" ? new BasicKeyManager(options.privateKey) : options.privateKey;
         }
-        this._cruxUserRepository = new BlockstackCruxUserRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure});
         this._initPromise = this._init(options);
     }
 
@@ -207,6 +206,7 @@ export class CruxWalletClient {
         if (!this.cruxDomain) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.InvalidWalletClientName);
         }
+        this._cruxUserRepository = new BlockstackCruxUserRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure, bnsOverrides: this.cruxDomain.config.nameserviceConfiguration?.bnsNodes});
         if (!this.cruxDomain.config) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }

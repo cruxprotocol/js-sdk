@@ -119,17 +119,6 @@ export class BlockstackService {
         if (!blockstackID) {
             throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.UserDoesNotExist);
         }
-        const addressDecoder: Decoder<IAddress> = object({
-            addressHash: string(),
-            secIdentifier: optional(string()),
-        });
-        try {
-            for ( const currency of Object.keys(addressMapping) ) {
-                const addressObject: IAddress = addressDecoder.runWithException(addressMapping[currency]);
-            }
-        } catch (error) {
-            throw ErrorHelper.getPackageError(error, PackageErrorCode.AddressMappingDecodingFailure);
-        }
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(blockstackID);
         const gaiaDetails = await getGaiaDataFromBlockstackID(blockstackID.toString(), this.bnsNodes, undefined, this.cacheStorage);
         const finalURL = await new GaiaService(gaiaDetails.gaiaWriteUrl).uploadContentToGaiaHub(cruxPayFileName, addressMapping, keyManager);
@@ -139,7 +128,6 @@ export class BlockstackService {
     public getBlockstackIdFromKeyManager = async (keyManager: IKeyManager, cruxDomainId: CruxDomainId): Promise<BlockstackId|undefined> => {
         const userSubdomainOwnerAddress = publicKeyToAddress(await keyManager.getPubKey());
         const registeredBlockstackIDs = await this.getRegisteredIDsByAddress(userSubdomainOwnerAddress);
-        console.log(IdTranslator.cruxToBlockstack(cruxDomainId).toString());
         const registeredDomainArray = registeredBlockstackIDs
             .map((blockstackID: string) => blockstackID.match(new RegExp(`(.+)\.${IdTranslator.cruxToBlockstack(cruxDomainId).toString()}`)))
             .map((match) => match && match[0])

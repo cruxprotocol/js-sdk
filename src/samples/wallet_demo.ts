@@ -144,8 +144,6 @@ const getAddressMap = async () => {
     let UIResponse: string = ""
     try {
         let addressMap = await cruxClient.getAddressMap()
-        console.log("addressMap: ");
-        console.log(addressMap);
         UIResponse = JSON.stringify(addressMap, undefined, 4)
     } catch (e) {
         if (e instanceof errors.CruxClientError) {
