@@ -7,6 +7,9 @@ import { CruxDomainId } from "../../packages/identity-utils";
 import { DomainRegistrationStatus, CruxDomain } from '../../core/entities/crux-domain';
 import { BasicKeyManager } from '../../infrastructure/implementations/basic-key-manager';
 describe('Infrastructure Repositories Test', () => {
+    let sandbox: sinon.SinonSandbox;
+    before(() => { sandbox = sinon.createSandbox(); })
+    afterEach(() => { sandbox.restore(); })
     describe('Testing BlockstackCruxUserRepository', () => {
 
         it('New CruxUser Creation', ()=>{
@@ -27,7 +30,6 @@ describe('Infrastructure Repositories Test', () => {
 
     })
     describe('Testing BlockstackCruxDomainRepository', () => {
-        let sandbox: sinon.SinonSandbox;
         let blockstackCruxDomainRepository: BlockstackCruxDomainRepository;
         let getDomainRegistrationStatusStub: sinon.SinonStub;
         let getClientConfigStub: sinon.SinonStub;
@@ -47,7 +49,6 @@ describe('Infrastructure Repositories Test', () => {
         }
         // "testcase" fixtures
         const testcaseDomainString = "testcase";
-        before(() => { sandbox = sinon.createSandbox(); })
         beforeEach(() => {
             blockstackCruxDomainRepository = new BlockstackCruxDomainRepository({
                 blockstackInfrastructure: CruxSpec.blockstack.infrastructure,
@@ -65,7 +66,6 @@ describe('Infrastructure Repositories Test', () => {
             getClientConfigStub.withArgs(cruxdevDomainString).resolves({assetMapping: cruxdevAssetMapping, assetList: cruxdevAssetList});
             restoreDomainStub.withArgs(sinon.match(cruxdevConfigKeyManager)).resolves(cruxdevDomainString);
         })
-        afterEach(() => { sandbox.restore(); })
         describe('Finding availability of CruxDomain by DomainId', ()=>{
             it('"cruxdev" should be unavailable', async () => {
                 const domainId = new CruxDomainId(cruxdevDomainString);
