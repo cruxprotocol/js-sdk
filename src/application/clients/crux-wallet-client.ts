@@ -206,7 +206,7 @@ export class CruxWalletClient {
         if (!this.cruxDomain) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.InvalidWalletClientName);
         }
-        this._cruxUserRepository = new BlockstackCruxUserRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure, bnsOverrides: this.cruxDomain.config.nameserviceConfiguration?.bnsNodes});
+        this._cruxUserRepository = new BlockstackCruxUserRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure, bnsOverrides: this.cruxDomain.config.nameserviceConfiguration ? this.cruxDomain.config.nameserviceConfiguration.bnsNodes : undefined});
         if (!this.cruxDomain.config) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
