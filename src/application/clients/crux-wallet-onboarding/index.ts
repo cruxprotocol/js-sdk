@@ -95,7 +95,7 @@ export class CruxOnBoardingClient {
     }
     private getCruxDomain = (): CruxDomain => {
         if (!this.cruxDomain) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingCruxDomain);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingCruxDomainInCruxOnBoardingClient);
         }
         return this.cruxDomain;
     }

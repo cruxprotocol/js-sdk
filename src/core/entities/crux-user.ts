@@ -1,5 +1,5 @@
-import { CruxId } from "src/packages/identity-utils";
 import { BaseError } from "../../packages/error";
+import { CruxId } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { CruxSpec } from "./crux-spec";
 
@@ -48,7 +48,7 @@ export class CruxUser {
     }
     public setAddressMap(addressMap: IAddressMapping) {
         try {
-            CruxSpec.validations.validateAddressMap(addressMap);
+            CruxSpec.validations.validateAssetIdAddressMap(addressMap);
         } catch (error) {
             throw new BaseError(error, `Address Map validation failed!`);
         }

@@ -46,8 +46,9 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.GetDomainsByAddressFailed]: "'{0}' failed with error '{1}'",
     [PackageErrorCode.InvalidPrivateKeyFormat]: "Private key should be either hex encoded, base64 encoded or WIF (base58 - compressed) only",
     [PackageErrorCode.KeyPairMismatch]: "Invalid keyPair provided",
-    [PackageErrorCode.MissingCruxDomain]: "No domain found with the key provided or missing key in the CruxOnBoardingClient",
-    [PackageErrorCode.MissingCruxAssetTranslator]: "No CruxAssetTranslator found in CruxOnBoardingClient",
+    [PackageErrorCode.MissingCruxDomainInCruxOnBoardingClient]: "No domain found with the key provided or missing key in the CruxOnBoardingClient",
+    [PackageErrorCode.MissingCruxDomainInCruxWalletClient]: "No domain found with the key provided or missing key in the CruxWalletClient",
+    [PackageErrorCode.MissingCruxAssetTranslator]: "No CruxAssetTranslator found",
     [PackageErrorCode.MissingDomainContext]: "Domain context is required in BlockstackCruxAssetTranslatorRepository initialisation",
     [PackageErrorCode.MissingAssetMapping]: "ManualCruxAssetTranslatorRepository should be initialised with an assetMapping",
     [PackageErrorCode.NameIntegrityCheckFailed]: "Name resolution integrity check failed",
@@ -59,4 +60,5 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.TokenVerificationFailed]: "Token verification failed for '{0}'",
     [PackageErrorCode.UserDoesNotExist]: "ID does not exist",
     [PackageErrorCode.IdentityMismatch]: "Identity mismatch",
+    [PackageErrorCode.InvalidWalletClientName]: "Invalid Wallet Client Name",
 };
