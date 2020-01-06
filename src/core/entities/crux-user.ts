@@ -15,8 +15,8 @@ export interface IAddressMapping {
 }
 
 export interface ICruxUserRegistrationStatus {
-    status: string;
-    statusDetail: string;
+    status: SubdomainRegistrationStatus;
+    statusDetail: SubdomainRegistrationStatusDetail;
 }
 
 export enum SubdomainRegistrationStatus {
@@ -24,6 +24,13 @@ export enum SubdomainRegistrationStatus {
     PENDING = "PENDING",
     DONE = "DONE",
     REJECT = "REJECT",
+}
+
+export enum SubdomainRegistrationStatusDetail {
+    NONE = "Subdomain not registered with this registrar.",
+    PENDING_REGISTRAR = "Subdomain registration pending on registrar.",
+    PENDING_BLOCKCHAIN = "Subdomain registration pending on blockchain.",
+    DONE = "Subdomain propagated.",
 }
 
 export class CruxUser {
@@ -34,7 +41,7 @@ export class CruxUser {
     constructor(cruxID: CruxId, addressMap: IAddressMapping, registrationStatus: ICruxUserRegistrationStatus) {
         this.cruxID = cruxID;
         this.addressMap = addressMap;
-        this.registrationStatus = registrationStatus;
+        this.registrationStatus = this.setRegistrationStatus(registrationStatus);
     }
     public getAddressMap(): IAddressMapping {
         return this.addressMap;
@@ -49,5 +56,15 @@ export class CruxUser {
     }
     public getAddressFromAsset(assetId: string): IAddress {
         return this.addressMap[assetId] || this.addressMap[assetId.toLowerCase()];
+    }
+    private setRegistrationStatus = (registrationStatus: ICruxUserRegistrationStatus) => {
+        // validate and set the registrationStatus
+        if (!(Object.values(SubdomainRegistrationStatus).includes(registrationStatus.status))) {
+            throw new BaseError(null, `Subdomain registration status validation failed!`);
+        }
+        if (!(Object.values(SubdomainRegistrationStatusDetail).includes(registrationStatus.statusDetail))) {
+            throw new BaseError(null, `Subdomain registration status detail validation failed!`);
+        }
+        return registrationStatus;
     }
 }

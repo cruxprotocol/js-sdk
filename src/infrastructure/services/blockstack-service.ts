@@ -3,6 +3,7 @@ import { publicKeyToAddress } from "blockstack";
 import { DomainRegistrationStatus } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
 import { IAddress, IAddressMapping, ICruxUserRegistrationStatus } from "../../core/entities/crux-user";
+import { SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import { IKeyManager } from "../../core/interfaces/key-manager";
 import { errors } from "../../packages";
@@ -18,11 +19,6 @@ import {
     validateSubdomain,
 } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
-import { CruxIDRegistrationStatus } from "../../packages/name-service";
-import {
-    SubdomainRegistrationStatus,
-    SubdomainRegistrationStatusDetail,
-} from "../../packages/name-service/blockstack-service";
 import { fetchNameDetails, INameDetailsObject } from "../../packages/name-service/utils";
 import { StorageService } from "../../packages/storage";
 import { httpJSONRequest } from "../../packages/utils";
@@ -188,7 +184,7 @@ export class BlockstackService {
         const blockstackId = IdTranslator.cruxToBlockstack(cruxId);
         const nameData: any = await fetchNameDetails(blockstackId.toString(), this.bnsNodes, undefined, this.cacheStorage);
         let status: SubdomainRegistrationStatus;
-        let statusDetail: string = "";
+        let statusDetail: SubdomainRegistrationStatusDetail = SubdomainRegistrationStatusDetail.NONE;
         if (nameData.status === "registered_subdomain") {
             // if (nameData.address === identityClaim.secrets.identityKeyPair.address) {
             status = SubdomainRegistrationStatus.DONE;
@@ -208,8 +204,8 @@ export class BlockstackService {
     }
 }
 
-const getStatusObjectFromResponse = (body: any): CruxIDRegistrationStatus =>  {
-    let status: CruxIDRegistrationStatus;
+const getStatusObjectFromResponse = (body: any): ICruxUserRegistrationStatus =>  {
+    let status: ICruxUserRegistrationStatus;
     const rawStatus = body.status;
     log.info(body);
     if (rawStatus && rawStatus.includes("Your subdomain was registered in transaction")) {
@@ -236,7 +232,7 @@ const getStatusObjectFromResponse = (body: any): CruxIDRegistrationStatus =>  {
             default:
                 status = {
                     status: SubdomainRegistrationStatus.NONE,
-                    statusDetail: "",
+                    statusDetail: SubdomainRegistrationStatusDetail.NONE,
                 };
                 break;
         }
