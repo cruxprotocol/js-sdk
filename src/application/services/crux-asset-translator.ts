@@ -1,3 +1,4 @@
+import { Validations } from "../../core/entities/crux-spec";
 import { IAddress, IAddressMapping } from "../../core/entities/crux-user";
 import { errors } from "../../packages";
 import { IGlobalAssetList } from "../../packages/configuration-service";
@@ -39,6 +40,7 @@ export class CruxAssetTranslator {
     private _assetMapping: IClientAssetMapping;
     private _reverseAssetMap: IReverseClientAssetMapping;
     constructor(assetMapping: IClientAssetMapping) {
+        Validations.validateAssetMapping(assetMapping);
         this._assetMapping = this.getLowerAssetMapping(assetMapping);
         this._reverseAssetMap = {};
         for (const walletCurrencySymbol of Object.keys(this._assetMapping)) {
@@ -47,9 +49,6 @@ export class CruxAssetTranslator {
     }
     get assetMapping() {
         return this._assetMapping;
-    }
-    set assetMapping(assetMapping: IClientAssetMapping) {
-        this._assetMapping = assetMapping;
     }
     public symbolToAssetId(currencySymbol: string): string {
         currencySymbol = currencySymbol.toLowerCase();
