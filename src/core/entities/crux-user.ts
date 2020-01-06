@@ -36,11 +36,11 @@ export enum SubdomainRegistrationStatusDetail {
 export class CruxUser {
     public cruxID: CruxId;
     public registrationStatus: ICruxUserRegistrationStatus;
-    private addressMap: IAddressMapping;
+    private addressMap!: IAddressMapping;
 
     constructor(cruxID: CruxId, addressMap: IAddressMapping, registrationStatus: ICruxUserRegistrationStatus) {
         this.cruxID = cruxID;
-        this.addressMap = addressMap;
+        this.setAddressMap(addressMap);
         this.registrationStatus = this.setRegistrationStatus(registrationStatus);
     }
     public getAddressMap(): IAddressMapping {
