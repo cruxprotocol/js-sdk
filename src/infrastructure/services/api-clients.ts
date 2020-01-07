@@ -1,8 +1,56 @@
-import { ErrorHelper, PackageErrorCode } from "../../packages/error";
+import { BaseError, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import {getLogger} from "../../packages/logger";
-import * as utils from "../../packages/utils";
+import { httpJSONRequest } from "../../packages/utils";
 const log = getLogger(__filename);
-
+export class GaiaServiceApiClient {
+    private baseUrl: string;
+    constructor(baseUrl: string) {
+        this.baseUrl = baseUrl;
+    }
+    public getHubInfo = async () => {
+        return httpJSONRequest({baseUrl: this.baseUrl, url: `/hub_info`});
+    }
+    public store = async (filename: string, address: string, authToken: string, contents: string, contentType = "application/octet-stream"): Promise<{publicURL: string}> => {
+        const options = {
+            baseUrl: this.baseUrl,
+            body: JSON.parse(contents),
+            headers: {
+                "Authorization": `bearer ${authToken}`,
+                "Content-Type": contentType,
+            },
+            method: "POST",
+            url: `/store/${address}/${filename}`,
+        };
+        let response: any;
+        try {
+            response = await httpJSONRequest(options);
+            return response;
+        } catch (error) {
+            throw new BaseError(error, "Error when uploading to Gaia hub");
+        }
+    }
+}
+export class BlockstackNamingServiceApiClient {
+    private baseUrl: string;
+    constructor(baseUrl: string) {
+        this.baseUrl = baseUrl;
+    }
+    public fetchIDsByAddress = async (address: string) => {
+        const url = `/v1/addresses/bitcoin/${address}`;
+        const options = {
+            baseUrl: this.baseUrl,
+            json: true,
+            method: "GET",
+            url,
+        };
+        try {
+            const namesData = (await httpJSONRequest(options)) as {names: string[]};
+            return namesData.names;
+        } catch (error) {
+            throw ErrorHelper.getPackageError(error, PackageErrorCode.GetNamesByAddressFailed, `${this.baseUrl}${url}`, error);
+        }
+    }
+}
 export class BlockstackSubdomainRegistrarApiClient {
     private baseUrl: string;
     private domain: string;
@@ -22,7 +70,7 @@ export class BlockstackSubdomainRegistrarApiClient {
             url: `/status/${subdomain}`,
         };
         log.debug("registration query params", options);
-        return utils.httpJSONRequest(options);
+        return httpJSONRequest(options);
     }
     public registerSubdomain = async (name: string, gaiaHubUrl: string, ownerAdderss: string): Promise<string> => {
         const options = {
@@ -44,7 +92,7 @@ export class BlockstackSubdomainRegistrarApiClient {
 
         let registrationAcknowledgement: any;
         try {
-            registrationAcknowledgement = await utils.httpJSONRequest(options);
+            registrationAcknowledgement = await httpJSONRequest(options);
         } catch (err) {
             throw ErrorHelper.getPackageError(err, PackageErrorCode.SubdomainRegistrationFailed, err);
         }
@@ -80,7 +128,7 @@ export class BlockstackSubdomainRegistrarApiClient {
         };
         let registrationsArray: IPendingRegistration[];
         try {
-            registrationsArray = ((await utils.httpJSONRequest(options)) as IPendingRegistration[]);
+            registrationsArray = ((await httpJSONRequest(options)) as IPendingRegistration[]);
         } catch (error) {
             throw ErrorHelper.getPackageError(error, PackageErrorCode.FetchPendingRegistrationsByAddressFailed, `${this.baseUrl}${url}`, error);
         }

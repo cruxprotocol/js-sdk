@@ -35,7 +35,7 @@ describe('Infrastructure Repositories Test', () => {
         let blockstackCruxDomainRepository: BlockstackCruxDomainRepository;
         // "cruxdev" fixtures
         const cruxdevDomainString = "cruxdev";
-        const cruxdevConfigSubdomainPrivateKey = "9d642ba222d8fa887c108472883d702511b9e06d004f456a78d85a740b789dd2";
+        const cruxdevConfigSubdomainPrivateKey = "d4a7eab17471d190a0d6cfa00546dceeac88f333b8a2d16fb4464e1e57ac188f";    // random-private-key;
         const cruxdevConfigKeyManager = new BasicKeyManager(cruxdevConfigSubdomainPrivateKey)
         const cruxdevRegistrationStatus = DomainRegistrationStatus.REGISTERED;
         const cruxdevAssetMapping = {};
@@ -54,7 +54,7 @@ describe('Infrastructure Repositories Test', () => {
 
             const restoreDomainStub = sandbox.stub().resolves(undefined);
             restoreDomainStub.withArgs(sinon.match(cruxdevConfigKeyManager)).resolves(cruxdevDomainString);
-            
+
             mockBlockstackService = {
                 getDomainRegistrationStatus: getDomainRegistrationStatusStub,
                 getClientConfig: sandbox.stub().withArgs(cruxdevDomainString).resolves({assetMapping: cruxdevAssetMapping, assetList: cruxdevAssetList}),
