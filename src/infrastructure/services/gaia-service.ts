@@ -1,7 +1,8 @@
-import { publicKeyToAddress, uploadToGaiaHub, wrapProfileToken } from "blockstack";
+import { publicKeyToAddress, wrapProfileToken } from "blockstack";
 import { IKeyManager } from "../../core/interfaces/key-manager";
+import { BaseError } from "../../packages/error";
 import { getLogger } from "../../packages/logger";
-import { getRandomHexString } from "../../packages/utils";
+import { getRandomHexString, httpJSONRequest } from "../../packages/utils";
 const log = getLogger(__filename);
 export class GaiaService {
     public gaiaWriteUrl: string;
@@ -14,12 +15,32 @@ export class GaiaService {
         const tokenFilePromise = this.generateContentTokenFileAsync(content, keyManager);
         const [hubConfig, tokenFile] = await Promise.all([hubConfigPromise, tokenFilePromise]);
         const contentToUpload: string = JSON.stringify(tokenFile);
-        return uploadToGaiaHub(filename, contentToUpload, hubConfig, type);
+        return this.uploadToGaiaHub(filename, contentToUpload, hubConfig, type);
+    }
+    private uploadToGaiaHub = async (filename: string, contents: string, hubConfig: any, contentType = "application/octet-stream") => {
+        log.debug(`uploadToGaiaHub: uploading ${filename} to ${hubConfig.server}`);
+        const options = {
+            baseUrl: hubConfig.server,
+            body: JSON.parse(contents),
+            headers: {
+                "Authorization": `bearer ${hubConfig.token}`,
+                "Content-Type": contentType,
+            },
+            method: "POST",
+            url: `/store/${hubConfig.address}/${filename}`,
+        };
+        console.log(options);
+        let response: any;
+        try {
+            response = await httpJSONRequest(options);
+        } catch (error) {
+            throw new BaseError(error, "Error when uploading to Gaia hub");
+        }
+        return response.publicURL;
     }
     private connectToGaiaHubAsync = async (hubURL: string, keyManager: IKeyManager, associationToken?: string) => {
         log.debug(`connectToGaiaHub: ${hubURL}/hub_info`);
-        const response = await this.fetchPrivate(`${hubURL}/hub_info`);
-        const hubInfo = await response.json();
+        const hubInfo: any = await httpJSONRequest({baseUrl: hubURL, url: `/hub_info`});
         const readURL = hubInfo.read_url_prefix;
         const token = await this.makeV1GaiaAuthTokenAsync(hubInfo, hubURL, keyManager, associationToken);
         const address = publicKeyToAddress(await keyManager.getPubKey());
@@ -47,11 +68,6 @@ export class GaiaService {
         };
         const token = await keyManager.signWebToken(payload);
         return `v1:${token}`;
-    }
-    private fetchPrivate = async (input: RequestInfo, init?: RequestInit) => {
-        init = init || {};
-        init.referrerPolicy = "no-referrer";
-        return fetch(input, init);
     }
     private generateContentTokenFileAsync = async (content: any, keyManager: IKeyManager) => {
         const publicKey = await keyManager.getPubKey();
