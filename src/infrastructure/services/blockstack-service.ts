@@ -1,8 +1,7 @@
-import { Decoder, object, optional, string } from "@mojotech/json-type-validation";
 import { publicKeyToAddress } from "blockstack";
 import { DomainRegistrationStatus } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
-import { IAddress, IAddressMapping, ICruxUserRegistrationStatus } from "../../core/entities/crux-user";
+import { IAddressMapping, ICruxUserRegistrationStatus } from "../../core/entities/crux-user";
 import { SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import { IKeyManager } from "../../core/interfaces/key-manager";
@@ -21,8 +20,7 @@ import {
 import { getLogger } from "../../packages/logger";
 import { fetchNameDetails, INameDetailsObject } from "../../packages/name-service/utils";
 import { StorageService } from "../../packages/storage";
-import { httpJSONRequest } from "../../packages/utils";
-import {BlockstackSubdomainRegistrarApiClient} from "./api-clients";
+import {BlockstackNamingServiceApiClient, BlockstackSubdomainRegistrarApiClient} from "./api-clients";
 import { GaiaService } from "./gaia-service";
 
 const log = getLogger(__filename);
@@ -32,19 +30,8 @@ export interface IBlockstackServiceInputOptions {
 }
 export class BlockstackService {
     public static fetchIDsByAddress = async (baseUrl: string, address: string): Promise<string[]> => {
-        const url = `/v1/addresses/bitcoin/${address}`;
-        const options = {
-            baseUrl,
-            json: true,
-            method: "GET",
-            url,
-        };
-        try {
-            const namesData = (await httpJSONRequest(options)) as {names: string[]};
-            return namesData.names;
-        } catch (error) {
-            throw ErrorHelper.getPackageError(error, PackageErrorCode.GetNamesByAddressFailed, `${baseUrl}${url}`, error);
-        }
+        const bnsApiClient = new BlockstackNamingServiceApiClient(baseUrl);
+        return bnsApiClient.fetchIDsByAddress(address);
     }
     public static getDomainRegistrationStatusFromNameDetails = (nameDetails: INameDetailsObject): DomainRegistrationStatus => {
         let domainRegistrationStatus: DomainRegistrationStatus;

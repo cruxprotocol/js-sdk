@@ -1,9 +1,15 @@
 import { publicKeyToAddress, wrapProfileToken } from "blockstack";
 import { IKeyManager } from "../../core/interfaces/key-manager";
-import { BaseError } from "../../packages/error";
 import { getLogger } from "../../packages/logger";
-import { getRandomHexString, httpJSONRequest } from "../../packages/utils";
+import { getRandomHexString } from "../../packages/utils";
+import { GaiaServiceApiClient } from "./api-clients";
 const log = getLogger(__filename);
+export interface IHubConfig {
+    address: string;
+    server: string;
+    token: string;
+    url_prefix: any;
+}
 export class GaiaService {
     public gaiaWriteUrl: string;
     constructor(gaiaWriteUrl: string) {
@@ -17,30 +23,17 @@ export class GaiaService {
         const contentToUpload: string = JSON.stringify(tokenFile);
         return this.uploadToGaiaHub(filename, contentToUpload, hubConfig, type);
     }
-    private uploadToGaiaHub = async (filename: string, contents: string, hubConfig: any, contentType = "application/octet-stream") => {
+    private uploadToGaiaHub = async (filename: string, contents: string, hubConfig: IHubConfig, contentType = "application/octet-stream") => {
         log.debug(`uploadToGaiaHub: uploading ${filename} to ${hubConfig.server}`);
-        const options = {
-            baseUrl: hubConfig.server,
-            body: JSON.parse(contents),
-            headers: {
-                "Authorization": `bearer ${hubConfig.token}`,
-                "Content-Type": contentType,
-            },
-            method: "POST",
-            url: `/store/${hubConfig.address}/${filename}`,
-        };
-        console.log(options);
-        let response: any;
-        try {
-            response = await httpJSONRequest(options);
-        } catch (error) {
-            throw new BaseError(error, "Error when uploading to Gaia hub");
-        }
+        const gaiaApiClient = new GaiaServiceApiClient(hubConfig.server);
+        const response = await gaiaApiClient.store(filename, hubConfig.address, hubConfig.token, contents, contentType);
         return response.publicURL;
     }
     private connectToGaiaHubAsync = async (hubURL: string, keyManager: IKeyManager, associationToken?: string) => {
         log.debug(`connectToGaiaHub: ${hubURL}/hub_info`);
-        const hubInfo: any = await httpJSONRequest({baseUrl: hubURL, url: `/hub_info`});
+        const gaiaApiClient = new GaiaServiceApiClient(hubURL);
+        console.log(gaiaApiClient);
+        const hubInfo: any = await gaiaApiClient.getHubInfo();
         const readURL = hubInfo.read_url_prefix;
         const token = await this.makeV1GaiaAuthTokenAsync(hubInfo, hubURL, keyManager, associationToken);
         const address = publicKeyToAddress(await keyManager.getPubKey());
