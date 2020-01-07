@@ -99,7 +99,7 @@ export class CruxWalletClient {
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
         await this._initPromise;
         const tag = "resolving_address";
-        const cruxUser = await this._getCruxUserByID(fullCruxID, tag);
+        const cruxUser = await this._getCruxUserByID(fullCruxID.toLowerCase(), tag);
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
@@ -148,7 +148,7 @@ export class CruxWalletClient {
         await this._initPromise;
         const cruxIdInput: InputIDComponents = {
             domain: this.walletClientName,
-            subdomain: cruxIDSubdomain,
+            subdomain: cruxIDSubdomain.toLowerCase(),
         };
         const cruxId = new CruxId(cruxIdInput);
         return this._cruxUserRepository.find(cruxId);
@@ -165,7 +165,7 @@ export class CruxWalletClient {
         }
         const cruxIdInput: InputIDComponents = {
             domain: this.walletClientName,
-            subdomain: cruxIDSubdomain,
+            subdomain: cruxIDSubdomain.toLowerCase(),
         };
         const cruxId = new CruxId(cruxIdInput);
         this._cruxUser = await this._cruxUserRepository.create(cruxId, this._keyManager);
