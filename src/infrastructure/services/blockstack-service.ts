@@ -29,7 +29,6 @@ const log = getLogger(__filename);
 export interface IBlockstackServiceInputOptions {
     infrastructure: ICruxBlockstackInfrastructure;
     cacheStorage?: StorageService;
-    bnsOverrides?: string[];
 }
 export class BlockstackService {
     public static fetchIDsByAddress = async (baseUrl: string, address: string): Promise<string[]> => {
@@ -64,7 +63,7 @@ export class BlockstackService {
     private subdomainRegistrar: string;
     private gaiaHub: string;
     constructor(options: IBlockstackServiceInputOptions) {
-        this.bnsNodes = options.bnsOverrides && [...new Set([...options.infrastructure.bnsNodes, ...options.bnsOverrides])] || options.infrastructure.bnsNodes;
+        this.bnsNodes = options.infrastructure.bnsNodes;
         this.gaiaHub = options.infrastructure.gaiaHub;
         this.subdomainRegistrar = options.infrastructure.subdomainRegistrar;
         this.cacheStorage = options.cacheStorage;
@@ -140,7 +139,7 @@ export class BlockstackService {
         }
         const blockstackDomain: BlockstackDomainId = IdTranslator.cruxDomainToBlockstackDomain(cruxDomainId);
         // Fetch any pending registrations on the address using the registrar
-        const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, blockstackDomain.components.domain);
+        const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, blockstackDomain);
         const pendingSubdomains = await registrarApiClient.fetchPendingRegistrationsByAddress(userSubdomainOwnerAddress);
         if (pendingSubdomains.length !== 0) {
             return new BlockstackId({domain: blockstackDomain.components.domain, subdomain: pendingSubdomains[0]});
@@ -151,7 +150,7 @@ export class BlockstackService {
     public isCruxIdAvailable = async (cruxId: CruxId): Promise<boolean> => {
         const blockstackId = IdTranslator.cruxToBlockstack(cruxId);
         validateSubdomain(cruxId.components.subdomain);
-        const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, blockstackId.components.domain);
+        const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, new BlockstackDomainId(blockstackId.components.domain));
         const registrarStatus = await registrarApiClient.getSubdomainStatus(cruxId.components.subdomain);
         const registrationStatus = getStatusObjectFromResponse(registrarStatus);
         return registrationStatus.status === SubdomainRegistrationStatus.NONE;
@@ -162,7 +161,7 @@ export class BlockstackService {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
         const blockstackId = IdTranslator.cruxToBlockstack(cruxId);
-        const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, blockstackId.components.domain);
+        const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, new BlockstackDomainId(blockstackId.components.domain));
         await registrarApiClient.registerSubdomain(cruxId.components.subdomain, this.gaiaHub, publicKeyToAddress(await keyManager.getPubKey()));
         return await this.getCruxIdRegistrationStatus(cruxId);
     }
@@ -185,7 +184,7 @@ export class BlockstackService {
                 statusDetail,
             };
         }
-        const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, blockstackId.components.domain);
+        const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, new BlockstackDomainId(blockstackId.components.domain));
         const registrarStatus = await registrarApiClient.getSubdomainStatus(cruxId.components.subdomain);
         const registrationStatus = getStatusObjectFromResponse(registrarStatus);
         return registrationStatus;

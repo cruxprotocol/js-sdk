@@ -26,7 +26,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
     }
     public find = async (domainId: CruxDomainId): Promise<boolean> => {
         const domainRegistrationStatus = await this.blockstackService.getDomainRegistrationStatus(domainId.components.domain);
-        return domainRegistrationStatus === DomainRegistrationStatus.AVAILABLE ? true : false;
+        return domainRegistrationStatus === DomainRegistrationStatus.AVAILABLE;
     }
     public create = async (domainId: CruxDomainId, identityKeyManager: IKeyManager): Promise<CruxDomain> => {
         // TODO: register the domain on bitcoin blockchain and _config subdomain on domain provided SubdomainRegistrar service

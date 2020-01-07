@@ -1,4 +1,5 @@
 import { IKeyManager } from "src/core/interfaces/key-manager";
+import {CruxDomain} from "../../core/entities/crux-domain";
 import { CruxUser, SubdomainRegistrationStatus } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxUserRepository, ICruxUserRepositoryOptions} from "../../core/interfaces/crux-user-repository";
@@ -10,8 +11,8 @@ const log = getLogger(__filename);
 
 export interface IBlockstackCruxUserRepositoryOptions extends ICruxUserRepositoryOptions {
     blockstackInfrastructure: ICruxBlockstackInfrastructure;
-    bnsOverrides?: string[];
     cacheStorage?: StorageService;
+    cruxDomain?: CruxDomain;
 }
 
 export class BlockstackCruxUserRepository implements ICruxUserRepository {
@@ -19,10 +20,15 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
     private blockstackService: BlockstackService;
     constructor(options: IBlockstackCruxUserRepositoryOptions) {
         this.cacheStorage = options && options.cacheStorage;
+        const infrastructure = options.blockstackInfrastructure;
+        if (options.cruxDomain) {
+            const domainBnsOverrides = options.cruxDomain.config.nameserviceConfiguration ? options.cruxDomain.config.nameserviceConfiguration.bnsNodes : undefined;
+            infrastructure.bnsNodes = domainBnsOverrides && [...new Set([...infrastructure.bnsNodes, ...domainBnsOverrides])] || infrastructure.bnsNodes;
+            // CruxDomain can override registrar here
+        }
         this.blockstackService = new BlockstackService({
-            bnsOverrides: options.bnsOverrides,
             cacheStorage: this.cacheStorage,
-            infrastructure: options.blockstackInfrastructure,
+            infrastructure,
         });
         log.info("BlockstackCruxUserRepository initialised");
     }

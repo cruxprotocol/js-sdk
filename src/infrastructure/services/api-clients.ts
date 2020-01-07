@@ -1,21 +1,25 @@
 import { ErrorHelper, PackageErrorCode } from "../../packages/error";
+import {BlockstackDomainId} from "../../packages/identity-utils";
 import {getLogger} from "../../packages/logger";
 import * as utils from "../../packages/utils";
 const log = getLogger(__filename);
 
 export class BlockstackSubdomainRegistrarApiClient {
     private baseUrl: string;
-    private domain: string;
-    constructor(baseUrl: string, domain: string) {
+    private initPromise: Promise<void>;
+    private blockstackDomainId: BlockstackDomainId;
+    constructor(baseUrl: string, blockstackDomainId: BlockstackDomainId) {
         this.baseUrl = baseUrl;
-        this.domain = domain;
+        this.blockstackDomainId = blockstackDomainId;
+        this.initPromise = this.init();
     }
 
     public getSubdomainStatus = async (subdomain: string) => {
+        await this.initPromise;
         const options = {
             baseUrl: this.baseUrl,
             headers: {
-                "x-domain-name": this.domain,
+                "x-domain-name": this.blockstackDomainId.components.domain,
             },
             json: true,
             method: "GET",
@@ -25,6 +29,7 @@ export class BlockstackSubdomainRegistrarApiClient {
         return utils.httpJSONRequest(options);
     }
     public registerSubdomain = async (name: string, gaiaHubUrl: string, ownerAdderss: string): Promise<string> => {
+        await this.initPromise;
         const options = {
             baseUrl: this.baseUrl,
             body: {
@@ -34,7 +39,7 @@ export class BlockstackSubdomainRegistrarApiClient {
             },
             headers: {
                 "Content-Type": "application/json",
-                "x-domain-name": this.domain,
+                "x-domain-name": this.blockstackDomainId.components.domain,
             },
             json: true,
             method: "POST",
@@ -57,6 +62,7 @@ export class BlockstackSubdomainRegistrarApiClient {
         }
     }
     public fetchPendingRegistrationsByAddress = async (address: string): Promise<string[]> => {
+        await this.initPromise;
         interface IPendingRegistration {
             owner: string;
             queue_ix: number;
@@ -72,7 +78,7 @@ export class BlockstackSubdomainRegistrarApiClient {
         const options = {
             baseUrl: this.baseUrl,
             headers: {
-                "x-domain-name": this.domain,
+                "x-domain-name": this.blockstackDomainId.components.domain,
             },
             json: true,
             method: "GET",
@@ -88,4 +94,26 @@ export class BlockstackSubdomainRegistrarApiClient {
             return registration.subdomainName;
         });
     }
+    public getIndex = async (): Promise<any> => {
+        const options = {
+            baseUrl: this.baseUrl,
+            headers: {
+                "x-domain-name": this.blockstackDomainId.components.domain,
+            },
+            json: true,
+            method: "GET",
+            url: `/index`,
+        };
+        log.debug("registration query params", options);
+        return utils.httpJSONRequest(options);
+    }
+
+    private init = async () => {
+        const indexFromUrl = await this.getIndex();
+        const domainFromUrl = indexFromUrl.domainName;
+        if (domainFromUrl !== this.blockstackDomainId.toString()) {
+            throw Error(`Unexpected Domain from registrar ${domainFromUrl} should be ${this.blockstackDomainId.toString()}`);
+        }
+    }
+
 }
