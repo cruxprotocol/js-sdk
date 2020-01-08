@@ -24,8 +24,8 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
             throw Error("Already Exists")
         }
         const newUser = new CruxUser(cruxID, {}, {
-            status: SubdomainRegistrationStatus.DONE,
-            statusDetail: SubdomainRegistrationStatusDetail.DONE
+            status: SubdomainRegistrationStatus.PENDING,
+            statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR
         })
         this.userById[cruxID.toString()] = newUser
         return new Promise((resolve, reject) => resolve(newUser));
@@ -40,7 +40,8 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
         return new Promise((resolve, reject) => resolve(result));
     }
     getWithKey = (keyManager: IKeyManager, cruxDomainId: CruxDomainId) : Promise<CruxUser | undefined> => {
-        throw Error("Not implemented")
+        // TODO: Implement ID recovery from key
+        return new Promise((resolve, reject) => resolve(undefined));
     }
     save = (cruxUser: CruxUser, keyManager: IKeyManager) : Promise<CruxUser> => {
         if (this.userById[cruxUser.cruxID.toString()] === undefined) {

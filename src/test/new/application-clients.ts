@@ -5,6 +5,7 @@ import chaiAsPromised from "chai-as-promised";
 import * as chai from "chai";
 
 import {CruxWalletClient} from "../../application/clients/crux-wallet-client";
+import {SubdomainRegistrationStatus} from "../../core/entities/crux-user";
 import {
     addDomainToRepo,
     addUserToRepo,
@@ -16,6 +17,7 @@ import {
 
 chai.use(chaiAsPromised);
 chai.should();
+const expect = require('chai').expect;
 
 const testCruxDomain = getValidCruxDomain();
 const testCruxUser = getValidCruxUser();
@@ -27,8 +29,12 @@ describe('Client Tests', function() {
             this.inmemDomainRepo = new InMemoryCruxDomainRepository();
             addUserToRepo(testCruxUser, this.inmemUserRepo);
             addDomainToRepo(testCruxDomain, this.inmemDomainRepo);
-            sinon.stub(cwc, 'getCruxDomainRepository').callsFake(() => this.inmemDomainRepo as any);
-            sinon.stub(cwc, 'getCruxUserRepository').callsFake(() => this.inmemUserRepo as any);
+            this.stubGetCruxDomainRepository = sinon.stub(cwc, 'getCruxDomainRepository').callsFake(() => this.inmemDomainRepo as any);
+            this.stubGetCruxUserRepository = sinon.stub(cwc, 'getCruxUserRepository').callsFake(() => this.inmemUserRepo as any);
+        });
+        afterEach(function(){
+            this.stubGetCruxUserRepository.restore();
+            this.stubGetCruxDomainRepository.restore();
         });
         it('Nonexistent wallet name raises error', async function() {
             let cc = new CruxWalletClient({
@@ -43,6 +49,19 @@ describe('Client Tests', function() {
             });
             const address = await cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'bitcoin');
             return address.should.have.property('addressHash').equals('foobtcaddress');
+        });
+        it('New ID Registration works properly', async function() {
+            let cc = new CruxWalletClient({
+                walletClientName: 'somewallet',
+                privateKey: '6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f'
+            });
+            const initIdState = await cc.getCruxIDState()
+            expect(initIdState.cruxID).to.equals(null)
+
+            await cc.registerCruxID('newtestuser')
+            const idState = await cc.getCruxIDState()
+            expect(idState.cruxID).equals('newtestuser@somewallet.crux')
+            expect(idState.status.status).equals(SubdomainRegistrationStatus.PENDING)
         });
 
     });
