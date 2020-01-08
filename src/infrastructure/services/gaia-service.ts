@@ -1,11 +1,9 @@
 import { publicKeyToAddress, verifyProfileToken, wrapProfileToken } from "blockstack";
-import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import { IKeyManager } from "../../core/interfaces/key-manager";
 import { ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { getLogger } from "../../packages/logger";
 import { StorageService } from "../../packages/storage";
 import { getRandomHexString } from "../../packages/utils";
-import { BlockstackService } from "../services/blockstack-service";
 import { GaiaServiceApiClient, IHubInfo } from "./api-clients";
 const log = getLogger(__filename);
 export interface IHubConfig {
@@ -24,9 +22,8 @@ export class GaiaService {
         const hubInfo = await GaiaServiceApiClient.getHubInfo(gaiaHub, cacheStorage);
         return hubInfo.read_url_prefix;
     }
-    public static getContentFromGaiaHub = async (blockstackId: string, filename: string, bnsNodes: string[], tag?: string, cacheStorage?: StorageService): Promise<any> => {
-        const gaiaDetails = await GaiaService.getGaiaDataFromBlockstackID(blockstackId, bnsNodes, tag, cacheStorage);
-        const responseBody = await GaiaServiceApiClient.retrieve(gaiaDetails.gaiaReadUrl, filename, gaiaDetails.ownerAddress, cacheStorage);
+    public static getContentFromGaiaHub = async (readUrlPrefix: string, address: string, filename: string, cacheStorage?: StorageService): Promise<any> => {
+        const responseBody = await GaiaServiceApiClient.retrieve(readUrlPrefix, filename, address, cacheStorage);
         if (responseBody.indexOf("BlobNotFound") > 0 || responseBody.indexOf("NoSuchKey") > 0) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaEmptyResponse);
         }
@@ -41,48 +38,21 @@ export class GaiaService {
             log.error(e);
             throw ErrorHelper.getPackageError(e, PackageErrorCode.TokenVerificationFailed, filename);
         }
-        if (addressFromPub !== gaiaDetails.ownerAddress) {
+        if (addressFromPub !== address) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotValidateZoneFile);
         }
         return content;
-    }
-    public static getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes: string[], tag?: string, cacheStorage?: StorageService): Promise<IGaiaDetails> => {
-        let nameData: any;
-        nameData = BlockstackService.getNameDetails(blockstackId, bnsNodes, tag, cacheStorage);
-        log.debug(nameData);
-        if (!nameData) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.BnsEmptyData);
-        }
-        if (!nameData.address) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
-        }
-        const bitcoinAddress = nameData.address;
-        log.debug(`ID owner: ${bitcoinAddress}`);
-        let gaiaRead: string;
-        let gaiaWrite: string;
-        if (nameData.zonefile.match(new RegExp("(.+)https:\/\/hub.cruxpay.com\/hub\/(.+)\/profile.json"))) {
-            gaiaWrite = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/hub\/(.+)\/profile.json", "s"))[2];
-            gaiaRead = await GaiaService.getGaiaReadUrl(gaiaWrite as string, cacheStorage);
-        } else if (nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json"))) {
-            // TODO: remove this case and purge the testcases using this path
-            gaiaWrite = "https://hub.blockstack.org";
-            gaiaRead = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/(.+)\/profile.json", "s"))[2] + "/";
-        } else {
-            gaiaWrite = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1)[0];
-            gaiaRead = await GaiaService.getGaiaReadUrl(gaiaWrite as string, cacheStorage);
-        }
-        const gaiaDetails: IGaiaDetails = {
-            gaiaReadUrl: gaiaRead,
-            gaiaWriteUrl: gaiaWrite,
-            ownerAddress: bitcoinAddress,
-        };
-        return gaiaDetails;
     }
     private cacheStorage?: StorageService;
     private gaiaHub: string;
     constructor(gaiaHub: string, cacheStorage?: StorageService) {
         this.cacheStorage = cacheStorage;
         this.gaiaHub = gaiaHub;
+    }
+    public getContentFromGaiaHub = async (address: string, filename: string): Promise<any> => {
+        const hubInfo: IHubInfo = await GaiaServiceApiClient.getHubInfo(this.gaiaHub, this.cacheStorage);
+        const readURL = hubInfo.read_url_prefix;
+        return GaiaService.getContentFromGaiaHub(readURL, address, filename, this.cacheStorage);
     }
     public uploadContentToGaiaHub = async (filename: string, content: any, keyManager: IKeyManager, type = "application/json"): Promise<string> => {
         const hubConfigPromise = this.connectToGaiaHubAsync(keyManager);

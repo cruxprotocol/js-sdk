@@ -63,7 +63,7 @@ export class Validations {
         });
         try {
             addressDecoder.runWithException(addressObject);
-        } catch (e) {
+        } catch (e) {getConfigBlockstackName
             throw ErrorHelper.getPackageError(e, PackageErrorCode.AddressMappingDecodingFailure);
         }
     }
@@ -87,7 +87,7 @@ export const CruxSpec = {
         public static getDomainConfigFileName = (domain: string): string => {
             return `${domain}_client-config.json`;
         }
-        public static getConfigBlockstackID = (domain: string): string => {
+        public static getConfigBlockstackName = (domain: string): string => {
             return `${CruxSpec.blockstack.configSubdomain}.${domain}_crux.id`;
         }
         public static getCruxPayFilename = (blockstackId: BlockstackId): string => {

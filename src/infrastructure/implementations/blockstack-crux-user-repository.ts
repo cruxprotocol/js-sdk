@@ -17,6 +17,7 @@ export interface IBlockstackCruxUserRepositoryOptions extends ICruxUserRepositor
 
 export class BlockstackCruxUserRepository implements ICruxUserRepository {
     private cacheStorage?: StorageService;
+    private infrastructure: ICruxBlockstackInfrastructure;
     private blockstackService: BlockstackService;
     constructor(options: IBlockstackCruxUserRepositoryOptions) {
         this.cacheStorage = options && options.cacheStorage;
@@ -29,14 +30,16 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
             const subdomainRegistrarOverride = options.cruxDomain.config.nameserviceConfiguration ? options.cruxDomain.config.nameserviceConfiguration.subdomainRegistrar : undefined;
             infrastructure.subdomainRegistrar = subdomainRegistrarOverride || infrastructure.subdomainRegistrar;
         }
+        this.infrastructure = infrastructure;
         this.blockstackService = new BlockstackService({
+            bnsNodes: this.infrastructure.bnsNodes,
             cacheStorage: this.cacheStorage,
-            infrastructure,
+            subdomainRegistrar: this.infrastructure.subdomainRegistrar,
         });
         log.info("BlockstackCruxUserRepository initialised");
     }
     public create = async (cruxId: CruxId, keyManager: IKeyManager): Promise<CruxUser> => {
-        const registrationStatus = await this.blockstackService.registerCruxId(cruxId, keyManager);
+        const registrationStatus = await this.blockstackService.registerCruxId(cruxId, this.infrastructure.gaiaHub, keyManager);
         return new CruxUser(cruxId, {}, registrationStatus);
     }
     public find = async (cruxID: CruxId): Promise<boolean> => {

@@ -53,35 +53,38 @@ export class GaiaServiceApiClient {
         return responseBody;
     }
 }
+export interface INameDetails {
+    address?: string;
+    blockchain?: string;
+    did?: string;
+    last_txid?: string;
+    status?: string;
+    zonefile?: string;
+    zonefile_hash?: string;
+    more?: string;
+}
 export class BlockstackNamingServiceApiClient {
-    private cacheStorage?: StorageService;
-    private baseUrl: string;
-    constructor(baseUrl: string, cacheStorage?: StorageService) {
-        this.cacheStorage = cacheStorage;
-        this.baseUrl = baseUrl;
-    }
-    public fetchIDsByAddress = async (address: string) => {
-        const url = `/v1/addresses/bitcoin/${address}`;
+    public static getNamesByAddress = async (bnsNode: string, address: string, cacheStorage?: StorageService): Promise<{names: string[]}> => {
         const options = {
-            baseUrl: this.baseUrl,
+            baseUrl: bnsNode,
             json: true,
             method: "GET",
-            url,
+            url: `/v1/addresses/bitcoin/${address}`,
         };
         try {
             const namesData = (await httpJSONRequest(options)) as {names: string[]};
-            return namesData.names;
+            return namesData;
         } catch (error) {
-            throw ErrorHelper.getPackageError(error, PackageErrorCode.GetNamesByAddressFailed, `${this.baseUrl}${url}`, error);
+            throw ErrorHelper.getPackageError(error, PackageErrorCode.GetNamesByAddressFailed, `${options.baseUrl}${options.url}`, error);
         }
     }
-    public resolveName = async (blockstackId: string, tag?: string) => {
+    public static getNameDetails = async (bnsNode: string, blockstackName: string, tag?: string, cacheStorage?: StorageService): Promise<INameDetails> => {
         const options: any = {
-            baseUrl: this.baseUrl,
+            baseUrl: bnsNode,
             json: true,
             method: "GET",
             qs: null,
-            url: `/v1/names/${blockstackId}`,
+            url: `/v1/names/${blockstackName}`,
         };
         if (tag) {
             options.qs = {
@@ -90,7 +93,7 @@ export class BlockstackNamingServiceApiClient {
         }
         let nameData;
         try {
-            nameData = await cachedFunctionCall(this.cacheStorage, `${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => Boolean(data && data.status && data.status !== "registered_subdomain"));
+            nameData = await cachedFunctionCall(cacheStorage, `${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => Boolean(data && data.status && data.status !== "registered_subdomain"));
         } catch (error) {
             throw ErrorHelper.getPackageError(error, PackageErrorCode.BnsResolutionFailed, options.baseUrl, error);
         }
