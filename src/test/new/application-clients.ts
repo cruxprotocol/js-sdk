@@ -44,12 +44,12 @@ describe('Client Tests', function() {
             const promise = cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'bitcoin');
             expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.InvalidWalletClientName);
         });
-        describe('Resolving a Users ID',function(){
-            beforeEach(function(){
+        describe('Resolving a Users ID', function() {
+            beforeEach(function() {
                 this.cc = new CruxWalletClient({
                     walletClientName: 'somewallet'
                 });
-            })
+            });
             it('Happy case - valid users address', async function() {
                 const address = await this.cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'bitcoin');
                 return expect(address).to.have.property('addressHash').equals('foobtcaddress');
@@ -68,7 +68,7 @@ describe('Client Tests', function() {
                 return expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.AddressNotAvailable);
             });
 
-        })
+        });
 
         it('New ID Registration works properly', async function() {
             let cc = new CruxWalletClient({
@@ -82,6 +82,18 @@ describe('Client Tests', function() {
             const idState = await cc.getCruxIDState();
             expect(idState.cruxID).equals('newtestuser@somewallet.crux');
             expect(idState.status.status).equals(SubdomainRegistrationStatus.PENDING);
+        });
+        it('ID Availability check works properly', async function() {
+            throw Error("unimplemented");
+        });
+        it('User is recovered properly from private key', async function() {
+            throw Error("unimplemented");
+        });
+        it('New address addition works properly', async function() {
+            throw Error("unimplemented");
+        });
+        it('Partial publishing of addresses works', async function() {
+            throw Error("unimplemented");
         });
 
     });
