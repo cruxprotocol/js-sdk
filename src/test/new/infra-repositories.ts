@@ -48,7 +48,7 @@ describe('Infrastructure Repositories Test', () => {
         // "testcase" fixtures
         const testcaseDomainString = "testcase";
         beforeEach(() => {
-            const getDomainRegistrationStatusStub = sandbox.stub();
+            const getDomainRegistrationStatusStub = sandbox.stub().throws("unhandled in mocks");
             getDomainRegistrationStatusStub.withArgs(cruxdevDomainString).resolves(DomainRegistrationStatus.REGISTERED);
             getDomainRegistrationStatusStub.withArgs("testcase").resolves(DomainRegistrationStatus.AVAILABLE);
 

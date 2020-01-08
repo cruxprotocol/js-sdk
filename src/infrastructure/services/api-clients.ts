@@ -1,19 +1,27 @@
 import { BaseError, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import {BlockstackDomainId} from "../../packages/identity-utils";
 import {getLogger} from "../../packages/logger";
-import { httpJSONRequest } from "../../packages/utils";
+import { UPLOADABLE_JSON_FILES } from "../../packages/name-service/blockstack-service";
+import { StorageService } from "../../packages/storage";
+import { cachedFunctionCall, httpJSONRequest } from "../../packages/utils";
 const log = getLogger(__filename);
+export interface IHubInfo {
+    challenge_text: string;
+    latest_auth_version: string;
+    max_file_upload_size_megabytes: number;
+    read_url_prefix: string;
+}
 export class GaiaServiceApiClient {
-    private baseUrl: string;
-    constructor(baseUrl: string) {
-        this.baseUrl = baseUrl;
-    }
-    public getHubInfo = async () => {
-        return httpJSONRequest({baseUrl: this.baseUrl, url: `/hub_info`});
-    }
-    public store = async (filename: string, address: string, authToken: string, contents: string, contentType = "application/octet-stream"): Promise<{publicURL: string}> => {
+    public static getHubInfo = async (gaiaHub: string, cacheStorage?: StorageService): Promise<IHubInfo> => {
         const options = {
-            baseUrl: this.baseUrl,
+            baseUrl: gaiaHub,
+            url: "/hub_info",
+        };
+        return cachedFunctionCall(cacheStorage, `${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options]) as Promise<IHubInfo>;
+    }
+    public static store = async (gaiaHub: string, filename: string, address: string, authToken: string, contents: string, contentType = "application/octet-stream"): Promise<{publicURL: string}> => {
+        const options = {
+            baseUrl: gaiaHub,
             body: JSON.parse(contents),
             headers: {
                 "Authorization": `bearer ${authToken}`,
@@ -30,10 +38,26 @@ export class GaiaServiceApiClient {
             throw new BaseError(error, "Error when uploading to Gaia hub");
         }
     }
+    public static retrieve = async (readURLPrefix: string, filename: string, address: string, cacheStorage?: StorageService) => {
+        const options = {
+            baseUrl: readURLPrefix,
+            json: true,
+            method: "GET",
+            url: `${address}/${filename}`,
+        };
+
+        const cacheTTL = filename === UPLOADABLE_JSON_FILES.CLIENT_CONFIG ? 3600 : undefined;
+        const responseBody: any = await cachedFunctionCall(cacheStorage, options.url, cacheTTL, httpJSONRequest, [options], async (data) => {
+            return Boolean(filename !== UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
+        });
+        return responseBody;
+    }
 }
 export class BlockstackNamingServiceApiClient {
+    private cacheStorage?: StorageService;
     private baseUrl: string;
-    constructor(baseUrl: string) {
+    constructor(baseUrl: string, cacheStorage?: StorageService) {
+        this.cacheStorage = cacheStorage;
         this.baseUrl = baseUrl;
     }
     public fetchIDsByAddress = async (address: string) => {
@@ -50,6 +74,27 @@ export class BlockstackNamingServiceApiClient {
         } catch (error) {
             throw ErrorHelper.getPackageError(error, PackageErrorCode.GetNamesByAddressFailed, `${this.baseUrl}${url}`, error);
         }
+    }
+    public resolveName = async (blockstackId: string, tag?: string) => {
+        const options: any = {
+            baseUrl: this.baseUrl,
+            json: true,
+            method: "GET",
+            qs: null,
+            url: `/v1/names/${blockstackId}`,
+        };
+        if (tag) {
+            options.qs = {
+                "x-tag": tag,
+            };
+        }
+        let nameData;
+        try {
+            nameData = await cachedFunctionCall(this.cacheStorage, `${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => Boolean(data && data.status && data.status !== "registered_subdomain"));
+        } catch (error) {
+            throw ErrorHelper.getPackageError(error, PackageErrorCode.BnsResolutionFailed, options.baseUrl, error);
+        }
+        return nameData;
     }
 }
 export class BlockstackSubdomainRegistrarApiClient {

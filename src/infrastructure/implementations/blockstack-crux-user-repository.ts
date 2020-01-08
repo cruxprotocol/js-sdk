@@ -24,7 +24,10 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         if (options.cruxDomain) {
             const domainBnsOverrides = options.cruxDomain.config.nameserviceConfiguration ? options.cruxDomain.config.nameserviceConfiguration.bnsNodes : undefined;
             infrastructure.bnsNodes = domainBnsOverrides && [...new Set([...infrastructure.bnsNodes, ...domainBnsOverrides])] || infrastructure.bnsNodes;
-            // CruxDomain can override registrar here
+            const gaiaHubOverride = options.cruxDomain.config.nameserviceConfiguration ? options.cruxDomain.config.nameserviceConfiguration.gaiaHub : undefined;
+            infrastructure.gaiaHub = gaiaHubOverride || infrastructure.gaiaHub;
+            const subdomainRegistrarOverride = options.cruxDomain.config.nameserviceConfiguration ? options.cruxDomain.config.nameserviceConfiguration.subdomainRegistrar : undefined;
+            infrastructure.subdomainRegistrar = subdomainRegistrarOverride || infrastructure.subdomainRegistrar;
         }
         this.blockstackService = new BlockstackService({
             cacheStorage: this.cacheStorage,

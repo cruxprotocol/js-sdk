@@ -6,6 +6,8 @@ import { CruxSpec } from '../../core/entities/crux-spec';
 import { GaiaService } from '../../infrastructure/services/gaia-service';
 import WebCrypto from "node-webcrypto-ossl";
 import * as apiClients from '../../infrastructure/services/api-clients';
+import { BlockstackService } from '../../infrastructure/services/blockstack-service';
+import { DomainRegistrationStatus } from '../../core/entities/crux-domain';
 interface Global {
     crypto: any;
     TextEncoder: any;
@@ -65,6 +67,25 @@ describe('Infrastructure Services Test', () => {
         })
     })
     describe('Testing BlockstackService', () => {
+        let mockBlockstackNamingServiceApiClient;
+        let mockBlockstackSubdomainRegistrarApiClient;
+        let blockstackService: BlockstackService;
+        beforeEach(() => {
+            mockBlockstackNamingServiceApiClient = {};
+            mockBlockstackSubdomainRegistrarApiClient = {};
+            sandbox.stub(apiClients, 'BlockstackNamingServiceApiClient').returns(mockBlockstackNamingServiceApiClient);
+            sandbox.stub(apiClients, 'BlockstackSubdomainRegistrarApiClient').returns(mockBlockstackSubdomainRegistrarApiClient);
+            blockstackService = new BlockstackService({
+                infrastructure: CruxSpec.blockstack.infrastructure,
+            });
+        })
+        describe('getDomainRegistrationStatus', () => {
+            it('"cruxdev" should be REGISTERED', async () => {
+                const domainAvailability = await blockstackService.getDomainRegistrationStatus("cruxdev");
+                expect(domainAvailability).to.be.equal(DomainRegistrationStatus.REGISTERED);
+            }) 
+            it('"testcase" should be AVAILABLE', async () => {}) 
+        })
     })
     describe('Testing BlockstackSubdomainRegistrarApiClient', () => {
     })
