@@ -44,21 +44,31 @@ describe('Client Tests', function() {
             const promise = cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'bitcoin');
             expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.InvalidWalletClientName);
         });
-        it('Resolve a valid users address', async function() {
-            let cc = new CruxWalletClient({
-                walletClientName: 'somewallet'
+        describe('Resolving a Users ID',function(){
+            beforeEach(function(){
+                this.cc = new CruxWalletClient({
+                    walletClientName: 'somewallet'
+                });
+            })
+            it('Happy case - valid users address', async function() {
+                const address = await this.cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'bitcoin');
+                return expect(address).to.have.property('addressHash').equals('foobtcaddress');
             });
-            const address = await cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'bitcoin');
-            return expect(address).to.have.property('addressHash').equals('foobtcaddress');
-        });
 
-        it('Resolving an invalid user should error out', async function() {
-            let cc = new CruxWalletClient({
-                walletClientName: 'somewallet'
+            it('Invalid ID', async function() {
+                const promise = this.cc.resolveCurrencyAddressForCruxID('lolwamax', 'bitcoin');
+                return expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.CruxIdInvalidStructure);
             });
-            const promise = cc.resolveCurrencyAddressForCruxID('lolwamax', 'bitcoin');
-            return expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.CruxIdInvalidStructure);
-        });
+            it('Wallet doesnt have asset id mapped', async function() {
+                const promise = this.cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'foo');
+                return expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.AssetIDNotAvailable);
+            });
+            it('User doesnt have a currency address', async function() {
+                const promise = this.cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'ethereum');
+                return expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.AddressNotAvailable);
+            });
+
+        })
 
         it('New ID Registration works properly', async function() {
             let cc = new CruxWalletClient({

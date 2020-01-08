@@ -101,7 +101,8 @@ export const getValidCruxDomain = () => {
     const testCruxDomainId = CruxDomainId.fromString('somewallet.crux');
     const domainStatus: DomainRegistrationStatus = DomainRegistrationStatus.REGISTERED;
     const testValidDomainAssetMapping = {
-        'bitcoin': 'd78c26f8-7c13-4909-bf62-57d7623f8ee8'
+        'bitcoin': 'd78c26f8-7c13-4909-bf62-57d7623f8ee8',
+        'ethereum': '4e4d9982-3469-421b-ab60-2c0c2f05386a'
     };
     const testValidDomainConfig: IClientConfig = {
         assetMapping: testValidDomainAssetMapping,
