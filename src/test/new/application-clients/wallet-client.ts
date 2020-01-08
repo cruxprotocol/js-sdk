@@ -67,6 +67,11 @@ describe('CruxWalletClient Tests', function() {
             const promise = this.cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'ethereum');
             return expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.AddressNotAvailable);
         });
+        it('ID is case insensitive', async function() {
+            const address = await this.cc.resolveCurrencyAddressForCruxID('Foo123@testwallet.crux', 'bitcoin');
+            // Will get fixed after prakhars change
+            return expect(address).to.have.property('addressHash').equals('foobtcaddress');
+        });
 
     });
 
