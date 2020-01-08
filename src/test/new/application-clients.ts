@@ -6,6 +6,7 @@ import * as chai from "chai";
 
 import {CruxWalletClient} from "../../application/clients/crux-wallet-client";
 import {SubdomainRegistrationStatus} from "../../core/entities/crux-user";
+import {PackageErrorCode} from "../../packages/error";
 import {
     addDomainToRepo,
     addUserToRepo,
@@ -32,7 +33,7 @@ describe('Client Tests', function() {
             this.stubGetCruxDomainRepository = sinon.stub(cwc, 'getCruxDomainRepository').callsFake(() => this.inmemDomainRepo as any);
             this.stubGetCruxUserRepository = sinon.stub(cwc, 'getCruxUserRepository').callsFake(() => this.inmemUserRepo as any);
         });
-        afterEach(function(){
+        afterEach(function() {
             this.stubGetCruxUserRepository.restore();
             this.stubGetCruxDomainRepository.restore();
         });
@@ -41,27 +42,36 @@ describe('Client Tests', function() {
                 walletClientName: 'nonexistent'
             });
             const promise = cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'bitcoin');
-            return promise.should.eventually.be.rejected.with.property('errorCode', 1014);
+            expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.InvalidWalletClientName);
         });
         it('Resolve a valid users address', async function() {
             let cc = new CruxWalletClient({
                 walletClientName: 'somewallet'
             });
             const address = await cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'bitcoin');
-            return address.should.have.property('addressHash').equals('foobtcaddress');
+            return expect(address).to.have.property('addressHash').equals('foobtcaddress');
         });
+
+        it('Resolving an invalid user should error out', async function() {
+            let cc = new CruxWalletClient({
+                walletClientName: 'somewallet'
+            });
+            const promise = cc.resolveCurrencyAddressForCruxID('lolwamax', 'bitcoin');
+            return expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.CruxIdInvalidStructure);
+        });
+
         it('New ID Registration works properly', async function() {
             let cc = new CruxWalletClient({
                 walletClientName: 'somewallet',
                 privateKey: '6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f'
             });
-            const initIdState = await cc.getCruxIDState()
-            expect(initIdState.cruxID).to.equals(null)
+            const initIdState = await cc.getCruxIDState();
+            expect(initIdState.cruxID).to.equals(null);
 
-            await cc.registerCruxID('newtestuser')
-            const idState = await cc.getCruxIDState()
-            expect(idState.cruxID).equals('newtestuser@somewallet.crux')
-            expect(idState.status.status).equals(SubdomainRegistrationStatus.PENDING)
+            await cc.registerCruxID('newtestuser');
+            const idState = await cc.getCruxIDState();
+            expect(idState.cruxID).equals('newtestuser@somewallet.crux');
+            expect(idState.status.status).equals(SubdomainRegistrationStatus.PENDING);
         });
 
     });
