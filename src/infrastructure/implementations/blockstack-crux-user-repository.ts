@@ -35,12 +35,13 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
     }
     public getByCruxId = async (cruxID: CruxId, tag?: string): Promise<CruxUser|undefined> => {
         const blockstackID = IdTranslator.cruxIdToBlockstackId(cruxID);
-        const registrationStatus = await this.blockstackService.getCruxIdRegistrationStatus(cruxID);
+        // const registrationStatus = await this.blockstackService.getCruxIdRegistrationStatus(cruxID);
+        const idInformation = await this.blockstackService.getCruxIdInformation(cruxID);
         let addressMap = {};
-        if (registrationStatus.status === SubdomainRegistrationStatus.DONE) {
+        if (idInformation.registrationStatus.status === SubdomainRegistrationStatus.DONE) {
             addressMap = await this.blockstackService.getAddressMap(blockstackID, tag);
         }
-        return new CruxUser(cruxID, addressMap, registrationStatus);
+        return new CruxUser(cruxID, addressMap, idInformation);
     }
     public getWithKey = async (keyManager: IKeyManager, cruxDomainId: CruxDomainId): Promise<CruxUser|undefined> => {
         const blockstackID = await this.blockstackService.getBlockstackIdFromKeyManager(keyManager, cruxDomainId);

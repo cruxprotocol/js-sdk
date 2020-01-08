@@ -19,6 +19,12 @@ export interface ICruxUserRegistrationStatus {
     statusDetail: SubdomainRegistrationStatusDetail;
 }
 
+export interface ICruxUserInformation {
+    registrationStatus: ICruxUserRegistrationStatus;
+    transactionHash: string | "NONE";
+    ownerAddress: string | "NONE";
+}
+
 export enum SubdomainRegistrationStatus {
     NONE = "NONE",
     PENDING = "PENDING",
@@ -34,14 +40,14 @@ export enum SubdomainRegistrationStatusDetail {
 }
 
 export class CruxUser {
-    public registrationStatus: ICruxUserRegistrationStatus;
+    public cruxUserInformation: ICruxUserInformation;
     private cruxUserID: CruxId;
     private addressMap!: IAddressMapping;
 
-    constructor(cruxID: CruxId, addressMap: IAddressMapping, registrationStatus: ICruxUserRegistrationStatus) {
+    constructor(cruxID: CruxId, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation) {
         this.cruxUserID = cruxID;
         this.setAddressMap(addressMap);
-        this.registrationStatus = this.setRegistrationStatus(registrationStatus);
+        this.cruxUserInformation = this.setCruxUserInformation(cruxUserInformation);
     }
     get cruxID() {
         return this.cruxUserID;
@@ -60,14 +66,14 @@ export class CruxUser {
     public getAddressFromAsset(assetId: string): IAddress {
         return this.addressMap[assetId];
     }
-    private setRegistrationStatus = (registrationStatus: ICruxUserRegistrationStatus) => {
-        // validate and set the registrationStatus
-        if (!(Object.values(SubdomainRegistrationStatus).includes(registrationStatus.status))) {
+    private setCruxUserInformation = (cruxUserInformation: ICruxUserInformation) => {
+        // validate and set the cruxUserInformation
+        if (!(Object.values(SubdomainRegistrationStatus).includes(cruxUserInformation.registrationStatus.status))) {
             throw new BaseError(null, `Subdomain registration status validation failed!`);
         }
-        if (!(Object.values(SubdomainRegistrationStatusDetail).includes(registrationStatus.statusDetail))) {
+        if (!(Object.values(SubdomainRegistrationStatusDetail).includes(cruxUserInformation.registrationStatus.statusDetail))) {
             throw new BaseError(null, `Subdomain registration status detail validation failed!`);
         }
-        return registrationStatus;
+        return cruxUserInformation;
     }
 }

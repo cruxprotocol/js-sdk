@@ -88,7 +88,7 @@ export class CruxWalletClient {
             }
             return {
                 cruxID: this._cruxUser.cruxID.toString(),
-                status : this._cruxUser.registrationStatus,
+                status : this._cruxUser.cruxUserInformation.registrationStatus,
             };
         } else {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);

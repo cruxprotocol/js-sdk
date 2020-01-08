@@ -2,7 +2,7 @@ import { Decoder, object, optional, string } from "@mojotech/json-type-validatio
 import { publicKeyToAddress } from "blockstack";
 import { DomainRegistrationStatus } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
-import { IAddress, IAddressMapping, ICruxUserRegistrationStatus } from "../../core/entities/crux-user";
+import { IAddress, IAddressMapping, ICruxUserInformation, ICruxUserRegistrationStatus } from "../../core/entities/crux-user";
 import { SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import { IKeyManager } from "../../core/interfaces/key-manager";
@@ -153,36 +153,43 @@ export class BlockstackService {
         validateSubdomain(cruxId.components.subdomain);
         const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, blockstackId.components.domain);
         const registrarStatus = await registrarApiClient.getSubdomainStatus(cruxId.components.subdomain);
-        const registrationStatus = getStatusObjectFromResponse(registrarStatus);
-        return registrationStatus.status === SubdomainRegistrationStatus.NONE;
+        const rStatus = getStatusObjectFromResponse(registrarStatus);
+        return rStatus.registrationStatus.status === SubdomainRegistrationStatus.NONE;
     }
 
-    public registerCruxId = async (cruxId: CruxId, keyManager: IKeyManager): Promise<ICruxUserRegistrationStatus> => {
+    public registerCruxId = async (cruxId: CruxId, keyManager: IKeyManager): Promise<ICruxUserInformation> => {
         if (!keyManager) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
         const blockstackId = IdTranslator.cruxToBlockstack(cruxId);
         const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, blockstackId.components.domain);
         await registrarApiClient.registerSubdomain(cruxId.components.subdomain, this.gaiaHub, publicKeyToAddress(await keyManager.getPubKey()));
-        return await this.getCruxIdRegistrationStatus(cruxId);
+        return await this.getCruxIdInformation(cruxId);
     }
-
-    public getCruxIdRegistrationStatus = async (cruxId: CruxId): Promise<ICruxUserRegistrationStatus> => {
+    public getCruxIdInformation = async (cruxId: CruxId): Promise<ICruxUserInformation> => {
         log.debug("====getRegistrationStatus====");
         const blockstackId = IdTranslator.cruxToBlockstack(cruxId);
         const nameData: any = await fetchNameDetails(blockstackId.toString(), this.bnsNodes, undefined, this.cacheStorage);
         let status: SubdomainRegistrationStatus;
         let statusDetail: SubdomainRegistrationStatusDetail = SubdomainRegistrationStatusDetail.NONE;
+        let transactionHash: string;
+        let ownerAddress: string;
         if (nameData.status === "registered_subdomain") {
             // if (nameData.address === identityClaim.secrets.identityKeyPair.address) {
             status = SubdomainRegistrationStatus.DONE;
             statusDetail = SubdomainRegistrationStatusDetail.DONE;
+            transactionHash = nameData.last_txid;
+            ownerAddress = nameData.address;
             // } else {
             //     status = SubdomainRegistrationStatus.REJECT;
             // }
             return {
-                status,
-                statusDetail,
+                ownerAddress,
+                registrationStatus: {
+                    status,
+                    statusDetail,
+                },
+                transactionHash,
             };
         }
         const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, blockstackId.components.domain);
@@ -192,14 +199,27 @@ export class BlockstackService {
     }
 }
 
-const getStatusObjectFromResponse = (body: any): ICruxUserRegistrationStatus =>  {
+const getStatusObjectFromResponse = (body: any): ICruxUserInformation =>  {
     let status: ICruxUserRegistrationStatus;
+    let cruxUserInformation: ICruxUserInformation;
     const rawStatus = body.status;
     log.info(body);
     if (rawStatus && rawStatus.includes("Your subdomain was registered in transaction")) {
         status = {
             status: SubdomainRegistrationStatus.PENDING,
             statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
+        };
+        const regex = /(?<=\btransaction\s)(\w+)/;
+        let hash;
+        if ((regex.exec(rawStatus)) !== null) {
+            hash = regex.exec(rawStatus)[0].toString();
+        } else {
+            hash = "NONE";
+        }
+        cruxUserInformation = {
+            ownerAddress: "NONE",
+            registrationStatus: status,
+            transactionHash: hash,
         };
     } else {
         switch (rawStatus) {
@@ -208,11 +228,21 @@ const getStatusObjectFromResponse = (body: any): ICruxUserRegistrationStatus => 
                     status: SubdomainRegistrationStatus.NONE,
                     statusDetail: SubdomainRegistrationStatusDetail.NONE,
                 };
+                cruxUserInformation = {
+                    ownerAddress: "NONE",
+                    registrationStatus: status,
+                    transactionHash: "NONE",
+                };
                 break;
             case "Subdomain is queued for update and should be announced within the next few blocks.":
                 status = {
                     status: SubdomainRegistrationStatus.PENDING,
                     statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
+                };
+                cruxUserInformation = {
+                    ownerAddress: "NONE",
+                    registrationStatus: status,
+                    transactionHash: "NONE",
                 };
                 break;
             case "Subdomain propagated":
@@ -222,8 +252,13 @@ const getStatusObjectFromResponse = (body: any): ICruxUserRegistrationStatus => 
                     status: SubdomainRegistrationStatus.NONE,
                     statusDetail: SubdomainRegistrationStatusDetail.NONE,
                 };
+                cruxUserInformation = {
+                    ownerAddress: "NONE",
+                    registrationStatus: status,
+                    transactionHash: "NONE",
+                };
                 break;
         }
     }
-    return status;
+    return cruxUserInformation;
 };
