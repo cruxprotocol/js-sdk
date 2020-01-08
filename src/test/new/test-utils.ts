@@ -1,9 +1,17 @@
-import {Err} from "@mojotech/json-type-validation/dist/types/result";
 import {CruxDomain, DomainRegistrationStatus} from "../../core/entities/crux-domain";
-import {CruxUser, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail} from "../../core/entities/crux-user";
+import {CruxSpec} from "../../core/entities/crux-spec";
+import {
+    CruxUser,
+    IAddress,
+    IAddressMapping,
+    ICruxUserRegistrationStatus,
+    SubdomainRegistrationStatus,
+    SubdomainRegistrationStatusDetail
+} from "../../core/entities/crux-user";
 import {ICruxDomainRepository} from "../../core/interfaces/crux-domain-repository";
 import {ICruxUserRepository} from "../../core/interfaces/crux-user-repository";
 import {IKeyManager} from "../../core/interfaces/key-manager";
+import {IClientConfig} from "../../packages/configuration-service";
 import {CruxDomainId, CruxId} from "../../packages/identity-utils";
 
 export class InMemoryCruxUserRepository implements ICruxUserRepository {
@@ -74,3 +82,43 @@ export class InMemoryCruxDomainRepository implements ICruxDomainRepository {
         return new Promise((resolve, reject) => resolve(cruxDomain));
     };
 }
+export const addUserToRepo = async (cruxUser: CruxUser, repo: ICruxUserRepository) => {
+    let createdCruxDomain = await repo.create(cruxUser.cruxID, {} as any)
+    createdCruxDomain.setAddressMap(cruxUser.getAddressMap())
+    repo.save(createdCruxDomain, {} as any)
+    return repo
+};
+
+export const addDomainToRepo = async (cruxDomain: CruxDomain, repo: ICruxDomainRepository) => {
+    let createdCruxDomain = await repo.create(cruxDomain.domainId, {} as any)
+    createdCruxDomain.config = cruxDomain.config
+    repo.save(cruxDomain, {} as any)
+    return repo
+};
+
+export const getValidCruxDomain = () => {
+    const testCruxDomainId = CruxDomainId.fromString('somewallet.crux');
+    const domainStatus: DomainRegistrationStatus = DomainRegistrationStatus.REGISTERED;
+    const testValidDomainAssetMapping = {
+        'bitcoin': 'd78c26f8-7c13-4909-bf62-57d7623f8ee8'
+    };
+    const testValidDomainConfig: IClientConfig = {
+        assetMapping: testValidDomainAssetMapping,
+        assetList: CruxSpec.globalAssetList.filter((asset) => Object.values(testValidDomainAssetMapping).includes(asset.assetId)),
+    };
+    return new CruxDomain(testCruxDomainId, domainStatus, testValidDomainConfig);
+};
+export const getValidCruxUser = () => {
+    const testCruxId = CruxId.fromString('foo123@testwallet.crux');
+    const testAddress: IAddress = {
+        'addressHash': 'foobtcaddress'
+    };
+    const BTC_ASSET_ID: string = 'd78c26f8-7c13-4909-bf62-57d7623f8ee8';
+    const testValidAddressMap: IAddressMapping = {[BTC_ASSET_ID]: testAddress};
+    const validUserRegStatus: ICruxUserRegistrationStatus = {
+        'status': SubdomainRegistrationStatus.DONE,
+        'statusDetail': SubdomainRegistrationStatusDetail.DONE
+    };
+
+    return new CruxUser(testCruxId, testValidAddressMap, validUserRegStatus);
+};
