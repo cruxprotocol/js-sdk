@@ -90,9 +90,8 @@ export class CruxWalletClient {
     @throwCruxClientError
     public getCruxIDState = async (): Promise<ICruxIDState> => {
         await this._initPromise;
-        if (this._keyManager) {
-            this._cruxUser = await this._cruxUserRepository.getWithKey(this._keyManager, new CruxDomainId(this.walletClientName));
-            if (!this._cruxUser) {
+        if (!this._cruxUser) {
+            if (this._keyManager) {
                 return {
                     cruxID: null,
                     status: {
@@ -100,13 +99,15 @@ export class CruxWalletClient {
                         statusDetail: "",
                     },
                 };
+            } else {
+                throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
             }
-            return {
-                cruxID: this._cruxUser.cruxID.toString(),
-                status : this._cruxUser.registrationStatus,
-            };
         } else {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
+            this._cruxUser = await this._cruxUserRepository.getByCruxId(this._cruxUser.cruxID);
+            return {
+                cruxID: this._cruxUser!.cruxID.toString(),
+                status : this._cruxUser!.registrationStatus,
+            };
         }
     }
 
