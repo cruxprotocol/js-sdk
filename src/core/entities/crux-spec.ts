@@ -63,7 +63,7 @@ export class Validations {
         });
         try {
             addressDecoder.runWithException(addressObject);
-        } catch (e) {getConfigBlockstackName
+        } catch (e) {
             throw ErrorHelper.getPackageError(e, PackageErrorCode.AddressMappingDecodingFailure);
         }
     }
