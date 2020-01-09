@@ -211,13 +211,14 @@ const getStatusObjectFromResponse = (body: any): ICruxUserInformation =>  {
         };
         const regex = /(?<=\btransaction\s)(\w+)/;
         let hash;
-        if ((regex.exec(rawStatus)) !== null) {
-            hash = regex.exec(rawStatus)[0].toString();
+        const regexExec = regex.exec(rawStatus);
+        if (regexExec !== null) {
+            hash = regexExec[0].toString();
         } else {
-            hash = "NONE";
+            hash = undefined;
         }
         cruxUserInformation = {
-            ownerAddress: "NONE",
+            ownerAddress: undefined,
             registrationStatus: status,
             transactionHash: hash,
         };
@@ -229,9 +230,9 @@ const getStatusObjectFromResponse = (body: any): ICruxUserInformation =>  {
                     statusDetail: SubdomainRegistrationStatusDetail.NONE,
                 };
                 cruxUserInformation = {
-                    ownerAddress: "NONE",
+                    ownerAddress: undefined,
                     registrationStatus: status,
-                    transactionHash: "NONE",
+                    transactionHash: undefined,
                 };
                 break;
             case "Subdomain is queued for update and should be announced within the next few blocks.":
@@ -240,9 +241,9 @@ const getStatusObjectFromResponse = (body: any): ICruxUserInformation =>  {
                     statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
                 };
                 cruxUserInformation = {
-                    ownerAddress: "NONE",
+                    ownerAddress: undefined,
                     registrationStatus: status,
-                    transactionHash: "NONE",
+                    transactionHash: undefined,
                 };
                 break;
             case "Subdomain propagated":
@@ -253,9 +254,9 @@ const getStatusObjectFromResponse = (body: any): ICruxUserInformation =>  {
                     statusDetail: SubdomainRegistrationStatusDetail.NONE,
                 };
                 cruxUserInformation = {
-                    ownerAddress: "NONE",
+                    ownerAddress: undefined,
                     registrationStatus: status,
-                    transactionHash: "NONE",
+                    transactionHash: undefined,
                 };
                 break;
         }

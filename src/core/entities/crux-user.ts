@@ -21,8 +21,8 @@ export interface ICruxUserRegistrationStatus {
 
 export interface ICruxUserInformation {
     registrationStatus: ICruxUserRegistrationStatus;
-    transactionHash: string | "NONE";
-    ownerAddress: string | "NONE";
+    transactionHash?: string;
+    ownerAddress?: string;
 }
 
 export enum SubdomainRegistrationStatus {
