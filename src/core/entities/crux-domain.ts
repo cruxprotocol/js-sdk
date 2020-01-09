@@ -39,8 +39,8 @@ export class CruxDomain {
     private setConfig = (domainConfig: IClientConfig) => {
         // validate and set the config
         try {
-            CruxSpec.validations.validateAssetList(domainConfig.assetList);
-            CruxSpec.validations.validateAssetMapping(domainConfig.assetMapping);
+            if (domainConfig.assetList) {CruxSpec.validations.validateAssetList(domainConfig.assetList); }
+            if (domainConfig.assetMapping) {CruxSpec.validations.validateAssetMapping(domainConfig.assetMapping); }
             if (domainConfig.nameserviceConfiguration) {CruxSpec.validations.validateNameServiceConfig(domainConfig.nameserviceConfiguration); }
         } catch (e) {
             throw new BaseError(e, `Domain config validation failed!`);
