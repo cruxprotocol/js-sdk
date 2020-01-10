@@ -42,10 +42,13 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         const registrationStatus = await this.blockstackService.registerCruxId(cruxId, this.infrastructure.gaiaHub, keyManager);
         return new CruxUser(cruxId, {}, registrationStatus);
     }
-    public find = async (cruxID: CruxId): Promise<boolean> => {
+    public isCruxIdAvailable = async (cruxID: CruxId): Promise<boolean> => {
         return this.blockstackService.isCruxIdAvailable(cruxID);
     }
     public getByCruxId = async (cruxID: CruxId, tag?: string): Promise<CruxUser|undefined> => {
+        if (await this.isCruxIdAvailable(cruxID)) {
+            return;
+        }
         const blockstackID = IdTranslator.cruxIdToBlockstackId(cruxID);
         const registrationStatus = await this.blockstackService.getCruxIdRegistrationStatus(cruxID);
         let addressMap = {};

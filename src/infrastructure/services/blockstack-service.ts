@@ -191,6 +191,9 @@ export class BlockstackService {
         if (!keyManager) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
+        if (!(await this.isCruxIdAvailable(cruxId))) {
+            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.CruxIDUnavailable, cruxId);
+        }
         const blockstackId = IdTranslator.cruxToBlockstack(cruxId);
         const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, new BlockstackDomainId(blockstackId.components.domain));
         await registrarApiClient.registerSubdomain(cruxId.components.subdomain, gaiaHub, publicKeyToAddress(await keyManager.getPubKey()));
@@ -229,7 +232,7 @@ const getStatusObjectFromResponse = (body: any): ICruxUserRegistrationStatus => 
     if (rawStatus && rawStatus.includes("Your subdomain was registered in transaction")) {
         status = {
             status: SubdomainRegistrationStatus.PENDING,
-            statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
+            statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
         };
     } else {
         switch (rawStatus) {
@@ -242,7 +245,7 @@ const getStatusObjectFromResponse = (body: any): ICruxUserRegistrationStatus => 
             case "Subdomain is queued for update and should be announced within the next few blocks.":
                 status = {
                     status: SubdomainRegistrationStatus.PENDING,
-                    statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
+                    statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
                 };
                 break;
             case "Subdomain propagated":
