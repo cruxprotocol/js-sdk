@@ -1,3 +1,4 @@
+import {publicKeyToAddress} from "blockstack/lib";
 import {CruxDomain, DomainRegistrationStatus} from "../../core/entities/crux-domain";
 import {CruxSpec} from "../../core/entities/crux-spec";
 import {
@@ -14,44 +15,73 @@ import {IKeyManager} from "../../core/interfaces/key-manager";
 import {IClientConfig} from "../../packages/configuration-service";
 import {CruxDomainId, CruxId} from "../../packages/identity-utils";
 
-export class InMemoryCruxUserRepository implements ICruxUserRepository {
+class MockUserStore {
     private userById: any;
-    constructor(){
-        this.userById = {}
+    private userByKeyAndDomain: any;
+
+    constructor() {
+        this.userById = {};
+        this.userByKeyAndDomain = {};
     }
+
+    public store = (cruxUser: CruxUser, address: string) => {
+        this.userById[cruxUser.cruxID.toString()] = cruxUser;
+        this.userByKeyAndDomain[String([address, cruxUser.cruxID.components.domain])] = cruxUser;
+    };
+    public getById = (cruxId: CruxId) => {
+        return this.userById[cruxId.toString()];
+    };
+    public getByOwnerAddressAndDomain = (address: string, cruxDomainId: CruxDomainId) => {
+        return this.userByKeyAndDomain[String([address, cruxDomainId.components.domain])];
+    };
+}
+
+export class InMemoryCruxUserRepository implements ICruxUserRepository {
+    private userStore: MockUserStore;
+
+    constructor() {
+        this.userStore = new MockUserStore();
+    }
+
     create = async (cruxID: CruxId, keyManager: IKeyManager): Promise<CruxUser> => {
-        if (!(await this.find(cruxID))){
-            throw Error("Already Exists")
+        if (!(await this.find(cruxID))) {
+            throw Error("Already Exists");
         }
         const newUser = new CruxUser(cruxID, {}, {
             status: SubdomainRegistrationStatus.PENDING,
             statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR
-        })
-        this.userById[cruxID.toString()] = newUser
+        });
+        const addressFromKeyManager = publicKeyToAddress(await keyManager.getPubKey());
+        this.userStore.store(newUser, addressFromKeyManager);
         return new Promise((resolve, reject) => resolve(newUser));
-    }
-    find = (cruxID: CruxId) : Promise<boolean> => {
-        const result = this.userById[cruxID.toString()] === undefined;
-        return new Promise((resolve, reject) => resolve(result));
-
     };
-    getByCruxId = (cruxID: CruxId, tag?: string) : Promise<CruxUser | undefined> => {
-        const result = this.userById[cruxID.toString()];
+    find = (cruxID: CruxId): Promise<boolean> => {
+        const result = this.userStore.getById(cruxID) === undefined;
         return new Promise((resolve, reject) => resolve(result));
-    }
-    getWithKey = (keyManager: IKeyManager, cruxDomainId: CruxDomainId) : Promise<CruxUser | undefined> => {
-        // TODO: Implement ID recovery from key
-        return new Promise((resolve, reject) => resolve(undefined));
-    }
-    save = (cruxUser: CruxUser, keyManager: IKeyManager) : Promise<CruxUser> => {
-        if (this.userById[cruxUser.cruxID.toString()] === undefined) {
-            throw Error("No such domain exists");
+    };
+    getByCruxId = (cruxID: CruxId, tag?: string): Promise<CruxUser | undefined> => {
+        const result = this.userStore.getById(cruxID);
+        return new Promise((resolve, reject) => resolve(result));
+    };
+    getWithKey = async (keyManager: IKeyManager, cruxDomainId: CruxDomainId): Promise<CruxUser | undefined> => {
+        const addressFromKeyManager = publicKeyToAddress(await keyManager.getPubKey());
+        const result = this.userStore.getByOwnerAddressAndDomain(addressFromKeyManager, cruxDomainId);
+        return new Promise((resolve, reject) => resolve(result));
+    };
+    save = async (cruxUser: CruxUser, keyManager: IKeyManager): Promise<CruxUser> => {
+        if (this.userStore.getById(cruxUser.cruxID) === undefined) {
+            throw Error("Cannot Save, No such CruxUser exists with this ID");
         }
-        this.userById[cruxUser.cruxID.toString()] = cruxUser;
+        const addressFromKeyManager = publicKeyToAddress(await keyManager.getPubKey());
+        if (this.userStore.getByOwnerAddressAndDomain(addressFromKeyManager, new CruxDomainId(cruxUser.cruxID.components.domain)) === undefined) {
+            throw Error("User exists but provided Key is wrong");
+        }
+        this.userStore.store(cruxUser, addressFromKeyManager);
         return new Promise((resolve, reject) => resolve(cruxUser));
-    }
+    };
 
 }
+
 export class InMemoryCruxDomainRepository implements ICruxDomainRepository {
     private domainById: any;
 
@@ -83,18 +113,20 @@ export class InMemoryCruxDomainRepository implements ICruxDomainRepository {
         return new Promise((resolve, reject) => resolve(cruxDomain));
     };
 }
-export const addUserToRepo = async (cruxUser: CruxUser, repo: ICruxUserRepository) => {
-    let createdCruxDomain = await repo.create(cruxUser.cruxID, {} as any)
-    createdCruxDomain.setAddressMap(cruxUser.getAddressMap())
-    repo.save(createdCruxDomain, {} as any)
-    return repo
+
+export const addUserToRepo = async (cruxUser: CruxUser, repo: ICruxUserRepository, keyManager: IKeyManager) => {
+    let createdCruxDomain = await repo.create(cruxUser.cruxID, keyManager);
+    createdCruxDomain.setAddressMap(cruxUser.getAddressMap());
+    repo.save(createdCruxDomain, keyManager);
+    return repo;
 };
 
 export const addDomainToRepo = async (cruxDomain: CruxDomain, repo: ICruxDomainRepository) => {
-    let createdCruxDomain = await repo.create(cruxDomain.domainId, {} as any)
-    createdCruxDomain.config = cruxDomain.config
-    repo.save(cruxDomain, {} as any)
-    return repo
+    // TODO: KeyManager is not used properly here to create domain
+    let createdCruxDomain = await repo.create(cruxDomain.domainId, {} as any);
+    createdCruxDomain.config = cruxDomain.config;
+    repo.save(cruxDomain, {} as any);
+    return repo;
 };
 
 export const getValidCruxDomain = () => {
@@ -124,7 +156,6 @@ export const getValidCruxUser = () => {
 
     return new CruxUser(testCruxId, testValidAddressMap, validUserRegStatus);
 };
-
 
 export const getValidCruxUser2 = () => {
     const testCruxId = CruxId.fromString('bar123@somewallet.crux');

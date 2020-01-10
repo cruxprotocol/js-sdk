@@ -6,6 +6,8 @@ import * as chai from "chai";
 
 import {CruxWalletClient} from "../../../application/clients/crux-wallet-client";
 import {SubdomainRegistrationStatus} from "../../../core/entities/crux-user";
+import {ICruxIDState} from "../../../index";
+import {BasicKeyManager} from "../../../infrastructure/implementations/basic-key-manager";
 import {PackageErrorCode} from "../../../packages/error";
 import {
     addDomainToRepo,
@@ -22,15 +24,16 @@ const expect = require('chai').expect;
 
 const testCruxDomain = getValidCruxDomain();
 const testCruxUser = getValidCruxUser();
-const testCruxUser2 = getValidCruxUser2()
-const testPvtKey = '6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f';
+const testCruxUser2 = getValidCruxUser2();
+const testPvtKey = '6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f';  // 1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ
+const testPvtKey2 = '12381ab829318742938647283cd462738462873642ef34abefcd123501827193'; // 1JoZwbjMnTmcpAyjjtRBfuqXAb2xiqZRjx
 
 describe('CruxWalletClient Tests', function() {
     beforeEach(function() {
         this.inmemUserRepo = new InMemoryCruxUserRepository();
         this.inmemDomainRepo = new InMemoryCruxDomainRepository();
-        addUserToRepo(testCruxUser, this.inmemUserRepo);
-        addUserToRepo(testCruxUser2, this.inmemUserRepo);
+        addUserToRepo(testCruxUser, this.inmemUserRepo, new BasicKeyManager(testPvtKey));
+        addUserToRepo(testCruxUser2, this.inmemUserRepo, new BasicKeyManager(testPvtKey2));
         addDomainToRepo(testCruxDomain, this.inmemDomainRepo);
         this.stubGetCruxDomainRepository = sinon.stub(cwc, 'getCruxDomainRepository').callsFake(() => this.inmemDomainRepo as any);
         this.stubGetCruxUserRepository = sinon.stub(cwc, 'getCruxUserRepository').callsFake(() => this.inmemUserRepo as any);
@@ -77,6 +80,20 @@ describe('CruxWalletClient Tests', function() {
 
     });
 
+    describe('ID Availability check', function() {
+        beforeEach(function() {
+            this.cc = new CruxWalletClient({
+                walletClientName: 'somewallet'
+            });
+        });
+        it('Available ID check', async function() {
+            expect(await this.cc.isCruxIDAvailable('random123')).equals(true);
+        });
+        it('Unavailable ID check', async function() {
+            expect(await this.cc.isCruxIDAvailable(testCruxUser2.cruxID.components.subdomain)).equals(false);
+        });
+    });
+
     it('New ID Registration works properly', async function() {
         let cc = new CruxWalletClient({
             walletClientName: 'somewallet',
@@ -90,31 +107,44 @@ describe('CruxWalletClient Tests', function() {
         expect(idState.cruxID).equals('newtestuser@somewallet.crux');
         expect(idState.status.status).equals(SubdomainRegistrationStatus.PENDING);
     });
-    describe('ID Availability check', function() {
-        beforeEach(function() {
-            this.cc = new CruxWalletClient({
-                walletClientName: 'somewallet',
-                privateKey: testPvtKey
-            });
-        });
-        it('Available ID check', async function() {
-            expect(await this.cc.isCruxIDAvailable('random123')).equals(true)
-        });
-        it('Unavailable ID check', async function() {
-            expect(await this.cc.isCruxIDAvailable(testCruxUser2.cruxID.components.subdomain)).equals(false)
-        });
-
-
-    })
 
     it('User is recovered properly from private key', async function() {
-        throw Error("unimplemented");
+        const cc = new CruxWalletClient({
+            walletClientName: 'somewallet',
+            privateKey: testPvtKey2
+        });
+        const idState: ICruxIDState = await cc.getCruxIDState();
+        expect(idState.cruxID!.toString()).equals(testCruxUser2.cruxID.toString());
     });
     it('New address addition works properly', async function() {
-        throw Error("unimplemented");
+        const cc = new CruxWalletClient({
+            walletClientName: 'somewallet',
+            privateKey: testPvtKey2
+        });
+        const fetchedAddressMap1 = await cc.getAddressMap();
+        expect(fetchedAddressMap1['bitcoin']['addressHash']).equals('foobtcaddress2');
+
+        const newAddressMap = {'bitcoin': {'addressHash': 'btcAddressXyz'}};
+        await cc.putAddressMap(newAddressMap);
+        const fetchedAddressMap2 = await cc.getAddressMap();
+        expect(fetchedAddressMap2['bitcoin']['addressHash']).equals(newAddressMap['bitcoin']['addressHash']);
+
     });
     it('Partial publishing of addresses works', async function() {
-        throw Error("unimplemented");
+        const cc = new CruxWalletClient({
+            walletClientName: 'somewallet',
+            privateKey: testPvtKey2
+        });
+        const fetchedAddressMap1 = await cc.getAddressMap();
+        expect(fetchedAddressMap1['bitcoin']['addressHash']).equals('foobtcaddress2');
+
+        const newAddressMap = {'bitcoin': {'addressHash': 'btcAddressAbc'}, 'invalidsymbol': {'addressHash': 'someRandomAddress'}};
+        const putResult = await cc.putAddressMap(newAddressMap);
+        expect(putResult.success).hasOwnProperty('bitcoin');
+        expect(putResult.failures).hasOwnProperty('invalidsymbol');
+
+        const fetchedAddressMap2 = await cc.getAddressMap();
+        expect(fetchedAddressMap2['bitcoin']['addressHash']).equals(newAddressMap['bitcoin']['addressHash']);
     });
 
 });
