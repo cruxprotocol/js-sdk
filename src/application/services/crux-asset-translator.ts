@@ -1,7 +1,6 @@
 import { Validations } from "../../core/entities/crux-spec";
 import { IAddress, IAddressMapping } from "../../core/entities/crux-user";
 import { errors } from "../../packages";
-import { IGlobalAssetList } from "../../packages/configuration-service";
 import { getLogger } from "../../packages/logger";
 const log = getLogger(__filename);
 
@@ -19,6 +18,8 @@ export interface IGlobalAsset {
     assetIdentifierValue: number|string|null;
     parentAssetId: string|null;
 }
+
+export interface IGlobalAssetList extends Array<IGlobalAsset> {}
 
 export interface IResolvedClientAssetMap {
     [currencySymbol: string]: IGlobalAsset;
