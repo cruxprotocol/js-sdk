@@ -212,22 +212,20 @@ describe('Infrastructure Repositories Test', () => {
         const testcaseDomainString = "testcase";
         const testcaseCruxDomainId = new CruxDomainId(testcaseDomainString);
         beforeEach(() => {
-            // mock public methods
-            mockBlockstackService.getDomainRegistrationStatus.withArgs(cruxdevCruxDomainId).resolves(DomainRegistrationStatus.REGISTERED);
-            mockBlockstackService.getDomainRegistrationStatus.withArgs(testcaseCruxDomainId).resolves(DomainRegistrationStatus.AVAILABLE);
-            mockBlockstackService.getCruxDomainIdWithConfigKeyManager.withArgs(sinon.match(cruxdevConfigKeyManager)).resolves(cruxdevCruxDomainId);
             blockstackCruxDomainRepository = new BlockstackCruxDomainRepository({
                 blockstackInfrastructure: CruxSpec.blockstack.infrastructure,
             })
         })
         describe('Finding availability of CruxDomain by DomainId', () => {
             it('"cruxdev" should be unavailable', async () => {
+                mockBlockstackService.getDomainRegistrationStatus.withArgs(cruxdevCruxDomainId).resolves(DomainRegistrationStatus.REGISTERED);
                 const availability = await blockstackCruxDomainRepository.find(cruxdevCruxDomainId);
                 expect(availability).to.be.false;
                 expect(mockBlockstackService.getDomainRegistrationStatus.calledOnce).to.be.true;
                 expect(mockBlockstackService.getDomainRegistrationStatus.calledWithExactly(cruxdevCruxDomainId)).to.be.true;
             })
             it('"testcase" should be available', async () => {
+                mockBlockstackService.getDomainRegistrationStatus.withArgs(testcaseCruxDomainId).resolves(DomainRegistrationStatus.AVAILABLE);
                 const availability = await blockstackCruxDomainRepository.find(testcaseCruxDomainId);
                 expect(availability).to.be.true;
                 expect(mockBlockstackService.getDomainRegistrationStatus.calledOnce).to.be.true;
@@ -239,6 +237,7 @@ describe('Infrastructure Repositories Test', () => {
                 // mocks
                 mockBlockstackService.getNameDetails.resolves(cruxdevConfigNameDetails);
                 mockBlockstackService.getGaiaHub.resolves(cruxGaiaHub);
+                mockBlockstackService.getDomainRegistrationStatus.withArgs(cruxdevCruxDomainId).resolves(DomainRegistrationStatus.REGISTERED);
                 mockGaiaService.getContentFromGaiaHub.resolves(cruxdevClientConfig);
                 // call
                 const cruxDomain = await blockstackCruxDomainRepository.get(cruxdevCruxDomainId);
@@ -252,6 +251,7 @@ describe('Infrastructure Repositories Test', () => {
                 expect(mockGaiaService.getContentFromGaiaHub.calledOnceWithExactly(cruxdevConfigNameDetails.address, "cruxdev_client-config.json")).to.be.true;
             })
             it('"testcase" should resolve undefined', async () => {
+                mockBlockstackService.getDomainRegistrationStatus.withArgs(testcaseCruxDomainId).resolves(DomainRegistrationStatus.AVAILABLE);
                 const cruxDomain = await blockstackCruxDomainRepository.get(testcaseCruxDomainId);
                 expect(cruxDomain).is.undefined;
                 expect(mockBlockstackService.getDomainRegistrationStatus.calledOnce).to.be.true;
@@ -263,27 +263,33 @@ describe('Infrastructure Repositories Test', () => {
         })
         describe('Getting a CruxDomain with configKeyManager', () => {
             it('"cruxdev" is available on the configKeyManager provided', async () => {
+                mockBlockstackService.getNameDetails.resolves(cruxdevConfigNameDetails);
+                mockBlockstackService.getGaiaHub.resolves(cruxGaiaHub);
+                mockBlockstackService.getCruxDomainIdWithConfigKeyManager.withArgs(sinon.match(cruxdevConfigKeyManager)).resolves(cruxdevCruxDomainId);
+                mockGaiaService.getContentFromGaiaHub.resolves(cruxdevClientConfig);
                 const cruxDomain = await blockstackCruxDomainRepository.getWithConfigKeyManager(cruxdevConfigKeyManager);
                 expect(cruxDomain).is.instanceOf(CruxDomain);
                 expect(cruxDomain.status === cruxdevRegistrationStatus).to.be.true;
                 expect(cruxDomain.config).is.eql(cruxdevClientConfig);
-                expect(mockBlockstackService.restoreDomain.calledOnce).to.be.true;
-                expect(mockBlockstackService.restoreDomain.calledWith(sinon.match(cruxdevConfigKeyManager))).to.be.true;
-                expect(mockBlockstackService.getClientConfig.calledOnce).to.be.true;
-                expect(mockBlockstackService.getClientConfig.calledWithExactly(cruxdevDomainString)).to.be.true;
+                expect(mockBlockstackService.getCruxDomainIdWithConfigKeyManager.calledOnceWith(cruxdevConfigKeyManager)).to.be.true;
+                expect(mockBlockstackService.getNameDetails.calledOnce).to.be.true;
+                expect(mockBlockstackService.getGaiaHub.calledOnce).to.be.true;
+                expect(mockGaiaService.getContentFromGaiaHub.calledOnceWithExactly(cruxdevConfigNameDetails.address, "cruxdev_client-config.json")).to.be.true;
             })
             it('No domain available on the configKeyManager provided', async () => {
+                mockBlockstackService.getCruxDomainIdWithConfigKeyManager.resolves(undefined);
                 const randomKeyManager = new BasicKeyManager("392555374ccf6c13a3f0a794dc94658861fe4a1c568169eb8bdf89c421968023");
                 const cruxDomain = await blockstackCruxDomainRepository.getWithConfigKeyManager(randomKeyManager);
                 expect(cruxDomain).is.undefined;
-                expect(mockBlockstackService.restoreDomain.calledOnce).to.be.true;
-                expect(mockBlockstackService.restoreDomain.calledWith(sinon.match(randomKeyManager))).to.be.true;
-                expect(mockBlockstackService.getClientConfig.notCalled).to.be.true;
+                expect(mockBlockstackService.getNameDetails.notCalled).to.be.true;
+                expect(mockBlockstackService.getGaiaHub.notCalled).to.be.true;
+                expect(mockGaiaService.getContentFromGaiaHub.notCalled).to.be.true;
             })
         })
         describe('Saving changes to a CruxDomain', () => {
             it('returned cruxDomain object matches the edited instance given as parameter', async () => {
-                const newAssetMap = { "btc": "d78c26f8-7c13-4909-bf62-57d7623f8ee8" };
+                // fixtures
+                const newAssetMap = { "tbtc": "d78c26f8-7c13-4909-bf62-57d7623f8ee8" };
                 const newAssetList = [{
                     "assetId": "d78c26f8-7c13-4909-bf62-57d7623f8ee8",
                     "symbol": "BTC",
@@ -294,15 +300,24 @@ describe('Infrastructure Repositories Test', () => {
                     "assetIdentifierValue": null,
                     "parentAssetId": null
                 }];
-                const domainId = new CruxDomainId(cruxdevDomainString);
-                const cruxDomain = await blockstackCruxDomainRepository.get(domainId);
+                // mocks
+                mockBlockstackService.getNameDetails.resolves(cruxdevConfigNameDetails);
+                mockBlockstackService.getGaiaHub.resolves(cruxGaiaHub);
+                mockBlockstackService.getDomainRegistrationStatus.withArgs(cruxdevCruxDomainId).resolves(DomainRegistrationStatus.REGISTERED);
+                mockGaiaService.getContentFromGaiaHub.resolves(cruxdevClientConfig);
+                mockGaiaService.uploadContentToGaiaHub.resolves("https://gaia.cruxpay.com/1ATf5YwcEARWMCZdS8x3BXmkodkvnMW4Tf/cruxdev_client-config.json");
+                // callling the method
+                const cruxDomain = await blockstackCruxDomainRepository.get(cruxdevCruxDomainId);
                 cruxDomain.config.assetMapping = newAssetMap;
-                mockBlockstackService.putClientConfig = sandbox.stub().withArgs(cruxdevDomainString, cruxDomain.config, cruxdevConfigKeyManager).resolves(cruxDomain);
                 const updatedCruxDomain = await blockstackCruxDomainRepository.save(cruxDomain, cruxdevConfigKeyManager);
+                // expectations
                 expect(updatedCruxDomain).to.be.instanceOf(CruxDomain);
-                expect(updatedCruxDomain.config.assetMapping['btc']).to.be.equal("d78c26f8-7c13-4909-bf62-57d7623f8ee8");
-                expect(mockBlockstackService.putClientConfig.calledOnce).to.be.true;
-                expect(mockBlockstackService.putClientConfig.calledWith(cruxdevDomainString, sinon.match({ assetMapping: newAssetMap, assetList: newAssetList }), sinon.match(cruxdevConfigKeyManager))).to.be.true;
+                expect(updatedCruxDomain.config.assetMapping['tbtc']).to.be.equal("d78c26f8-7c13-4909-bf62-57d7623f8ee8");
+                expect(mockBlockstackService.getDomainRegistrationStatus.calledOnceWithExactly(cruxdevCruxDomainId)).to.be.true;
+                expect(mockBlockstackService.getNameDetails.calledOnce).to.be.true;
+                expect(mockBlockstackService.getGaiaHub.calledTwice).to.be.true;
+                expect(mockGaiaService.getContentFromGaiaHub.calledOnceWithExactly(cruxdevConfigNameDetails.address, "cruxdev_client-config.json")).to.be.true;
+                expect(mockGaiaService.uploadContentToGaiaHub.calledOnceWith("cruxdev_client-config.json", sinon.match({assetMapping: newAssetMap, assetList: newAssetList}), cruxdevConfigKeyManager)).to.be.true;
             })
         })
 
