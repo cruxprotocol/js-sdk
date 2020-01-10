@@ -100,6 +100,17 @@ export class BlockstackNamingServiceApiClient {
         return nameData;
     }
 }
+export interface ISubdomainRegistrarEntry {
+    owner: string;
+    queue_ix: number;
+    received_ts: string;
+    sequenceNumber: string;
+    signature: string;
+    status: string;
+    status_more: string;
+    subdomainName: string;
+    zonefile: string;
+}
 export class BlockstackSubdomainRegistrarApiClient {
     private baseUrl: string;
     private initPromise: Promise<void>;
@@ -110,7 +121,7 @@ export class BlockstackSubdomainRegistrarApiClient {
         this.initPromise = this.init();
     }
 
-    public getSubdomainStatus = async (subdomain: string) => {
+    public getSubdomainStatus = async (subdomainString: string): Promise<{status: string, statusCode?: number}> => {
         await this.initPromise;
         const options = {
             baseUrl: this.baseUrl,
@@ -119,12 +130,12 @@ export class BlockstackSubdomainRegistrarApiClient {
             },
             json: true,
             method: "GET",
-            url: `/status/${subdomain}`,
+            url: `/status/${subdomainString}`,
         };
         log.debug("registration query params", options);
-        return httpJSONRequest(options);
+        return httpJSONRequest(options) as any;
     }
-    public registerSubdomain = async (name: string, gaiaHubUrl: string, ownerAdderss: string): Promise<string> => {
+    public registerSubdomain = async (name: string, gaiaHubUrl: string, ownerAdderss: string): Promise<void> => {
         await this.initPromise;
         const options = {
             baseUrl: this.baseUrl,
@@ -152,24 +163,13 @@ export class BlockstackSubdomainRegistrarApiClient {
 
         log.debug(`Subdomain registration acknowledgement:`, registrationAcknowledgement);
         if (registrationAcknowledgement && registrationAcknowledgement.status === true) {
-            return name;
+            return;
         } else {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.SubdomainRegistrationAcknowledgementFailed, JSON.stringify(registrationAcknowledgement));
         }
     }
-    public fetchPendingRegistrationsByAddress = async (address: string): Promise<string[]> => {
+    public getSubdomainRegistrarEntriesByAddress = async (address: string): Promise<ISubdomainRegistrarEntry[]> => {
         await this.initPromise;
-        interface IPendingRegistration {
-            owner: string;
-            queue_ix: number;
-            received_ts: string;
-            sequenceNumber: string;
-            signature: string;
-            status: string;
-            status_more: string;
-            subdomainName: string;
-            zonefile: string;
-        }
         const url = `/subdomain/${address}`;
         const options = {
             baseUrl: this.baseUrl,
@@ -180,15 +180,13 @@ export class BlockstackSubdomainRegistrarApiClient {
             method: "GET",
             url,
         };
-        let registrationsArray: IPendingRegistration[];
+        let registrationsArray: ISubdomainRegistrarEntry[];
         try {
-            registrationsArray = ((await httpJSONRequest(options)) as IPendingRegistration[]);
+            registrationsArray = (await httpJSONRequest(options)) as ISubdomainRegistrarEntry[];
+            return registrationsArray;
         } catch (error) {
-            throw ErrorHelper.getPackageError(error, PackageErrorCode.FetchPendingRegistrationsByAddressFailed, `${this.baseUrl}${url}`, error);
+            throw ErrorHelper.getPackageError(error, PackageErrorCode.FetchPendingRegistrationsByAddressFailed, `${options.baseUrl}${options.url}`, error);
         }
-        return registrationsArray.map((registration) => {
-            return registration.subdomainName;
-        });
     }
     public getIndex = async (): Promise<any> => {
         const options = {
