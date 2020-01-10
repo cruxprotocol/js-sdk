@@ -167,7 +167,7 @@ export class CruxWalletClient {
             subdomain: cruxIDSubdomain,
         };
         const cruxId = new CruxId(cruxIdInput);
-        return this.cruxUserRepository.find(cruxId);
+        return this.cruxUserRepository.isCruxIdAvailable(cruxId);
     }
 
     @throwCruxClientError
