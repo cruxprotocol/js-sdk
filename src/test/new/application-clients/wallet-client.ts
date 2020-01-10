@@ -57,24 +57,24 @@ describe('CruxWalletClient Tests', function() {
         });
         it('Happy case - valid users address', async function() {
             const address = await this.cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'bitcoin');
-            return expect(address).to.have.property('addressHash').equals('foobtcaddress');
+            await expect(address).to.have.property('addressHash').equals('foobtcaddress');
         });
 
         it('Invalid ID', async function() {
             const promise = this.cc.resolveCurrencyAddressForCruxID('lolwamax', 'bitcoin');
-            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.CruxIdInvalidStructure);
+            await expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.CruxIdInvalidStructure);
         });
         it('Wallet doesnt have asset id mapped', async function() {
             const promise = this.cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'foo');
-            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.AssetIDNotAvailable);
+            await expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.AssetIDNotAvailable);
         });
         it('User doesnt have a currency address', async function() {
             const promise = this.cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'ethereum');
-            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.AddressNotAvailable);
+            await expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.AddressNotAvailable);
         });
         it('ID is case insensitive', async function() {
             const address = await this.cc.resolveCurrencyAddressForCruxID('Foo123@testwallet.crux', 'bitcoin');
-            return expect(address).to.have.property('addressHash').equals('foobtcaddress');
+            await expect(address).to.have.property('addressHash').equals('foobtcaddress');
         });
 
     });
@@ -122,7 +122,7 @@ describe('CruxWalletClient Tests', function() {
         });
         it('Cannot register because user is already registered', async function() {
             const registerPromise = this.cc.registerCruxID('anything')
-            return expect(registerPromise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.ExistingCruxIDFound);
+            await expect(registerPromise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.ExistingCruxIDFound);
         });
         it('New address addition works properly', async function() {
             const fetchedAddressMap1 = await this.cc.getAddressMap();
