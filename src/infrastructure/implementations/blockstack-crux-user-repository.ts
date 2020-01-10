@@ -49,10 +49,10 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         return this.blockstackService.isCruxIdAvailable(cruxID);
     }
     public getByCruxId = async (cruxID: CruxId, tag?: string): Promise<CruxUser|undefined> => {
-        if (await this.isCruxIdAvailable(cruxID)) {
+        const registrationStatus = await this.blockstackService.getCruxIdRegistrationStatus(cruxID);
+        if (registrationStatus.status === SubdomainRegistrationStatus.NONE) {
             return;
         }
-        const registrationStatus = await this.blockstackService.getCruxIdRegistrationStatus(cruxID);
         let addressMap = {};
         if (registrationStatus.status === SubdomainRegistrationStatus.DONE) {
             addressMap = await this.getAddressMap(cruxID, tag);
