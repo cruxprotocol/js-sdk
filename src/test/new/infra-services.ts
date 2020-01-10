@@ -120,7 +120,8 @@ describe('Infrastructure Services Test', () => {
             sandbox.stub(apiClients, 'BlockstackNamingServiceApiClient').returns(mockBlockstackNamingServiceApiClient);
             sandbox.stub(apiClients, 'BlockstackSubdomainRegistrarApiClient').returns(mockBlockstackSubdomainRegistrarApiClient);
             blockstackService = new BlockstackService({
-                infrastructure: CruxSpec.blockstack.infrastructure,
+                bnsNodes: CruxSpec.blockstack.infrastructure.bnsNodes,
+                subdomainRegistrar: CruxSpec.blockstack.infrastructure.subdomainRegistrar,
             });
         })
         describe('getNameDetails tests', () => {
