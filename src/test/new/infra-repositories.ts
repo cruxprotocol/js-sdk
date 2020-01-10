@@ -14,6 +14,14 @@ describe('Infrastructure Repositories Test', () => {
     let sandbox: sinon.SinonSandbox;
     let mockBlockstackService;
     before(() => { sandbox = sinon.createSandbox(); })
+    beforeEach(() => {
+        mockBlockstackService = {
+            getDomainRegistrationStatus: sandbox.stub().throws("unhandled in mocks"),
+            getClientConfig: sandbox.stub().withArgs(cruxdevDomainString).resolves({assetMapping: cruxdevAssetMapping, assetList: cruxdevAssetList}),
+            restoreDomain: restoreDomainStub,
+        }
+        sandbox.stub(blkStkService, 'BlockstackService').returns(mockBlockstackService);;
+    })
     afterEach(() => { sandbox.restore(); })
     describe('Testing BlockstackCruxUserRepository', () => {
         let blockstackCruxUserRepository: BlockstackCruxUserRepository;
@@ -182,12 +190,6 @@ describe('Infrastructure Repositories Test', () => {
             const restoreDomainStub = sandbox.stub().resolves(undefined);
             restoreDomainStub.withArgs(sinon.match(cruxdevConfigKeyManager)).resolves(cruxdevDomainString);
 
-            mockBlockstackService = {
-                getDomainRegistrationStatus: getDomainRegistrationStatusStub,
-                getClientConfig: sandbox.stub().withArgs(cruxdevDomainString).resolves({assetMapping: cruxdevAssetMapping, assetList: cruxdevAssetList}),
-                restoreDomain: restoreDomainStub,
-            }
-            sandbox.stub(blkStkService, 'BlockstackService').returns(mockBlockstackService);;
             blockstackCruxDomainRepository = new BlockstackCruxDomainRepository({
                 blockstackInfrastructure: CruxSpec.blockstack.infrastructure,
             })

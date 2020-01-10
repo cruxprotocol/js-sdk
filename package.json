@@ -87,7 +87,9 @@
     "ts-node": "^8.4.1",
     "tslint": "5.20.0",
     "typedoc": "^0.15.0",
-    "typescript": "^3.6.3"
+    "typescript": "^3.6.3",
+    "chai-as-promised": "^7.1.1",
+    "@types/chai-as-promised": "^7.1.2"
   },
   "dependencies": {
     "@mojotech/json-type-validation": "^3.1.0",

@@ -29,6 +29,7 @@ export const validateSubdomain = (subDomain: string) => {
 
 export class CruxId {
     public static fromString = (stringRepresentation: string) => {
+        stringRepresentation = stringRepresentation.toLowerCase();
         const arrayCruxId = stringRepresentation.split(/[.@]/);
         let cruxSubdomain: string = "";
         let cruxDomain: string = "";
@@ -49,8 +50,9 @@ export class CruxId {
     constructor(inputComponents: InputIDComponents) {
         // validateSubdomain(inputComponents.subdomain);
         this.components = {
-            ...inputComponents,
+            domain: inputComponents.domain.toLowerCase(),
             namespace: DEFAULT_CRUX_NAMESPACE,
+            subdomain: inputComponents.subdomain.toLowerCase(),
         };
     }
 

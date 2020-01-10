@@ -30,21 +30,21 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
         });
         log.info("BlockstackCruxDomainRepository initialised");
     }
-    public find = async (domainId: CruxDomainId): Promise<boolean> => {
-        const domainRegistrationStatus = await this.blockstackService.getDomainRegistrationStatus(domainId.components.domain);
+    public find = async (cruxDomainId: CruxDomainId): Promise<boolean> => {
+        const domainRegistrationStatus = await this.blockstackService.getDomainRegistrationStatus(cruxDomainId);
         return domainRegistrationStatus === DomainRegistrationStatus.AVAILABLE;
     }
-    public create = async (domainId: CruxDomainId, identityKeyManager: IKeyManager): Promise<CruxDomain> => {
+    public create = async (cruxDomainId: CruxDomainId, identityKeyManager: IKeyManager): Promise<CruxDomain> => {
         // TODO: register the domain on bitcoin blockchain and _config subdomain on domain provided SubdomainRegistrar service
         throw ErrorHelper.getPackageError(null, PackageErrorCode.IsNotSupported);
     }
-    public get = async (domainId: CruxDomainId): Promise<CruxDomain|undefined> => {
-        const domainRegistrationStatus = await this.blockstackService.getDomainRegistrationStatus(domainId.components.domain);
+    public get = async (cruxDomainId: CruxDomainId): Promise<CruxDomain|undefined> => {
+        const domainRegistrationStatus = await this.blockstackService.getDomainRegistrationStatus(cruxDomainId);
         if (domainRegistrationStatus === DomainRegistrationStatus.AVAILABLE) {
             return;
         }
-        const domainClientConfig = await this.getClientConfig(domainId.components.domain);
-        return new CruxDomain(domainId, domainRegistrationStatus, domainClientConfig);
+        const domainClientConfig = await this.getClientConfig(cruxDomainId);
+        return new CruxDomain(cruxDomainId, domainRegistrationStatus, domainClientConfig);
     }
     public save = async (cruxDomain: CruxDomain, configKeyManager: IKeyManager): Promise<CruxDomain> => {
         const newConfig: IClientConfig = {
@@ -54,38 +54,31 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
             assetMapping: cruxDomain.config.assetMapping,
             nameserviceConfiguration: cruxDomain.config.nameserviceConfiguration,
         };
-        await this.putClientConfig(cruxDomain.domainId.components.domain, newConfig, configKeyManager);
+        await this.putClientConfig(cruxDomain.id, newConfig, configKeyManager);
         return cruxDomain;
     }
-    public getWithConfigKeyManager = async (keyManager: IKeyManager, domainId?: CruxDomainId): Promise<CruxDomain|undefined> => {
-        const associatedDomain = await this.blockstackService.restoreDomain(keyManager, domainId && domainId.components.domain);
-        if (!associatedDomain) {
+    public getWithConfigKeyManager = async (keyManager: IKeyManager, cruxDomainId?: CruxDomainId): Promise<CruxDomain|undefined> => {
+        const associatedDomainId = await this.blockstackService.getCruxDomainIdWithKeyManager(keyManager, cruxDomainId);
+        if (!associatedDomainId) {
             return;
         }
-        const domainClientConfig = await this.getClientConfig(associatedDomain);
-        return new CruxDomain(new CruxDomainId(associatedDomain), DomainRegistrationStatus.REGISTERED, domainClientConfig);
+        const domainClientConfig = await this.getClientConfig(associatedDomainId);
+        return new CruxDomain(associatedDomainId, DomainRegistrationStatus.REGISTERED, domainClientConfig);
     }
-    private getClientConfig = async (domainString: string) => {
-        const configBlockstackName = CruxSpec.blockstack.getConfigBlockstackName(domainString);
-        const domainConfigFileName = CruxSpec.blockstack.getDomainConfigFileName(domainString);
-        const configBlockstackNameDetails = await this.blockstackService.getNameDetails(configBlockstackName);
-        if (!configBlockstackNameDetails.address) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingNameOwnerAddress, configBlockstackName);
+    private getClientConfig = async (cruxDomainId: CruxDomainId) => {
+        const configCruxId = CruxSpec.blockstack.getConfigCruxId(cruxDomainId);
+        const domainConfigFileName = CruxSpec.blockstack.getDomainConfigFileName(cruxDomainId);
+        const gaiaHub = await this.blockstackService.getGaiaHub(configCruxId);
+        const configNameDetails = await this.blockstackService.getNameDetails(configCruxId);
+        if (!configNameDetails.address) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingNameOwnerAddress, configCruxId.toString());
         }
-        if (!configBlockstackNameDetails.zonefile) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingZoneFile, configBlockstackName);
-        }
-        const gaiaHub = BlockstackService.getGaiaHubFromZonefile(configBlockstackNameDetails.zonefile);
-        return new GaiaService(gaiaHub, this.cacheStorage).getContentFromGaiaHub(configBlockstackNameDetails.address, domainConfigFileName);
+        return new GaiaService(gaiaHub, this.cacheStorage).getContentFromGaiaHub(configNameDetails.address, domainConfigFileName);
     }
-    private putClientConfig = async (domainString: string, clientConfig: IClientConfig, keyManager: IKeyManager): Promise<string> => {
-        const configBlockstackName = CruxSpec.blockstack.getConfigBlockstackName(domainString);
-        const domainConfigFileName = CruxSpec.blockstack.getDomainConfigFileName(domainString);
-        const configBlockstackNameDetails = await this.blockstackService.getNameDetails(configBlockstackName);
-        if (!configBlockstackNameDetails.zonefile) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingZoneFile, configBlockstackName);
-        }
-        const gaiaHub = BlockstackService.getGaiaHubFromZonefile(configBlockstackNameDetails.zonefile);
+    private putClientConfig = async (cruxDomainId: CruxDomainId, clientConfig: IClientConfig, keyManager: IKeyManager): Promise<string> => {
+        const configCruxId = CruxSpec.blockstack.getConfigCruxId(cruxDomainId);
+        const domainConfigFileName = CruxSpec.blockstack.getDomainConfigFileName(cruxDomainId);
+        const gaiaHub = await this.blockstackService.getGaiaHub(configCruxId);
         const finalURL = await new GaiaService(gaiaHub, this.cacheStorage).uploadContentToGaiaHub(domainConfigFileName, clientConfig, keyManager);
         log.info(`clientConfig saved to: ${finalURL}`);
         return finalURL;
