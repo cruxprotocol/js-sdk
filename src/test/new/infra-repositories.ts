@@ -62,20 +62,6 @@ describe('Infrastructure Repositories Test', () => {
         };
 
         beforeEach(() => {
-            // getCruxIdRegistrationStatusStub.withArgs(testUserCruxId).resolves({
-            //     status: SubdomainRegistrationStatus.DONE,
-            //     statusDetail: SubdomainRegistrationStatusDetail.DONE
-            // });
-            // // let someMockClass;
-            // mockBlockstackService["isCruxIdAvailable"] = sinon.stub().withArgs(testUserCruxId).resolves(false);
-            // mockBlockstackService["isCruxIdAvailable"] = sinon.stub().withArgs("unregisteredUser").resolves(true);
-            // mockBlockstackService["getBlockstackIdFromKeyManager"] = sinon.stub().withArgs(testUserKeyManager, cruxdevDomainId).resolves(BlockstackId.fromString("mascot6699.cruxdev_crux.id"));
-            // mockBlockstackService["registerCruxId"] = sinon.stub().withArgs(newUserCruxId, newUserKeyManager).resolves({
-            //     status: SubdomainRegistrationStatus.PENDING,
-            //     statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR
-            // })
-            // putAddressMapStub.withArgs(sampleAddressMap, testUserKeyManager).resolves("https://gaia.cruxpay.com/1HkXFmLCg4zmPZyf2W5hbpV79EHwG52cEA/cruxdev_cruxpay.json");
-
             const isCruxIdAvailableStub = sandbox.stub().throws("Unhandled in mocks");
             isCruxIdAvailableStub.withArgs(testUserCruxId).resolves(false);
             isCruxIdAvailableStub.withArgs(newUserCruxId).resolves(true);
