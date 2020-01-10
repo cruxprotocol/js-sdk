@@ -61,7 +61,7 @@ export class BlockstackService {
     public static getGaiaHubFromZonefile = (zonefile: string): string => {
         let gaiaHub: string;
         if (zonefile.match(new RegExp("(.+)https:\/\/hub.cruxpay.com\/hub\/(.+)\/profile.json"))) {
-            const match = zonefile.match(new RegExp("(.+)https:\/\/(.+)\/hub\/(.+)\/profile.json", "s"))
+            const match = zonefile.match(new RegExp("(.+)https:\/\/(.+)\/hub\/(.+)\/profile.json", "s"));
             if (!match) {
                 throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotExtractGaiaDataFromZoneFile, zonefile);
             }
@@ -202,6 +202,9 @@ export class BlockstackService {
     public registerCruxId = async (cruxId: CruxId, gaiaHub: string, keyManager: IKeyManager): Promise<ICruxUserRegistrationStatus> => {
         if (!keyManager) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindKeyPairToRegisterName);
+        }
+        if (!(await this.isCruxIdAvailable(cruxId))) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.CruxIDUnavailable, cruxId);
         }
         const blockstackId = CruxSpec.idTranslator.cruxToBlockstack(cruxId);
         const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, new BlockstackDomainId(blockstackId.components.domain));

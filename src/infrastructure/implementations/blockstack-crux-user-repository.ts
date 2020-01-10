@@ -5,7 +5,7 @@ import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxUserRepository, ICruxUserRepositoryOptions} from "../../core/interfaces/crux-user-repository";
 import { IKeyManager } from "../../core/interfaces/key-manager";
 import { ErrorHelper, PackageErrorCode } from "../../packages/error";
-import { CruxDomainId, CruxId } from "../../packages/identity-utils";
+import { CruxDomainId, CruxId, IdTranslator } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { StorageService } from "../../packages/storage";
 import { BlockstackService } from "../services/blockstack-service";
@@ -45,10 +45,13 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         const registrationStatus = await this.blockstackService.registerCruxId(cruxId, this.infrastructure.gaiaHub, keyManager);
         return new CruxUser(cruxId, {}, registrationStatus);
     }
-    public find = async (cruxID: CruxId): Promise<boolean> => {
+    public isCruxIdAvailable = async (cruxID: CruxId): Promise<boolean> => {
         return this.blockstackService.isCruxIdAvailable(cruxID);
     }
     public getByCruxId = async (cruxID: CruxId, tag?: string): Promise<CruxUser|undefined> => {
+        if (await this.isCruxIdAvailable(cruxID)) {
+            return;
+        }
         const registrationStatus = await this.blockstackService.getCruxIdRegistrationStatus(cruxID);
         let addressMap = {};
         if (registrationStatus.status === SubdomainRegistrationStatus.DONE) {

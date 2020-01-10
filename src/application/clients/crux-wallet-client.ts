@@ -68,12 +68,12 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
 export class CruxWalletClient {
     public walletClientName: string;
     private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
-    private _initPromise: Promise<void>;
-    private _cruxUser?: CruxUser;
+    private initPromise: Promise<void>;
+    private cruxUser?: CruxUser;
     private cruxDomain?: CruxDomain;
-    private _cruxUserRepository!: ICruxUserRepository;
-    private _cruxAssetTranslator?: CruxAssetTranslator;
-    private _keyManager?: IKeyManager;
+    private cruxUserRepository!: ICruxUserRepository;
+    private cruxAssetTranslator?: CruxAssetTranslator;
+    private keyManager?: IKeyManager;
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
     private cacheStorage?: StorageService;
 
@@ -82,16 +82,16 @@ export class CruxWalletClient {
         this.cruxBlockstackInfrastructure = options.blockstackInfrastructure || CruxSpec.blockstack.infrastructure;
         this.walletClientName = options.walletClientName;
         if (options.privateKey) {
-            this._keyManager = typeof options.privateKey === "string" ? new BasicKeyManager(options.privateKey) : options.privateKey;
+            this.keyManager = typeof options.privateKey === "string" ? new BasicKeyManager(options.privateKey) : options.privateKey;
         }
-        this._initPromise = this._init(options);
+        this.initPromise = this.init(options);
     }
 
     @throwCruxClientError
     public getCruxIDState = async (): Promise<ICruxIDState> => {
-        await this._initPromise;
-        if (!this._cruxUser) {
-            if (this._keyManager) {
+        await this.initPromise;
+        if (!this.cruxUser) {
+            if (this.keyManager) {
                 return {
                     cruxID: null,
                     status: {
@@ -103,23 +103,23 @@ export class CruxWalletClient {
                 throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
             }
         } else {
-            this._cruxUser = await this._cruxUserRepository.getByCruxId(this._cruxUser.cruxID);
+            this.cruxUser = await this.cruxUserRepository.getByCruxId(this.cruxUser.cruxID);
             return {
-                cruxID: this._cruxUser!.cruxID.toString(),
-                status : this._cruxUser!.registrationStatus,
+                cruxID: this.cruxUser!.cruxID.toString(),
+                status : this.cruxUser!.registrationStatus,
             };
         }
     }
 
     @throwCruxClientError
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
-        await this._initPromise;
+        await this.initPromise;
         const tag = "resolving_address";
-        const cruxUser = await this._getCruxUserByID(fullCruxID, tag);
+        const cruxUser = await this.getCruxUserByID(fullCruxID, tag);
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
-        const assetId = this._getCruxAssetTranslator().symbolToAssetId(walletCurrencySymbol);
+        const assetId = this.getCruxAssetTranslator().symbolToAssetId(walletCurrencySymbol);
         if (!assetId) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.AssetIDNotAvailable);
         }
@@ -132,81 +132,81 @@ export class CruxWalletClient {
 
     @throwCruxClientError
     public getAddressMap = async (): Promise<IAddressMapping> => {
-        await this._initPromise;
-        if (!this._keyManager) {
+        await this.initPromise;
+        if (!this.keyManager) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
         }
-        if (this._cruxUser) {
-            const assetIdAddressMap = this._cruxUser.getAddressMap();
-            return this._getCruxAssetTranslator().assetIdAddressMapToSymbolAddressMap(assetIdAddressMap);
+        if (this.cruxUser) {
+            const assetIdAddressMap = this.cruxUser.getAddressMap();
+            return this.getCruxAssetTranslator().assetIdAddressMapToSymbolAddressMap(assetIdAddressMap);
         }
         return {};
     }
 
     @throwCruxClientError
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {
-        await this._initPromise;
-        if (!this._keyManager) {
+        await this.initPromise;
+        if (!this.keyManager) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
         }
-        const {assetAddressMap, success, failures} = this._getCruxAssetTranslator().symbolAddressMapToAssetIdAddressMap(newAddressMap);
-        if (!this._cruxUser) {
+        const {assetAddressMap, success, failures} = this.getCruxAssetTranslator().symbolAddressMapToAssetIdAddressMap(newAddressMap);
+        if (!this.cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
-        const cruxUser = cloneValue(this._cruxUser);
+        const cruxUser = cloneValue(this.cruxUser);
         cruxUser.addressMap = assetAddressMap;
-        this._cruxUser = await this._cruxUserRepository.save(cruxUser, this._keyManager);
+        this.cruxUser = await this.cruxUserRepository.save(cruxUser, this.keyManager);
         return {success, failures};
     }
 
     @throwCruxClientError
     public isCruxIDAvailable = async (cruxIDSubdomain: string): Promise<boolean> => {
-        await this._initPromise;
+        await this.initPromise;
         const cruxIdInput: InputIDComponents = {
             domain: this.walletClientName,
             subdomain: cruxIDSubdomain,
         };
         const cruxId = new CruxId(cruxIdInput);
-        return this._cruxUserRepository.find(cruxId);
+        return this.cruxUserRepository.isCruxIdAvailable(cruxId);
     }
 
     @throwCruxClientError
     public registerCruxID = async (cruxIDSubdomain: string): Promise<void> => {
-        await this._initPromise;
-        if (!this._keyManager) {
+        await this.initPromise;
+        if (!this.keyManager) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
         }
-        if (this._cruxUser) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.ExistingCruxIDFound, this._cruxUser.cruxID);
+        if (this.cruxUser) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.ExistingCruxIDFound, this.cruxUser.cruxID);
         }
         const cruxIdInput: InputIDComponents = {
             domain: this.walletClientName,
             subdomain: cruxIDSubdomain,
         };
         const cruxId = new CruxId(cruxIdInput);
-        this._cruxUser = await this._cruxUserRepository.create(cruxId, this._keyManager);
+        this.cruxUser = await this.cruxUserRepository.create(cruxId, this.keyManager);
     }
 
     @throwCruxClientError
     public getAssetMap = async (): Promise<IResolvedClientAssetMap> => {
-        await this._initPromise;
+        await this.initPromise;
         if (this.resolvedClientAssetMapping) {
             return this.resolvedClientAssetMapping;
         }
-        this.resolvedClientAssetMapping = this._getCruxAssetTranslator().assetIdAssetListToSymbolAssetMap(this.getCruxDomain().config.assetList);
+        this.resolvedClientAssetMapping = this.getCruxAssetTranslator().assetIdAssetListToSymbolAssetMap(this.getCruxDomain().config.assetList);
         return this.resolvedClientAssetMapping;
     }
 
-    private _getCruxUserByID = async (cruxIdString: string, tag?: string): Promise<CruxUser|undefined> => {
+    private getCruxUserByID = async (cruxIdString: string, tag?: string): Promise<CruxUser|undefined> => {
         const cruxId = CruxId.fromString(cruxIdString);
-        return await this._cruxUserRepository.getByCruxId(cruxId, tag);
+        return await this.cruxUserRepository.getByCruxId(cruxId, tag);
     }
 
-    private _getCruxAssetTranslator = () => {
-        if (!this._cruxAssetTranslator) {
+    private getCruxAssetTranslator = () => {
+        if (!this.cruxAssetTranslator) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingCruxAssetTranslator);
         }
-        return this._cruxAssetTranslator;
+        return this.cruxAssetTranslator;
     }
 
     private getCruxDomain = () => {
@@ -216,20 +216,20 @@ export class CruxWalletClient {
         return this.cruxDomain;
     }
 
-    private _init = async (options: ICruxWalletClientOptions): Promise<void> => {
+    private init = async (options: ICruxWalletClientOptions): Promise<void> => {
         const cruxDomainId = new CruxDomainId(this.walletClientName);
         const cruxDomainRepo: ICruxDomainRepository = getCruxDomainRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure});
         this.cruxDomain = await cruxDomainRepo.get(cruxDomainId);
         if (!this.cruxDomain) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.InvalidWalletClientName);
         }
-        this._cruxUserRepository = getCruxUserRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure, cruxDomain: this.cruxDomain});
+        this.cruxUserRepository = getCruxUserRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure, cruxDomain: this.cruxDomain});
         if (!this.cruxDomain.config) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
-        if (this._keyManager) {
-            this._cruxUser = await this._cruxUserRepository.getWithKey(this._keyManager, cruxDomainId);
+        if (this.keyManager) {
+            this.cruxUser = await this.cruxUserRepository.getWithKey(this.keyManager, cruxDomainId);
         }
-        this._cruxAssetTranslator = await new CruxAssetTranslator(this.cruxDomain.config.assetMapping);
+        this.cruxAssetTranslator = await new CruxAssetTranslator(this.cruxDomain.config.assetMapping);
     }
 }
