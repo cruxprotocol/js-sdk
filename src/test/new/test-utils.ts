@@ -20,7 +20,7 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
         this.userById = {}
     }
     create = async (cruxID: CruxId, keyManager: IKeyManager): Promise<CruxUser> => {
-        if (await this.find(cruxID)){
+        if (!(await this.find(cruxID))){
             throw Error("Already Exists")
         }
         const newUser = new CruxUser(cruxID, {}, {
@@ -31,7 +31,7 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
         return new Promise((resolve, reject) => resolve(newUser));
     }
     find = (cruxID: CruxId) : Promise<boolean> => {
-        const result = this.userById[cruxID.toString()] !== undefined;
+        const result = this.userById[cruxID.toString()] === undefined;
         return new Promise((resolve, reject) => resolve(result));
 
     };
@@ -114,6 +114,22 @@ export const getValidCruxUser = () => {
     const testCruxId = CruxId.fromString('foo123@testwallet.crux');
     const testAddress: IAddress = {
         'addressHash': 'foobtcaddress'
+    };
+    const BTC_ASSET_ID: string = 'd78c26f8-7c13-4909-bf62-57d7623f8ee8';
+    const testValidAddressMap: IAddressMapping = {[BTC_ASSET_ID]: testAddress};
+    const validUserRegStatus: ICruxUserRegistrationStatus = {
+        'status': SubdomainRegistrationStatus.DONE,
+        'statusDetail': SubdomainRegistrationStatusDetail.DONE
+    };
+
+    return new CruxUser(testCruxId, testValidAddressMap, validUserRegStatus);
+};
+
+
+export const getValidCruxUser2 = () => {
+    const testCruxId = CruxId.fromString('bar123@somewallet.crux');
+    const testAddress: IAddress = {
+        'addressHash': 'foobtcaddress2'
     };
     const BTC_ASSET_ID: string = 'd78c26f8-7c13-4909-bf62-57d7623f8ee8';
     const testValidAddressMap: IAddressMapping = {[BTC_ASSET_ID]: testAddress};
