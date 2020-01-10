@@ -196,8 +196,7 @@ export class BlockstackService {
         const blockstackId = CruxSpec.idTranslator.cruxToBlockstack(cruxId);
         const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, new BlockstackDomainId(blockstackId.components.domain));
         const registrarStatus = await registrarApiClient.getSubdomainStatus(cruxId.components.subdomain);
-        const registrationStatus = BlockstackService.getCruxUserRegistrationStatusFromSubdomainStatus(registrarStatus);
-        return registrationStatus.status === SubdomainRegistrationStatus.NONE;
+        return registrarStatus.status === SubdomainRegistrationStatus.NONE;
     }
     public registerCruxId = async (cruxId: CruxId, gaiaHub: string, keyManager: IKeyManager): Promise<ICruxUserRegistrationStatus> => {
         if (!keyManager) {
@@ -217,12 +216,8 @@ export class BlockstackService {
         let status: SubdomainRegistrationStatus;
         let statusDetail: SubdomainRegistrationStatusDetail = SubdomainRegistrationStatusDetail.NONE;
         if (nameDetails.status === "registered_subdomain") {
-            // if (nameData.address === identityClaim.secrets.identityKeyPair.address) {
             status = SubdomainRegistrationStatus.DONE;
             statusDetail = SubdomainRegistrationStatusDetail.DONE;
-            // } else {
-            //     status = SubdomainRegistrationStatus.REJECT;
-            // }
             return {
                 status,
                 statusDetail,
