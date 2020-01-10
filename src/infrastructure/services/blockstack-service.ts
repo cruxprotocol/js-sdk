@@ -138,7 +138,7 @@ export class BlockstackService {
         return BlockstackService.getNameDetails(blockstackName, this.bnsNodes, tag, this.cacheStorage);
     }
     public getGaiaHub = async (id: CruxId|CruxDomainId, tag?: string): Promise<string> => {
-        const nameDetails = await this.getNameDetails(id);
+        const nameDetails = await this.getNameDetails(id, tag);
         if (!nameDetails.zonefile) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingZoneFile, id.toString());
         }
@@ -153,18 +153,18 @@ export class BlockstackService {
         const nameDetails = await this.getNameDetails(cruxDomainId);
         return BlockstackService.getDomainRegistrationStatusFromNameDetails(nameDetails);
     }
-    public getCruxDomainIdWithKeyManager = async (keyManager: IKeyManager, contextDomainId?: CruxDomainId): Promise<CruxDomainId|undefined> => {
+    public getCruxDomainIdWithConfigKeyManager = async (keyManager: IKeyManager, contextDomainId?: CruxDomainId): Promise<CruxDomainId|undefined> => {
         const configSubdomainAddress = publicKeyToAddress(await keyManager.getPubKey());
         const registeredBlockstackIDs = await BlockstackService.getRegisteredBlockstackNamesByAddress(configSubdomainAddress, this.bnsNodes, this.cacheStorage);
-        const registeredDomainArray = registeredBlockstackIDs
+        const registeredDomainStringArray = registeredBlockstackIDs
             .map((blockstackID: string) => blockstackID.match(new RegExp("^_config.(.+)_crux.id$")))
             .map((match) => match && match[1])
-            .filter((domain) => domain !== undefined) as string[];
+            .filter(Boolean) as string[];
         // TODO: handle else case
-        if (contextDomainId && registeredDomainArray.includes(contextDomainId.components.domain)) {
+        if (contextDomainId && registeredDomainStringArray.includes(contextDomainId.components.domain)) {
             return contextDomainId;
-        } else if (registeredDomainArray.length === 1) {
-            return new CruxDomainId(registeredDomainArray[0]);
+        } else if (registeredDomainStringArray.length === 1) {
+            return new CruxDomainId(registeredDomainStringArray[0]);
         }
     }
     public getCruxIdWithKeyManager = async (keyManager: IKeyManager, cruxDomainId: CruxDomainId): Promise<CruxId|undefined> => {

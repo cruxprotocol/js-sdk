@@ -58,7 +58,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
         return cruxDomain;
     }
     public getWithConfigKeyManager = async (keyManager: IKeyManager, cruxDomainId?: CruxDomainId): Promise<CruxDomain|undefined> => {
-        const associatedDomainId = await this.blockstackService.getCruxDomainIdWithKeyManager(keyManager, cruxDomainId);
+        const associatedDomainId = await this.blockstackService.getCruxDomainIdWithConfigKeyManager(keyManager, cruxDomainId);
         if (!associatedDomainId) {
             return;
         }
