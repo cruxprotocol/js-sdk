@@ -47,7 +47,7 @@ describe('CruxWalletClient Tests', function() {
             walletClientName: 'nonexistent'
         });
         const promise = cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'bitcoin');
-        expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.InvalidWalletClientName);
+        return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.InvalidWalletClientName);
     });
     describe('Resolving a Users ID', function() {
         beforeEach(function() {
@@ -62,15 +62,15 @@ describe('CruxWalletClient Tests', function() {
 
         it('Invalid ID', async function() {
             const promise = this.cc.resolveCurrencyAddressForCruxID('lolwamax', 'bitcoin');
-            return expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.CruxIdInvalidStructure);
+            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.CruxIdInvalidStructure);
         });
         it('Wallet doesnt have asset id mapped', async function() {
             const promise = this.cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'foo');
-            return expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.AssetIDNotAvailable);
+            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.AssetIDNotAvailable);
         });
         it('User doesnt have a currency address', async function() {
             const promise = this.cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'ethereum');
-            return expect(promise).to.eventually.be.rejected.with.property('errorCode', PackageErrorCode.AddressNotAvailable);
+            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.AddressNotAvailable);
         });
         it('ID is case insensitive', async function() {
             const address = await this.cc.resolveCurrencyAddressForCruxID('Foo123@testwallet.crux', 'bitcoin');
@@ -107,43 +107,46 @@ describe('CruxWalletClient Tests', function() {
         expect(idState.status.status).equals(SubdomainRegistrationStatus.PENDING);
     });
 
-    it('User is recovered properly from private key', async function() {
-        const cc = new CruxWalletClient({
-            walletClientName: 'somewallet',
-            privateKey: testPvtKey2
+    describe('Client tests with private key of existing user', async function() {
+
+        beforeEach(function() {
+            this.cc = new CruxWalletClient({
+                walletClientName: 'somewallet',
+                privateKey: testPvtKey2
+            });
         });
-        const idState: ICruxIDState = await cc.getCruxIDState();
-        expect(idState.cruxID!.toString()).equals(testCruxUser2.cruxID.toString());
-    });
-    it('New address addition works properly', async function() {
-        const cc = new CruxWalletClient({
-            walletClientName: 'somewallet',
-            privateKey: testPvtKey2
+
+        it('User is recovered properly from private key', async function() {
+            const idState: ICruxIDState = await this.cc.getCruxIDState();
+            expect(idState.cruxID!.toString()).equals(testCruxUser2.cruxID.toString());
         });
-        const fetchedAddressMap1 = await cc.getAddressMap();
-        expect(fetchedAddressMap1['bitcoin']['addressHash']).equals('foobtcaddress2');
-
-        const newAddressMap = {'bitcoin': {'addressHash': 'btcAddressXyz'}};
-        await cc.putAddressMap(newAddressMap);
-        const fetchedAddressMap2 = await cc.getAddressMap();
-        expect(fetchedAddressMap2['bitcoin']['addressHash']).equals(newAddressMap['bitcoin']['addressHash']);
-
-    });
-    it('Partial publishing of addresses works', async function() {
-        const cc = new CruxWalletClient({
-            walletClientName: 'somewallet',
-            privateKey: testPvtKey2
+        it('Cannot register because user is already registered', async function() {
+            const registerPromise = this.cc.registerCruxID('anything')
+            return expect(registerPromise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.ExistingCruxIDFound);
         });
-        const fetchedAddressMap1 = await cc.getAddressMap();
-        expect(fetchedAddressMap1['bitcoin']['addressHash']).equals('foobtcaddress2');
+        it('New address addition works properly', async function() {
+            const fetchedAddressMap1 = await this.cc.getAddressMap();
+            expect(fetchedAddressMap1['bitcoin']['addressHash']).equals('foobtcaddress2');
 
-        const newAddressMap = {'bitcoin': {'addressHash': 'btcAddressAbc'}, 'invalidsymbol': {'addressHash': 'someRandomAddress'}};
-        const putResult = await cc.putAddressMap(newAddressMap);
-        expect(putResult.success).hasOwnProperty('bitcoin');
-        expect(putResult.failures).hasOwnProperty('invalidsymbol');
+            const newAddressMap = {'bitcoin': {'addressHash': 'btcAddressXyz'}};
+            await this.cc.putAddressMap(newAddressMap);
+            const fetchedAddressMap2 = await this.cc.getAddressMap();
+            expect(fetchedAddressMap2['bitcoin']['addressHash']).equals(newAddressMap['bitcoin']['addressHash']);
 
-        const fetchedAddressMap2 = await cc.getAddressMap();
-        expect(fetchedAddressMap2['bitcoin']['addressHash']).equals(newAddressMap['bitcoin']['addressHash']);
+        });
+        it('Partial publishing of addresses works', async function() {
+
+            const fetchedAddressMap1 = await this.cc.getAddressMap();
+            expect(fetchedAddressMap1['bitcoin']['addressHash']).equals('foobtcaddress2');
+
+            const newAddressMap = {'bitcoin': {'addressHash': 'btcAddressAbc'}, 'invalidsymbol': {'addressHash': 'someRandomAddress'}};
+            const putResult = await this.cc.putAddressMap(newAddressMap);
+            expect(putResult.success).hasOwnProperty('bitcoin');
+            expect(putResult.failures).hasOwnProperty('invalidsymbol');
+
+            const fetchedAddressMap2 = await this.cc.getAddressMap();
+            expect(fetchedAddressMap2['bitcoin']['addressHash']).equals(newAddressMap['bitcoin']['addressHash']);
+        });
     });
 
 });
