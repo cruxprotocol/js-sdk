@@ -38,25 +38,25 @@ export interface IPutAddressMapFailures {
 }
 
 export class CruxAssetTranslator {
-    private _assetMapping: IClientAssetMapping;
-    private _reverseAssetMap: IReverseClientAssetMapping;
+    private assetMap: IClientAssetMapping;
+    private reverseAssetMap: IReverseClientAssetMapping;
     constructor(assetMapping: IClientAssetMapping) {
         Validations.validateAssetMapping(assetMapping);
-        this._assetMapping = this.getLowerAssetMapping(assetMapping);
-        this._reverseAssetMap = {};
-        for (const walletCurrencySymbol of Object.keys(this._assetMapping)) {
-            this._reverseAssetMap[this._assetMapping[walletCurrencySymbol]] = walletCurrencySymbol;
+        this.assetMap = this.getLowerAssetMapping(assetMapping);
+        this.reverseAssetMap = {};
+        for (const walletCurrencySymbol of Object.keys(this.assetMap)) {
+            this.reverseAssetMap[this.assetMap[walletCurrencySymbol]] = walletCurrencySymbol;
         }
     }
     get assetMapping() {
-        return this._assetMapping;
+        return this.assetMap;
     }
     public symbolToAssetId(currencySymbol: string): string {
         currencySymbol = currencySymbol.toLowerCase();
-        return this._assetMapping[currencySymbol];
+        return this.assetMap[currencySymbol];
     }
     public assetIdToSymbol(assetId: string): string {
-        return this._reverseAssetMap[assetId];
+        return this.reverseAssetMap[assetId];
     }
 
     public assetIdAssetListToSymbolAssetMap(assetIdAssetList: IGlobalAssetList): IResolvedClientAssetMap {
