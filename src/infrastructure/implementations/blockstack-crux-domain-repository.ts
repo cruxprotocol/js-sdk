@@ -1,10 +1,9 @@
-import { CruxDomain } from "../../core/entities/crux-domain";
+import { CruxDomain, IClientConfig } from "../../core/entities/crux-domain";
 import { DomainRegistrationStatus } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import { ICruxDomainRepository, ICruxDomainRepositoryOptions } from "../../core/interfaces/crux-domain-repository";
 import { IKeyManager } from "../../core/interfaces/key-manager";
-import { IClientConfig } from "../../packages/configuration-service";
 import { ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";

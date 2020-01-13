@@ -1,12 +1,12 @@
 import { Decoder, object, optional, string as stringValidator } from "@mojotech/json-type-validation";
+import { IClientAssetMapping, IGlobalAsset, IGlobalAssetList } from "../../application/services/crux-asset-translator";
 import config from "../../config";
-import { IClientAssetMapping, IGlobalAsset, IGlobalAssetList } from "../../packages/configuration-service";
 import { BaseError, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId, IdTranslator } from "../../packages/identity-utils";
-import { IBlockstackServiceInputOptions } from "../../packages/name-service/blockstack-service";
 import { IAddress, IAddressMapping } from "../entities/crux-user";
 import globalAssetList from "../global-asset-list.json";
 import { ICruxBlockstackInfrastructure } from "../interfaces";
+import { INameServiceConfigurationOverrides } from "./crux-domain";
 const assetIdRegex = new RegExp(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$`);
 const urlRegex = new RegExp(`^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$`);
 export class Validations {
@@ -55,7 +55,7 @@ export class Validations {
     public static validateAssetMapping = (assetMapping: IClientAssetMapping) => {
         Object.keys(assetMapping).forEach((assetSymbol) => {Validations.validateAssetId(assetMapping[assetSymbol]); });
     }
-    public static validateNameServiceConfig = (nameServiceConfig: IBlockstackServiceInputOptions) => {
+    public static validateNameServiceConfig = (nameServiceConfig: INameServiceConfigurationOverrides) => {
         // TODO: domain name validation
         if (nameServiceConfig.gaiaHub) {
             Validations.validateURL(nameServiceConfig.gaiaHub);
