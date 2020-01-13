@@ -63,7 +63,8 @@
   },
   "exclude": [
     "src/test",
-    "src/samples"
+    "src/samples",
+    "dist"
   ]
 
 }
