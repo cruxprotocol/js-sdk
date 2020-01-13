@@ -1,10 +1,11 @@
 import * as CruxPay from "./index";
+import { InMemStorage } from "./index";
 
 declare global {
     interface Window {
         CruxPay: object;
-        inmemStorage: CruxPay.inmemStorage.InMemStorage;
+        inmemStorage: InMemStorage;
     }
 }
 window.CruxPay = CruxPay;
-window.inmemStorage = new CruxPay.inmemStorage.InMemStorage();
+window.inmemStorage = new InMemStorage();

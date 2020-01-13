@@ -1,4 +1,6 @@
-import { DomainRegistrationStatus } from "../../../core/entities/crux-domain";
+export * from "./utils";
+import { IClientAssetMapping } from "../../../application/services/crux-asset-translator";
+import { DomainRegistrationStatus, INameServiceConfigurationOverrides } from "../../../core/entities/crux-domain";
 import { CruxDomain } from "../../../core/entities/crux-domain";
 import { CruxSpec } from "../../../core/entities/crux-spec";
 import { ICruxBlockstackInfrastructure } from "../../../core/interfaces";
@@ -6,12 +8,10 @@ import { ICruxDomainRepository } from "../../../core/interfaces/crux-domain-repo
 import { IKeyManager } from "../../../core/interfaces/key-manager";
 import { BasicKeyManager } from "../../../infrastructure/implementations/basic-key-manager";
 import { BlockstackCruxDomainRepository } from "../../../infrastructure/implementations/blockstack-crux-domain-repository";
-import { IClientAssetMapping } from "../../../packages/configuration-service";
 import { ErrorHelper, PackageErrorCode } from "../../../packages/error";
 import { CruxDomainId } from "../../../packages/identity-utils";
 import { InMemStorage } from "../../../packages/inmem-storage";
 import { getLogger } from "../../../packages/logger";
-import { IBlockstackServiceInputOptions } from "../../../packages/name-service/blockstack-service";
 import { StorageService } from "../../../packages/storage";
 import { cloneValue } from "../../../packages/utils";
 import { throwCruxOnBoardingClientError } from "./utils";
@@ -64,7 +64,7 @@ export class CruxOnBoardingClient {
         return this.getCruxDomain().status;
     }
     @throwCruxOnBoardingClientError
-    public getNameServiceConfig = async (): Promise<IBlockstackServiceInputOptions|undefined> => {
+    public getNameServiceConfig = async (): Promise<INameServiceConfigurationOverrides|undefined> => {
         await this.initPromise;
         return this.getCruxDomain().config.nameserviceConfiguration;
     }
@@ -74,7 +74,7 @@ export class CruxOnBoardingClient {
         return this.getCruxDomain().config.assetMapping;
     }
     @throwCruxOnBoardingClientError
-    public putNameServiceConfig = async (newNameServiceConfig: IBlockstackServiceInputOptions): Promise<void> => {
+    public putNameServiceConfig = async (newNameServiceConfig: INameServiceConfigurationOverrides): Promise<void> => {
         await this.initPromise;
         const cruxDomain = cloneValue(this.getCruxDomain());
         cruxDomain.config.nameserviceConfiguration = newNameServiceConfig;

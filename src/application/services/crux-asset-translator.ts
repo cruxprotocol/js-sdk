@@ -1,6 +1,6 @@
 import { Validations } from "../../core/entities/crux-spec";
 import { IAddress, IAddressMapping } from "../../core/entities/crux-user";
-import { errors } from "../../packages";
+import { ERROR_STRINGS, PackageErrorCode } from "../../packages/error";
 import { getLogger } from "../../packages/logger";
 const log = getLogger(__filename);
 
@@ -89,7 +89,7 @@ export class CruxAssetTranslator {
                 assetAddressMap[assetId] = lowerCurrencyAddressMap[walletCurrencySymbol];
                 success[walletCurrencySymbol] = lowerCurrencyAddressMap[walletCurrencySymbol];
             } else {
-                failures[walletCurrencySymbol] = `${errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping}: ${errors.ERROR_STRINGS[errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping]}`;
+                failures[walletCurrencySymbol] = `${PackageErrorCode.CurrencyDoesNotExistInClientMapping}: ${ERROR_STRINGS[PackageErrorCode.CurrencyDoesNotExistInClientMapping]}`;
             }
         }
         return {

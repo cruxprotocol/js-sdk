@@ -2,12 +2,11 @@
 import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
 import { CruxDomain } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
-import { CruxUser, IAddress, IAddressMapping } from "../../core/entities/crux-user";
+import { CruxUser, IAddress, IAddressMapping, ICruxUserRegistrationStatus } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxDomainRepository} from "../../core/interfaces/crux-domain-repository";
 import { ICruxUserRepository } from "../../core/interfaces/crux-user-repository";
 import { IKeyManager } from "../../core/interfaces/key-manager";
-import { ICruxIDState, setCacheStorage } from "../../index";
 import { BasicKeyManager } from "../../infrastructure/implementations/basic-key-manager";
 import {
     BlockstackCruxDomainRepository,
@@ -57,6 +56,11 @@ export interface ICruxWalletClientOptions {
     walletClientName: string;
 }
 
+export interface ICruxIDState {
+    cruxID: string | null;
+    status?: ICruxUserRegistrationStatus;
+}
+
 export const getCruxDomainRepository = (options: IBlockstackCruxDomainRepositoryOptions): ICruxDomainRepository => {
     return new BlockstackCruxDomainRepository(options);
 };
@@ -64,7 +68,6 @@ export const getCruxDomainRepository = (options: IBlockstackCruxDomainRepository
 export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOptions): ICruxUserRepository => {
     return new BlockstackCruxUserRepository(options);
 };
-
 export class CruxWalletClient {
     public walletClientName: string;
     private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
@@ -94,10 +97,6 @@ export class CruxWalletClient {
             if (this.keyManager) {
                 return {
                     cruxID: null,
-                    status: {
-                        status: "NONE",
-                        statusDetail: "",
-                    },
                 };
             } else {
                 throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
@@ -170,6 +169,29 @@ export class CruxWalletClient {
         return this.cruxUserRepository.isCruxIdAvailable(cruxId);
     }
 
+    /**
+     * ```ts
+     *  const sampleAddressMap: IAddressMapping = {
+     *      'BTC': {
+     *          addressHash: '1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX'
+     *      },
+     *      'ETH': {
+     *          addressHash: '0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8'
+     *      },
+     *  }
+     *  // Advised to pipe the method putAddressMap to registerCruxID call
+     *  await cruxClient.registerCruxID("bob")
+     *      .then(() => {
+     *          return cruxClient.putAddressMap(sampleAddressMap)
+     *              .catch((addressUpdationError) => {
+     *                  // Handling addressUpdation error
+     *              })
+     *      })
+     *      .catch((registrationError) => {
+     *          // Handling registration error
+     *      })
+     * ```
+     */
     @throwCruxClientError
     public registerCruxID = async (cruxIDSubdomain: string): Promise<void> => {
         await this.initPromise;

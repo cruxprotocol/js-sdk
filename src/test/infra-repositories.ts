@@ -1,15 +1,15 @@
 import { expect } from 'chai';
 import sinon from "sinon";
 import 'mocha';
-import { BlockstackCruxDomainRepository } from "../../infrastructure/implementations/blockstack-crux-domain-repository";
-import { BlockstackCruxUserRepository } from "../../infrastructure/implementations/blockstack-crux-user-repository";
-import { CruxSpec } from "../../core/entities/crux-spec";
-import { CruxDomainId, CruxId, IdTranslator, BlockstackId } from "../../packages/identity-utils";
-import { DomainRegistrationStatus, CruxDomain } from '../../core/entities/crux-domain';
-import { BasicKeyManager } from '../../infrastructure/implementations/basic-key-manager';
-import * as blkStkService from "../../infrastructure/services/blockstack-service";
-import * as gs from "../../infrastructure/services/gaia-service";
-import { IAddressMapping, CruxUser, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from '../../core/entities/crux-user';
+import { BlockstackCruxDomainRepository } from "../infrastructure/implementations/blockstack-crux-domain-repository";
+import { BlockstackCruxUserRepository } from "../infrastructure/implementations/blockstack-crux-user-repository";
+import { CruxSpec } from "../core/entities/crux-spec";
+import { CruxDomainId, CruxId, IdTranslator, BlockstackId } from "../packages/identity-utils";
+import { DomainRegistrationStatus, CruxDomain } from '../core/entities/crux-domain';
+import { BasicKeyManager } from '../infrastructure/implementations/basic-key-manager';
+import * as blkStkService from "../infrastructure/services/blockstack-service";
+import * as gs from "../infrastructure/services/gaia-service";
+import { IAddressMapping, CruxUser, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from '../core/entities/crux-user';
 import { boolean } from '@mojotech/json-type-validation';
 describe('Infrastructure Repositories Test', () => {
     let sandbox: sinon.SinonSandbox;

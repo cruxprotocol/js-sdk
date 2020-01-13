@@ -1,5 +1,4 @@
-import sinon from "sinon";
-import { CruxAssetTranslator, IClientAssetMapping, IGlobalAssetList } from "../../application/services/crux-asset-translator";
+import { CruxAssetTranslator, IClientAssetMapping, IGlobalAssetList } from "../application/services/crux-asset-translator";
 import { expect } from 'chai';
 describe('Application Services Tests', () => {
     describe('Testing AssetTranslator', () => {

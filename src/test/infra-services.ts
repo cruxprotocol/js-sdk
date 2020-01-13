@@ -1,16 +1,16 @@
 import { expect } from 'chai';
 import sinon from "sinon";
 import 'mocha';
-import { BasicKeyManager } from '../../infrastructure/implementations/basic-key-manager';
-import { CruxSpec } from '../../core/entities/crux-spec';
-import { GaiaService } from '../../infrastructure/services/gaia-service';
+import { BasicKeyManager } from '../infrastructure/implementations/basic-key-manager';
+import { CruxSpec } from '../core/entities/crux-spec';
+import { GaiaService } from '../infrastructure/services/gaia-service';
 import WebCrypto from "node-webcrypto-ossl";
-import * as apiClients from '../../infrastructure/services/api-clients';
-import { BlockstackService } from '../../infrastructure/services/blockstack-service';
-import { DomainRegistrationStatus } from '../../core/entities/crux-domain';
-import { CruxDomainId, CruxId } from '../../packages/identity-utils';
+import * as apiClients from '../infrastructure/services/api-clients';
+import { BlockstackService } from '../infrastructure/services/blockstack-service';
+import { DomainRegistrationStatus } from '../core/entities/crux-domain';
+import { CruxDomainId, CruxId } from '../packages/identity-utils';
 import { publicKeyToAddress } from 'blockstack';
-import { SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from '../../packages/name-service/blockstack-service';
+import { SubdomainRegistrationStatusDetail, SubdomainRegistrationStatus } from '../core/entities/crux-user';
 interface Global {
     crypto: any;
     TextEncoder: any;

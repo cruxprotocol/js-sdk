@@ -1,14 +1,13 @@
 import 'mocha';
 import sinon from "sinon";
-import * as cwc from "../../../application/clients/crux-wallet-client";
+import * as cwc from "../application/clients/crux-wallet-client";
 import chaiAsPromised from "chai-as-promised";
 import * as chai from "chai";
 
-import {CruxWalletClient} from "../../../application/clients/crux-wallet-client";
-import {SubdomainRegistrationStatus} from "../../../core/entities/crux-user";
-import {ICruxIDState} from "../../../index";
-import {BasicKeyManager} from "../../../infrastructure/implementations/basic-key-manager";
-import {PackageErrorCode} from "../../../packages/error";
+import {CruxWalletClient, ICruxIDState} from "../application/clients/crux-wallet-client";
+import {SubdomainRegistrationStatus} from "../core/entities/crux-user";
+import {BasicKeyManager} from "../infrastructure/implementations/basic-key-manager";
+import {PackageErrorCode} from "../packages/error";
 import {
     addDomainToRepo,
     addUserToRepo,
@@ -16,7 +15,7 @@ import {
     getValidCruxUser, getValidCruxUser2,
     InMemoryCruxDomainRepository,
     InMemoryCruxUserRepository
-} from "../test-utils";
+} from "./test-utils";
 
 chai.use(chaiAsPromised);
 chai.should();

@@ -1,9 +1,19 @@
-import { IClientConfig } from "../../packages/configuration-service";
+import { IClientAssetMapping, IGlobalAssetList } from "../../application/services/crux-asset-translator";
 import { BaseError } from "../../packages/error";
 import { CruxDomainId } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { CruxSpec } from "./crux-spec";
 const log = getLogger(__filename);
+export interface INameServiceConfigurationOverrides {
+    bnsNodes?: string[];
+    gaiaHub?: string;
+    subdomainRegistrar?: string;
+}
+export interface IClientConfig {
+    assetMapping: IClientAssetMapping;
+    assetList: IGlobalAssetList;
+    nameserviceConfiguration?: INameServiceConfigurationOverrides;
+}
 export enum DomainRegistrationStatus {
     AVAILABLE = "AVAILABLE",
     PENDING = "PENDING",

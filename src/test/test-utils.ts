@@ -1,6 +1,6 @@
 import {publicKeyToAddress} from "blockstack/lib";
-import {CruxDomain, DomainRegistrationStatus} from "../../core/entities/crux-domain";
-import {CruxSpec} from "../../core/entities/crux-spec";
+import {CruxDomain, DomainRegistrationStatus, IClientConfig} from "../core/entities/crux-domain";
+import {CruxSpec} from "../core/entities/crux-spec";
 import {
     CruxUser,
     IAddress,
@@ -8,12 +8,11 @@ import {
     ICruxUserRegistrationStatus,
     SubdomainRegistrationStatus,
     SubdomainRegistrationStatusDetail
-} from "../../core/entities/crux-user";
-import {ICruxDomainRepository} from "../../core/interfaces/crux-domain-repository";
-import {ICruxUserRepository} from "../../core/interfaces/crux-user-repository";
-import {IKeyManager} from "../../core/interfaces/key-manager";
-import {IClientConfig} from "../../packages/configuration-service";
-import {CruxDomainId, CruxId} from "../../packages/identity-utils";
+} from "../core/entities/crux-user";
+import {ICruxDomainRepository} from "../core/interfaces/crux-domain-repository";
+import {ICruxUserRepository} from "../core/interfaces/crux-user-repository";
+import {IKeyManager} from "../core/interfaces/key-manager";
+import {CruxDomainId, CruxId} from "../packages/identity-utils";
 
 class MockUserStore {
     private userById: any;

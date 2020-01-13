@@ -1,7 +1,6 @@
 import { BaseError, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import {BlockstackDomainId} from "../../packages/identity-utils";
 import {getLogger} from "../../packages/logger";
-import { UPLOADABLE_JSON_FILES } from "../../packages/name-service/blockstack-service";
 import { StorageService } from "../../packages/storage";
 import { cachedFunctionCall, httpJSONRequest } from "../../packages/utils";
 const log = getLogger(__filename);
@@ -10,6 +9,10 @@ export interface IHubInfo {
     latest_auth_version: string;
     max_file_upload_size_megabytes: number;
     read_url_prefix: string;
+}
+export enum UPLOADABLE_JSON_FILES {
+    CRUXPAY = "cruxpay.json",
+    CLIENT_CONFIG = "client-config.json",
 }
 export class GaiaServiceApiClient {
     public static getHubInfo = async (gaiaHub: string, cacheStorage?: StorageService): Promise<IHubInfo> => {
