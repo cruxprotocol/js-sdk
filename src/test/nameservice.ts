@@ -3,11 +3,11 @@ import sinon from "sinon";
 import 'mocha';
 
 import config from "../config";
-import { blockstackService, errors } from "../packages";
+import {blockstackService, errors, inmemStorage} from "../packages";
 import * as utils from "../packages/utils";
 import requestFixtures from "./requestMocks/nameservice-reqmocks";
 import * as blockstack from 'blockstack';
-import { IAddressMapping } from '../index';
+import {cacheStorage, IAddressMapping} from '../index';
 import { sanitizePrivKey } from "../packages/utils";
 import { UPLOADABLE_JSON_FILES } from '../packages/name-service/blockstack-service';
 import { getCruxIDByAddress } from '../packages/name-service/utils';
@@ -56,7 +56,8 @@ describe('BlockstackService tests', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    
+
+    cacheStorage = new inmemStorage.InMemStorage();
     // Handling mock stubs
 
     httpJSONRequestStub = sinon.stub(utils, 'httpJSONRequest').throws('unhandled in mocks')

@@ -113,6 +113,10 @@ describe('Security review test gaia', function(){
         });
 
     })
+    afterEach(function(){
+        this.httpJSONRequestStub.restore()
+    });
+
 
     it('positive case', async function(){
         this.httpJSONRequestStub.withArgs(properResponseGaia.request).returns(properResponseGaia.response);
@@ -148,6 +152,8 @@ describe('getContentFromGaiaHub tests', () => {
     let publicKeyToAddressStub: sinon.SinonStub;
 
     beforeEach(() => {
+        // @ts-ignore
+        cacheStorage = new inmemStorage.InMemStorage();
         httpJSONRequestStub = sinon.stub(utils, 'httpJSONRequest').throws('unhandled in mocks')
         verifyProfileTokenStub = sinon.stub(blockstack, 'verifyProfileToken').resolves("mocked verification")
         publicKeyToAddressStub = sinon.stub(blockstack, 'publicKeyToAddress').resolves("mocked public address")
