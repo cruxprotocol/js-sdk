@@ -53,9 +53,6 @@ export class BlockstackService {
         if (!nameDetails) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.BnsEmptyData);
         }
-        if (!nameDetails.address) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
-        }
         return nameDetails;
     }
     public static getGaiaHubFromZonefile = (zonefile: string): string => {

@@ -8,6 +8,7 @@ import WebCrypto from "node-webcrypto-ossl";
 import * as apiClients from '../../infrastructure/services/api-clients';
 import { BlockstackService } from '../../infrastructure/services/blockstack-service';
 import { DomainRegistrationStatus } from '../../core/entities/crux-domain';
+import { CruxDomainId, CruxId } from '../../packages/identity-utils';
 interface Global {
     crypto: any;
     TextEncoder: any;
@@ -78,11 +79,14 @@ describe('Infrastructure Services Test', () => {
     })
     describe('Testing BlockstackService', () => {
         let mockBlockstackNamingServiceApiClient;
+        let staticMocksBlockstackNamingServiceApiClient;
         let mockBlockstackSubdomainRegistrarApiClient;
         let blockstackService: BlockstackService;
         // fixtures
-        const cruxdevBlockstackIdString = "cruxdev_crux.id";
+        const cruxGaiaHub = "https://hub.cruxpay.com";
+        const cruxdevBlockstackName = "cruxdev_crux.id";
         const cruxdevDomainString = "cruxdev";
+        const cruxdevDomainId = new CruxDomainId(cruxdevDomainString);
         const cruxdevNameDetail = {
             "address": "1J2CJ2Q2rMaYftnwQiSQ6rwTuq3xPBFuw3",
             "blockchain": "bitcoin",
@@ -96,27 +100,57 @@ describe('Infrastructure Services Test', () => {
             "zonefile": "$ORIGIN cruxdev_crux.id\n$TTL 3600\ntester93\tIN\tTXT\t\"owner=1EdQUGMKPpa4NGpJYy7s1Gb8aHhdJpTPZAA\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiB0ZXN0ZXIyCiRUVEwgMzYwMApfaHR0cHMuX3RjcCBVUkkgMTAgMSBodHRwczovL2h1Yi5jcnV4cGF5LmNvbQ==\"\ntester94\tIN\tTXT\t\"owner=1EdQUGMKPpa4NGpJYy7s1Gb8aHhdJpTPZQA\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiB0ZXN0ZXIyCiRUVEwgMzYwMApfaHR0cHMuX3RjcCBVUkkgMTAgMSBodHRwczovL2h1Yi5jcnV4cGF5LmNvbQ==\"\ntester95\tIN\tTXT\t\"owner=1EdQUGMKPpa4NGpJYy7s1Gb8aHhdJpTPAQA\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiB0ZXN0ZXIyCiRUVEwgMzYwMApfaHR0cHMuX3RjcCBVUkkgMTAgMSBodHRwczovL2h1Yi5jcnV4cGF5LmNvbQ==\"\ntester96\tIN\tTXT\t\"owner=1EdQUGMKPpa4NGpJYy7s1Gb8aHhdJpTPAQQ\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiB0ZXN0ZXIyCiRUVEwgMzYwMApfaHR0cHMuX3RjcCBVUkkgMTAgMSBodHRwczovL2h1Yi5jcnV4cGF5LmNvbQ==\"\ntester97\tIN\tTXT\t\"owner=1EdQUGMKPpa4NGpJYy7s1Gb8aHhdJpTPQQQ\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiB0ZXN0ZXIyCiRUVEwgMzYwMApfaHR0cHMuX3RjcCBVUkkgMTAgMSBodHRwczovL2h1Yi5jcnV4cGF5LmNvbQ==\"\ntester98\tIN\tTXT\t\"owner=1EdQUGMKPpa4NGpJYy7s1Gb8aHhdJpTQQQQ\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiB0ZXN0ZXIyCiRUVEwgMzYwMApfaHR0cHMuX3RjcCBVUkkgMTAgMSBodHRwczovL2h1Yi5jcnV4cGF5LmNvbQ==\"\ntester99\tIN\tTXT\t\"owner=1EdQUGMKPpa4NGpJYy7s1Gb8aHhdJpQQQQQ\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiB0ZXN0ZXIyCiRUVEwgMzYwMApfaHR0cHMuX3RjcCBVUkkgMTAgMSBodHRwczovL2h1Yi5jcnV4cGF5LmNvbQ==\"\ntester100\tIN\tTXT\t\"owner=1EdQUGMKPpa4NGpJYy7s1Gb8aHhdJpQQQSQ\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiB0ZXN0ZXIyCiRUVEwgMzYwMApfaHR0cHMuX3RjcCBVUkkgMTAgMSBodHRwczovL2h1Yi5jcnV4cGF5LmNvbQ==\"\ntester101\tIN\tTXT\t\"owner=1EdQUGMKPpa4NGpJYy7s1Gb8aHhdJpQQQSS\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiB0ZXN0ZXIyCiRUVEwgMzYwMApfaHR0cHMuX3RjcCBVUkkgMTAgMSBodHRwczovL2h1Yi5jcnV4cGF5LmNvbQ==\"\ntester102\tIN\tTXT\t\"owner=1EdQUGMKPpa4NGpJYy7s1Gb8aHhdJpQSQSS\" \"seqn=0\" \"parts=1\" \"zf0=JE9SSUdJTiB0ZXN0ZXIyCiRUVEwgMzYwMApfaHR0cHMuX3RjcCBVUkkgMTAgMSBodHRwczovL2h1Yi5jcnV4cGF5LmNvbQ==\"\n_http._tcp\tIN\tURI\t10\t1\t\"https://gaia.blockstack.org/hub/1J2CJ2Q2rMaYftnwQiSQ6rwTuq3xPBFuw3/profile.json\"\n",
             "zonefile_hash": "3df4830e1a3f92ce33deecc0a16f70fe2727723e"
         }
-        const testcaseBlockstackIdString = "testcase_crux.id";
+        const cruxdevConfigCruxName = "_config@cruxdev.crux";
+        const cruxdevConfigBlockstackName = "_config.cruxdev_crux.id";
+        const cruxdevConfigCruxId = CruxId.fromString(cruxdevConfigCruxName);
+        const cruxdevConfigSubdomainPrivateKey = "d4a7eab17471d190a0d6cfa00546dceeac88f333b8a2d16fb4464e1e57ac188f";    // random-private-key;
+        const cruxdevConfigKeyManager = new BasicKeyManager(cruxdevConfigSubdomainPrivateKey)
+        const cruxdevConfigNameDetails = {
+            "address": "16wXkSf8kwFGz3oGbHW2aofHuBLX6MWgeh",
+            "blockchain": "bitcoin",
+            "did": "did:stack:v0:SWkf7PikxXchsWM5yZw7jRvKTQzMcdb5Pc-0",
+            "last_txid": "bfa29d44fd31e4307c9fc0229964aaec1a6efc014e4c94681e2372f5f7d474ec",
+            "status": "registered_subdomain",
+            "zonefile": "$ORIGIN _config\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com",
+            "zonefile_hash": "776172a0bc8400a4046d0325dd87e78b48a2f66b"
+        }
+        const testUserCruxIdString = "mascot6699@cruxdev.crux";
+        const testUserCruxId = CruxId.fromString(testUserCruxIdString);
+        const testUserPrivKey = "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37f7c6f";
+        const testUserKeyManager = new BasicKeyManager(testUserPrivKey);
+        const testUserNameDetails = {
+            "address": "1HkXFmLCg4zmPZyf2W5hbpV79EHwG52cEA",
+            "blockchain": "bitcoin",
+            "did": "did:stack:v0:Se3XHc7MQSBxusm7Zw4n9idfo1XN3p6b3B-0",
+            "last_txid": "32521d18c1727c31dfe879f5d0d0833f4061bd642f6bd2fedf802e547a58c7c4",
+            "status": "registered_subdomain",
+            "zonefile": "$ORIGIN mascot6699\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com",
+            "zonefile_hash": "69c818f265a38101e495de03bc88afcd1ea428b2"
+        }
+        const testcaseBlockstackName = "testcase_crux.id";
         const testcaseDomainString = "testcase";
+        const testcaseCruxDomainId = new CruxDomainId(testcaseDomainString);
         const testcaseNameDetail = {
             "status": "available"
         }
 
         beforeEach(() => {
+            // mocking static methods
+            staticMocksBlockstackNamingServiceApiClient = {
+                getNamesByAddress: sandbox.stub(apiClients.BlockstackNamingServiceApiClient, 'getNamesByAddress').throws("unhandled in getNamesByAddress mocks"),
+                getNameDetails: sandbox.stub(apiClients.BlockstackNamingServiceApiClient, 'getNameDetails').throws("unhandled in getNameDetails mocks"),
+            }
             // mocking the public methods
-            mockBlockstackNamingServiceApiClient = {
-                fetchIDsByAddress: sandbox.stub().throws("unhandled in fetchIDsByAddress mocks"),
-                resolveName: sandbox.stub().throws("unhandled in resolveName mocks"),
-            };
+            mockBlockstackNamingServiceApiClient = {};
             mockBlockstackSubdomainRegistrarApiClient = {
                 getSubdomainStatus: sandbox.stub().throws("unhandled in getSubdomainStatus mocks"),
                 registerSubdomain: sandbox.stub().throws("unhandled in registerSubdomain mocks"),
-                fetchPendingRegistrationsByAddress: sandbox.stub().throws("unhandled in fetchPendingRegistrationsByAddress mocks"),
+                getSubdomainRegistrarEntriesByAddress: sandbox.stub().throws("unhandled in getSubdomainRegistrarEntriesByAddress mocks"),
                 getIndex: sandbox.stub().throws("unhandled in getIndex mocks"),
             };
-            // mocks
-            mockBlockstackNamingServiceApiClient.resolveName.withArgs(cruxdevBlockstackIdString).resolves(cruxdevNameDetail);
-            mockBlockstackNamingServiceApiClient.resolveName.withArgs(testcaseBlockstackIdString).resolves(testcaseNameDetail);
+            // // mocks
+            // mockBlockstackNamingServiceApiClient.resolveName.withArgs(cruxdevBlockstackIdString).resolves(cruxdevNameDetail);
+            // mockBlockstackNamingServiceApiClient.resolveName.withArgs(testcaseBlockstackIdString).resolves(testcaseNameDetail);
             sandbox.stub(apiClients, 'BlockstackNamingServiceApiClient').returns(mockBlockstackNamingServiceApiClient);
             sandbox.stub(apiClients, 'BlockstackSubdomainRegistrarApiClient').returns(mockBlockstackSubdomainRegistrarApiClient);
             blockstackService = new BlockstackService({
@@ -126,7 +160,8 @@ describe('Infrastructure Services Test', () => {
         })
         describe('getNameDetails tests', () => {
             it('"cruxdev" should return the complete name details', async () => {
-                const nameDetails = await blockstackService.getNameDetails(cruxdevBlockstackIdString);
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves(cruxdevNameDetail);
+                const nameDetails = await blockstackService.getNameDetails(cruxdevDomainId);
                 expect(nameDetails).haveOwnProperty("address").to.be.string;
                 expect(nameDetails).haveOwnProperty("blockchain").to.be.string;
                 expect(nameDetails).haveOwnProperty("did").to.be.string;
@@ -134,46 +169,81 @@ describe('Infrastructure Services Test', () => {
                 expect(nameDetails).haveOwnProperty("status").to.be.equal("registered");
                 expect(nameDetails).haveOwnProperty("zonefile").to.be.string;
                 expect(nameDetails).haveOwnProperty("zonefile_hash").to.be.string;
-                expect(mockBlockstackNamingServiceApiClient.resolveName.calledTwice).to.be.true;
-                expect(mockBlockstackNamingServiceApiClient.resolveName.calledWith(cruxdevBlockstackIdString)).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, cruxdevBlockstackName)).to.be.true;
             })
             it('"testcase should return the status availability"', async () => {
-                const nameDetails = await blockstackService.getNameDetails(testcaseBlockstackIdString);
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves(testcaseNameDetail);
+                const nameDetails = await blockstackService.getNameDetails(testcaseCruxDomainId);
                 expect(nameDetails).haveOwnProperty("status").to.be.equal("available");
-                expect(mockBlockstackNamingServiceApiClient.resolveName.calledTwice).to.be.true;
-                expect(mockBlockstackNamingServiceApiClient.resolveName.calledWith(testcaseBlockstackIdString)).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, testcaseBlockstackName)).to.be.true;
             })
             it('"pendingId" should return with "more" field')
         })
+        describe('getGaiaHub tests', () => {
+            it('"cruxdev" should return cruxpay gaia hub', async () => {
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves(cruxdevConfigNameDetails);
+                const gaiaHub = await blockstackService.getGaiaHub(cruxdevConfigCruxId);
+                expect(gaiaHub).to.be.equal(cruxGaiaHub);
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, cruxdevConfigBlockstackName)).to.be.true;
+            })
+        })
         describe('getDomainRegistrationStatus tests', () => {
             it('"cruxdev" should be REGISTERED', async () => {
-                const domainAvailability = await blockstackService.getDomainRegistrationStatus(cruxdevDomainString);
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves(cruxdevNameDetail);
+                const domainAvailability = await blockstackService.getDomainRegistrationStatus(cruxdevDomainId);
                 expect(domainAvailability).to.be.equal(DomainRegistrationStatus.REGISTERED);
-                expect(mockBlockstackNamingServiceApiClient.resolveName.calledTwice).to.be.true;
-                expect(mockBlockstackNamingServiceApiClient.resolveName.calledWith(cruxdevBlockstackIdString)).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, cruxdevBlockstackName)).to.be.true;
             }) 
             it('"testcase" should be AVAILABLE', async () => {
-                const domainAvailability = await blockstackService.getDomainRegistrationStatus(testcaseDomainString);
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves(testcaseNameDetail);
+                const domainAvailability = await blockstackService.getDomainRegistrationStatus(testcaseCruxDomainId);
                 expect(domainAvailability).to.be.equal(DomainRegistrationStatus.AVAILABLE);
-                expect(mockBlockstackNamingServiceApiClient.resolveName.calledTwice).to.be.true;
-                expect(mockBlockstackNamingServiceApiClient.resolveName.calledWith(testcaseBlockstackIdString)).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, testcaseBlockstackName)).to.be.true;
             })
             it('"pendingId" should be PENDING')
         })
-        describe('getClientConfig', () => {
-            it('"cruxdev" should ')
+        describe('getCruxDomainIdWithConfigKeyManager tests', () => {
+            it('"cruxdev" should be available on the corresponding config key', async () => {
+                staticMocksBlockstackNamingServiceApiClient.getNamesByAddress.resolves({
+                    "names": [
+                        "_config.cruxdev_crux.id"
+                    ]
+                });
+                const cruxDomainId = await blockstackService.getCruxDomainIdWithConfigKeyManager(cruxdevConfigKeyManager);
+                expect(cruxDomainId).to.be.instanceOf(CruxDomainId);
+                expect(cruxDomainId.toString()).to.be.equal(cruxdevDomainId.toString());
+                expect(staticMocksBlockstackNamingServiceApiClient.getNamesByAddress.calledTwice).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNamesByAddress.calledWith(sinon.match.any, cruxdevConfigNameDetails.address)).to.be.true;
+            })
         })
-        describe('putClientConfig', () => {})
-        describe('restoreDomain', () => {})
-        describe('getAddressMap', () => {})
-        describe('putAddressMap', () => {})
-        describe('getBlockstackIdFromKeyManager', () => {})
-        describe('isCruxIdAvailable', () => {})
-        describe('registerCruxId', () => {})
-        describe('getCruxIdRegistrationStatus', () => {})
-    })
-    describe('Testing BlockstackSubdomainRegistrarApiClient', () => {
-    })
-    describe('Testing BlockstackNamingServiceApiClient', () => {
+        describe('getCruxIdWithKeyManager tests', () => {
+            it('"mascot6699" should be available on the corresponding key', async () => {
+                staticMocksBlockstackNamingServiceApiClient.getNamesByAddress.resolves({
+                    "names": [
+                        "damn.zel_crux.id",
+                        "mascot6699.cruxdev_crux.id"
+                    ]
+                });
+                const cruxId = await blockstackService.getCruxIdWithKeyManager(testUserKeyManager, cruxdevDomainId);
+                expect(cruxId).to.be.instanceOf(CruxId);
+                expect(cruxId.toString()).to.be.equal(testUserCruxId.toString());
+                expect(staticMocksBlockstackNamingServiceApiClient.getNamesByAddress.calledTwice).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNamesByAddress.calledWith(sinon.match.any, testUserNameDetails.address)).to.be.true;
+            })
+        })
+        describe('isCruxIdAvailable tests', () => {
+            it('"mascot6699" should be not available', async () => {
+                const availability = await blockstackService.isCruxIdAvailable(testUserCruxId);
+                expect(availability).to.be.false;
+            })
+            it('"testcase" should be available')
+        })
+        describe('registerCruxId tests', () => {})
+        describe('getCruxIdRegistrationStatus tests', () => {})
     })
 });
