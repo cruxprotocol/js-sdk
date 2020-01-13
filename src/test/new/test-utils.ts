@@ -55,7 +55,7 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
         this.userStore.store(newUser, addressFromKeyManager);
         return new Promise((resolve, reject) => resolve(newUser));
     };
-    find = (cruxID: CruxId): Promise<boolean> => {
+    isCruxIdAvailable = (cruxID: CruxId): Promise<boolean> => {
         const result = this.userStore.getById(cruxID) === undefined;
         return new Promise((resolve, reject) => resolve(result));
     };

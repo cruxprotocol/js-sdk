@@ -299,7 +299,7 @@ describe('Infrastructure Services Test', () => {
                     statusDetail: SubdomainRegistrationStatusDetail.DONE
                 });
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
-                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calleWith(sinon.match.string, testUserBlockstackName)).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, testUserBlockstackName)).to.be.true;
             })
             it('"newuser" should be AVAILABLE', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.withArgs(sinon.match.string, newCruxUserBlockstackName).resolves({
