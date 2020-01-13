@@ -1,4 +1,5 @@
 import * as blockstack from "blockstack";
+import {decodeToken} from "jsontokens/lib";
 import { ErrorHelper, PackageErrorCode } from "../error";
 import { getLogger } from "../logger";
 import * as nameservice from "../name-service/blockstack-service";
@@ -30,8 +31,9 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: stri
     if (responseBody.indexOf("BlobNotFound") > 0 || responseBody.indexOf("NoSuchKey") > 0) {
         throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaEmptyResponse);
     } else {
-        const content = responseBody[0].decodedToken.payload.claim;
-        const pubKey = responseBody[0].decodedToken.payload.subject.publicKey;
+        const decodedToken: any = decodeToken(responseBody[0].token);
+        const content = decodedToken.payload.claim;
+        const pubKey = decodedToken.payload.subject.publicKey;
         const addressFromPub = blockstack.publicKeyToAddress(pubKey);
 
         // validate the file integrity with the token signature
