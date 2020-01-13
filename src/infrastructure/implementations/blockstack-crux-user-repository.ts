@@ -72,8 +72,8 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
     }
     private getAddressMap = async (cruxId: CruxId, tag?: string): Promise<IAddressMapping> => {
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(cruxId);
-        const gaiaHub = await this.blockstackService.getGaiaHub(cruxId);
-        const nameDetails = await this.blockstackService.getNameDetails(cruxId);
+        const gaiaHub = await this.blockstackService.getGaiaHub(cruxId, tag);
+        const nameDetails = await this.blockstackService.getNameDetails(cruxId, tag);
         if (!nameDetails.address) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingNameOwnerAddress, cruxId.toString());
         }
