@@ -199,7 +199,7 @@ export class BlockstackService {
         if (!keyManager) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
-        if (!(await this.isCruxIdAvailable(cruxId))) {
+        if (await this.isCruxIdAvailable(cruxId)) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CruxIDUnavailable, cruxId);
         }
         const blockstackId = CruxSpec.idTranslator.cruxToBlockstack(cruxId);
