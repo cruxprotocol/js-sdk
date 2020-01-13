@@ -230,14 +230,14 @@ describe('Infrastructure Repositories Test', () => {
         describe('Finding availability of CruxDomain by DomainId', () => {
             it('"cruxdev" should be unavailable', async () => {
                 mockBlockstackService.getDomainRegistrationStatus.withArgs(cruxdevCruxDomainId).resolves(DomainRegistrationStatus.REGISTERED);
-                const availability = await blockstackCruxDomainRepository.find(cruxdevCruxDomainId);
+                const availability = await blockstackCruxDomainRepository.isCruxDomainIdAvailable(cruxdevCruxDomainId);
                 expect(availability).to.be.false;
                 expect(mockBlockstackService.getDomainRegistrationStatus.calledOnce).to.be.true;
                 expect(mockBlockstackService.getDomainRegistrationStatus.calledWithExactly(cruxdevCruxDomainId)).to.be.true;
             })
             it('"testcase" should be available', async () => {
                 mockBlockstackService.getDomainRegistrationStatus.withArgs(testcaseCruxDomainId).resolves(DomainRegistrationStatus.AVAILABLE);
-                const availability = await blockstackCruxDomainRepository.find(testcaseCruxDomainId);
+                const availability = await blockstackCruxDomainRepository.isCruxDomainIdAvailable(testcaseCruxDomainId);
                 expect(availability).to.be.true;
                 expect(mockBlockstackService.getDomainRegistrationStatus.calledOnce).to.be.true;
                 expect(mockBlockstackService.getDomainRegistrationStatus.calledWithExactly(testcaseCruxDomainId)).to.be.true;

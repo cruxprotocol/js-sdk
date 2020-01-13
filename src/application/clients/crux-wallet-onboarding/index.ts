@@ -51,7 +51,7 @@ export class CruxOnBoardingClient {
     }
     @throwCruxOnBoardingClientError
     public isCruxDomainAvailable = async (domain: string): Promise<boolean> => {
-        return this.cruxDomainRepository.find(new CruxDomainId(domain));
+        return this.cruxDomainRepository.isCruxDomainIdAvailable(new CruxDomainId(domain));
     }
     @throwCruxOnBoardingClientError
     public registerCruxDomain = async (domain: string): Promise<void> => {

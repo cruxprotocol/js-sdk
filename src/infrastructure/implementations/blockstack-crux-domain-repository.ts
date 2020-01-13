@@ -30,7 +30,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
         });
         log.info("BlockstackCruxDomainRepository initialised");
     }
-    public find = async (cruxDomainId: CruxDomainId): Promise<boolean> => {
+    public isCruxDomainIdAvailable = async (cruxDomainId: CruxDomainId): Promise<boolean> => {
         const domainRegistrationStatus = await this.blockstackService.getDomainRegistrationStatus(cruxDomainId);
         return domainRegistrationStatus === DomainRegistrationStatus.AVAILABLE;
     }

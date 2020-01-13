@@ -44,7 +44,7 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
     }
 
     create = async (cruxID: CruxId, keyManager: IKeyManager): Promise<CruxUser> => {
-        if (!(await this.find(cruxID))) {
+        if (!(await this.isCruxIdAvailable(cruxID))) {
             throw Error("Already Exists");
         }
         const newUser = new CruxUser(cruxID, {}, {
@@ -94,7 +94,7 @@ export class InMemoryCruxDomainRepository implements ICruxDomainRepository {
         this.domainById[domainId.toString()] = newDomain;
         return new Promise((resolve, reject) => resolve(newDomain));
     };
-    public find = (domainId: CruxDomainId): Promise<boolean> => {
+    public isCruxDomainIdAvailable = (domainId: CruxDomainId): Promise<boolean> => {
         const result = this.domainById[domainId.toString()] !== undefined;
         return new Promise((resolve, reject) => resolve(result));
     };
@@ -106,10 +106,10 @@ export class InMemoryCruxDomainRepository implements ICruxDomainRepository {
         throw Error("Not defined");
     };
     public save = (cruxDomain: CruxDomain, keyManager: IKeyManager): Promise<CruxDomain> => {
-        if (this.domainById[cruxDomain.domainId.toString()] === undefined) {
+        if (this.domainById[cruxDomain.id.toString()] === undefined) {
             throw Error("No such domain exists");
         }
-        this.domainById[cruxDomain.domainId.toString()] = cruxDomain;
+        this.domainById[cruxDomain.id.toString()] = cruxDomain;
         return new Promise((resolve, reject) => resolve(cruxDomain));
     };
 }
@@ -123,7 +123,7 @@ export const addUserToRepo = async (cruxUser: CruxUser, repo: ICruxUserRepositor
 
 export const addDomainToRepo = async (cruxDomain: CruxDomain, repo: ICruxDomainRepository) => {
     // TODO: KeyManager is not used properly here to create domain
-    let createdCruxDomain = await repo.create(cruxDomain.domainId, {} as any);
+    let createdCruxDomain = await repo.create(cruxDomain.id, {} as any);
     createdCruxDomain.config = cruxDomain.config;
     repo.save(cruxDomain, {} as any);
     return repo;
