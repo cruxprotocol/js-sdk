@@ -59,6 +59,8 @@ export class CruxUser {
         this.addressMap = addressMap;
     }
     public getAddressFromAsset(assetId: string): IAddress {
+        // TODO ERC20MODE #1: check userSettings for allowParentIdLookup: true
+        // if yes, lookup parentId if assetId is not found
         return this.addressMap[assetId];
     }
     private setRegistrationStatus = (registrationStatus: ICruxUserRegistrationStatus) => {

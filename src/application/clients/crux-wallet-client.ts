@@ -118,6 +118,7 @@ export class CruxWalletClient {
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
+        // TODO ERC20MODE #2: If walletCurrencySymbol then same. if assetFilter, access another method of assetTranslator called assetFilterToAssetId
         const assetId = this.getCruxAssetTranslator().symbolToAssetId(walletCurrencySymbol);
         if (!assetId) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.AssetIDNotAvailable);
