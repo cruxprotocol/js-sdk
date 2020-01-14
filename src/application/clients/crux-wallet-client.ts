@@ -123,6 +123,7 @@ export class CruxWalletClient {
         if (!assetId) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.AssetIDNotAvailable);
         }
+        // TODO PVTADDRESS #1: getAddressFromAsset takes another parameter, this.cruxUser (if available)
         const address =  cruxUser.getAddressFromAsset(assetId);
         if (!address) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.AddressNotAvailable);
