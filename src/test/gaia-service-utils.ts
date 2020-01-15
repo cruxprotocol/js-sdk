@@ -49,7 +49,8 @@ const bnsRequestFixtures = [
             method: 'GET',
             baseUrl: 'https://core.blockstack.org',
             url: '/v1/names/ankit.zel_crux.id',
-            json: true
+            json: true,
+            qs: sinon.match.any
         },
         response: {
             address: '1DEUmC6y4RfBwz2KRaMfPp7FdCaUuF5LxQ',
@@ -68,7 +69,8 @@ const bnsRequestFixtures = [
             method: 'GET',
             baseUrl: 'https://bns.cruxpay.com',
             url: '/v1/names/ankit.zel_crux.id',
-            json: true
+            json: true,
+            qs: sinon.match.any
         },
         response: {
             address: '1DEUmC6y4RfBwz2KRaMfPp7FdCaUuF5LxQ',
