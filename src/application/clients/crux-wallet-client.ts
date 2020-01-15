@@ -2,9 +2,9 @@
 import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
 import { CruxDomain } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
-import { CruxUser, IAddress, IAddressMapping, ICruxUserRegistrationStatus } from "../../core/entities/crux-user";
+import { CruxUser, IAddress, IAddressMapping, ICruxUserRegistrationStatus, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
-import {ICruxDomainRepository} from "../../core/interfaces/crux-domain-repository";
+import { ICruxDomainRepository } from "../../core/interfaces/crux-domain-repository";
 import { ICruxUserRepository } from "../../core/interfaces/crux-user-repository";
 import { IKeyManager } from "../../core/interfaces/key-manager";
 import { BasicKeyManager } from "../../infrastructure/implementations/basic-key-manager";
@@ -16,6 +16,7 @@ import {
     BlockstackCruxUserRepository,
     IBlockstackCruxUserRepositoryOptions,
 } from "../../infrastructure/implementations/blockstack-crux-user-repository";
+import { errors, storage } from "../../packages";
 import { CruxClientError, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId, InputIDComponents } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
@@ -49,7 +50,7 @@ export const throwCruxClientError = (target: any, prop: any, descriptor?: { valu
         },
     };
 };
-export interface ICruxWalletClientOptions {
+export interface ICruxClientOptions {
     privateKey?: string | IKeyManager;
     blockstackInfrastructure?: ICruxBlockstackInfrastructure;
     cacheStorage?: StorageService;
@@ -80,14 +81,14 @@ export class CruxWalletClient {
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
     private cacheStorage?: StorageService;
 
-    constructor(options: ICruxWalletClientOptions) {
+    constructor(options: ICruxClientOptions) {
         this.cacheStorage = options.cacheStorage || new InMemStorage();
         this.cruxBlockstackInfrastructure = options.blockstackInfrastructure || CruxSpec.blockstack.infrastructure;
         this.walletClientName = options.walletClientName;
         if (options.privateKey) {
             this.keyManager = typeof options.privateKey === "string" ? new BasicKeyManager(options.privateKey) : options.privateKey;
         }
-        this.initPromise = this.init(options);
+        this.initPromise = this.initialize();
     }
 
     @throwCruxClientError
@@ -97,6 +98,10 @@ export class CruxWalletClient {
             if (this.keyManager) {
                 return {
                     cruxID: null,
+                    status: {
+                        status: SubdomainRegistrationStatus.NONE,
+                        statusDetail: SubdomainRegistrationStatusDetail.NONE,
+                    },
                 };
             } else {
                 throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
@@ -219,6 +224,11 @@ export class CruxWalletClient {
         return this.resolvedClientAssetMapping;
     }
 
+    @throwCruxClientError
+    public init = async () => {
+        await this.initPromise;
+    }
+
     private getCruxUserByID = async (cruxIdString: string, tag?: string): Promise<CruxUser|undefined> => {
         const cruxId = CruxId.fromString(cruxIdString);
         return await this.cruxUserRepository.getByCruxId(cruxId, tag);
@@ -238,7 +248,7 @@ export class CruxWalletClient {
         return this.cruxDomain;
     }
 
-    private init = async (options: ICruxWalletClientOptions): Promise<void> => {
+    private initialize = async (): Promise<void> => {
         const cruxDomainId = new CruxDomainId(this.walletClientName);
         const cruxDomainRepo: ICruxDomainRepository = getCruxDomainRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure});
         this.cruxDomain = await cruxDomainRepo.get(cruxDomainId);

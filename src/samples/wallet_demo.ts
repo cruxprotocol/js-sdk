@@ -1,4 +1,5 @@
-import { CruxWalletClient, IAddressMapping, LocalStorage, ICruxWalletClientOptions, CruxClientError, ICruxIDState } from "../index";
+// import { CruxClient, IAddressMapping, ICruxIDState, ICruxClientOptions, errors, storage } from "../index";
+import { SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail, IAddressMapping } from "../index";
 // TODO: add optional import statement to use the build
 
 const doc = (document as {
@@ -49,15 +50,15 @@ doc.getElementById('publishAddresses').innerHTML = Object.keys(sampleAddressMap)
 
 // --- @crux/js-sdk integration --- //
 // defining cruxClientOptions
-const cruxClientOptions: ICruxWalletClientOptions = {
+const cruxClientOptions: ICruxClientOptions = {
     walletClientName: walletClientName,
-    cacheStorage: new LocalStorage(),
-    privateKey: "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37f7c6f",
+    cacheStorage: new storage.LocalStorage(),
+    // privateKey: "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37f7c6f",
 }
 
 // initialising the cruxClient
-const cruxClient = new CruxWalletClient(cruxClientOptions)
-// const cruxClient = new CruxClient(cruxClientOptions)
+const cruxClient = new CruxClient(cruxClientOptions)
+
 
 // SDK functional interface
 
@@ -69,7 +70,7 @@ const isCruxIDAvailable = async () => {
         let available = await cruxClient.isCruxIDAvailable(cruxID)
         UIResponse = available ? "available" : "unavailable"
     } catch (e) {
-        if (e instanceof CruxClientError) {
+        if (e instanceof errors.CruxClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -89,14 +90,14 @@ const registerCruxID = async () => {
             const { success, failures } = await cruxClient.putAddressMap(sampleAddressMap)
             UIResponse += `\nsuccessfully published: ${JSON.stringify(success)}, \nFailed publishing: ${JSON.stringify(failures, undefined, 4)}`
         } catch (e_1) {
-            if (e_1 instanceof CruxClientError) {
+            if (e_1 instanceof errors.CruxClientError) {
                 UIResponse += `\n${e_1.errorCode}: ${e_1}`
             } else {
                 UIResponse += '\n' + e_1
             }
         }
     } catch (e) {
-        if (e instanceof CruxClientError) {
+        if (e instanceof errors.CruxClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -114,7 +115,7 @@ const resolveCurrencyAddressForCruxID = async () => {
         let resolvedAddress = await cruxClient.resolveCurrencyAddressForCruxID(cruxID, walletCurrencySymbol)
         UIResponse = JSON.stringify(resolvedAddress, undefined, 4)
     } catch (e) {
-        if (e instanceof CruxClientError) {
+        if (e instanceof errors.CruxClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -130,7 +131,7 @@ const getAssetMap = async () => {
         let assetMap = await cruxClient.getAssetMap()
         UIResponse = JSON.stringify(assetMap, undefined, 4)
     } catch (e) {
-        if (e instanceof CruxClientError) {
+        if (e instanceof errors.CruxClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -145,7 +146,7 @@ const getAddressMap = async () => {
         let addressMap = await cruxClient.getAddressMap()
         UIResponse = JSON.stringify(addressMap, undefined, 4)
     } catch (e) {
-        if (e instanceof CruxClientError) {
+        if (e instanceof errors.CruxClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -170,7 +171,7 @@ const putAddressMap = async () => {
         let {success, failures} = await cruxClient.putAddressMap(addressMap)
         UIResponse = `successfully published: ${JSON.stringify(success)}, \nFailed publishing: ${JSON.stringify(failures, undefined, 4)}`
     } catch (e) {
-        if (e instanceof CruxClientError) {
+        if (e instanceof errors.CruxClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -181,12 +182,12 @@ const putAddressMap = async () => {
 }
 const getCruxIDState = async (): Promise<ICruxIDState> => {
     let UIResponse: string = ""
-    let cruxIDStatus: ICruxIDState = {cruxID: null}
+    let cruxIDStatus: ICruxIDState = {cruxID: null, status: {status: SubdomainRegistrationStatus.NONE, statusDetail: SubdomainRegistrationStatusDetail.NONE}}
     try {
         cruxIDStatus = await cruxClient.getCruxIDState()
         UIResponse = JSON.stringify(cruxIDStatus, undefined, 4)
     } catch (e) {
-        if (e instanceof CruxClientError) {
+        if (e instanceof errors.CruxClientError) {
             UIResponse = `${e.errorCode}: ${e}`
         } else {
             UIResponse = e
@@ -198,7 +199,7 @@ const getCruxIDState = async (): Promise<ICruxIDState> => {
 }
 
 function handleCruxIDStatus(cruxIDStatus) {
-    if (cruxIDStatus.status && cruxIDStatus.status.status === "DONE") {
+    if (cruxIDStatus.status.status === "DONE") {
         [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => {
             el.style.display = "none"
         });
@@ -217,18 +218,29 @@ function initError(error) {
     doc.getElementById('init').innerHTML = message;
 }
 
-// on page load
-getCruxIDState()
-    .then((cruxIDStatus) => {
-        handleCruxIDStatus(cruxIDStatus);
-    }).catch((error) => {
-        initError(error)
-    })
+if (mode === "withoutInit") {
+    console.log("withoutInit mode");
+    getCruxIDState()
+        .then((cruxIDStatus) => {
+            handleCruxIDStatus(cruxIDStatus);
+        }).catch((error) => {
+            initError(error)
+        })
+} else {
+    console.log("withInit mode");
+    cruxClient.init()
+        .then(async () => {
+            let cruxIDStatus = await getCruxIDState();
+            handleCruxIDStatus(cruxIDStatus);
+        }).catch((error) => {
+            initError(error)
+        })
+}
 
 // Declaring global variables to be accessible for (button clicks or debugging purposes)
 declare global {
     interface Window {
-        wallet: CruxWalletClient;
+        wallet: CruxClient;
         isCruxIDAvailable: Function;
         registerCruxID: Function;
         resolveCurrencyAddressForCruxID: Function;
