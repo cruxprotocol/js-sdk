@@ -50,4 +50,5 @@ export enum PackageErrorCode {
     CouldNotFindAssetListInClientConfig = 5005,
     CouldNotFindKeyPairToRegisterName = 5006,
     ClientNotInitialized = 5007,
+    UrlValidationFailed = 5008,
 }

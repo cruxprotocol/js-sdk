@@ -7,12 +7,16 @@ import { IBitcoinKeyPair } from "./name-service/blockstack-service";
 import { LocalStorage } from "./storage";
 
 const log = getLogger(__filename);
+const urlRegex = new RegExp(`^(?:https:\\/\\/)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$`);
 
 /* istanbul ignore next */
 const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (request.UrlOptions & request.CoreOptions)): Promise<object> => {
     log.debug("network_call:", options);
     const promise: Promise<object> = new Promise((resolve, reject) => {
         const { url, fetchOptions } = translateRequestOptionsToFetchOptions(options);
+        if (!url.match(urlRegex)) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.UrlValidationFailed);
+        }
         fetch(url, fetchOptions)
             .then((res) => res.json())
             .then((json) => resolve(json))
