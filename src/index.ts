@@ -308,7 +308,7 @@ export class CruxClient {
                 identityClaim = {secrets: {identityKeyPair: this._unencryptedKeyPair}};
                 await this._encryptKeyPair();
 
-                const registeredPublicID = await (this._nameService as nameService.NameService).registerName(identityClaim, cruxIDSubdomain);
+                const registeredPublicID = await (this._nameService as nameService.NameService).registerName(Object.assign({}, identityClaim), cruxIDSubdomain);
 
                 // Setup the payIDClaim locally
                 this._setPayIDClaim(new PayIDClaim({virtualAddress: registeredPublicID, identitySecrets: identityClaim.secrets}, { getEncryptionKey: this._getEncryptionKey }));
@@ -392,7 +392,7 @@ export class CruxClient {
             const registeredCruxID = await getCruxIDByAddress(this.walletClientName, (this._unencryptedKeyPair as blockstackService.IBitcoinKeyPair).address, this._configService.getBnsNodes(), this._configService.getSubdomainRegistrar());
             if (registeredCruxID) {
                 CruxClient.validateCruxIDByWallet(this.walletClientName, registeredCruxID);
-                const payIDClaim = {identitySecrets: {identityKeyPair: this._unencryptedKeyPair}, virtualAddress: registeredCruxID || undefined};
+                const payIDClaim = {identitySecrets: {identityKeyPair: Object.assign({}, this._unencryptedKeyPair)}, virtualAddress: registeredCruxID || undefined};
                 this._setPayIDClaim(new PayIDClaim(payIDClaim, { getEncryptionKey: this._getEncryptionKey }));
             }
             await this._encryptKeyPair();
@@ -501,6 +501,12 @@ export class CruxClient {
     private _encryptKeyPair = async () => {
         if (this._unencryptedKeyPair) {
             this._keyPair = JSON.stringify(await this._encryption.encryptJSON(this._unencryptedKeyPair, await this._getEncryptionKey()));
+            for (const key in this._unencryptedKeyPair) {
+                if (this._unencryptedKeyPair.hasOwnProperty(key)) {
+                    // @ts-ignore
+                    delete this._unencryptedKeyPair[key];
+                }
+            }
             delete this._unencryptedKeyPair;
         }
     }
