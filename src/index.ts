@@ -146,7 +146,7 @@ export class CruxClient {
 
     public walletClientName: string;
     protected _getEncryptionKey: () => Promise<string>;
-    protected _keyPair?: string | blockstackService.IBitcoinKeyPair;
+    protected _keyPair?: string;
     protected _encryption: typeof encryption.Encryption;
     protected _nameService?: nameService.NameService;
     protected _payIDClaim?: PayIDClaim;
@@ -154,6 +154,7 @@ export class CruxClient {
     private _authenticated!: boolean;
     private initPromise: Promise<void>;
     private _setKeyPairPromise: Promise<void>;
+    private _unencryptedKeyPair?: blockstackService.IBitcoinKeyPair;
 
     constructor(options: ICruxClientOptions) {
         // TODO: Need to validate options
@@ -171,6 +172,7 @@ export class CruxClient {
         this.walletClientName = options.walletClientName;
 
         this._setKeyPairPromise = this._setKeyPair(options.privateKey);
+        delete options.privateKey;
 
         // Assigning cacheStorage
         cacheStorage = options.cacheStorage || new inmemStorage.InMemStorage();
@@ -301,7 +303,7 @@ export class CruxClient {
 
                 let identityClaim: nameService.IIdentityClaim | undefined;
                 await this._decryptKeyPair();
-                identityClaim = {secrets: {identityKeyPair: this._keyPair}};
+                identityClaim = {secrets: {identityKeyPair: this._unencryptedKeyPair}};
                 await this._encryptKeyPair();
 
                 const registeredPublicID = await (this._nameService as nameService.NameService).registerName(identityClaim, cruxIDSubdomain);
@@ -385,10 +387,10 @@ export class CruxClient {
         if (this._keyPair) {
             log.debug("using the keyPair provided");
             await this._decryptKeyPair();
-            const registeredCruxID = await getCruxIDByAddress(this.walletClientName, (this._keyPair as blockstackService.IBitcoinKeyPair).address, this._configService.getBnsNodes(), this._configService.getSubdomainRegistrar());
+            const registeredCruxID = await getCruxIDByAddress(this.walletClientName, (this._unencryptedKeyPair as blockstackService.IBitcoinKeyPair).address, this._configService.getBnsNodes(), this._configService.getSubdomainRegistrar());
             if (registeredCruxID) {
                 CruxClient.validateCruxIDByWallet(this.walletClientName, registeredCruxID);
-                const payIDClaim = {identitySecrets: {identityKeyPair: this._keyPair}, virtualAddress: registeredCruxID || undefined};
+                const payIDClaim = {identitySecrets: {identityKeyPair: this._unencryptedKeyPair}, virtualAddress: registeredCruxID || undefined};
                 this._setPayIDClaim(new PayIDClaim(payIDClaim, { getEncryptionKey: this._getEncryptionKey }));
             }
             await this._encryptKeyPair();
@@ -486,6 +488,7 @@ export class CruxClient {
     private _setKeyPair = async (privateKey?: string): Promise<void> => {
         if (privateKey) {
             this._keyPair = JSON.stringify(await this._encryption.encryptJSON(utils.getKeyPairFromPrivKey(privateKey), await this._getEncryptionKey()));
+            privateKey = undefined;
             this._authenticated = true;
         } else {
             this._authenticated = false;
@@ -494,18 +497,18 @@ export class CruxClient {
     }
 
     private _encryptKeyPair = async () => {
-        // assuming that the decrypted keyPair is stored as an object
-        if (typeof this._keyPair === "object") {
-            this._keyPair = JSON.stringify(await this._encryption.encryptJSON(this._keyPair, await this._getEncryptionKey()));
+        if (this._unencryptedKeyPair) {
+            this._keyPair = JSON.stringify(await this._encryption.encryptJSON(this._unencryptedKeyPair, await this._getEncryptionKey()));
+            delete this._unencryptedKeyPair;
         }
     }
 
     private _decryptKeyPair = async () => {
-        // assuming that the encrypted keyPair is stored as an object
-        if (typeof this._keyPair === "string") {
-            const encryptedKeyPairObject = JSON.parse(this._keyPair.toString());
-            this._keyPair = await this._encryption.decryptJSON(encryptedKeyPairObject.encBuffer, encryptedKeyPairObject.iv, await this._getEncryptionKey()) as blockstackService.IBitcoinKeyPair;
+        if (!this._keyPair) {
+            throw errors.ErrorHelper.getPackageError(null, errors.PackageErrorCode.PrivateKeyRequired);
         }
+        const encryptedKeyPairObject = JSON.parse(this._keyPair.toString());
+        this._unencryptedKeyPair = await this._encryption.decryptJSON(encryptedKeyPairObject.encBuffer, encryptedKeyPairObject.iv, await this._getEncryptionKey()) as blockstackService.IBitcoinKeyPair;
     }
 
 }
