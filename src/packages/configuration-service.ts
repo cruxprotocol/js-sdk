@@ -49,9 +49,9 @@ export class ConfigurationService {
     public clientName: string;
     public clientConfig?: IClientConfig;
     public globalAssetMap?: IGlobalMap;
-    public clientAssetMapping?: IClientAssetMapping;
-    public reverseClientAssetMapping?: IReverseClientAssetMapping;
-    public resolvedClientAssetMap?: IResolvedClientAssetMap;
+    public clientAssetMapping!: IClientAssetMapping;
+    public reverseClientAssetMapping!: IReverseClientAssetMapping;
+    public resolvedClientAssetMap!: IResolvedClientAssetMap;
     public nameServiceConfig?: blockstackService.IBlockstackServiceInputOptions;
 
     constructor(clientName: string) {

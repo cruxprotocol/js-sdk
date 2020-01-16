@@ -12,6 +12,7 @@ export enum PackageErrorCode {
     KeyPairMismatch = 1010,
     DifferentWalletCruxID = 1011,
     GetAddressMapFailed = 1012,
+    PayIDClaimNotFound = 1013,
     // 2000s: Gaia errors
     GaiaUploadFailed = 2001,
     GaiaCruxPayUploadFailed = 2002,
@@ -22,6 +23,7 @@ export enum PackageErrorCode {
     GaiaGetFileFailed = 2105,
     TokenVerificationFailed = 2106,
     GaiaEmptyResponse = 2107,
+    FailedToGetGaiaUrlFromZonefile = 2018,
     // 3000s: Registry errors
     SubdomainRegistrationFailed = 3001,
     SubdomainRegistrationAcknowledgementFailed = 3002,
