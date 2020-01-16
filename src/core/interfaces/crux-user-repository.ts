@@ -3,7 +3,7 @@ import { CruxUser } from "../entities/crux-user";
 import { IKeyManager } from "./key-manager";
 
 export interface ICruxUserRepository {
-    find: (cruxID: CruxId) => Promise<boolean>;
+    isCruxIdAvailable: (cruxID: CruxId) => Promise<boolean>;
     create: (cruxID: CruxId, keyManager: IKeyManager) => Promise<CruxUser>;
     getByCruxId: (cruxID: CruxId, tag?: string) => Promise<CruxUser|undefined>;
     getWithKey: (keyManager: IKeyManager, cruxDomainId: CruxDomainId) => Promise<CruxUser|undefined>;

@@ -1,5 +1,5 @@
-import { CruxOnBoardingClient, ICruxOnBoardingClientOptions } from "../clients/crux-wallet-onboarding";
-import { CruxOnBoardingClientError } from "../clients/crux-wallet-onboarding/utils";
+import { CruxOnBoardingClient, ICruxOnBoardingClientOptions } from "../application/clients/crux-wallet-onboarding";
+import { CruxOnBoardingClientError } from "../application/clients/crux-wallet-onboarding/utils";
 import { LocalStorage } from "../packages/storage";
 import { IClientAssetMapping } from "../packages/configuration-service";
 import { IBlockstackServiceInputOptions } from "../packages/name-service/blockstack-service";

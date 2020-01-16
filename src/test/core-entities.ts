@@ -1,13 +1,12 @@
-import {CruxDomain, DomainRegistrationStatus} from "../../core/entities/crux-domain";
-import {CruxSpec} from "../../core/entities/crux-spec";
+import {CruxDomain, DomainRegistrationStatus, IClientConfig} from "../core/entities/crux-domain";
+import {CruxSpec} from "../core/entities/crux-spec";
 import {
     CruxUser, IAddress, IAddressMapping,
     ICruxUserRegistrationStatus,
     SubdomainRegistrationStatus,
     SubdomainRegistrationStatusDetail
-} from "../../core/entities/crux-user";
-import {IClientConfig} from "../../packages/configuration-service";
-import {CruxDomainId, CruxId} from "../../packages/identity-utils";
+} from "../core/entities/crux-user";
+import {CruxDomainId, CruxId} from "../packages/identity-utils";
 import {expect} from 'chai';
 
 describe('Core Entities Tests', () => {

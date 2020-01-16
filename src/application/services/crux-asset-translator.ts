@@ -1,7 +1,6 @@
 import { Validations } from "../../core/entities/crux-spec";
 import { IAddress, IAddressMapping } from "../../core/entities/crux-user";
-import { errors } from "../../packages";
-import { IGlobalAssetList } from "../../packages/configuration-service";
+import { ERROR_STRINGS, PackageErrorCode } from "../../packages/error";
 import { getLogger } from "../../packages/logger";
 const log = getLogger(__filename);
 
@@ -20,6 +19,8 @@ export interface IGlobalAsset {
     parentAssetId: string|null;
 }
 
+export interface IGlobalAssetList extends Array<IGlobalAsset> {}
+
 export interface IResolvedClientAssetMap {
     [currencySymbol: string]: IGlobalAsset;
 }
@@ -37,25 +38,25 @@ export interface IPutAddressMapFailures {
 }
 
 export class CruxAssetTranslator {
-    private _assetMapping: IClientAssetMapping;
-    private _reverseAssetMap: IReverseClientAssetMapping;
+    private assetMap: IClientAssetMapping;
+    private reverseAssetMap: IReverseClientAssetMapping;
     constructor(assetMapping: IClientAssetMapping) {
         Validations.validateAssetMapping(assetMapping);
-        this._assetMapping = this.getLowerAssetMapping(assetMapping);
-        this._reverseAssetMap = {};
-        for (const walletCurrencySymbol of Object.keys(this._assetMapping)) {
-            this._reverseAssetMap[this._assetMapping[walletCurrencySymbol]] = walletCurrencySymbol;
+        this.assetMap = this.getLowerAssetMapping(assetMapping);
+        this.reverseAssetMap = {};
+        for (const walletCurrencySymbol of Object.keys(this.assetMap)) {
+            this.reverseAssetMap[this.assetMap[walletCurrencySymbol]] = walletCurrencySymbol;
         }
     }
     get assetMapping() {
-        return this._assetMapping;
+        return this.assetMap;
     }
     public symbolToAssetId(currencySymbol: string): string {
         currencySymbol = currencySymbol.toLowerCase();
-        return this._assetMapping[currencySymbol];
+        return this.assetMap[currencySymbol];
     }
     public assetIdToSymbol(assetId: string): string {
-        return this._reverseAssetMap[assetId];
+        return this.reverseAssetMap[assetId];
     }
 
     public assetIdAssetListToSymbolAssetMap(assetIdAssetList: IGlobalAssetList): IResolvedClientAssetMap {
@@ -88,7 +89,7 @@ export class CruxAssetTranslator {
                 assetAddressMap[assetId] = lowerCurrencyAddressMap[walletCurrencySymbol];
                 success[walletCurrencySymbol] = lowerCurrencyAddressMap[walletCurrencySymbol];
             } else {
-                failures[walletCurrencySymbol] = `${errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping}: ${errors.ERROR_STRINGS[errors.PackageErrorCode.CurrencyDoesNotExistInClientMapping]}`;
+                failures[walletCurrencySymbol] = `${PackageErrorCode.CurrencyDoesNotExistInClientMapping}: ${ERROR_STRINGS[PackageErrorCode.CurrencyDoesNotExistInClientMapping]}`;
             }
         }
         return {

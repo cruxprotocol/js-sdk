@@ -1,15 +1,26 @@
 import { Decoder, object, optional, string as stringValidator } from "@mojotech/json-type-validation";
+import { IClientAssetMapping, IGlobalAsset, IGlobalAssetList } from "../../application/services/crux-asset-translator";
 import config from "../../config";
-import { IClientAssetMapping, IGlobalAsset, IGlobalAssetList } from "../../packages/configuration-service";
 import { BaseError, ErrorHelper, PackageErrorCode } from "../../packages/error";
-import { BlockstackId, IdTranslator } from "../../packages/identity-utils";
-import { IBlockstackServiceInputOptions } from "../../packages/name-service/blockstack-service";
+import { CruxDomainId, CruxId, IdTranslator } from "../../packages/identity-utils";
 import { IAddress, IAddressMapping } from "../entities/crux-user";
 import globalAssetList from "../global-asset-list.json";
 import { ICruxBlockstackInfrastructure } from "../interfaces";
+import { INameServiceConfigurationOverrides } from "./crux-domain";
 const assetIdRegex = new RegExp(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$`);
 const urlRegex = new RegExp(`^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$`);
 export class Validations {
+    public static validateSubdomainString = (subDomainString: string) => {
+        const subdomainRegex: string = "^[a-z]([a-z]|[0-9]|-|_)*([a-z]|[0-9])$";
+        const subdomainMinLength: number = 4;
+        const subdomainMaxLength: number = 20;
+        if (!subDomainString.match(new RegExp(subdomainRegex))) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.SubdomainRegexMatchFailure);
+        }
+        if (subDomainString.length < subdomainMinLength || subDomainString.length > subdomainMaxLength) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.SubdomainLengthCheckFailure);
+        }
+    }
     public static validateRegex = (string: string, regex: RegExp) => {
         if (!regex.test(string)) {
             throw new BaseError(null, `regex failed for: ${string}`);
@@ -44,7 +55,7 @@ export class Validations {
     public static validateAssetMapping = (assetMapping: IClientAssetMapping) => {
         Object.keys(assetMapping).forEach((assetSymbol) => {Validations.validateAssetId(assetMapping[assetSymbol]); });
     }
-    public static validateNameServiceConfig = (nameServiceConfig: IBlockstackServiceInputOptions) => {
+    public static validateNameServiceConfig = (nameServiceConfig: INameServiceConfigurationOverrides) => {
         // TODO: domain name validation
         if (nameServiceConfig.gaiaHub) {
             Validations.validateURL(nameServiceConfig.gaiaHub);
@@ -84,15 +95,17 @@ export const CruxSpec = {
             subdomainRegistrar: config.BLOCKSTACK.SUBDOMAIN_REGISTRAR,
         };
         public static configSubdomain: string = "_config";
-        public static getDomainConfigFileName = (domain: string): string => {
-            return `${domain}_client-config.json`;
+        public static getDomainConfigFileName = (cruxDomainId: CruxDomainId): string => {
+            return `${cruxDomainId.components.domain}_client-config.json`;
         }
-        public static getConfigBlockstackID = (domain: string): string => {
-            return `${CruxSpec.blockstack.configSubdomain}.${domain}_crux.id`;
+        public static getConfigCruxId = (cruxDomainId: CruxDomainId): CruxId => {
+            return new CruxId({
+                domain: cruxDomainId.components.domain,
+                subdomain: CruxSpec.blockstack.configSubdomain,
+            });
         }
-        public static getCruxPayFilename = (blockstackId: BlockstackId): string => {
-            const cruxDomainString: string = IdTranslator.blockstackToCrux(blockstackId).components.domain;
-            return `${cruxDomainString}_cruxpay.json`;
+        public static getCruxPayFilename = (cruxId: CruxId): string => {
+            return `${cruxId.components.domain}_cruxpay.json`;
         }
     },
     globalAssetList,
