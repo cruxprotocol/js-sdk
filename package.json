@@ -64,12 +64,14 @@
   "devDependencies": {
     "@babel/core": "^7.6.0",
     "@types/chai": "^4.2.3",
+    "@types/chai-as-promised": "^7.1.2",
     "@types/cloner": "^0.4.0",
     "@types/expect": "^1.20.4",
     "@types/mocha": "^5.2.7",
     "@types/request": "^2.48.3",
     "@types/sinon": "^7.0.13",
     "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
     "cross-env": "^5.2.1",
     "git-branch-is": "^3.0.0",
     "git-pre-push": "0.0.5",
@@ -78,6 +80,7 @@
     "gulp-rename": "^1.4.0",
     "jsdom": "15.1.1",
     "jsdom-global": "3.0.2",
+    "libsignal-protocol-nodejs": "^0.1.4",
     "lockfile-lint": "^3.0.5",
     "mocha": "^6.2.0",
     "mocha-reporter": "^0.1.1",
@@ -89,9 +92,7 @@
     "ts-node": "^8.4.1",
     "tslint": "5.20.0",
     "typedoc": "^0.15.0",
-    "typescript": "^3.6.3",
-    "chai-as-promised": "^7.1.1",
-    "@types/chai-as-promised": "^7.1.2"
+    "typescript": "^3.6.3"
   },
   "dependencies": {
     "@mojotech/json-type-validation": "^3.1.0",
@@ -101,6 +102,7 @@
     "cloner": "^0.4.0",
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
-    "regenerator-runtime": "^0.13.3"
+    "regenerator-runtime": "^0.13.3",
+    "libsignal-protocol-nodejs": "*"
   }
 }
