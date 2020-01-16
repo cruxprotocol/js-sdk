@@ -174,9 +174,9 @@ describe('CruxClient tests', () => {
                 localStorage.clear();
 
                 // Initialising the CruxClient
-                let cruxClient = new CruxClient(Object.assign(walletOptions, {
+                let cruxClient = new CruxClient(Object.assign({
                     privateKey: sampleUser.decryptedPayIDClaim.identitySecrets.identityKeyPair.privKey
-                }));
+                }, walletOptions));
                 await cruxClient.init();
 
                 // stubbing runtime property

@@ -305,7 +305,7 @@ export class CruxClient {
 
                 let identityClaim: nameService.IIdentityClaim | undefined;
                 await this._decryptKeyPair();
-                identityClaim = {secrets: {identityKeyPair: this._unencryptedKeyPair}};
+                identityClaim = {secrets: {identityKeyPair: Object.assign({}, this._unencryptedKeyPair)}};
                 await this._encryptKeyPair();
 
                 const registeredPublicID = await (this._nameService as nameService.NameService).registerName(Object.assign({}, identityClaim), cruxIDSubdomain);
