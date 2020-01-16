@@ -18,7 +18,6 @@ import * as nameService from "./index";
 import { fetchNameDetails } from "./utils";
 
 const log = getLogger(__filename);
-export const MNEMONIC_STORAGE_KEY: string = "encryptedMnemonic";
 
 // Blockstack Nameservice implementation
 export interface IBitcoinKeyPair {

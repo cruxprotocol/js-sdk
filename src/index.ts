@@ -104,7 +104,7 @@ export class PayIDClaim implements ICruxPayClaim {
         log.debug(`Encrypting PayIDClaim`);
         if (!this._isEncrypted()) {
             if (!encryptionKey) {
-                encryptionKey = this._getEncryptionKey();
+                encryptionKey = await this._getEncryptionKey();
             }
             this.identitySecrets = JSON.stringify(await this._encryption.encryptJSON(this.identitySecrets as object, encryptionKey));
         }
@@ -116,7 +116,7 @@ export class PayIDClaim implements ICruxPayClaim {
             // Decrypt the identitySecrets
             const encryptedObj = JSON.parse(this.identitySecrets as string);
             if (!encryptionKey) {
-                encryptionKey = this._getEncryptionKey();
+                encryptionKey = await this._getEncryptionKey();
             }
             this.identitySecrets = (await this._encryption.decryptJSON(encryptedObj.encBuffer, encryptedObj.iv, encryptionKey) as nameService.IIdentityClaim);
         }
