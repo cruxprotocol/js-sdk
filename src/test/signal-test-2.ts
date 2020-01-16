@@ -29,7 +29,7 @@ class NullEncryptor implements GenericEncryptor{
         return serializedMessage
     }
 
-    decrypt(encryptedMessage: any) {
+    public decrypt(encryptedMessage: any) {
         return encryptedMessage
     }
 }
@@ -133,7 +133,7 @@ class SecureMessenger extends EventEmitter{
         this.transport.send(to, encryptedSerializedMessage)
 
     }
-    public handleNewMessage(encryptedMessage: string){
+    public handleNewMessage = (encryptedMessage: string) => {
         const decryptedSerializedMessage = this.encryptor.decrypt(encryptedMessage)
         this.emit('newMessage', this.serde.deserialize(decryptedSerializedMessage))
     }
@@ -230,33 +230,33 @@ describe('test basic secure messaging design', async function() {
     });
 
 
-    it('try transport', async function(done) {
+    it('try secure messenger', async function(done) {
         const sharedEventBus = new SharedEventBuses()
 
 
         // person A
         const userAId = new SecureMessengerId('ankit')
-        // const userAEncryptor = new NullEncryptor()
+        const userAEncryptor = new NullEncryptor()
         const userATransport = new InMemTransport(sharedEventBus, userAId)
-        // const userASecureMessenger = new SecureMessenger(userAEncryptor, userATransport)
+        const userASecureMessenger = new SecureMessenger(userAEncryptor, userATransport)
 
         // person B
         const userBId = new SecureMessengerId('yadu')
-        // const userBEncryptor = new NullEncryptor()
+        const userBEncryptor = new NullEncryptor()
         const userBTransport = new InMemTransport(sharedEventBus, userBId)
-        // const userBSecureMessenger = new SecureMessenger(userBEncryptor, userBTransport)
+        const userBSecureMessenger = new SecureMessenger(userBEncryptor, userBTransport)
 
         // person A wants to send person B some data -
-        console.log('prep done. adding listenr')
+        console.log('prep done. adding listener')
 
-        userBTransport.on('newMessage', function(msg: any) {
-            console.log("userBTransport received msg")
-            console.log(msg)
+        userBSecureMessenger.on('newMessage', function(msg){
+            console.log('User B received newMessage')
+            console.log(msg);
             done()
-        })
+        });
 
         console.log('added listener. sending msg')
-        userATransport.send(userBId, 'HelloHelloBolke')
+        userASecureMessenger.send(userBId, 'TESTYOLO')
 
         console.log('msg sent')
 
