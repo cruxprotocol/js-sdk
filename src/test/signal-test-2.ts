@@ -4,6 +4,9 @@ import signal from 'libsignal-protocol-nodejs';
 import SessionRecord from 'libsignal-protocol-nodejs/src/SessionRecord.js';
 import EventEmitter from "events"
 import TypedEmitter from "typed-emitter"
+import {CruxDomain} from "../core/entities";
+import {IKeyManager} from "../core/interfaces";
+import {CruxDomainId} from "../packages";
 import {util} from './signalutil';
 import {SignalProtocolStore} from './signalutil';
 import {addDomainToRepo, addUserToRepo, InMemoryCruxDomainRepository, InMemoryCruxUserRepository} from "./test-utils";
@@ -13,8 +16,8 @@ import {addDomainToRepo, addUserToRepo, InMemoryCruxDomainRepository, InMemoryCr
 
 
 interface GenericEncryptor {
-    encrypt: (foo: string) => string;
-    decrypt: (foo: string) => string;
+    encryptFor: (foo: string, forId: SecureMessengerId) => string;
+    decryptFrom: (foo: string, fromId: SecureMessengerId) => string;
 }
 
 interface GenericTransport {
@@ -25,11 +28,29 @@ interface GenericTransport {
 
 class NullEncryptor implements GenericEncryptor{
 
-    public encrypt(serializedMessage: string) {
+    public encryptFor(serializedMessage: string, forId: SecureMessengerId) {
         return serializedMessage
     }
 
-    public decrypt(encryptedMessage: any) {
+    public decryptFrom(encryptedMessage: any, fromId: SecureMessengerId) {
+        return encryptedMessage
+    }
+}
+
+
+class ECDHEncryptor implements GenericEncryptor{
+    private selfId: SecureMessengerId;
+    constructor(selfId: SecureMessengerId, ecdhParamsStore, selfKeyManager){
+        this.selfId = selfId
+
+    }
+
+    public encryptFor(serializedMessage: string, forId: SecureMessengerId) {
+        encryptEcdh(serializedMessage, ecdhParamsStore.getPublicKey(forId))
+        return serializedMessage
+    }
+
+    public decryptFrom(encryptedMessage: any, fromId: SecureMessengerId) {
         return encryptedMessage
     }
 }

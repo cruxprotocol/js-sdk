@@ -83,7 +83,7 @@ describe('test it', async function() {
         var bobSessionCipher = new signal.SessionCipher(this.bobStore, this.ALICE_ADDRESS);
         const decryptedMessage = await bobSessionCipher.decryptPreKeyWhisperMessage(cipherText.body, 'binary');
         console.log(util.toString(decryptedMessage))
-
+        done()
 
     });
 
