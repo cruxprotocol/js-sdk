@@ -1,4 +1,4 @@
-import { publicKeyToAddress, verifyProfileToken, wrapProfileToken } from "blockstack";
+import { decodeToken, publicKeyToAddress, verifyProfileToken, wrapProfileToken } from "blockstack";
 import { IKeyManager } from "../../core/interfaces/key-manager";
 import { ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { getLogger } from "../../packages/logger";
@@ -27,8 +27,9 @@ export class GaiaService {
         if (responseBody.indexOf("BlobNotFound") > 0 || responseBody.indexOf("NoSuchKey") > 0) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaEmptyResponse);
         }
-        const content = responseBody[0].decodedToken.payload.claim;
-        const pubKey = responseBody[0].decodedToken.payload.subject.publicKey;
+        const decodedToken: any = decodeToken(responseBody[0].token);
+        const content = decodedToken.payload.claim;
+        const pubKey = decodedToken.payload.subject.publicKey;
         const addressFromPub = publicKeyToAddress(pubKey);
         // validate the file integrity with the token signature
         try {

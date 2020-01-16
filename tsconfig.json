@@ -63,14 +63,15 @@
   },
   "exclude": [
     "src/test",
-    "src/samples"
+    "src/samples",
+    "dist"
   ],
   "typedocOptions": {
     "mode": "file",
     "excludePrivate": true,
     "excludeNotExported": true,
     "excludeProtected": true,
-    "excludeExternals": true,
+    "excludeExternals": true
     // "theme": "minimal",
   }
 
