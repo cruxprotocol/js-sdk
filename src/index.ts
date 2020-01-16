@@ -12,7 +12,6 @@ import {
     storage,
     utils,
 } from "./packages";
-import { BaseError } from "./packages/error";
 import { getLogger } from "./packages/logger";
 import { getCruxIDByAddress } from "./packages/name-service/utils";
 
@@ -494,7 +493,7 @@ export class CruxClient {
 
     private _getNameservice = (): nameService.NameService => {
         if (!this._nameService) {
-            throw new BaseError(null, "Nameservice not initialized");
+            throw new errors.BaseError(null, "Nameservice not initialized");
         }
         return this._nameService;
     }
