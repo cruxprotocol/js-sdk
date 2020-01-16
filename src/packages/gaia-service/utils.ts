@@ -70,12 +70,15 @@ export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes
     let gaiaWrite: string | undefined;
     if (nameData.zonefile.match(new RegExp("(.+)https:\/\/hub.cruxpay.com\/hub\/(.+)\/profile.json"))) {
         gaiaWrite = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/hub\/(.+)\/profile.json", "s"))[2];
-        gaiaRead = await getGaiaReadUrl(gaiaWrite as string);
+        gaiaRead = await getGaiaReadUrl(gaiaWrite);
     } else if (nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json"))) {
         gaiaRead = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/(.+)\/profile.json", "s"))[2] + "/";
     } else {
         gaiaWrite = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1)[0];
-        gaiaRead = await getGaiaReadUrl(gaiaWrite as string);
+        if (!gaiaWrite) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.FailedToGetGaiaUrlFromZonefile);
+        }
+        gaiaRead = await getGaiaReadUrl(gaiaWrite);
     }
     const gaiaDetails: gaiaData = {
         gaiaReadUrl: gaiaRead,
