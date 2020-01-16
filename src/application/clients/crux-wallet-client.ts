@@ -2,7 +2,7 @@
 import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
 import { CruxDomain } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
-import { CruxUser, IAddress, IAddressMapping, ICruxUserRegistrationStatus } from "../../core/entities/crux-user";
+import { CruxUser, IAddress, IAddressMapping, ICruxUserRegistrationStatus, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxDomainRepository} from "../../core/interfaces/crux-domain-repository";
 import { ICruxUserRepository } from "../../core/interfaces/crux-user-repository";
@@ -58,7 +58,7 @@ export interface ICruxWalletClientOptions {
 
 export interface ICruxIDState {
     cruxID: string | null;
-    status?: ICruxUserRegistrationStatus;
+    status: ICruxUserRegistrationStatus;
 }
 
 export const getCruxDomainRepository = (options: IBlockstackCruxDomainRepositoryOptions): ICruxDomainRepository => {
@@ -97,6 +97,10 @@ export class CruxWalletClient {
             if (this.keyManager) {
                 return {
                     cruxID: null,
+                    status: {
+                        status: SubdomainRegistrationStatus.NONE,
+                        statusDetail: SubdomainRegistrationStatusDetail.NONE,
+                    },
                 };
             } else {
                 throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
