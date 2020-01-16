@@ -107,6 +107,7 @@ export class PayIDClaim implements ICruxPayClaim {
                 encryptionKey = await this._getEncryptionKey();
             }
             this.identitySecrets = JSON.stringify(await this._encryption.encryptJSON(this.identitySecrets as object, encryptionKey));
+            encryptionKey = undefined;
         }
     }
 
@@ -119,6 +120,7 @@ export class PayIDClaim implements ICruxPayClaim {
                 encryptionKey = await this._getEncryptionKey();
             }
             this.identitySecrets = (await this._encryption.decryptJSON(encryptedObj.encBuffer, encryptedObj.iv, encryptionKey) as nameService.IIdentityClaim);
+            encryptionKey = undefined;
         }
     }
 
