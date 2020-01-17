@@ -14,7 +14,7 @@ const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (
     log.debug("network_call:", options);
     const promise: Promise<object> = new Promise((resolve, reject) => {
         const { url, fetchOptions } = translateRequestOptionsToFetchOptions(options);
-        if (!url.match(urlRegex)) {
+        if (!urlRegex.test(url)) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.InsecureNetworkCall);
         }
         fetch(url, fetchOptions)
