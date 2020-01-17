@@ -7,7 +7,7 @@ import { IBitcoinKeyPair } from "./name-service/blockstack-service";
 import { LocalStorage } from "./storage";
 
 const log = getLogger(__filename);
-const urlRegex = new RegExp(`^https:\/\/.*$`);
+const urlRegex = new RegExp(`^https:\/\/.+$`);
 
 /* istanbul ignore next */
 const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (request.UrlOptions & request.CoreOptions)): Promise<object> => {
