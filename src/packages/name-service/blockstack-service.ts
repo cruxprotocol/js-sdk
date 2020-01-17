@@ -18,7 +18,6 @@ import * as nameService from "./index";
 import { fetchNameDetails } from "./utils";
 
 const log = getLogger(__filename);
-export const MNEMONIC_STORAGE_KEY: string = "encryptedMnemonic";
 
 // Blockstack Nameservice implementation
 export interface IBitcoinKeyPair {
@@ -160,7 +159,7 @@ export class BlockstackService extends nameService.NameService {
         // Publishing an empty addressMap while registering the name to be fail safe
         await this._uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityKeyPair.privKey, {}, IdTranslator.blockstackDomainToCruxDomain(this._domain));
 
-        const registeredSubdomain = await this._registerSubdomain(subdomain, identityKeyPair.address);
+        await this._registerSubdomain(subdomain, identityKeyPair.address);
         this._identityCouple = getIdentityCoupleFromBlockstackId(new BlockstackId({
             domain: this._domain,
             subdomain,
@@ -258,19 +257,6 @@ export class BlockstackService extends nameService.NameService {
         const cruxId = CruxId.fromString(fullCruxId);
         const blockstackIdString = IdTranslator.cruxToBlockstack(cruxId).toString();
         return await this._getContentFromGaiaHub(blockstackIdString, UPLOADABLE_JSON_FILES.CRUXPAY, cruxId.components.domain, tag);
-    }
-
-    private _storeMnemonic = async (mnemonic: string, storage: StorageService, encryptionKey: string): Promise<void> => {
-        await storage.setItem(MNEMONIC_STORAGE_KEY, JSON.stringify(await Encryption.encryptText(mnemonic, encryptionKey)));
-    }
-
-    private _retrieveMnemonic = async (storage: StorageService, encryptionKey: string): Promise<string> => {
-        const encryptedMnemonic = JSON.parse(await storage.getItem(MNEMONIC_STORAGE_KEY) as string) as {encBuffer: string, iv: string};
-        return await Encryption.decryptText(encryptedMnemonic.encBuffer, encryptedMnemonic.iv, encryptionKey);
-    }
-
-    private _generateMnemonic = (): string => {
-        return bip39.generateMnemonic(128, randomBytes);
     }
 
     private _registerSubdomain = async (name: string, bitcoinAddress: string): Promise<string> => {

@@ -1,4 +1,5 @@
 import * as blockstack from "blockstack";
+import {decodeToken} from "jsontokens/lib";
 import { ErrorHelper, PackageErrorCode } from "../error";
 import { getLogger } from "../logger";
 import * as nameservice from "../name-service/blockstack-service";
@@ -30,8 +31,9 @@ export const getContentFromGaiaHub = async (blockstackId: string, filename: stri
     if (responseBody.indexOf("BlobNotFound") > 0 || responseBody.indexOf("NoSuchKey") > 0) {
         throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaEmptyResponse);
     } else {
-        const content = responseBody[0].decodedToken.payload.claim;
-        const pubKey = responseBody[0].decodedToken.payload.subject.publicKey;
+        const decodedToken: any = decodeToken(responseBody[0].token);
+        const content = decodedToken.payload.claim;
+        const pubKey = decodedToken.payload.subject.publicKey;
         const addressFromPub = blockstack.publicKeyToAddress(pubKey);
 
         // validate the file integrity with the token signature
@@ -68,12 +70,15 @@ export const getGaiaDataFromBlockstackID = async (blockstackId: string, bnsNodes
     let gaiaWrite: string | undefined;
     if (nameData.zonefile.match(new RegExp("(.+)https:\/\/hub.cruxpay.com\/hub\/(.+)\/profile.json"))) {
         gaiaWrite = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/hub\/(.+)\/profile.json", "s"))[2];
-        gaiaRead = await getGaiaReadUrl(gaiaWrite as string);
+        gaiaRead = await getGaiaReadUrl(gaiaWrite);
     } else if (nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/profile.json"))) {
         gaiaRead = "https://" + nameData.zonefile.match(new RegExp("(.+)https:\/\/(.+)\/(.+)\/profile.json", "s"))[2] + "/";
     } else {
         gaiaWrite = nameData.zonefile.match(new RegExp("https:\/\/(.+)")).slice(0, -1)[0];
-        gaiaRead = await getGaiaReadUrl(gaiaWrite as string);
+        if (!gaiaWrite) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.FailedToGetGaiaUrlFromZonefile);
+        }
+        gaiaRead = await getGaiaReadUrl(gaiaWrite);
     }
     const gaiaDetails: gaiaData = {
         gaiaReadUrl: gaiaRead,

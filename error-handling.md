@@ -8,7 +8,6 @@ const {CruxClient, errors} = CruxPay;
 
 // defining cruxClientOptions
 let cruxClientOptions: ICruxPayPeerOptions = {
-    getEncryptionKey: () => "fooKey",
     walletClientName: "cruxdev"
 }
 
