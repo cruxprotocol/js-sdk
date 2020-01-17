@@ -97,7 +97,7 @@ export class PayIDClaim implements ICruxPayClaim {
         this.virtualAddress = cruxPayObj.virtualAddress;
         this.identitySecrets = cruxPayObj.identitySecrets;
 
-        log.info(`PayIDClaim initialised`);
+        log.debug(`PayIDClaim initialised`);
     }
 
     public encrypt = async (encryptionKey?: string): Promise<void> => {
@@ -182,8 +182,8 @@ export class CruxClient {
         // Assigning cacheStorage
         cacheStorage = this._options.cacheStorage || new inmemStorage.InMemStorage();
 
-        log.info(`Config mode:`, config.CONFIG_MODE);
-        log.info(`CruxPayClient: constructor called`);
+        log.debug(`Config mode:`, config.CONFIG_MODE);
+        log.debug(`CruxPayClient: constructor called`);
         this.initPromise = this._init();
     }
 
@@ -396,7 +396,7 @@ export class CruxClient {
         }
         await this._initializeNameService().then(() => this._restoreIdentity());
 
-        log.info(`CruxPayClient: _init complete`);
+        log.debug(`CruxPayClient: _init complete`);
     }
 
     private _getIDStatus = async (): Promise<nameService.CruxIDRegistrationStatus> => {
@@ -460,13 +460,13 @@ export class CruxClient {
             try {
                 const identityClaim = await this._getNameservice().restoreIdentity(this._payIDClaim.virtualAddress, {secrets: this._payIDClaim.identitySecrets});
                 this._getPayIDClaim().identitySecrets = identityClaim.secrets;
-                log.info(`Identity restored`);
+                log.debug(`Identity restored`);
             } finally {
                 log.debug("Encrypting and saving the payIDClaim");
                 await this._getPayIDClaim().encrypt();
             }
         } else {
-            log.info(`payIDClaim or identitySecrets not available! Identity restoration skipped`);
+            log.debug(`payIDClaim or identitySecrets not available! Identity restoration skipped`);
         }
     }
 

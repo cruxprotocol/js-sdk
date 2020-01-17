@@ -1,5 +1,6 @@
 {
     "CONFIG_MODE": "DEV",
+    "LOGGING_LEVEL": "DEBUG",
     "BLOCKSTACK": {
         "SUBDOMAIN_REGISTRAR": "https://registrar.coinswitch.co:3000",
         "GAIA_HUB": "https://hub.cruxpay.com",
