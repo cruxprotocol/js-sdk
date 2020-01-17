@@ -28,7 +28,7 @@ export class Encryption {
         };
         const hash = ncrypto.createHash("sha256");
         hash.update(pwUtf8);
-        const pwHash = typedArrayToBuffer(await hash.digest());
+        const pwHash = typedArrayToBuffer(hash.digest());
         const iv = crypto.getRandomValues(new Uint8Array(12));
         return encrypt(ptUtf8, iv, pwHash);
     }
@@ -39,7 +39,7 @@ export class Encryption {
         const pwUtf8 = Buffer.from(password);
         const hash = ncrypto.createHash("sha256");
         hash.update(pwUtf8);
-        const pwHash = typedArrayToBuffer(await hash.digest());
+        const pwHash = typedArrayToBuffer(hash.digest());
         const decrypt = (buffer: any, eiv: any, ekey: any, tagLength: any) => {
             const decipher = ncrypto.createDecipheriv("aes-256-gcm", Buffer.from(ekey), eiv);
             const tag = buffer.slice(buffer.byteLength - tagLength);
