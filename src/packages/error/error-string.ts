@@ -47,6 +47,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.TokenVerificationFailed]: "Token verification failed for '{0}'",
     [PackageErrorCode.UserDoesNotExist]: "ID does not exist",
     [PackageErrorCode.IdentityMismatch]: "Identity mismatch",
+    [PackageErrorCode.InsecureNetworkCall]: "Insecure network call",
     [PackageErrorCode.PayIDClaimNotFound]: "Pay ID claim not found",
     [PackageErrorCode.FailedToGetGaiaUrlFromZonefile]: "Failed to get Gaia URL from user's zonefile",
 };
