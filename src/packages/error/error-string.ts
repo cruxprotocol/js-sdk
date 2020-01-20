@@ -22,7 +22,6 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.CouldNotFindKeyPairToRestoreIdentity]: "Require keypair for restoring the identity",
     [PackageErrorCode.CouldNotFindKeyPairToRegisterName]: "Require keypair for registering name/subdomain",
     [PackageErrorCode.CouldNotValidateZoneFile]: "Invalid zonefile",
-    [PackageErrorCode.CouldNotExtractGaiaDataFromZoneFile]: "Could not extract gaia data from zonefile: '{0}'",
     [PackageErrorCode.CruxDomainInvalidStructure]: "Invalid Crux Domian",
     [PackageErrorCode.CruxDomainNamespaceValidation]: "Invalid Crux Domain namespace: '{0}', should end with .crux",
     [PackageErrorCode.CruxIdNamespaceValidation]: "Invalid Crux ID namespace: '{0}', should end with .crux",
@@ -66,5 +65,5 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.InvalidWalletClientName]: "Invalid Wallet Client Name",
     [PackageErrorCode.InsecureNetworkCall]: "Insecure network call",
     [PackageErrorCode.PayIDClaimNotFound]: "Pay ID claim not found",
-    [PackageErrorCode.FailedToGetGaiaUrlFromZonefile]: "Failed to get Gaia URL from user's zonefile",
+    [PackageErrorCode.FailedToGetGaiaUrlFromZonefile]: "Failed to get Gaia URL from user's zonefile: '{0}'",
 };
