@@ -6,14 +6,14 @@ import { getLogger } from "./logger";
 import { StorageService } from "./storage";
 
 const log = getLogger(__filename);
-const urlRegex = new RegExp(`^https:\/\/.+$`);
+const httpsPrefixRegex = new RegExp(`^https:\/\/.+$`);
 
 /* istanbul ignore next */
 const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (request.UrlOptions & request.CoreOptions)): Promise<object> => {
     log.debug("network_call:", options);
     const promise: Promise<object> = new Promise((resolve, reject) => {
         const { url, fetchOptions } = translateRequestOptionsToFetchOptions(options);
-        if (!urlRegex.test(url)) {
+        if (!httpsPrefixRegex.test(url)) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.InsecureNetworkCall);
         }
         fetch(url, fetchOptions)
