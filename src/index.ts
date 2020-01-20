@@ -107,6 +107,7 @@ export class PayIDClaim implements ICruxPayClaim {
                 encryptionKey = await this._getEncryptionKey();
             }
             this.identitySecrets = JSON.stringify(await this._encryption.encryptJSON(this.identitySecrets as object, encryptionKey));
+            encryptionKey = "0".repeat(encryptionKey.length);
             encryptionKey = undefined;
         }
     }
@@ -120,6 +121,7 @@ export class PayIDClaim implements ICruxPayClaim {
                 encryptionKey = await this._getEncryptionKey();
             }
             this.identitySecrets = (await this._encryption.decryptJSON(encryptedObj.encBuffer, encryptedObj.iv, encryptionKey) as nameService.IIdentityClaim);
+            encryptionKey = "0".repeat(encryptionKey.length);
             encryptionKey = undefined;
         }
     }
@@ -312,7 +314,7 @@ export class CruxClient {
 
                 // Setup the payIDClaim locally
                 this._setPayIDClaim(new PayIDClaim({virtualAddress: registeredPublicID, identitySecrets: identityClaim.secrets}, { getEncryptionKey: this._getEncryptionKey }));
-                identityClaim = undefined;
+                utils.clearObject(identityClaim);
                 // await this._payIDClaim.setPasscode(passcode)
                 await this._getPayIDClaim().encrypt();
                 return;
@@ -504,6 +506,7 @@ export class CruxClient {
     private _setKeyPair = async (privateKey?: string): Promise<void> => {
         if (privateKey) {
             this._keyPair = JSON.stringify(await this._encryption.encryptJSON(utils.getKeyPairFromPrivKey(privateKey), await this._getEncryptionKey()));
+            privateKey = "0".repeat(privateKey.length);
             privateKey = undefined;
             this._authenticated = true;
         } else {
@@ -515,12 +518,7 @@ export class CruxClient {
     private _encryptKeyPair = async () => {
         if (this._unencryptedKeyPair) {
             this._keyPair = JSON.stringify(await this._encryption.encryptJSON(this._unencryptedKeyPair, await this._getEncryptionKey()));
-            for (const key in this._unencryptedKeyPair) {
-                if (this._unencryptedKeyPair.hasOwnProperty(key)) {
-                    // @ts-ignore
-                    delete this._unencryptedKeyPair[key];
-                }
-            }
+            utils.clearObject(this._unencryptedKeyPair);
             delete this._unencryptedKeyPair;
         }
     }

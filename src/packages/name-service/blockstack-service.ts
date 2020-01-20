@@ -164,7 +164,7 @@ export class BlockstackService extends nameService.NameService {
             domain: this._domain,
             subdomain,
         }));
-        this._deleteIdentityClaim(identityClaim);
+        utils.clearObject(identityClaim);
         return this._identityCouple.cruxId.toString();
     }
 
@@ -204,7 +204,7 @@ export class BlockstackService extends nameService.NameService {
         log.debug("registration query params", options);
         const body = await utils.httpJSONRequest(options);
         const registrationStatus = this.getCruxIdRegistrationStatus(body);
-        this._deleteIdentityClaim(identityClaim);
+        utils.clearObject(identityClaim);
         return registrationStatus;
     }
 
@@ -253,7 +253,7 @@ export class BlockstackService extends nameService.NameService {
             throw ErrorHelper.getPackageError(error, PackageErrorCode.AddressMappingDecodingFailure);
         }
         await this._uploadContentToGaiaHub(UPLOADABLE_JSON_FILES.CRUXPAY, identityClaim.secrets.identityKeyPair.privKey, addressMapping, IdTranslator.blockstackDomainToCruxDomain(this._domain));
-        this._deleteIdentityClaim(identityClaim);
+        utils.clearObject(identityClaim);
         return;
     }
 
@@ -362,13 +362,4 @@ export class BlockstackService extends nameService.NameService {
         return responseBody;
     }
 
-    private _deleteIdentityClaim = (identityClaim?: nameService.IIdentityClaim) => {
-        for (const key in identityClaim) {
-            if (identityClaim.hasOwnProperty(key)) {
-                // @ts-ignore
-                delete identityClaim[key];
-            }
-        }
-        identityClaim = undefined;
-    }
 }
