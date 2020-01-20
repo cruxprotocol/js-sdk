@@ -15,7 +15,8 @@ export class GaiaService {
     public uploadContentToGaiaHub = async (filename: string, privKey: string, content: any, type = "application/json"): Promise<string> => {
         const sanitizedPrivKey = sanitizePrivKey(privKey);
         const hubURL = this.gaiaWriteUrl;
-        const hubConfig = await blockstack.connectToGaiaHub(hubURL, sanitizedPrivKey);
+        const tokenValidityBufferTime = 300;  // in seconds
+        const hubConfig = await blockstack.connectToGaiaHub(hubURL, sanitizedPrivKey, undefined, tokenValidityBufferTime);
         const tokenFile = this._generateTokenFileForContent(sanitizedPrivKey, content);
         const contentToUpload: string = JSON.stringify(tokenFile);
         return await blockstack.uploadToGaiaHub(filename, contentToUpload, hubConfig, type);

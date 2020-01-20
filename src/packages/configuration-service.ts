@@ -56,7 +56,7 @@ export class ConfigurationService {
 
     constructor(clientName: string) {
         this.clientName = clientName;
-        log.info(`BlockstackConfigurationService initialised with default configs`);
+        log.debug(`BlockstackConfigurationService initialised with default configs`);
     }
 
     public init = async () => {

@@ -180,6 +180,7 @@ export class BlockstackService extends nameService.NameService {
         let status: SubdomainRegistrationStatus;
         let statusDetail: string = "";
         if (nameData.status === "registered_subdomain") {
+            // tslint:disable-next-line: tsr-detect-possible-timing-attacks
             if (nameData.address === identityClaim.secrets.identityKeyPair.address) {
                 status = SubdomainRegistrationStatus.DONE;
                 statusDetail = SubdomainRegistrationStatusDetail.DONE;
@@ -298,7 +299,7 @@ export class BlockstackService extends nameService.NameService {
     private getCruxIdRegistrationStatus = (body: any): nameService.CruxIDRegistrationStatus =>  {
         let status: nameService.CruxIDRegistrationStatus;
         const rawStatus = body.status;
-        log.info(body);
+        log.debug(body);
         if (rawStatus && rawStatus.includes("Your subdomain was registered in transaction")) {
             status = {
             status: SubdomainRegistrationStatus.PENDING,
