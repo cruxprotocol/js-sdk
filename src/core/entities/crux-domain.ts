@@ -28,7 +28,7 @@ export class CruxDomain {
         this.domainId = cruxDomainId;
         this.setRegistrationStatus(registrationStatus);
         this.setConfig(domainConfig);
-        log.info("CruxDomain initialised");
+        log.debug("CruxDomain initialised");
     }
     get id() {
         return this.domainId;

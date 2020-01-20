@@ -90,7 +90,7 @@ export class BlockstackService {
     public static getCruxUserRegistrationStatusFromSubdomainStatus = (subdomainStatus: {status: string, statusCode?: number}): ICruxUserRegistrationStatus =>  {
         let status: ICruxUserRegistrationStatus;
         const rawStatus = subdomainStatus.status;
-        log.info(subdomainStatus);
+        log.debug(subdomainStatus);
         if (rawStatus && rawStatus.includes("Your subdomain was registered in transaction")) {
             status = {
                 status: SubdomainRegistrationStatus.PENDING,

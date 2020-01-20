@@ -42,7 +42,7 @@ export class CruxUser {
         this.cruxUserID = cruxID;
         this.setAddressMap(addressMap);
         this.registrationStatus = this.setRegistrationStatus(registrationStatus);
-        log.info("CruxUser initialised");
+        log.debug("CruxUser initialised");
     }
     get cruxID() {
         return this.cruxUserID;
