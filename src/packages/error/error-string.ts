@@ -65,4 +65,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.UserDoesNotExist]: "ID does not exist",
     [PackageErrorCode.IdentityMismatch]: "Identity mismatch",
     [PackageErrorCode.InvalidWalletClientName]: "Invalid Wallet Client Name",
+    [PackageErrorCode.InsecureNetworkCall]: "Insecure network call",
+    [PackageErrorCode.PayIDClaimNotFound]: "Pay ID claim not found",
+    [PackageErrorCode.FailedToGetGaiaUrlFromZonefile]: "Failed to get Gaia URL from user's zonefile",
 };

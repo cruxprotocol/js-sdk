@@ -106,7 +106,11 @@ const getKeyPairFromPrivKey = (privKey: string): {
     // Convert the WIF format to hex
     if (privKey.startsWith("L") || privKey.startsWith("K")) {
         const keyPair = bitcoin.ECPair.fromWIF(privKey);
-        privateKey = sanitizePrivKey((keyPair.privateKey as Buffer).toString("hex"));
+        if (keyPair.privateKey) {
+            privateKey = sanitizePrivKey((keyPair.privateKey).toString("hex"));
+        } else {
+            throw new BaseError(null, "Missing private key in generated EC Pair");
+        }
     } else {
         privateKey = sanitizePrivKey(privKey);
     }
@@ -125,8 +129,11 @@ const getKeyPairFromPrivKey = (privKey: string): {
     }
 
     const address = bitcoin.payments.p2pkh({ pubkey: Buffer.from(publicKey, "hex") }).address;
+    if (!address) {
+        throw new BaseError(null, "No address found corresponding this public key");
+    }
     return {
-        address: address as string,
+        address,
         privKey: privateKey,
         pubKey: publicKey,
     };
