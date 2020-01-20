@@ -33,16 +33,7 @@ describe('BlockstackService tests', () => {
   // sample identity claim for 'cs1'
   let sampleSubdomain = 'cs1'
   let sampleCruxId = 'cs1@devcoinswitch.crux'
-  let sampleIdentityClaim = {
-    secrets: {
-      mnemonic: "jelly level auction pluck system record unique huge text fold galaxy home",
-      identityKeyPair: {
-        privKey: "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f",
-        pubKey: "02bc9c3f8e924b7de9212cebd0129f1be2e6c3f2904e911b30698bde77be4878b8",
-        address: "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ"
-      }
-    }
-  }
+  let sampleIdentityClaim;
   let sampleIdentityClaimWithoutKeyPair = {
     secrets: {
       identityKeyPair: undefined
@@ -58,6 +49,17 @@ describe('BlockstackService tests', () => {
     // @ts-ignore
     cacheStorage = new LocalStorage();
     localStorage.clear();
+
+    sampleIdentityClaim = {
+      secrets: {
+        mnemonic: "jelly level auction pluck system record unique huge text fold galaxy home",
+        identityKeyPair: {
+          privKey: "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f",
+          pubKey: "02bc9c3f8e924b7de9212cebd0129f1be2e6c3f2904e911b30698bde77be4878b8",
+          address: "1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ"
+        }
+      }
+    }
     
     // Handling mock stubs
 

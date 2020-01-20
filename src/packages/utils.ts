@@ -129,7 +129,23 @@ const getKeyPairFromPrivKey = (privKey: string): IBitcoinKeyPair => {
     };
 };
 
+const clearObject = (obj: any) => {
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            // @ts-ignore
+            if (typeof obj[key] === "string") {
+                obj[key] = "0".repeat(obj[key].length);
+            } else {
+                obj[key] = "0";
+            }
+            delete obj[key];
+        }
+    }
+    obj = undefined;
+};
+
 export {
+    clearObject,
     httpJSONRequest,
     sanitizePrivKey,
     cachedFunctionCall,
