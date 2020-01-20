@@ -29,7 +29,7 @@ export class LocalStorage extends StorageService {
     constructor() {
         super();
         this.storage = localStorage;
-        log.info(`Using localStorage as StorageService`);
+        log.debug(`Using localStorage as StorageService`);
     }
 
     public setItem = async (key: string, value: string): Promise<void> => {
