@@ -45,6 +45,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.GaiaUploadFailed]: "Unable to upload '{0}' to gaia: '{1}'",
     [PackageErrorCode.GetNamesByAddressFailed]: "'{0}' failed with error '{1}'",
     [PackageErrorCode.GetDomainsByAddressFailed]: "'{0}' failed with error '{1}'",
+    [PackageErrorCode.InsecureNetworkCall]: "Insecure network call",
     [PackageErrorCode.InvalidPrivateKeyFormat]: "Private key should be either hex encoded, base64 encoded or WIF (base58 - compressed) only",
     [PackageErrorCode.KeyPairMismatch]: "Invalid keyPair provided",
     [PackageErrorCode.MissingCruxDomainInCruxOnBoardingClient]: "No domain found with the key provided or missing key in the CruxOnBoardingClient",
