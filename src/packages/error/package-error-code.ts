@@ -67,7 +67,6 @@ export enum PackageErrorCode {
     MissingAssetMapping = 5012,
     IsNotSupported = 5013,
     MissingCruxDomainInCruxWalletClient = 5014,
-    CouldNotExtractGaiaDataFromZoneFile = 5015,
-    MissingZoneFile = 5016,
-    MissingNameOwnerAddress = 5017,
+    MissingZoneFile = 5015,
+    MissingNameOwnerAddress = 5016,
 }

@@ -60,13 +60,13 @@ export class BlockstackService {
         if (zonefile.match(new RegExp("(.+)https:\/\/hub.cruxpay.com\/hub\/(.+)\/profile.json"))) {
             const match = zonefile.match(new RegExp("(.+)https:\/\/(.+)\/hub\/(.+)\/profile.json", "s"));
             if (!match) {
-                throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotExtractGaiaDataFromZoneFile, zonefile);
+                throw ErrorHelper.getPackageError(null, PackageErrorCode.FailedToGetGaiaUrlFromZonefile, zonefile);
             }
             gaiaHub = "https://" + match[2];
         } else {
             const match = zonefile.match(new RegExp("https:\/\/(.+)"));
             if (!match) {
-                throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotExtractGaiaDataFromZoneFile, zonefile);
+                throw ErrorHelper.getPackageError(null, PackageErrorCode.FailedToGetGaiaUrlFromZonefile, zonefile);
             }
             gaiaHub = match.slice(0, -1)[0];
         }
