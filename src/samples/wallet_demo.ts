@@ -1,4 +1,5 @@
 import { CruxWalletClient, IAddressMapping, LocalStorage, ICruxWalletClientOptions, CruxClientError, ICruxIDState } from "../index";
+import { SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../core";
 // TODO: add optional import statement to use the build
 
 const doc = (document as {
@@ -181,7 +182,7 @@ const putAddressMap = async () => {
 }
 const getCruxIDState = async (): Promise<ICruxIDState> => {
     let UIResponse: string = ""
-    let cruxIDStatus: ICruxIDState = {cruxID: null}
+    let cruxIDStatus: ICruxIDState = {cruxID: null, status: {status: SubdomainRegistrationStatus.NONE, statusDetail: SubdomainRegistrationStatusDetail.NONE}}
     try {
         cruxIDStatus = await cruxClient.getCruxIDState()
         UIResponse = JSON.stringify(cruxIDStatus, undefined, 4)

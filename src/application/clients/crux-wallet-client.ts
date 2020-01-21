@@ -109,7 +109,7 @@ export class CruxWalletClient {
             this.cruxUser = await this.cruxUserRepository.getByCruxId(this.cruxUser.cruxID);
             return {
                 cruxID: this.cruxUser!.cruxID.toString(),
-                status : this.cruxUser!.cruxUserInformation.registrationStatus,
+                status : this.cruxUser!.info.registrationStatus,
             };
         }
     }

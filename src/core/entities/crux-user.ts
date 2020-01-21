@@ -40,7 +40,7 @@ export enum SubdomainRegistrationStatusDetail {
 }
 
 export class CruxUser {
-    public cruxUserInformation!: ICruxUserInformation;
+    private cruxUserInformation!: ICruxUserInformation;
     private cruxUserID: CruxId;
     private addressMap!: IAddressMapping;
 
@@ -52,6 +52,9 @@ export class CruxUser {
     }
     get cruxID() {
         return this.cruxUserID;
+    }
+    get info() {
+        return this.cruxUserInformation;
     }
     public getAddressMap(): IAddressMapping {
         return this.addressMap;
