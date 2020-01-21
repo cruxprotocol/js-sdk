@@ -259,12 +259,12 @@ describe('Infrastructure Services Test', () => {
                     "statusCode": 404
                 });
                 const availability = await blockstackService.isCruxIdAvailable(new CruxId({subdomain: subdomainString, domain: "cruxdev"}));
-                expect(availability).to.be.false;
+                expect(availability).to.be.true;
                 expect(mockBlockstackSubdomainRegistrarApiClient.getSubdomainStatus.calledOnceWith(subdomainString)).to.be.true;
             })
         })
         describe('registerCruxId tests', () => {
-            it('normal registration should return a valid registration status', async () => {
+            it('normal registration should return a valid crux user information', async () => {
                 mockBlockstackSubdomainRegistrarApiClient.getSubdomainStatus.withArgs("newuser")
                 .onFirstCall().resolves({
                     "status": "Subdomain not registered with this registrar",
@@ -278,10 +278,12 @@ describe('Infrastructure Services Test', () => {
                     status: 'available',
                     more: 'failed to find parent domain\'s resolver'
                 });
-                const registrationStatus = await blockstackService.registerCruxId(newCruxUserId, cruxGaiaHub, newCruxUserKeyManager);
-                expect(registrationStatus).to.be.eql({
-                    status: SubdomainRegistrationStatus.PENDING,
-                    statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
+                const cruxUserInformation = await blockstackService.registerCruxId(newCruxUserId, cruxGaiaHub, newCruxUserKeyManager);
+                expect(cruxUserInformation).to.be.eql({
+                    registrationStatus: {
+                        status: SubdomainRegistrationStatus.PENDING,
+                        statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
+                    }
                 });
                 expect(mockBlockstackSubdomainRegistrarApiClient.getSubdomainStatus.calledTwice).to.be.true;
                 expect(mockBlockstackSubdomainRegistrarApiClient.getSubdomainStatus.calledWith("newuser")).to.be.true;
@@ -293,10 +295,14 @@ describe('Infrastructure Services Test', () => {
         describe('getCruxIdRegistrationStatus tests', () => {
             it('"mascot6699" should be REGISTERED', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.withArgs(sinon.match.string, testUserBlockstackName).resolves(testUserNameDetails);
-                const registrationStatus = await blockstackService.getCruxIdRegistrationStatus(testUserCruxId);
-                expect(registrationStatus).to.be.eql({
-                    status: SubdomainRegistrationStatus.DONE,
-                    statusDetail: SubdomainRegistrationStatusDetail.DONE
+                const cruxUserInformation = await blockstackService.getCruxIdInformation(testUserCruxId);
+                expect(cruxUserInformation).to.be.eql({
+                    ownerAddress: testUserNameDetails.address,
+                    registrationStatus: {
+                        status: SubdomainRegistrationStatus.DONE,
+                        statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                    },
+                    transactionHash: testUserNameDetails.last_txid,
                 });
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, testUserBlockstackName)).to.be.true;
@@ -310,10 +316,12 @@ describe('Infrastructure Services Test', () => {
                     "status": "Subdomain not registered with this registrar",
                     "statusCode": 404
                 });
-                const registrationStatus = await blockstackService.getCruxIdRegistrationStatus(newCruxUserId);
-                expect(registrationStatus).to.be.eql({
-                    status: SubdomainRegistrationStatus.NONE,
-                    statusDetail: SubdomainRegistrationStatusDetail.NONE
+                const cruxUserInformation = await blockstackService.getCruxIdInformation(newCruxUserId);
+                expect(cruxUserInformation).to.be.eql({
+                    registrationStatus: {
+                        status: SubdomainRegistrationStatus.NONE,
+                        statusDetail: SubdomainRegistrationStatusDetail.NONE,
+                    }
                 });
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, newCruxUserBlockstackName)).to.be.true;

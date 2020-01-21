@@ -9,8 +9,7 @@ import { DomainRegistrationStatus, CruxDomain } from '../core/entities/crux-doma
 import { BasicKeyManager } from '../infrastructure/implementations/basic-key-manager';
 import * as blkStkService from "../infrastructure/services/blockstack-service";
 import * as gs from "../infrastructure/services/gaia-service";
-import { IAddressMapping, CruxUser, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from '../core/entities/crux-user';
-import { boolean } from '@mojotech/json-type-validation';
+import { CruxUser, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from '../core/entities/crux-user';
 describe('Infrastructure Repositories Test', () => {
     let sandbox: sinon.SinonSandbox;
     let mockBlockstackService;
@@ -25,7 +24,7 @@ describe('Infrastructure Repositories Test', () => {
             getNameDetails: sandbox.stub(blkStkService.BlockstackService, 'getNameDetails').throws("unhandled in getNameDetails mocks"),
             getGaiaHubFromZonefile: sandbox.stub(blkStkService.BlockstackService, 'getGaiaHubFromZonefile').throws("unhandled in getGaiaHubFromZonefile mocks"),
             getDomainRegistrationStatusFromNameDetails: sandbox.stub(blkStkService.BlockstackService, 'getDomainRegistrationStatusFromNameDetails').throws("unhandled in getDomainRegistrationStatusFromNameDetails mocks"),
-            getCruxUserRegistrationStatusFromSubdomainStatus: sandbox.stub(blkStkService.BlockstackService, 'getCruxUserRegistrationStatusFromSubdomainStatus').throws("unhandled in getCruxUserRegistrationStatusFromSubdomainStatus mocks"),
+            getCruxUserInformationFromSubdomainStatus: sandbox.stub(blkStkService.BlockstackService, 'getCruxUserInformationFromSubdomainStatus').throws("unhandled in getCruxUserInformationFromSubdomainStatus mocks"),
         }
         staticMocksGaiaService = {
             getGaiaReadUrl: sandbox.stub(gs.GaiaService, 'getGaiaReadUrl').throws("unhandled in getGaiaReadUrl mocks"),
@@ -40,7 +39,7 @@ describe('Infrastructure Repositories Test', () => {
             getCruxIdWithKeyManager: sandbox.stub().throws("unhandled in getCruxIdWithKeyManager mocks"),
             isCruxIdAvailable: sandbox.stub().throws("unhandled in isCruxIdAvailable mocks"),
             registerCruxId: sandbox.stub().throws("unhandled in registerCruxId mocks"),
-            getCruxIdRegistrationStatus: sandbox.stub().throws("unhandled in getCruxIdRegistrationStatus mocks"),
+            getCruxIdInformation: sandbox.stub().throws("unhandled in getCruxIdInformation mocks"),
         }
         mockGaiaService = {
             getContentFromGaiaHub: sandbox.stub().throws("unhandled in getContentFromGaiaHub mocks"),
@@ -83,15 +82,19 @@ describe('Infrastructure Repositories Test', () => {
         })
         it('New CruxUser Creation', async () => {
             mockBlockstackService.registerCruxId.withArgs(newUserCruxId, cruxGaiaHub, randomKeyManager).resolves({
-                status: SubdomainRegistrationStatus.PENDING,
-                statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.PENDING,
+                    statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
+                }
             })
             const cruxUser = await blockstackCruxUserRepository.create(newUserCruxId, randomKeyManager);
             expect(cruxUser).is.instanceOf(CruxUser);
             expect(cruxUser.cruxID).is.eql(newUserCruxId);
-            expect(cruxUser.registrationStatus).is.eql({
-                status: SubdomainRegistrationStatus.PENDING,
-                statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR
+            expect(cruxUser.info).is.eql({
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.PENDING,
+                    statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
+                }
             })
             expect(mockBlockstackService.registerCruxId.calledOnceWithExactly(newUserCruxId, CruxSpec.blockstack.infrastructure.gaiaHub, randomKeyManager)).to.be.true;
         })
@@ -106,9 +109,13 @@ describe('Infrastructure Repositories Test', () => {
             expect(cruxUserAvailable).is.eql(true);
         })
         it('Getting registered CruxUser by ID', async ()=>{
-            mockBlockstackService.getCruxIdRegistrationStatus.withArgs(testUserCruxId).resolves({
-                status: SubdomainRegistrationStatus.DONE,
-                statusDetail: SubdomainRegistrationStatusDetail.DONE
+            mockBlockstackService.getCruxIdInformation.withArgs(testUserCruxId).resolves({
+                ownerAddress: testUserNameDetails.address,
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.DONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                },
+                transactionHash: testUserNameDetails.last_txid,
             })
             mockBlockstackService.getGaiaHub.withArgs(testUserCruxId).resolves(cruxGaiaHub);
             mockBlockstackService.getNameDetails.withArgs(testUserCruxId).resolves(testUserNameDetails);
@@ -126,16 +133,24 @@ describe('Infrastructure Repositories Test', () => {
             const cruxUser = await blockstackCruxUserRepository.getByCruxId(testUserCruxId);
             expect(cruxUser).is.instanceOf(CruxUser);
             expect(cruxUser.cruxID).is.eql(testUserCruxId);
-            expect(cruxUser.registrationStatus).is.eql({
-                status: SubdomainRegistrationStatus.DONE,
-                statusDetail: SubdomainRegistrationStatusDetail.DONE
+            expect(cruxUser.info).is.eql({
+                ownerAddress: testUserNameDetails.address,
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.DONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                },
+                transactionHash: testUserNameDetails.last_txid,
             })
-            expect(mockBlockstackService.getCruxIdRegistrationStatus.calledOnceWithExactly(testUserCruxId)).to.be.true;
+            expect(mockBlockstackService.getCruxIdInformation.calledOnceWithExactly(testUserCruxId)).to.be.true;
         })
         it('Getting registered CruxUser by ID with tag', async ()=>{
-            mockBlockstackService.getCruxIdRegistrationStatus.withArgs(testUserCruxId).resolves({
-                status: SubdomainRegistrationStatus.DONE,
-                statusDetail: SubdomainRegistrationStatusDetail.DONE
+            mockBlockstackService.getCruxIdInformation.withArgs(testUserCruxId).resolves({
+                ownerAddress: testUserNameDetails.address,
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.DONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                },
+                transactionHash: testUserNameDetails.last_txid,
             })
             mockBlockstackService.getGaiaHub.withArgs(testUserCruxId, "testtag").resolves(cruxGaiaHub);
             mockBlockstackService.getNameDetails.withArgs(testUserCruxId, "testtag").resolves(testUserNameDetails);
@@ -147,30 +162,40 @@ describe('Infrastructure Repositories Test', () => {
             const cruxUser = await blockstackCruxUserRepository.getByCruxId(testUserCruxId, "testtag");
             expect(cruxUser).is.instanceOf(CruxUser);
             expect(cruxUser.cruxID).is.eql(testUserCruxId);
-            expect(cruxUser.registrationStatus).is.eql({
-                status: SubdomainRegistrationStatus.DONE,
-                statusDetail: SubdomainRegistrationStatusDetail.DONE
+            expect(cruxUser.info).is.eql({
+                ownerAddress: testUserNameDetails.address,
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.DONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                },
+                transactionHash: testUserNameDetails.last_txid,
             });
             expect(cruxUser.getAddressMap()).is.eql({
                 "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
                     "addressHash":"1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V",
                 }
             });
-            expect(mockBlockstackService.getCruxIdRegistrationStatus.calledOnceWithExactly(testUserCruxId)).to.be.true;
+            expect(mockBlockstackService.getCruxIdInformation.calledOnceWithExactly(testUserCruxId)).to.be.true;
         })
         it('Getting unregistered CruxUser by ID', async ()=>{
-            mockBlockstackService.getCruxIdRegistrationStatus.withArgs(unregisteredCruxId).resolves({
-                status: SubdomainRegistrationStatus.NONE,
-                statusDetail: SubdomainRegistrationStatusDetail.NONE
+            mockBlockstackService.getCruxIdInformation.withArgs(unregisteredCruxId).resolves({
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.NONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.NONE,
+                }
             })
             const cruxUser = await blockstackCruxUserRepository.getByCruxId(unregisteredCruxId);
             expect(cruxUser).is.eql(undefined);
         })
         it('Getting a CruxUser by key', async ()=>{
             mockBlockstackService.getCruxIdWithKeyManager.withArgs(testUserKeyManager, cruxdevDomainId).resolves(testUserCruxId);
-            mockBlockstackService.getCruxIdRegistrationStatus.withArgs(testUserCruxId).resolves({
-                status: SubdomainRegistrationStatus.DONE,
-                statusDetail: SubdomainRegistrationStatusDetail.DONE
+            mockBlockstackService.getCruxIdInformation.withArgs(testUserCruxId).resolves({
+                ownerAddress: testUserNameDetails.address,
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.DONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                },
+                transactionHash: testUserNameDetails.last_txid,
             })
             mockBlockstackService.getGaiaHub.withArgs(testUserCruxId).resolves(cruxGaiaHub);
             mockBlockstackService.getNameDetails.withArgs(testUserCruxId).resolves(testUserNameDetails);
@@ -187,9 +212,13 @@ describe('Infrastructure Repositories Test', () => {
             });
             const cruxUser = await blockstackCruxUserRepository.getWithKey(testUserKeyManager, cruxdevDomainId);
             expect(cruxUser).is.instanceOf(CruxUser);
-            expect(cruxUser.registrationStatus).is.eql({
-                status: SubdomainRegistrationStatus.DONE,
-                statusDetail: SubdomainRegistrationStatusDetail.DONE
+            expect(cruxUser.info).is.eql({
+                ownerAddress: testUserNameDetails.address,
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.DONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                },
+                transactionHash: testUserNameDetails.last_txid,
             })
         })
     })

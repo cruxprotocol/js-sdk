@@ -105,8 +105,6 @@ export class BlockstackService {
         } else {
             transactionHash = undefined;
             switch (rawStatus) {
-                case "Subdomain not registered with this registrar":
-                    log.debug("subdomain not found in the registrat records");
                 case "Subdomain is queued for update and should be announced within the next few blocks.":
                     status = {
                         status: SubdomainRegistrationStatus.PENDING,
@@ -114,19 +112,26 @@ export class BlockstackService {
                     };
                     break;
                 case "Subdomain propagated":
-                    log.debug("Skipping this because meant to be done by BNS node");
+                    status = {
+                        status: SubdomainRegistrationStatus.DONE,
+                        statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                    };
+                    break;
                 default:
+                    // used to handle "Subdomain not registered with this registrar" for now
                     status = {
                         status: SubdomainRegistrationStatus.NONE,
                         statusDetail: SubdomainRegistrationStatusDetail.NONE,
                     };
             }
         }
-        return {
-            ownerAddress: undefined,
+        const cruxUserInformation: ICruxUserInformation = {
             registrationStatus: status,
-            transactionHash,
         };
+        if (transactionHash) {
+            cruxUserInformation.transactionHash = transactionHash;
+        }
+        return cruxUserInformation;
     }
     private cacheStorage?: StorageService;
     private bnsNodes: string[];
@@ -206,7 +211,7 @@ export class BlockstackService {
         if (!keyManager) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
-        if (await this.isCruxIdAvailable(cruxId)) {
+        if (!(await this.isCruxIdAvailable(cruxId))) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CruxIDUnavailable, cruxId);
         }
         const blockstackId = CruxSpec.idTranslator.cruxToBlockstack(cruxId);

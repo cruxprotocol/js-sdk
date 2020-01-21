@@ -42,8 +42,8 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         log.debug("BlockstackCruxUserRepository initialised");
     }
     public create = async (cruxId: CruxId, keyManager: IKeyManager): Promise<CruxUser> => {
-        const registrationStatus = await this.blockstackService.registerCruxId(cruxId, this.infrastructure.gaiaHub, keyManager);
-        return new CruxUser(cruxId, {}, registrationStatus);
+        const cruxUserInformation = await this.blockstackService.registerCruxId(cruxId, this.infrastructure.gaiaHub, keyManager);
+        return new CruxUser(cruxId, {}, cruxUserInformation);
     }
     public isCruxIdAvailable = async (cruxID: CruxId): Promise<boolean> => {
         return this.blockstackService.isCruxIdAvailable(cruxID);
