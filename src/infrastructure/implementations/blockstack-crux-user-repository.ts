@@ -39,7 +39,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
             cacheStorage: this.cacheStorage,
             subdomainRegistrar: this.infrastructure.subdomainRegistrar,
         });
-        log.info("BlockstackCruxUserRepository initialised");
+        log.debug("BlockstackCruxUserRepository initialised");
     }
     public create = async (cruxId: CruxId, keyManager: IKeyManager): Promise<CruxUser> => {
         const registrationStatus = await this.blockstackService.registerCruxId(cruxId, this.infrastructure.gaiaHub, keyManager);
@@ -87,7 +87,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(cruxId);
         const gaiaHub = await this.blockstackService.getGaiaHub(cruxId);
         const finalURL = await new GaiaService(gaiaHub, this.cacheStorage).uploadContentToGaiaHub(cruxPayFileName, addressMap, keyManager);
-        log.info(`Address Map for ${cruxId} saved to: ${finalURL}`);
+        log.debug(`Address Map for ${cruxId} saved to: ${finalURL}`);
         return finalURL;
     }
 }

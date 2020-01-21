@@ -7,7 +7,7 @@ export class ManualKeyManager implements IKeyManager {
     constructor(publicKey: string, signWebTokenCallback: (payload: any) => Promise<string>) {
         this.signWebTokenCallback = signWebTokenCallback;
         this.publicKey = publicKey;
-        log.info("ManualKeyManager initialised");
+        log.debug("ManualKeyManager initialised");
     }
     public signWebToken = async (payload: any): Promise<string> => {
         return this.signWebTokenCallback(payload);

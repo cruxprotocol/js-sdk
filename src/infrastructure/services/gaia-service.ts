@@ -84,8 +84,10 @@ export class GaiaService {
             // TODO: return this._makeLegacyAuthToken(challengeText, keyManager);
         }
         const salt = getRandomHexString(16).toLocaleLowerCase();
+        const exp = (Date.now() / 1000) + 300;  // token validity buffer time (5 minutes)
         const payload = {
             associationToken,
+            exp,
             gaiaChallenge: challengeText,
             hubUrl: this.gaiaHub,
             iss,
