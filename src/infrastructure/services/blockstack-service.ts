@@ -106,11 +106,7 @@ export class BlockstackService {
             transactionHash = undefined;
             switch (rawStatus) {
                 case "Subdomain not registered with this registrar":
-                    status = {
-                        status: SubdomainRegistrationStatus.NONE,
-                        statusDetail: SubdomainRegistrationStatusDetail.NONE,
-                    };
-                    break;
+                    log.debug("subdomain not found in the registrat records");
                 case "Subdomain is queued for update and should be announced within the next few blocks.":
                     status = {
                         status: SubdomainRegistrationStatus.PENDING,
@@ -120,7 +116,10 @@ export class BlockstackService {
                 case "Subdomain propagated":
                     log.debug("Skipping this because meant to be done by BNS node");
                 default:
-                    throw new BaseError(null, "unhandled case of registrar subdomain status");
+                    status = {
+                        status: SubdomainRegistrationStatus.NONE,
+                        statusDetail: SubdomainRegistrationStatusDetail.NONE,
+                    };
             }
         }
         return {
