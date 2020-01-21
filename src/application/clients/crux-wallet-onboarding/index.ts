@@ -44,7 +44,7 @@ export class CruxOnBoardingClient {
         // set the domainContext if domain is provided
         this.domainContext = options.domain ? new CruxDomainId(options.domain) : undefined;
         this.initPromise = this.init();
-        log.info("CruxOnBoardingClient initialised");
+        log.debug("CruxOnBoardingClient initialised");
     }
     set domain(domain: string) {
         this.domainContext = new CruxDomainId(domain);

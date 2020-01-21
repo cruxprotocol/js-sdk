@@ -27,7 +27,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
             cacheStorage: this.cacheStorage,
             subdomainRegistrar: this.infrastructure.subdomainRegistrar,
         });
-        log.info("BlockstackCruxDomainRepository initialised");
+        log.debug("BlockstackCruxDomainRepository initialised");
     }
     public isCruxDomainIdAvailable = async (cruxDomainId: CruxDomainId): Promise<boolean> => {
         const domainRegistrationStatus = await this.blockstackService.getDomainRegistrationStatus(cruxDomainId);
@@ -79,7 +79,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
         const domainConfigFileName = CruxSpec.blockstack.getDomainConfigFileName(cruxDomainId);
         const gaiaHub = await this.blockstackService.getGaiaHub(configCruxId);
         const finalURL = await new GaiaService(gaiaHub, this.cacheStorage).uploadContentToGaiaHub(domainConfigFileName, clientConfig, keyManager);
-        log.info(`clientConfig saved to: ${finalURL}`);
+        log.debug(`clientConfig saved to: ${finalURL}`);
         return finalURL;
     }
 }
