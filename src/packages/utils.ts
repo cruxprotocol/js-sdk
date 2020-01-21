@@ -1,19 +1,21 @@
 import * as bitcoin from "bitcoinjs-lib";
 import * as cloner from "cloner";
 import request from "request";
-import { cacheStorage} from "../index";
 import { BaseError, ErrorHelper, PackageErrorCode } from "./error";
 import { getLogger } from "./logger";
-import { IBitcoinKeyPair } from "./name-service/blockstack-service";
 import { StorageService } from "./storage";
 
 const log = getLogger(__filename);
+const httpsPrefixRegex = new RegExp(`^https:\/\/.+$`);
 
 /* istanbul ignore next */
 const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (request.UrlOptions & request.CoreOptions)): Promise<object> => {
     log.debug("network_call:", options);
     const promise: Promise<object> = new Promise((resolve, reject) => {
         const { url, fetchOptions } = translateRequestOptionsToFetchOptions(options);
+        if (!httpsPrefixRegex.test(url)) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.InsecureNetworkCall);
+        }
         fetch(url, fetchOptions)
             .then((res) => res.json())
             .then((json) => resolve(json))
@@ -65,8 +67,7 @@ const getRandomHexString = (length: number = 32): string => {
     return result;
 };
 
-const cachedFunctionCall = async (store: StorageService|undefined, cacheKey: string, ttl: number = 300, fn: (...args: any[]) => any, paramArray: any[], skipConditional?: (returnValue: any) => Promise<boolean>): Promise<any> => {
-    const storage = store || cacheStorage; // TODO: Falling back to the singleton variable for backward compatibility. Can be removed
+const cachedFunctionCall = async (storage: StorageService|undefined, cacheKey: string, ttl: number = 300, fn: (...args: any[]) => any, paramArray: any[], skipConditional?: (returnValue: any) => Promise<boolean>): Promise<any> => {
     if (!storage) {
         log.info("cacheStorage is missing, making a direct call");
         return fn.apply(fn, paramArray);
@@ -96,12 +97,20 @@ const cloneValue = (obj: any): any => {
     return cloner.deep.copy(obj);
 };
 
-const getKeyPairFromPrivKey = (privKey: string): IBitcoinKeyPair => {
+const getKeyPairFromPrivKey = (privKey: string): {
+    privKey: string;
+    pubKey: string;
+    address: string;
+} => {
     let privateKey: string;
     // Convert the WIF format to hex
     if (privKey.startsWith("L") || privKey.startsWith("K")) {
         const keyPair = bitcoin.ECPair.fromWIF(privKey);
-        privateKey = sanitizePrivKey((keyPair.privateKey as Buffer).toString("hex"));
+        if (keyPair.privateKey) {
+            privateKey = sanitizePrivKey((keyPair.privateKey).toString("hex"));
+        } else {
+            throw new BaseError(null, "Missing private key in generated EC Pair");
+        }
     } else {
         privateKey = sanitizePrivKey(privKey);
     }
@@ -120,8 +129,11 @@ const getKeyPairFromPrivKey = (privKey: string): IBitcoinKeyPair => {
     }
 
     const address = bitcoin.payments.p2pkh({ pubkey: Buffer.from(publicKey, "hex") }).address;
+    if (!address) {
+        throw new BaseError(null, "No address found corresponding this public key");
+    }
     return {
-        address: address as string,
+        address,
         privKey: privateKey,
         pubKey: publicKey,
     };

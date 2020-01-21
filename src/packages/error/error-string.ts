@@ -51,6 +51,8 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.MissingCruxAssetTranslator]: "No CruxAssetTranslator found",
     [PackageErrorCode.MissingDomainContext]: "Domain context is required in BlockstackCruxAssetTranslatorRepository initialisation",
     [PackageErrorCode.MissingAssetMapping]: "ManualCruxAssetTranslatorRepository should be initialised with an assetMapping",
+    [PackageErrorCode.MissingZoneFile]: "Missing zonefile for: '{0}'",
+    [PackageErrorCode.MissingNameOwnerAddress]: "Missing owner address for: '{0}'",
     [PackageErrorCode.NameIntegrityCheckFailed]: "Name resolution integrity check failed",
     [PackageErrorCode.PrivateKeyRequired]: "CruxClient should be intantiated with a private key",
     [PackageErrorCode.SubdomainLengthCheckFailure]: "Validation failed: Subdomain length must be between 4 to 20",
@@ -61,4 +63,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.UserDoesNotExist]: "ID does not exist",
     [PackageErrorCode.IdentityMismatch]: "Identity mismatch",
     [PackageErrorCode.InvalidWalletClientName]: "Invalid Wallet Client Name",
+    [PackageErrorCode.InsecureNetworkCall]: "Insecure network call",
+    [PackageErrorCode.PayIDClaimNotFound]: "Pay ID claim not found",
+    [PackageErrorCode.FailedToGetGaiaUrlFromZonefile]: "Failed to get Gaia URL from user's zonefile: '{0}'",
 };

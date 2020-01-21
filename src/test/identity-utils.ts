@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import 'mocha';
 import {BlockstackId, CruxId, IdTranslator, validateSubdomain} from "../packages/identity-utils";
-import { errors } from '..';
+import { PackageErrorCode } from '../packages/error';
 
 // TODO: strict validation of the cruxID format
 
@@ -33,7 +33,7 @@ describe('ID Translation Tests', () => {
         } catch (e) {
             raisedError = e;
         }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.InvalidBlockstackDomainForTranslation)
+        expect(raisedError.errorCode).to.be.equal(PackageErrorCode.InvalidBlockstackDomainForTranslation)
     })
 
     it('blockstack id which cant be translated because of namespace', () => {
@@ -44,7 +44,7 @@ describe('ID Translation Tests', () => {
         } catch (e) {
             raisedError = e;
         }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.BlockstackIdNamespaceValidation)
+        expect(raisedError.errorCode).to.be.equal(PackageErrorCode.BlockstackIdNamespaceValidation)
     })
 
     it('invalid crux id because of structure', () => {
@@ -54,7 +54,7 @@ describe('ID Translation Tests', () => {
         } catch (e) {
             raisedError = e;
         }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.CruxIdInvalidStructure)
+        expect(raisedError.errorCode).to.be.equal(PackageErrorCode.CruxIdInvalidStructure)
     })
 
     it('invalid subdomain due to regex', () => {
@@ -64,7 +64,7 @@ describe('ID Translation Tests', () => {
         } catch (e) {
             raisedError = e;
         }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.SubdomainRegexMatchFailure)
+        expect(raisedError.errorCode).to.be.equal(PackageErrorCode.SubdomainRegexMatchFailure)
     })
 
     it('invalid subdomain due to length', () => {
@@ -74,7 +74,7 @@ describe('ID Translation Tests', () => {
         } catch (e) {
             raisedError = e;
         }
-        expect(raisedError.errorCode).to.be.equal(errors.PackageErrorCode.SubdomainLengthCheckFailure)
+        expect(raisedError.errorCode).to.be.equal(PackageErrorCode.SubdomainLengthCheckFailure)
     })
 
 

@@ -40,14 +40,15 @@ export enum SubdomainRegistrationStatusDetail {
 }
 
 export class CruxUser {
-    public cruxUserInformation: ICruxUserInformation;
+    public cruxUserInformation!: ICruxUserInformation;
     private cruxUserID: CruxId;
     private addressMap!: IAddressMapping;
 
     constructor(cruxID: CruxId, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation) {
         this.cruxUserID = cruxID;
         this.setAddressMap(addressMap);
-        this.cruxUserInformation = this.setCruxUserInformation(cruxUserInformation);
+        this.setCruxUserInformation(cruxUserInformation);
+        log.debug("CruxUser initialised");
     }
     get cruxID() {
         return this.cruxUserID;
@@ -74,6 +75,6 @@ export class CruxUser {
         if (!(Object.values(SubdomainRegistrationStatusDetail).includes(cruxUserInformation.registrationStatus.statusDetail))) {
             throw new BaseError(null, `Subdomain registration status detail validation failed!`);
         }
-        return cruxUserInformation;
+        this.cruxUserInformation = cruxUserInformation;
     }
 }

@@ -1,5 +1,4 @@
-import { CruxExplorerClient } from "../application/clients/crux-explorer-client";
-import { CruxSpec } from "../core/entities/crux-spec";
+import { CruxExplorerClient, CruxSpec } from "../index";
 
 declare global {
     interface Window {

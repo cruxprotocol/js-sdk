@@ -1,9 +1,19 @@
-import { IClientConfig } from "../../packages/configuration-service";
+import { IClientAssetMapping, IGlobalAssetList } from "../../application/services/crux-asset-translator";
 import { BaseError } from "../../packages/error";
 import { CruxDomainId } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { CruxSpec } from "./crux-spec";
 const log = getLogger(__filename);
+export interface INameServiceConfigurationOverrides {
+    bnsNodes?: string[];
+    gaiaHub?: string;
+    subdomainRegistrar?: string;
+}
+export interface IClientConfig {
+    assetMapping: IClientAssetMapping;
+    assetList: IGlobalAssetList;
+    nameserviceConfiguration?: INameServiceConfigurationOverrides;
+}
 export enum DomainRegistrationStatus {
     AVAILABLE = "AVAILABLE",
     PENDING = "PENDING",
@@ -11,14 +21,17 @@ export enum DomainRegistrationStatus {
     REJECTED = "REJECTED",
 }
 export class CruxDomain {
-    public domainId: CruxDomainId;
+    private domainId: CruxDomainId;
     private domainConfig!: IClientConfig;
     private registrationStatus!: DomainRegistrationStatus;
-    constructor(domain: CruxDomainId, registrationStatus: DomainRegistrationStatus, domainConfig: IClientConfig) {
-        this.domainId = domain;
+    constructor(cruxDomainId: CruxDomainId, registrationStatus: DomainRegistrationStatus, domainConfig: IClientConfig) {
+        this.domainId = cruxDomainId;
         this.setRegistrationStatus(registrationStatus);
         this.setConfig(domainConfig);
-        log.info("CruxDomain initialised");
+        log.debug("CruxDomain initialised");
+    }
+    get id() {
+        return this.domainId;
     }
     get status() {
         return this.registrationStatus;
@@ -39,8 +52,8 @@ export class CruxDomain {
     private setConfig = (domainConfig: IClientConfig) => {
         // validate and set the config
         try {
-            CruxSpec.validations.validateAssetList(domainConfig.assetList);
-            CruxSpec.validations.validateAssetMapping(domainConfig.assetMapping);
+            if (domainConfig.assetList) {CruxSpec.validations.validateAssetList(domainConfig.assetList); }
+            if (domainConfig.assetMapping) {CruxSpec.validations.validateAssetMapping(domainConfig.assetMapping); }
             if (domainConfig.nameserviceConfiguration) {CruxSpec.validations.validateNameServiceConfig(domainConfig.nameserviceConfiguration); }
         } catch (e) {
             throw new BaseError(e, `Domain config validation failed!`);
