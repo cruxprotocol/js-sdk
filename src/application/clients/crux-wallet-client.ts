@@ -109,7 +109,7 @@ export class CruxWalletClient {
             this.cruxUser = await this.cruxUserRepository.getByCruxId(this.cruxUser.cruxID);
             return {
                 cruxID: this.cruxUser!.cruxID.toString(),
-                status : this.cruxUser!.registrationStatus,
+                status : this.cruxUser!.info.registrationStatus,
             };
         }
     }
@@ -118,7 +118,7 @@ export class CruxWalletClient {
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
         await this.initPromise;
         const tag = "resolving_address";
-        const cruxUser = await this.getCruxUserByID(fullCruxID, tag);
+        const cruxUser = await this.getCruxUserByID(fullCruxID.toLowerCase(), tag);
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
@@ -167,7 +167,7 @@ export class CruxWalletClient {
         await this.initPromise;
         const cruxIdInput: InputIDComponents = {
             domain: this.walletClientName,
-            subdomain: cruxIDSubdomain,
+            subdomain: cruxIDSubdomain.toLowerCase(),
         };
         const cruxId = new CruxId(cruxIdInput);
         return this.cruxUserRepository.isCruxIdAvailable(cruxId);
@@ -207,7 +207,7 @@ export class CruxWalletClient {
         }
         const cruxIdInput: InputIDComponents = {
             domain: this.walletClientName,
-            subdomain: cruxIDSubdomain,
+            subdomain: cruxIDSubdomain.toLowerCase(),
         };
         const cruxId = new CruxId(cruxIdInput);
         this.cruxUser = await this.cruxUserRepository.create(cruxId, this.keyManager);
@@ -256,6 +256,6 @@ export class CruxWalletClient {
         if (this.keyManager) {
             this.cruxUser = await this.cruxUserRepository.getWithKey(this.keyManager, cruxDomainId);
         }
-        this.cruxAssetTranslator = await new CruxAssetTranslator(this.cruxDomain.config.assetMapping);
+        this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping);
     }
 }

@@ -2,7 +2,7 @@ import { AssertionError, deepStrictEqual } from "assert";
 import { publicKeyToAddress } from "blockstack";
 import { DomainRegistrationStatus } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
-import { ICruxUserRegistrationStatus } from "../../core/entities/crux-user";
+import { ICruxUserInformation, ICruxUserRegistrationStatus } from "../../core/entities/crux-user";
 import { SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
 import { IKeyManager } from "../../core/interfaces/key-manager";
 import { ErrorHelper, PackageErrorCode } from "../../packages/error";
@@ -87,8 +87,9 @@ export class BlockstackService {
         }
         return domainRegistrationStatus;
     }
-    public static getCruxUserRegistrationStatusFromSubdomainStatus = (subdomainStatus: {status: string, statusCode?: number}): ICruxUserRegistrationStatus =>  {
+    public static getCruxUserInformationFromSubdomainStatus = (subdomainStatus: {status: string, statusCode?: number}): ICruxUserInformation =>  {
         let status: ICruxUserRegistrationStatus;
+        let transactionHash: string|undefined;
         const rawStatus = subdomainStatus.status;
         log.debug(subdomainStatus);
         if (rawStatus && rawStatus.includes("Your subdomain was registered in transaction")) {
@@ -96,14 +97,14 @@ export class BlockstackService {
                 status: SubdomainRegistrationStatus.PENDING,
                 statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
             };
+            const txHashRegex = /(?<=\btransaction\s)(\w+)/;
+            const regexExec = txHashRegex.exec(rawStatus);
+            if (regexExec !== null) {
+                transactionHash = regexExec[0].toString();
+            }
         } else {
+            transactionHash = undefined;
             switch (rawStatus) {
-                case "Subdomain not registered with this registrar":
-                    status = {
-                        status: SubdomainRegistrationStatus.NONE,
-                        statusDetail: SubdomainRegistrationStatusDetail.NONE,
-                    };
-                    break;
                 case "Subdomain is queued for update and should be announced within the next few blocks.":
                     status = {
                         status: SubdomainRegistrationStatus.PENDING,
@@ -111,16 +112,26 @@ export class BlockstackService {
                     };
                     break;
                 case "Subdomain propagated":
-                    log.debug("Skipping this because meant to be done by BNS node");
+                    status = {
+                        status: SubdomainRegistrationStatus.DONE,
+                        statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                    };
+                    break;
                 default:
+                    // used to handle "Subdomain not registered with this registrar" for now
                     status = {
                         status: SubdomainRegistrationStatus.NONE,
                         statusDetail: SubdomainRegistrationStatusDetail.NONE,
                     };
-                    break;
             }
         }
-        return status;
+        const cruxUserInformation: ICruxUserInformation = {
+            registrationStatus: status,
+        };
+        if (transactionHash) {
+            cruxUserInformation.transactionHash = transactionHash;
+        }
+        return cruxUserInformation;
     }
     private cacheStorage?: StorageService;
     private bnsNodes: string[];
@@ -193,37 +204,45 @@ export class BlockstackService {
         const blockstackId = CruxSpec.idTranslator.cruxToBlockstack(cruxId);
         const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, new BlockstackDomainId(blockstackId.components.domain));
         const registrarStatus = await registrarApiClient.getSubdomainStatus(cruxId.components.subdomain);
-        return registrarStatus.status === SubdomainRegistrationStatus.NONE;
+        const cruxUserInformation = BlockstackService.getCruxUserInformationFromSubdomainStatus(registrarStatus);
+        return cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.NONE;
     }
-    public registerCruxId = async (cruxId: CruxId, gaiaHub: string, keyManager: IKeyManager): Promise<ICruxUserRegistrationStatus> => {
+    public registerCruxId = async (cruxId: CruxId, gaiaHub: string, keyManager: IKeyManager): Promise<ICruxUserInformation> => {
         if (!keyManager) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindKeyPairToRegisterName);
         }
-        if (await this.isCruxIdAvailable(cruxId)) {
+        if (!(await this.isCruxIdAvailable(cruxId))) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CruxIDUnavailable, cruxId);
         }
         const blockstackId = CruxSpec.idTranslator.cruxToBlockstack(cruxId);
         const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, new BlockstackDomainId(blockstackId.components.domain));
         await registrarApiClient.registerSubdomain(cruxId.components.subdomain, gaiaHub, publicKeyToAddress(await keyManager.getPubKey()));
-        return this.getCruxIdRegistrationStatus(cruxId);
+        return this.getCruxIdInformation(cruxId);
     }
-    public getCruxIdRegistrationStatus = async (cruxId: CruxId): Promise<ICruxUserRegistrationStatus> => {
-        log.debug("====getRegistrationStatus====");
-        const nameDetails: any = await this.getNameDetails(cruxId);
+    public getCruxIdInformation = async (cruxId: CruxId): Promise<ICruxUserInformation> => {
+        const nameDetails = await this.getNameDetails(cruxId);
         let status: SubdomainRegistrationStatus;
-        let statusDetail: SubdomainRegistrationStatusDetail = SubdomainRegistrationStatusDetail.NONE;
+        let statusDetail: SubdomainRegistrationStatusDetail;
+        let transactionHash: string|undefined;
+        let ownerAddress: string|undefined;
         if (nameDetails.status === "registered_subdomain") {
             status = SubdomainRegistrationStatus.DONE;
             statusDetail = SubdomainRegistrationStatusDetail.DONE;
+            transactionHash = nameDetails.last_txid;
+            ownerAddress = nameDetails.address;
             return {
-                status,
-                statusDetail,
+                ownerAddress,
+                registrationStatus: {
+                    status,
+                    statusDetail,
+                },
+                transactionHash,
             };
         }
         const blockstackId = CruxSpec.idTranslator.cruxToBlockstack(cruxId);
         const registrarApiClient = new BlockstackSubdomainRegistrarApiClient(this.subdomainRegistrar, new BlockstackDomainId(blockstackId.components.domain));
         const registrarStatus = await registrarApiClient.getSubdomainStatus(cruxId.components.subdomain);
-        const registrationStatus = BlockstackService.getCruxUserRegistrationStatusFromSubdomainStatus(registrarStatus);
+        const registrationStatus = BlockstackService.getCruxUserInformationFromSubdomainStatus(registrarStatus);
         return registrationStatus;
     }
 }

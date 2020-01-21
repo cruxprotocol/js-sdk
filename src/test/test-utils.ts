@@ -7,7 +7,8 @@ import {
     IAddressMapping,
     ICruxUserRegistrationStatus,
     SubdomainRegistrationStatus,
-    SubdomainRegistrationStatusDetail
+    SubdomainRegistrationStatusDetail,
+    ICruxUserInformation
 } from "../core/entities/crux-user";
 import {ICruxDomainRepository} from "../core/interfaces/crux-domain-repository";
 import {ICruxUserRepository} from "../core/interfaces/crux-user-repository";
@@ -47,8 +48,10 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
             throw Error("Already Exists");
         }
         const newUser = new CruxUser(cruxID, {}, {
-            status: SubdomainRegistrationStatus.PENDING,
-            statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR
+            registrationStatus: {
+                status: SubdomainRegistrationStatus.PENDING,
+                statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
+            }
         });
         const addressFromKeyManager = publicKeyToAddress(await keyManager.getPubKey());
         this.userStore.store(newUser, addressFromKeyManager);
@@ -148,12 +151,14 @@ export const getValidCruxUser = () => {
     };
     const BTC_ASSET_ID: string = 'd78c26f8-7c13-4909-bf62-57d7623f8ee8';
     const testValidAddressMap: IAddressMapping = {[BTC_ASSET_ID]: testAddress};
-    const validUserRegStatus: ICruxUserRegistrationStatus = {
-        'status': SubdomainRegistrationStatus.DONE,
-        'statusDetail': SubdomainRegistrationStatusDetail.DONE
+    const validUserInformation: ICruxUserInformation = {
+        registrationStatus: {
+            'status': SubdomainRegistrationStatus.DONE,
+            'statusDetail': SubdomainRegistrationStatusDetail.DONE,
+        }
     };
 
-    return new CruxUser(testCruxId, testValidAddressMap, validUserRegStatus);
+    return new CruxUser(testCruxId, testValidAddressMap, validUserInformation);
 };
 
 export const getValidCruxUser2 = () => {
@@ -163,10 +168,12 @@ export const getValidCruxUser2 = () => {
     };
     const BTC_ASSET_ID: string = 'd78c26f8-7c13-4909-bf62-57d7623f8ee8';
     const testValidAddressMap: IAddressMapping = {[BTC_ASSET_ID]: testAddress};
-    const validUserRegStatus: ICruxUserRegistrationStatus = {
-        'status': SubdomainRegistrationStatus.DONE,
-        'statusDetail': SubdomainRegistrationStatusDetail.DONE
+    const validUserInformation: ICruxUserInformation = {
+        registrationStatus: {
+            'status': SubdomainRegistrationStatus.DONE,
+            'statusDetail': SubdomainRegistrationStatusDetail.DONE,
+        }
     };
 
-    return new CruxUser(testCruxId, testValidAddressMap, validUserRegStatus);
+    return new CruxUser(testCruxId, testValidAddressMap, validUserInformation);
 };

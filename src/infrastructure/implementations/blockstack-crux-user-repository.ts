@@ -42,22 +42,22 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         log.debug("BlockstackCruxUserRepository initialised");
     }
     public create = async (cruxId: CruxId, keyManager: IKeyManager): Promise<CruxUser> => {
-        const registrationStatus = await this.blockstackService.registerCruxId(cruxId, this.infrastructure.gaiaHub, keyManager);
-        return new CruxUser(cruxId, {}, registrationStatus);
+        const cruxUserInformation = await this.blockstackService.registerCruxId(cruxId, this.infrastructure.gaiaHub, keyManager);
+        return new CruxUser(cruxId, {}, cruxUserInformation);
     }
     public isCruxIdAvailable = async (cruxID: CruxId): Promise<boolean> => {
         return this.blockstackService.isCruxIdAvailable(cruxID);
     }
     public getByCruxId = async (cruxID: CruxId, tag?: string): Promise<CruxUser|undefined> => {
-        const registrationStatus = await this.blockstackService.getCruxIdRegistrationStatus(cruxID);
-        if (registrationStatus.status === SubdomainRegistrationStatus.NONE) {
+        const cruxUserInformation = await this.blockstackService.getCruxIdInformation(cruxID);
+        if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.NONE) {
             return;
         }
         let addressMap = {};
-        if (registrationStatus.status === SubdomainRegistrationStatus.DONE) {
+        if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.DONE) {
             addressMap = await this.getAddressMap(cruxID, tag);
         }
-        return new CruxUser(cruxID, addressMap, registrationStatus);
+        return new CruxUser(cruxID, addressMap, cruxUserInformation);
     }
     public getWithKey = async (keyManager: IKeyManager, cruxDomainId: CruxDomainId): Promise<CruxUser|undefined> => {
         const cruxID = await this.blockstackService.getCruxIdWithKeyManager(keyManager, cruxDomainId);
