@@ -85,7 +85,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(cruxId);
-        const gaiaHub = await this.blockstackService.getGaiaHub(cruxId);
+        const gaiaHub = (await this.blockstackService.isCruxIdAvailable(cruxId)) ? (await this.blockstackService.getGaiaHub(cruxId)) : this.infrastructure.gaiaHub;
         const finalURL = await new GaiaService(gaiaHub, this.cacheStorage).uploadContentToGaiaHub(cruxPayFileName, addressMap, keyManager);
         log.debug(`Address Map for ${cruxId} saved to: ${finalURL}`);
         return finalURL;
