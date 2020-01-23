@@ -97,6 +97,7 @@ export class BlockstackService {
                 status: SubdomainRegistrationStatus.PENDING,
                 statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
             };
+            // tslint:disable-next-line: tsr-detect-unsafe-regexp
             const txHashRegex = /(?<=\btransaction\s)(\w+)/;
             const regexExec = txHashRegex.exec(rawStatus);
             if (regexExec !== null) {
@@ -179,6 +180,7 @@ export class BlockstackService {
         const userSubdomainOwnerAddress = publicKeyToAddress(await keyManager.getPubKey());
         const registeredBlockstackNames = await BlockstackService.getRegisteredBlockstackNamesByAddress(userSubdomainOwnerAddress, this.bnsNodes, this.cacheStorage);
         const registeredIdNames = registeredBlockstackNames
+            // tslint:disable-next-line: tsr-detect-non-literal-regexp
             .map((blockstackName: string) => blockstackName.match(new RegExp(`(.+)\.${CruxSpec.idTranslator.cruxToBlockstack(cruxDomainId).toString()}`)))
             .map((match) => match && match[0])
             .filter(Boolean) as string[];

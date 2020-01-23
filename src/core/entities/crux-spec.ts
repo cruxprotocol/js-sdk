@@ -8,12 +8,14 @@ import globalAssetList from "../global-asset-list.json";
 import { ICruxBlockstackInfrastructure } from "../interfaces";
 import { INameServiceConfigurationOverrides } from "./crux-domain";
 const assetIdRegex = new RegExp(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$`);
+// tslint:disable-next-line: tsr-detect-unsafe-regexp
 const urlRegex = new RegExp(`^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$`);
 export class Validations {
     public static validateSubdomainString = (subDomainString: string) => {
         const subdomainRegex: string = "^[a-z]([a-z]|[0-9]|-|_)*([a-z]|[0-9])$";
         const subdomainMinLength: number = 4;
         const subdomainMaxLength: number = 20;
+        // tslint:disable-next-line: tsr-detect-non-literal-regexp
         if (!subDomainString.match(new RegExp(subdomainRegex))) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.SubdomainRegexMatchFailure);
         }
