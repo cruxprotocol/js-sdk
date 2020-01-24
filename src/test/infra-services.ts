@@ -105,22 +105,22 @@ describe('Infrastructure Services Test', () => {
               ])
 
             // calling the method
-            const content = await GaiaService.getContentFromGaiaHub(readUrlPrefix, ownerAddress, fileName);
+            const content = await gaiaService.getContentFromGaiaHub(ownerAddress, fileName);
 
             // run expectations
             expect(content).to.be.eql({
                 "claim": {
                     "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
-                    "addressHash": "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V",
-                    "secIdentifier": ""
+                        "addressHash": "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V",
+                        "secIdentifier": ""
                     },
                     "abe0030a-d8e3-4518-879f-cd9939b7d8ab": {
-                    "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
-                    "secIdentifier": "5555"
+                        "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
+                        "secIdentifier": "5555"
                     },
                     "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
-                    "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
-                    "secIdentifier": ""
+                        "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
+                        "secIdentifier": ""
                     }
                 }
             });
