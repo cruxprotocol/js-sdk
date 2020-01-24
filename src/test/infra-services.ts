@@ -37,9 +37,9 @@ describe('Infrastructure Services Test', () => {
         beforeEach(() => {
             // mocking the static methods
             staticMocksGaiaServiceApiClient = {
-                getHubInfo: sandbox.stub(apiClients.GaiaServiceApiClient, 'getHubInfo').throws("unhandled in mocks"),
-                retrieve: sandbox.stub(apiClients.GaiaServiceApiClient, 'retrieve').throws("unhandled in mocks"),
-                store: sandbox.stub(apiClients.GaiaServiceApiClient, 'store').throws("unhandled in mocks"),
+                getHubInfo: sandbox.stub(apiClients.GaiaServiceApiClient, 'getHubInfo').throws("getHubInfo unhandled in mocks"),
+                retrieve: sandbox.stub(apiClients.GaiaServiceApiClient, 'retrieve').throws("retrieve unhandled in mocks"),
+                store: sandbox.stub(apiClients.GaiaServiceApiClient, 'store').throws("store unhandled in mocks"),
             }
             staticMocksGaiaServiceApiClient.getHubInfo.withArgs(cruxpayGaiaHub).resolves({
                 "challenge_text": "[\"gaiahub\",\"0\",\"hub.cruxpay.com\",\"blockstack_storage_please_sign\"]",
@@ -51,6 +51,79 @@ describe('Infrastructure Services Test', () => {
             mockGaiaServiceApiClient = {}
             sandbox.stub(apiClients, 'GaiaServiceApiClient').returns(mockGaiaServiceApiClient);
             gaiaService = new GaiaService(CruxSpec.blockstack.infrastructure.gaiaHub);
+        })
+        it('testing getGaiaReadUrl', async () => {
+            // input
+            const gaiaHub = "https://hub.cruxpay.com";
+
+            // calling the method
+            const readUrlPrefix = await GaiaService.getGaiaReadUrl(gaiaHub);
+
+            // run expectations
+            expect(readUrlPrefix).to.be.eql("https://gaia.cruxpay.com/");
+        })
+        it('getContentFromGaiaHub test', async () => {
+            // inputs
+            const readUrlPrefix = "https://gaia.cruxpay.com/";
+            const ownerAddress = "1HkXFmLCg4zmPZyf2W5hbpV79EHwG52cEA";
+            const fileName = "cruxdev_cruxpay.json"
+
+            // mocks
+            staticMocksGaiaServiceApiClient.retrieve.withArgs(readUrlPrefix, ownerAddress, fileName).resolves([
+                {
+                  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJjbGFpbSI6eyJkNzhjMjZmOC03YzEzLTQ5MDktYmY2Mi01N2Q3NjIzZjhlZTgiOnsiYWRkcmVzc0hhc2giOiIxSFg0S3Z0UGRnOVFVWXdRRTFrTnFUQWptTmFERzd3ODJWIiwic2VjSWRlbnRpZmllciI6IiJ9LCJhYmUwMDMwYS1kOGUzLTQ1MTgtODc5Zi1jZDk5MzliN2Q4YWIiOnsiYWRkcmVzc0hhc2giOiJycGZLQUEyRXpxb3E1d1dvM1hFTmRMWWRaOFlHeml6NDhoIiwic2VjSWRlbnRpZmllciI6IjU1NTUifSwiNGU0ZDk5ODItMzQ2OS00MjFiLWFiNjAtMmMwYzJmMDUzODZhIjp7ImFkZHJlc3NIYXNoIjoiMHgwYTIzMTE1OTQwNTliNDY4Yzk4OTczMzhiMDI3Yzg3ODIzOThiNDgxIiwic2VjSWRlbnRpZmllciI6IiJ9fSwiaXNzdWVyIjp7InB1YmxpY0tleSI6IjAzNjJmMTcxYTQwYWI1ZTZhZDIyMjc1ZWMxNjZmMTVhMjMyYjgzYTU3MWJhYjljMzA2MjJlZDI5NjNmMWRhNGMwOCJ9LCJzdWJqZWN0Ijp7InB1YmxpY0tleSI6IjAzNjJmMTcxYTQwYWI1ZTZhZDIyMjc1ZWMxNjZmMTVhMjMyYjgzYTU3MWJhYjljMzA2MjJlZDI5NjNmMWRhNGMwOCJ9fQ.GjbwIlaA4WrvEK0Kg5L3DPZwtxOJCodZKpOU-d7HZfpNTiDONYurc1v5PZVyVWadA-4iLce1NfIb5-pYsTLYhQ",
+                  "decodedToken": {
+                    "header": {
+                      "typ": "JWT",
+                      "alg": "ES256K"
+                    },
+                    "payload": {
+                      "claim": {
+                        "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
+                          "addressHash": "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V",
+                          "secIdentifier": ""
+                        },
+                        "abe0030a-d8e3-4518-879f-cd9939b7d8ab": {
+                          "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
+                          "secIdentifier": "5555"
+                        },
+                        "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
+                          "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
+                          "secIdentifier": ""
+                        }
+                      },
+                      "issuer": {
+                        "publicKey": "0362f171a40ab5e6ad22275ec166f15a232b83a571bab9c30622ed2963f1da4c08"
+                      },
+                      "subject": {
+                        "publicKey": "0362f171a40ab5e6ad22275ec166f15a232b83a571bab9c30622ed2963f1da4c08"
+                      }
+                    },
+                    "signature": "GjbwIlaA4WrvEK0Kg5L3DPZwtxOJCodZKpOU-d7HZfpNTiDONYurc1v5PZVyVWadA-4iLce1NfIb5-pYsTLYhQ"
+                  }
+                }
+              ])
+
+            // calling the method
+            const content = await GaiaService.getContentFromGaiaHub(readUrlPrefix, ownerAddress, fileName);
+
+            // run expectations
+            expect(content).to.be.eql({
+                "claim": {
+                    "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
+                    "addressHash": "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V",
+                    "secIdentifier": ""
+                    },
+                    "abe0030a-d8e3-4518-879f-cd9939b7d8ab": {
+                    "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
+                    "secIdentifier": "5555"
+                    },
+                    "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
+                    "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
+                    "secIdentifier": ""
+                    }
+                }
+            });
         })
         it('uploading cruxpay.json', async () => {
             // inputs
