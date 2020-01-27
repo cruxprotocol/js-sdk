@@ -11,6 +11,7 @@ import { DomainRegistrationStatus } from '../core/entities/crux-domain';
 import { CruxDomainId, CruxId } from '../packages/identity-utils';
 import { publicKeyToAddress } from 'blockstack';
 import { SubdomainRegistrationStatusDetail, SubdomainRegistrationStatus } from '../core/entities/crux-user';
+import { PackageError, PackageErrorCode } from '../packages/error';
 interface Global {
     crypto: any;
     TextEncoder: any;
@@ -69,7 +70,7 @@ describe('Infrastructure Services Test', () => {
             const fileName = "cruxdev_cruxpay.json"
 
             // mocks
-            staticMocksGaiaServiceApiClient.retrieve.withArgs(readUrlPrefix, ownerAddress, fileName).resolves([
+            staticMocksGaiaServiceApiClient.retrieve.resolves([
                 {
                   "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJjbGFpbSI6eyJkNzhjMjZmOC03YzEzLTQ5MDktYmY2Mi01N2Q3NjIzZjhlZTgiOnsiYWRkcmVzc0hhc2giOiIxSFg0S3Z0UGRnOVFVWXdRRTFrTnFUQWptTmFERzd3ODJWIiwic2VjSWRlbnRpZmllciI6IiJ9LCJhYmUwMDMwYS1kOGUzLTQ1MTgtODc5Zi1jZDk5MzliN2Q4YWIiOnsiYWRkcmVzc0hhc2giOiJycGZLQUEyRXpxb3E1d1dvM1hFTmRMWWRaOFlHeml6NDhoIiwic2VjSWRlbnRpZmllciI6IjU1NTUifSwiNGU0ZDk5ODItMzQ2OS00MjFiLWFiNjAtMmMwYzJmMDUzODZhIjp7ImFkZHJlc3NIYXNoIjoiMHgwYTIzMTE1OTQwNTliNDY4Yzk4OTczMzhiMDI3Yzg3ODIzOThiNDgxIiwic2VjSWRlbnRpZmllciI6IiJ9fSwiaXNzdWVyIjp7InB1YmxpY0tleSI6IjAzNjJmMTcxYTQwYWI1ZTZhZDIyMjc1ZWMxNjZmMTVhMjMyYjgzYTU3MWJhYjljMzA2MjJlZDI5NjNmMWRhNGMwOCJ9LCJzdWJqZWN0Ijp7InB1YmxpY0tleSI6IjAzNjJmMTcxYTQwYWI1ZTZhZDIyMjc1ZWMxNjZmMTVhMjMyYjgzYTU3MWJhYjljMzA2MjJlZDI5NjNmMWRhNGMwOCJ9fQ.GjbwIlaA4WrvEK0Kg5L3DPZwtxOJCodZKpOU-d7HZfpNTiDONYurc1v5PZVyVWadA-4iLce1NfIb5-pYsTLYhQ",
                   "decodedToken": {
@@ -109,19 +110,17 @@ describe('Infrastructure Services Test', () => {
 
             // run expectations
             expect(content).to.be.eql({
-                "claim": {
-                    "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
-                        "addressHash": "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V",
-                        "secIdentifier": ""
-                    },
-                    "abe0030a-d8e3-4518-879f-cd9939b7d8ab": {
-                        "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
-                        "secIdentifier": "5555"
-                    },
-                    "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
-                        "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
-                        "secIdentifier": ""
-                    }
+                "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
+                    "addressHash": "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V",
+                    "secIdentifier": ""
+                },
+                "abe0030a-d8e3-4518-879f-cd9939b7d8ab": {
+                    "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
+                    "secIdentifier": "5555"
+                },
+                "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
+                    "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
+                    "secIdentifier": ""
                 }
             });
         })
@@ -268,6 +267,78 @@ describe('Infrastructure Services Test', () => {
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, cruxdevConfigBlockstackName)).to.be.true;
             })
+            it('"cruxdev" should throw MissingZoneFile', async () => {
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({
+                    "address": "16wXkSf8kwFGz3oGbHW2aofHuBLX6MWgeh",
+                    "blockchain": "bitcoin",
+                    "did": "did:stack:v0:SWkf7PikxXchsWM5yZw7jRvKTQzMcdb5Pc-0",
+                    "last_txid": "bfa29d44fd31e4307c9fc0229964aaec1a6efc014e4c94681e2372f5f7d474ec",
+                    "status": "registered_subdomain",
+                    "zonefile_hash": "776172a0bc8400a4046d0325dd87e78b48a2f66b"
+                });
+                let raisedError: Error;
+                try {
+                    await blockstackService.getGaiaHub(cruxdevConfigCruxId)
+                } catch (error) {
+                    raisedError = error;
+                }
+                expect(raisedError).to.be.instanceOf(PackageError);
+                expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.MissingZoneFile);
+            })
+            it('"cruxdev" should throw MissingNameOwnerAddress', async () => {
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({
+                    "blockchain": "bitcoin",
+                    "did": "did:stack:v0:SWkf7PikxXchsWM5yZw7jRvKTQzMcdb5Pc-0",
+                    "last_txid": "bfa29d44fd31e4307c9fc0229964aaec1a6efc014e4c94681e2372f5f7d474ec",
+                    "status": "registered_subdomain",
+                    "zonefile": "$ORIGIN _config\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com",
+                    "zonefile_hash": "776172a0bc8400a4046d0325dd87e78b48a2f66b"
+                });
+                let raisedError: Error;
+                try {
+                    await blockstackService.getGaiaHub(cruxdevConfigCruxId)
+                } catch (error) {
+                    raisedError = error;
+                }
+                expect(raisedError).to.be.instanceOf(PackageError);
+                expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.MissingNameOwnerAddress);
+                
+            })
+            it('"cruxdev" should throw FailedToGetGaiaUrlFromZonefile', async () => {
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({
+                    "address": "16wXkSf8kwFGz3oGbHW2aofHuBLX6MWgeh",
+                    "blockchain": "bitcoin",
+                    "did": "did:stack:v0:SWkf7PikxXchsWM5yZw7jRvKTQzMcdb5Pc-0",
+                    "last_txid": "bfa29d44fd31e4307c9fc0229964aaec1a6efc014e4c94681e2372f5f7d474ec",
+                    "status": "registered_subdomain",
+                    "zonefile": "$ORIGIN _config\n$TTL 3600\n_https._tcp URI 10 1",
+                    "zonefile_hash": "776172a0bc8400a4046d0325dd87e78b48a2f66b"
+                });
+                let raisedError: Error;
+                try {
+                    await blockstackService.getGaiaHub(cruxdevConfigCruxId)
+                } catch (error) {
+                    raisedError = error;
+                }
+                expect(raisedError).to.be.instanceOf(PackageError);
+                expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.FailedToGetGaiaUrlFromZonefile);
+                
+            })
+            it('Zonefile with hub and profile.json case', async () => {
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({
+                    "address": "16wXkSf8kwFGz3oGbHW2aofHuBLX6MWgeh",
+                    "blockchain": "bitcoin",
+                    "did": "did:stack:v0:SWkf7PikxXchsWM5yZw7jRvKTQzMcdb5Pc-0",
+                    "last_txid": "bfa29d44fd31e4307c9fc0229964aaec1a6efc014e4c94681e2372f5f7d474ec",
+                    "status": "registered_subdomain",
+                    "zonefile": "$ORIGIN _config\n$TTL 3600\n_https._tcp URI 10 1 \"https://hub.cruxpay.com/hub/1EdriLohTkSNYia3UBHwtdbyJppasR3DRQ/profile.json\"\n", 
+                    "zonefile_hash": "776172a0bc8400a4046d0325dd87e78b48a2f66b"
+                });
+                const gaiaHub = await blockstackService.getGaiaHub(cruxdevConfigCruxId);
+                expect(gaiaHub).to.be.equal(cruxGaiaHub);
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, cruxdevConfigBlockstackName)).to.be.true;
+            })
         })
         describe('getDomainRegistrationStatus tests', () => {
             it('"cruxdev" should be REGISTERED', async () => {
@@ -308,6 +379,44 @@ describe('Infrastructure Services Test', () => {
                         "mascot6699.cruxdev_crux.id"
                     ]
                 });
+                const cruxId = await blockstackService.getCruxIdWithKeyManager(testUserKeyManager, cruxdevDomainId);
+                expect(cruxId).to.be.instanceOf(CruxId);
+                expect(cruxId.toString()).to.be.equal(testUserCruxId.toString());
+                expect(staticMocksBlockstackNamingServiceApiClient.getNamesByAddress.calledTwice).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNamesByAddress.calledWith(sinon.match.any, testUserNameDetails.address)).to.be.true;
+            })
+            it('More than one cruxIDs associated with the corresponding key', async () => {
+                staticMocksBlockstackNamingServiceApiClient.getNamesByAddress.resolves({
+                    "names": [
+                        "damn.zel_crux.id",
+                        "mascot6699.cruxdev_crux.id",
+                        "foobar.cruxdev_crux.id"
+                    ]
+                });
+                const cruxId = await blockstackService.getCruxIdWithKeyManager(testUserKeyManager, cruxdevDomainId);
+                expect(cruxId).to.be.instanceOf(CruxId);
+                expect(cruxId.toString()).to.be.equal(testUserCruxId.toString());
+                expect(staticMocksBlockstackNamingServiceApiClient.getNamesByAddress.calledTwice).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNamesByAddress.calledWith(sinon.match.any, testUserNameDetails.address)).to.be.true;
+            })
+            it('Get Pending CruxID By Key', async () => {
+                staticMocksBlockstackNamingServiceApiClient.getNamesByAddress.resolves({
+                    "names": []
+                });
+                const subdomainAddress = "1HkXFmLCg4zmPZyf2W5hbpV79EHwG52cEA";
+                mockBlockstackSubdomainRegistrarApiClient.getSubdomainRegistrarEntriesByAddress.withArgs(subdomainAddress).resolves([
+                    {
+                        "queue_ix": 34,
+                        "subdomainName": "mascot6699",
+                        "owner": "1HkXFmLCg4zmPZyf2W5hbpV79EHwG52cEA",
+                        "sequenceNumber": "0",
+                        "zonefile": "$ORIGIN mascot6699\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com",
+                        "signature": null,
+                        "status": "submitted",
+                        "status_more": "32521d18c1727c31dfe879f5d0d0833f4061bd642f6bd2fedf802e547a58c7c4",
+                        "received_ts": "2019-10-23T15:57:51.000Z"
+                    }
+                ]);
                 const cruxId = await blockstackService.getCruxIdWithKeyManager(testUserKeyManager, cruxdevDomainId);
                 expect(cruxId).to.be.instanceOf(CruxId);
                 expect(cruxId.toString()).to.be.equal(testUserCruxId.toString());
