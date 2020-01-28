@@ -68,6 +68,7 @@ describe('API Clients Test', () => {
         });
     describe('Subdomain API Tests', () => {
         const user = 'testUser';
+        const ownerAdderss = '17vkTRWLLZrKunkpgSro1ADtZd2yw4uig2';
         const baseUrl = 'https://registrar.cruxpay.com/';
         const blockstackDomainId = BlockstackDomainId.fromString('testWallet_crux.id');
         let blockstackSubdomainRegistrarApiClient: BlockstackSubdomainRegistrarApiClient;
@@ -91,7 +92,7 @@ describe('API Clients Test', () => {
         it('getIndex', async() => {
             // mocks
             const options = {
-                baseUrl: 'https://registrar.cruxpay.com/',
+                baseUrl: baseUrl,
                 headers: {
                     "x-domain-name": "testWallet_crux",
                 },
@@ -113,13 +114,13 @@ describe('API Clients Test', () => {
         it('getSubdomainStatus', async () => {
             // mocks
             const options = {
-                baseUrl: 'https://registrar.cruxpay.com/',
+                baseUrl: baseUrl,
                 headers: {
                     "x-domain-name": 'testWallet_crux',
                 },
                 json: true,
                 method: "GET",
-                url: `/status/test`,
+                url: `/status/testUser`,
             }
             let registeredResponse = {
                 "status": "Subdomain propagated"
@@ -127,10 +128,72 @@ describe('API Clients Test', () => {
             mockHttpJSONRequest.withArgs(options).resolves(registeredResponse);
             
             // calling the method
-            const name = await blockstackSubdomainRegistrarApiClient.getSubdomainStatus("test");
+            const name = await blockstackSubdomainRegistrarApiClient.getSubdomainStatus(user);
 
             // run expectations
             expect(name).to.be.eql(registeredResponse)
+        })
+        it('getSubdomainRegistrarEntriesByAddress', async () => {
+            // mocks
+            const options = {
+                baseUrl: baseUrl,
+                headers: {
+                    "x-domain-name": 'testWallet_crux',
+                },
+                json: true,
+                method: "GET",
+                url: '/subdomain/17vkTRWLLZrKunkpgSro1ADtZd2yw4uig2',
+            }
+            let registrartionResponse = [
+                {
+                    "queue_ix": 36,
+                    "subdomainName": user,
+                    "owner": ownerAdderss,
+                    "sequenceNumber": "0",
+                    "zonefile": "$ORIGIN testUser\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com",
+                    "signature": null,
+                    "status": "submitted",
+                    "status_more": "fa799fc7129106f6ffc4f5183f8bddde3542ac3569662165f404fe9990caa452",
+                    "received_ts": "2019-12-12T09:21:11.000Z"
+                }
+            ]
+
+            mockHttpJSONRequest.resolves(registrartionResponse);
+            //review later
+            
+            // calling the method
+            const name = await blockstackSubdomainRegistrarApiClient.getSubdomainRegistrarEntriesByAddress("17LLpUjHjwH6FzjrhbbwHTNweQN3bCKs7N");
+
+            // run expectations
+            expect(name).to.be.eql(registrartionResponse)
+        })
+        it('registerSubdomain', async () => {
+            // mocks
+            const options = {
+                baseUrl: baseUrl,
+                body: {
+                    user,
+                    owner_address: ownerAdderss,
+                    zonefile: `$ORIGIN ${user}\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com`,
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-domain-name": 'testWallet_crux',
+                },
+                json: true,
+                method: "POST",
+                strictSSL: false,
+                url: "/register",
+            };
+
+            mockHttpJSONRequest.withArgs(options).resolves()
+            //review later
+            
+            // calling the method
+            const name = await blockstackSubdomainRegistrarApiClient.registerSubdomain(user, "https://hub.cruxpay.com", ownerAdderss);
+
+            // run expectations
+            expect(name).to.be.eql(null)
         }) 
     })    
 });
