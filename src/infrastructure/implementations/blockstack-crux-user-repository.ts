@@ -83,7 +83,10 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
     }
     private getAddressMap = async (cruxId: CruxId, tag?: string, ownerAddress?: string): Promise<IAddressMapping> => {
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(cruxId);
-        const gaiaHub = (await this.blockstackService.getGaiaHub(cruxId, tag)) ? (await this.blockstackService.getGaiaHub(cruxId, tag)) : this.infrastructure.gaiaHub;
+        let gaiaHub = await this.blockstackService.getGaiaHub(cruxId, tag);
+        if (!gaiaHub) {
+            gaiaHub = this.infrastructure.gaiaHub;
+        }
         if (!ownerAddress) {
             const nameDetails = await this.blockstackService.getNameDetails(cruxId, tag);
             if (!nameDetails.address) {
@@ -99,7 +102,10 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(cruxId);
-        const gaiaHub = (await this.blockstackService.getGaiaHub(cruxId)) ? (await this.blockstackService.getGaiaHub(cruxId)) : this.infrastructure.gaiaHub;
+        let gaiaHub = await this.blockstackService.getGaiaHub(cruxId);
+        if (!gaiaHub) {
+            gaiaHub = this.infrastructure.gaiaHub;
+        }
         const finalURL = await new GaiaService(gaiaHub, this.cacheStorage).uploadContentToGaiaHub(cruxPayFileName, addressMap, keyManager);
         log.debug(`Address Map for ${cruxId} saved to: ${finalURL}`);
         return finalURL;
