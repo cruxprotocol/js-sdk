@@ -17,22 +17,22 @@ export class CruxAddressResolver {
         this.userCruxAssetTranslator = options.userCruxAssetTranslator;
         log.debug("CruxAddressResolver initialised");
     }
-    public resolveAddressBySymbol = async (walletCurrencySymbol: string): Promise<IAddress> => {
+    public resolveAddressBySymbol = (walletCurrencySymbol: string): IAddress => {
         const assetId = this.cruxAssetTranslator.symbolToAssetId(walletCurrencySymbol);
         if (!assetId) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.AssetIDNotAvailable);
         }
-        const userAddress = await this.resolveAddressWithAssetId(assetId);
+        const userAddress = this.resolveAddressWithAssetId(assetId);
         if (!userAddress) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.AddressNotAvailable);
         }
         return userAddress;
     }
-    public resolveAddressByAssetMatcher = async (assetMatcher: IAssetMatcher): Promise<IAddress> => {
+    public resolveAddressByAssetMatcher = (assetMatcher: IAssetMatcher): IAddress => {
         log.debug("asset matcher provided:", assetMatcher);
         let userAddress: IAddress|undefined;
         if (!assetMatcher.assetIdentifierValue) {
-            userAddress = await this.resolveAddressByAssetGroup(assetMatcher.assetGroup);
+            userAddress = this.resolveAddressByAssetGroup(assetMatcher.assetGroup);
         } else {
             if (!this.userCruxAssetTranslator) {
                 throw new BaseError(null, "user client's assetTranslator is required when assetIdentifierValue is provided");
@@ -40,16 +40,16 @@ export class CruxAddressResolver {
             // match the asset using the matcher provided
             const asset = this.userCruxAssetTranslator.assetMatcherToAsset(assetMatcher);
             if (!asset) {
-                userAddress = await this.resolveAddressByAssetGroup(assetMatcher.assetGroup);
+                userAddress = this.resolveAddressByAssetGroup(assetMatcher.assetGroup);
             } else {
                 const assetParentFallbackKeyDetails = this.userCruxAssetTranslator.assetIdToParentFallbackKeyDetails(asset.assetId);
                 const assetGroupParentFallbackKeyDetails = this.cruxAssetTranslator.symbolParentFallbackKeyToParentFallbackKeyDetails(assetMatcher.assetGroup);
                 if (assetParentFallbackKeyDetails && (assetParentFallbackKeyDetails.assetIdFallbackKey === assetGroupParentFallbackKeyDetails.assetIdFallbackKey)) {
                     // resolve the address with the assetId only if the fallback key matches
-                    userAddress = await this.cruxUser.getAddressWithAssetId(asset.assetId);
+                    userAddress = this.cruxUser.getAddressWithAssetId(asset.assetId);
                     if (!userAddress) {
                         // if no address found, resolve with the fallback key
-                        userAddress = await this.resolveAddressByAssetGroup(assetMatcher.assetGroup);
+                        userAddress = this.resolveAddressByAssetGroup(assetMatcher.assetGroup);
                     }
                 }
             }
@@ -59,19 +59,19 @@ export class CruxAddressResolver {
         }
         return userAddress;
     }
-    public resolveAddressWithAssetId = async (assetId: string): Promise<IAddress|undefined> => {
+    public resolveAddressWithAssetId = (assetId: string): IAddress|undefined => {
         let userAddress = this.cruxUser.getAddressWithAssetId(assetId);
         if (!userAddress) {
             // check if the asset has a valid parent fallback key
             const parentFallbackKeyDetails = this.cruxAssetTranslator.assetIdToParentFallbackKeyDetails(assetId);
             // resolve the fallback address if there is a capability
             if (parentFallbackKeyDetails) {
-                userAddress = await this.resolveAddressByAssetGroup(parentFallbackKeyDetails.symbolFallbackKey);
+                userAddress = this.resolveAddressByAssetGroup(parentFallbackKeyDetails.symbolFallbackKey);
             }
         }
         return userAddress;
     }
-    public resolveAddressByAssetGroup = async (assetGroup: string): Promise<IAddress|undefined> => {
+    public resolveAddressByAssetGroup = (assetGroup: string): IAddress|undefined => {
         let userAddress: IAddress|undefined;
         const enabledParentAssets = this.cruxUser.config.enabledParentAssetFallbacks;
         const decodedTokenType = this.cruxAssetTranslator.symbolParentFallbackKeyToParentFallbackKeyDetails(assetGroup);

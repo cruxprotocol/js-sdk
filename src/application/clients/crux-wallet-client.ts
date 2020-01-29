@@ -128,7 +128,7 @@ export class CruxWalletClient {
             cruxAssetTranslator: this.getCruxAssetTranslator(),
             cruxUser,
         });
-        const userAddress = await addressResolver.resolveAddressBySymbol(walletCurrencySymbol);
+        const userAddress = addressResolver.resolveAddressBySymbol(walletCurrencySymbol);
         return userAddress;
     }
 
@@ -150,7 +150,7 @@ export class CruxWalletClient {
             addressResolverOptions.userCruxAssetTranslator = new CruxAssetTranslator(userCruxDomain!.config.assetMapping, userCruxDomain!.config.assetList);
         }
         const addressResolver = new CruxAddressResolver(addressResolverOptions);
-        const userAddress = await addressResolver.resolveAddressByAssetMatcher(assetMatcher);
+        const userAddress = addressResolver.resolveAddressByAssetMatcher(assetMatcher);
         return userAddress;
     }
 

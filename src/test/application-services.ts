@@ -1,5 +1,9 @@
 import { CruxAssetTranslator, IClientAssetMapping, IGlobalAssetList, IParentFallbackKeyDetails, IAssetMatcher } from "../application/services/crux-asset-translator";
+import { CruxAddressResolver, ICruxAddressResolverOptions } from "../application/services/curx-address-resolver";
 import { expect } from 'chai';
+import { getValidCruxUser } from "./test-utils";
+import { CruxUser, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../core/entities/crux-user";
+import { CruxId } from "../packages/identity-utils";
 describe('Application Services Tests', () => {
     describe('Testing AssetTranslator', () => {
         const testClientAssetList: IGlobalAssetList = [
@@ -215,6 +219,136 @@ describe('Application Services Tests', () => {
 
     })
     describe('Testing CruxAddressResolver', () => {
-
+        const testEthAddress = {
+            addressHash: "0x0a2311594059b468c9897338b027c8782398b481",
+        }
+        const customAssetWalletUser = new CruxUser(
+            CruxId.fromString("user@custom_asset_wallet.crux"),
+            {
+                "4e4d9982-3469-421b-ab60-2c0c2f05386a": testEthAddress,
+            },
+            {
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.DONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                }
+            },
+            {
+                enabledParentAssetFallbacks: ["ERC20_4e4d9982-3469-421b-ab60-2c0c2f05386a"],
+            }
+        );
+        const strictAssetWalletUser = new CruxUser(
+            CruxId.fromString("user@strict_asset_wallet.crux"),
+            {
+                "4e4d9982-3469-421b-ab60-2c0c2f05386a": testEthAddress,
+            },
+            {
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.DONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                }
+            },
+            {
+                enabledParentAssetFallbacks: [],
+            }
+        )
+        const strictAssetWalletTranslator = new CruxAssetTranslator(
+            {
+                "eth": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+                "zrx": "ed919ad4-c0d0-42a7-a2b3-9728cbb81f26",
+            },
+            [
+                {
+                    "assetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+                    "symbol": "ETH",
+                    "name": "Ethereum",
+                    "assetType": null,
+                    "decimals": 8,
+                    "assetIdentifierName": null,
+                    "assetIdentifierValue": null,
+                    "parentAssetId": null
+                },
+                {
+                    "assetId": "ed919ad4-c0d0-42a7-a2b3-9728cbb81f26",
+                    "symbol": "ZRX",
+                    "name": "0x Protocol Token",
+                    "assetType": "ERC20",
+                    "decimals": 18,
+                    "assetIdentifierName": "Contract Address",
+                    "assetIdentifierValue": "0xE41d2489571d322189246DaFA5ebDe1F4699F498",
+                    "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+                }
+            ]
+        )
+        const customAssetWalletTranslator = new CruxAssetTranslator(
+            {
+                "eth": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+            },
+            [
+                {
+                    "assetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+                    "symbol": "ETH",
+                    "name": "Ethereum",
+                    "assetType": null,
+                    "decimals": 8,
+                    "assetIdentifierName": null,
+                    "assetIdentifierValue": null,
+                    "parentAssetId": null
+                },
+                {
+                    "assetId": "ed919ad4-c0d0-42a7-a2b3-9728cbb81f26",
+                    "symbol": "ZRX",
+                    "name": "0x Protocol Token",
+                    "assetType": "ERC20",
+                    "decimals": 18,
+                    "assetIdentifierName": "Contract Address",
+                    "assetIdentifierValue": "0xE41d2489571d322189246DaFA5ebDe1F4699F498",
+                    "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+                }
+            ]
+        )
+        it('resolveAddressBySymbol test', () => {
+            const walletCurrencySymbol = "zrx";
+            const cruxAddressResolver = new CruxAddressResolver({
+                cruxAssetTranslator: strictAssetWalletTranslator,
+                cruxUser: customAssetWalletUser,
+                userCruxAssetTranslator: customAssetWalletTranslator,
+            });
+            const resolvedAddress = cruxAddressResolver.resolveAddressBySymbol(walletCurrencySymbol);
+            expect(resolvedAddress).to.be.eql(testEthAddress);
+        })
+        it('resolveAddressByAssetMatcher test', () => {
+            const assetMatcher: IAssetMatcher = {
+                assetGroup: "ERC20_eth",
+                assetIdentifierValue: "0xE41d2489571d322189246DaFA5ebDe1F4699F498",
+            };
+            const cruxAddressResolver = new CruxAddressResolver({
+                cruxAssetTranslator: strictAssetWalletTranslator,
+                cruxUser: customAssetWalletUser,
+                userCruxAssetTranslator: customAssetWalletTranslator,
+            });
+            const resolvedAddress = cruxAddressResolver.resolveAddressByAssetMatcher(assetMatcher);
+            expect(resolvedAddress).to.be.eql(testEthAddress);
+        })
+        it('resolveAddressWithAssetId test', () => {
+            const assetId = "ed919ad4-c0d0-42a7-a2b3-9728cbb81f26";
+            const cruxAddressResolver = new CruxAddressResolver({
+                cruxAssetTranslator: strictAssetWalletTranslator,
+                cruxUser: customAssetWalletUser,
+                userCruxAssetTranslator: customAssetWalletTranslator,
+            });
+            const resolvedAddress = cruxAddressResolver.resolveAddressWithAssetId(assetId);
+            expect(resolvedAddress).to.be.eql(testEthAddress);
+        })
+        it('resolveAddressByAssetGroup test', () => {
+            const assetGroup = "ERC20_eth";
+            const cruxAddressResolver = new CruxAddressResolver({
+                cruxAssetTranslator: strictAssetWalletTranslator,
+                cruxUser: customAssetWalletUser,
+                userCruxAssetTranslator: customAssetWalletTranslator,
+            });
+            const resolvedAddress = cruxAddressResolver.resolveAddressByAssetGroup(assetGroup);
+            expect(resolvedAddress).to.be.eql(testEthAddress);
+        })
     })
 });
