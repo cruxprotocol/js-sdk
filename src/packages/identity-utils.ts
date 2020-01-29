@@ -19,6 +19,7 @@ export const validateSubdomain = (subDomain: string) => {
     const subdomainRegex: string = "^[a-z]([a-z]|[0-9]|-|_)*([a-z]|[0-9])$";
     const subdomainMinLength: number = 4;
     const subdomainMaxLength: number = 20;
+    // tslint:disable-next-line: tsr-detect-non-literal-regexp
     if (!subDomain.match(new RegExp(subdomainRegex))) {
         throw ErrorHelper.getPackageError(null, PackageErrorCode.SubdomainRegexMatchFailure);
     }
