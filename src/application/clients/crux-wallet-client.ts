@@ -193,7 +193,7 @@ export class CruxWalletClient {
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
-        const assetIdAssetGroups = symbolAssetGroups.map((assetGroup: string) => this.getCruxAssetTranslator().decodeSymbolParentFallbackKey(assetGroup).assetIdFallbackKey);
+        const assetIdAssetGroups = symbolAssetGroups.map((assetGroup: string) => this.getCruxAssetTranslator().symbolParentFallbackKeyToParentFallbackKeyDetails(assetGroup).assetIdFallbackKey);
         cruxUser.setParentAssetFallbacks(assetIdAssetGroups);
         cruxUser = await this.cruxUserRepository.save(cruxUser, this.keyManager);
         return cruxUser.config.enabledParentAssetFallbacks;

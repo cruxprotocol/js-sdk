@@ -1,7 +1,7 @@
-import { Validations } from "../../core/entities/crux-spec";
 import { IAddress, IAddressMapping } from "../../core/entities/crux-user";
 import { BaseError, ERROR_STRINGS, PackageErrorCode } from "../../packages/error";
 import { getLogger } from "../../packages/logger";
+import { CruxSpec } from "../../core/entities/crux-spec";
 const log = getLogger(__filename);
 
 export interface IClientAssetMapping {
@@ -46,6 +46,7 @@ export interface IParentFallbackKeyDetails {
     symbolFallbackKey: string;
     assetIdFallbackKey: string;
     parentAssetId: string;
+    assetType: string;
 }
 
 export class CruxAssetTranslator {
@@ -105,7 +106,7 @@ export class CruxAssetTranslator {
             success,
         };
     }
-    public decodeSymbolParentFallbackKey = (symbolFallbackKey: string): IParentFallbackKeyDetails => {
+    public symbolParentFallbackKeyToParentFallbackKeyDetails = (symbolFallbackKey: string): IParentFallbackKeyDetails => {
         const fallbackKeyRegex = new RegExp("^(.+)_(.+)$");
         const match = symbolFallbackKey.match(fallbackKeyRegex);
         if (!match) {
@@ -115,7 +116,7 @@ export class CruxAssetTranslator {
         const parentAssetId = this.symbolToAssetId(parentSymbol);
         return this.constructParentFallbackKeyDetails(match[1], match[2], parentAssetId);
     }
-    public getParentFallbackKeyDetails = (assetId: string): IParentFallbackKeyDetails|undefined => {
+    public assetIdToParentFallbackKeyDetails = (assetId: string): IParentFallbackKeyDetails|undefined => {
         const asset = this.assetList.find((a) => a.assetId === assetId);
         if (!asset || asset.assetType === null || asset.parentAssetId === null) {
             return;
@@ -124,18 +125,31 @@ export class CruxAssetTranslator {
         const parentSymbol = this.assetIdToSymbol(parentAssetId);
         return this.constructParentFallbackKeyDetails(asset.assetType, parentSymbol, parentAssetId);
     }
-    public getAssetWithAssetIdentifierValue = (assetIdentifierValue: string|number): IGlobalAsset|undefined => {
-        return this.assetList.find((asset) => asset.assetIdentifierValue === assetIdentifierValue);
+    public assetMatcherToAsset = (assetMatcher: IAssetMatcher): IGlobalAsset|undefined => {
+        const filteredAssets = this.assetList.filter((asset) => {
+            const parentFallbackKeyDetails = this.symbolParentFallbackKeyToParentFallbackKeyDetails(assetMatcher.assetGroup);
+            // can only validate the properties that are not using symbols (client specific)
+            const assetParentFallbackKeyMatch = parentFallbackKeyDetails && (parentFallbackKeyDetails.parentAssetId === asset.parentAssetId) && (parentFallbackKeyDetails.assetType === asset.assetType);
+            const assetIdentifierValueMatch = asset.assetIdentifierValue === assetMatcher.assetIdentifierValue;
+            // should match all the criteria given in the matcher
+            return assetParentFallbackKeyMatch && assetIdentifierValueMatch;
+        });
+        if (filteredAssets.length === 1) {
+            return filteredAssets[0];
+        } else {
+            return;
+        }
     }
     private constructParentFallbackKeyDetails = (assetType: string, parentSymbol: string, parentAssetId: string): IParentFallbackKeyDetails => {
         return {
+            assetType,
             assetIdFallbackKey: `${assetType}_${parentAssetId}`,
             parentAssetId,
             symbolFallbackKey: `${assetType}_${parentSymbol}`,
         };
     }
     private setAssetMap = (assetMapping: IClientAssetMapping): void => {
-        Validations.validateAssetMapping(assetMapping);
+        CruxSpec.validations.validateAssetMapping(assetMapping);
         this.assetMap = this.getLowerAssetMapping(assetMapping);
     }
     private setReverseAssetMap = (assetMapping: IClientAssetMapping): void => {
@@ -145,7 +159,7 @@ export class CruxAssetTranslator {
         }
     }
     private setAssetList = (assetList: IGlobalAssetList): void => {
-        // TODO: validate the assetList
+        CruxSpec.validations.validateAssetList(assetList);
         this.assetList = assetList;
     }
     private getLowerAssetMapping(assetMapping: IClientAssetMapping): IClientAssetMapping {
