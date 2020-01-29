@@ -1,11 +1,11 @@
 import {CruxDomain} from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
-import { CruxUser, IAddressMapping, SubdomainRegistrationStatus } from "../../core/entities/crux-user";
+import { CruxUser, IAddressMapping, ICruxUserConfiguration, SubdomainRegistrationStatus } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxUserRepository, ICruxUserRepositoryOptions} from "../../core/interfaces/crux-user-repository";
 import { IKeyManager } from "../../core/interfaces/key-manager";
 import { ErrorHelper, PackageErrorCode } from "../../packages/error";
-import { CruxDomainId, CruxId, IdTranslator } from "../../packages/identity-utils";
+import { CruxDomainId, CruxId } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { StorageService } from "../../packages/storage";
 import { BlockstackService } from "../services/blockstack-service";
@@ -43,7 +43,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
     }
     public create = async (cruxId: CruxId, keyManager: IKeyManager): Promise<CruxUser> => {
         const cruxUserInformation = await this.blockstackService.registerCruxId(cruxId, this.infrastructure.gaiaHub, keyManager);
-        return new CruxUser(cruxId, {}, cruxUserInformation);
+        return new CruxUser(cruxId, {}, cruxUserInformation, {enabledParentAssetFallbacks: []});
     }
     public isCruxIdAvailable = async (cruxID: CruxId): Promise<boolean> => {
         return this.blockstackService.isCruxIdAvailable(cruxID);
@@ -54,10 +54,14 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
             return;
         }
         let addressMap = {};
+        let userConfiguration: ICruxUserConfiguration = {
+            enabledParentAssetFallbacks: [],
+        };
         if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.DONE) {
             addressMap = await this.getAddressMap(cruxID, tag);
+            userConfiguration = await this.getUserConfiguration(cruxID, tag);
         }
-        return new CruxUser(cruxID, addressMap, cruxUserInformation);
+        return new CruxUser(cruxID, addressMap, cruxUserInformation, userConfiguration);
     }
     public getWithKey = async (keyManager: IKeyManager, cruxDomainId: CruxDomainId): Promise<CruxUser|undefined> => {
         const cruxID = await this.blockstackService.getCruxIdWithKeyManager(keyManager, cruxDomainId);
@@ -67,27 +71,42 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         return this.getByCruxId(cruxID);
     }
     public save = async (cruxUser: CruxUser, keyManager: IKeyManager): Promise<CruxUser> => {
-        await this.putAddressMap(cruxUser.getAddressMap(), new CruxDomainId(cruxUser.cruxID.components.domain), keyManager);
+        await this.putAddressMap(cruxUser.cruxID, cruxUser.getAddressMap(), keyManager);
+        await this.putUserConfiguration(cruxUser.cruxID, cruxUser.config, keyManager);
         return cruxUser;
     }
     private getAddressMap = async (cruxId: CruxId, tag?: string): Promise<IAddressMapping> => {
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(cruxId);
+        return this.getContentByFilename(cruxId, cruxPayFileName, tag);
+    }
+    private putAddressMap = async (cruxId: CruxId, addressMap: IAddressMapping, keyManager: IKeyManager): Promise<string> => {
+        const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(cruxId);
+        const url = await this.putContentByFilename(cruxId, cruxPayFileName, addressMap, keyManager);
+        log.debug(`Address Map for ${cruxId} saved to: ${url}`);
+        return url;
+    }
+    private getUserConfiguration = async (cruxId: CruxId, tag?: string) => {
+        const cruxUserConfigFileName = CruxSpec.blockstack.getCruxUserConfigFileName(cruxId);
+        const userConfiguration = await this.getContentByFilename(cruxId, cruxUserConfigFileName, tag);
+        return userConfiguration;
+    }
+    private putUserConfiguration = async (cruxId: CruxId, cruxUserConfiguration: ICruxUserConfiguration, keyManager: IKeyManager): Promise<string> => {
+        const cruxUserConfigFileName = CruxSpec.blockstack.getCruxUserConfigFileName(cruxId);
+        const url = await this.putContentByFilename(cruxId, cruxUserConfigFileName, cruxUserConfiguration, keyManager);
+        log.debug(`User Config for ${cruxId} saved to: ${url}`);
+        return url;
+    }
+    private getContentByFilename = async (cruxId: CruxId, filename: string, tag?: string) => {
         const gaiaHub = await this.blockstackService.getGaiaHub(cruxId, tag);
         const nameDetails = await this.blockstackService.getNameDetails(cruxId, tag);
         if (!nameDetails.address) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingNameOwnerAddress, cruxId.toString());
         }
-        return new GaiaService(gaiaHub, this.cacheStorage).getContentFromGaiaHub(nameDetails.address, cruxPayFileName);
+        return new GaiaService(gaiaHub, this.cacheStorage).getContentFromGaiaHub(nameDetails.address, filename);
     }
-    private putAddressMap = async (addressMap: IAddressMapping, cruxDomainId: CruxDomainId, keyManager: IKeyManager): Promise<string> => {
-        const cruxId = await this.blockstackService.getCruxIdWithKeyManager(keyManager, cruxDomainId);
-        if (!cruxId) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
-        }
-        const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(cruxId);
+    private putContentByFilename = async (cruxId: CruxId, filename: string, content: any, keyManager: IKeyManager): Promise<string> => {
         const gaiaHub = await this.blockstackService.getGaiaHub(cruxId);
-        const finalURL = await new GaiaService(gaiaHub, this.cacheStorage).uploadContentToGaiaHub(cruxPayFileName, addressMap, keyManager);
-        log.debug(`Address Map for ${cruxId} saved to: ${finalURL}`);
+        const finalURL = await new GaiaService(gaiaHub, this.cacheStorage).uploadContentToGaiaHub(filename, content, keyManager);
         return finalURL;
     }
 }

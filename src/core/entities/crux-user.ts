@@ -25,6 +25,10 @@ export interface ICruxUserInformation {
     ownerAddress?: string;
 }
 
+export interface ICruxUserConfiguration {
+    enabledParentAssetFallbacks: string[];
+}
+
 export enum SubdomainRegistrationStatus {
     NONE = "NONE",
     PENDING = "PENDING",
@@ -43,11 +47,13 @@ export class CruxUser {
     private cruxUserInformation!: ICruxUserInformation;
     private cruxUserID: CruxId;
     private addressMap!: IAddressMapping;
+    private cruxUserConfig!: ICruxUserConfiguration;
 
-    constructor(cruxID: CruxId, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation) {
+    constructor(cruxID: CruxId, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation, cruxUserConfig: ICruxUserConfiguration) {
         this.cruxUserID = cruxID;
         this.setAddressMap(addressMap);
         this.setCruxUserInformation(cruxUserInformation);
+        this.setCruxUserConfig(cruxUserConfig);
         log.debug("CruxUser initialised");
     }
     get cruxID() {
@@ -55,6 +61,14 @@ export class CruxUser {
     }
     get info() {
         return this.cruxUserInformation;
+    }
+    get config() {
+        return this.cruxUserConfig;
+    }
+    public setParentAssetFallbacks = (assetGroups: string[]) => {
+        // TODO: validate the assetGroups provided;
+        const enabledFallbacksSet = new Set(assetGroups);
+        this.cruxUserConfig.enabledParentAssetFallbacks = [...enabledFallbacksSet];
     }
     public getAddressMap(): IAddressMapping {
         return this.addressMap;
@@ -67,7 +81,7 @@ export class CruxUser {
         }
         this.addressMap = addressMap;
     }
-    public getAddressFromAsset(assetId: string): IAddress {
+    public getAddressWithAssetId(assetId: string): IAddress|undefined {
         return this.addressMap[assetId];
     }
     private setCruxUserInformation = (cruxUserInformation: ICruxUserInformation) => {
@@ -79,5 +93,9 @@ export class CruxUser {
             throw new BaseError(null, `Subdomain registration status detail validation failed!`);
         }
         this.cruxUserInformation = cruxUserInformation;
+    }
+    private setCruxUserConfig = (cruxUserConfiguration: ICruxUserConfiguration) => {
+        // TODO: validation of the configurations
+        this.cruxUserConfig = cruxUserConfiguration;
     }
 }

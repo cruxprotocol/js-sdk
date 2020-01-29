@@ -107,6 +107,9 @@ export const CruxSpec = {
         public static getCruxPayFilename = (cruxId: CruxId): string => {
             return `${cruxId.components.domain}_cruxpay.json`;
         }
+        public static getCruxUserConfigFileName = (cruxId: CruxId): string => {
+            return `${cruxId.components.domain}_user-config.json`;
+        }
     },
     globalAssetList,
     idTranslator: IdTranslator,

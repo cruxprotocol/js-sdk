@@ -8,7 +8,8 @@ import {
     ICruxUserRegistrationStatus,
     SubdomainRegistrationStatus,
     SubdomainRegistrationStatusDetail,
-    ICruxUserInformation
+    ICruxUserInformation,
+    ICruxUserConfiguration
 } from "../core/entities/crux-user";
 import {ICruxDomainRepository} from "../core/interfaces/crux-domain-repository";
 import {ICruxUserRepository} from "../core/interfaces/crux-user-repository";
@@ -52,6 +53,8 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
                 status: SubdomainRegistrationStatus.PENDING,
                 statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
             }
+        },{
+            enabledParentAssetFallbacks: [],
         });
         const addressFromKeyManager = publicKeyToAddress(await keyManager.getPubKey());
         this.userStore.store(newUser, addressFromKeyManager);
@@ -157,8 +160,11 @@ export const getValidCruxUser = () => {
             'statusDetail': SubdomainRegistrationStatusDetail.DONE,
         }
     };
+    const validUserConfiguration: ICruxUserConfiguration = {
+        enabledParentAssetFallbacks: [],
+    }
 
-    return new CruxUser(testCruxId, testValidAddressMap, validUserInformation);
+    return new CruxUser(testCruxId, testValidAddressMap, validUserInformation, validUserConfiguration);
 };
 
 export const getValidCruxUser2 = () => {
@@ -174,6 +180,9 @@ export const getValidCruxUser2 = () => {
             'statusDetail': SubdomainRegistrationStatusDetail.DONE,
         }
     };
+    const validUserConfiguration: ICruxUserConfiguration = {
+        enabledParentAssetFallbacks: [],
+    }
 
-    return new CruxUser(testCruxId, testValidAddressMap, validUserInformation);
+    return new CruxUser(testCruxId, testValidAddressMap, validUserInformation, validUserConfiguration);
 };

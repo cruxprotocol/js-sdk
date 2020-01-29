@@ -130,6 +130,9 @@ describe('Infrastructure Repositories Test', () => {
                     "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
                 }
             });
+            mockGaiaService.getContentFromGaiaHub.withArgs(testUserNameDetails.address, "cruxdev_user-config.json").resolves({
+                enabledParentAssetFallbaacks: [],
+            });
             const cruxUser = await blockstackCruxUserRepository.getByCruxId(testUserCruxId);
             expect(cruxUser).is.instanceOf(CruxUser);
             expect(cruxUser.cruxID).is.eql(testUserCruxId);
@@ -158,6 +161,9 @@ describe('Infrastructure Repositories Test', () => {
                 "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
                     "addressHash":"1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V",
                 }
+            });
+            mockGaiaService.getContentFromGaiaHub.withArgs(testUserNameDetails.address, "cruxdev_user-config.json").resolves({
+                enabledParentAssetFallbaacks: [],
             });
             const cruxUser = await blockstackCruxUserRepository.getByCruxId(testUserCruxId, "testtag");
             expect(cruxUser).is.instanceOf(CruxUser);
@@ -209,6 +215,9 @@ describe('Infrastructure Repositories Test', () => {
                 "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
                     "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
                 }
+            });
+            mockGaiaService.getContentFromGaiaHub.withArgs(testUserNameDetails.address, "cruxdev_user-config.json").resolves({
+                enabledParentAssetFallbaacks: [],
             });
             const cruxUser = await blockstackCruxUserRepository.getWithKey(testUserKeyManager, cruxdevDomainId);
             expect(cruxUser).is.instanceOf(CruxUser);
