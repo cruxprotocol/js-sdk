@@ -35,7 +35,7 @@ export class CruxAddressResolver {
             userAddress = this.resolveAddressByAssetGroup(assetMatcher.assetGroup);
         } else {
             if (!this.userCruxAssetTranslator) {
-                throw new BaseError(null, "user client's assetTranslator is required when assetIdentifierValue is provided");
+                throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingUserCruxAssetTranslator);
             }
             // match the asset using the matcher provided
             const asset = this.userCruxAssetTranslator.assetMatcherToAsset(assetMatcher);

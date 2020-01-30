@@ -135,7 +135,7 @@ export class CruxWalletClient {
     @throwCruxClientError
     public resolveAssetAddressForCruxID = async (fullCruxID: string, assetMatcher: IAssetMatcher): Promise<IAddress> => {
         await this.initPromise;
-        const tag = "resolving_address";
+        const tag = "resolving_address_with_matcher";
         const cruxUser = await this.getCruxUserByID(fullCruxID.toLowerCase(), tag);
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);

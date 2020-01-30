@@ -56,7 +56,7 @@ export class GaiaServiceApiClient {
             });
             return responseBody;
         } catch (error) {
-            throw new BaseError(error, "Error while retrieving from Gaia");
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaGetFileFailed);
         }
     }
 }
