@@ -42,15 +42,10 @@ export class CruxAddressResolver {
             if (!asset) {
                 userAddress = this.resolveAddressByAssetGroup(assetMatcher.assetGroup);
             } else {
-                const assetParentFallbackKeyDetails = this.userCruxAssetTranslator.assetIdToParentFallbackKeyDetails(asset.assetId);
-                const assetGroupParentFallbackKeyDetails = this.cruxAssetTranslator.symbolParentFallbackKeyToParentFallbackKeyDetails(assetMatcher.assetGroup);
-                if (assetParentFallbackKeyDetails && (assetParentFallbackKeyDetails.assetIdFallbackKey === assetGroupParentFallbackKeyDetails.assetIdFallbackKey)) {
-                    // resolve the address with the assetId only if the fallback key matches
-                    userAddress = this.cruxUser.getAddressWithAssetId(asset.assetId);
-                    if (!userAddress) {
-                        // if no address found, resolve with the fallback key
-                        userAddress = this.resolveAddressByAssetGroup(assetMatcher.assetGroup);
-                    }
+                userAddress = this.cruxUser.getAddressWithAssetId(asset.assetId);
+                if (!userAddress) {
+                    // if no address found, resolve with the fallback key
+                    userAddress = this.resolveAddressByAssetGroup(assetMatcher.assetGroup);
                 }
             }
         }
