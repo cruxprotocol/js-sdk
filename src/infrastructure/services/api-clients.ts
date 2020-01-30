@@ -153,7 +153,6 @@ export class BlockstackSubdomainRegistrarApiClient {
             },
             json: true,
             method: "POST",
-            strictSSL: false,
             url: "/register",
         };
 
