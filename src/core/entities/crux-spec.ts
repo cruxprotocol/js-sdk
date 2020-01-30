@@ -10,6 +10,7 @@ import { INameServiceConfigurationOverrides } from "./crux-domain";
 const assetIdRegex = new RegExp(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$`);
 // tslint:disable-next-line: tsr-detect-unsafe-regexp
 const urlRegex = new RegExp(`^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$`);
+const parentAssetFallbackKeyRegex = new RegExp(`^(.+)_[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$`)
 export class Validations {
     public static validateSubdomainString = (subDomainString: string) => {
         const subdomainRegex: string = "^[a-z]([a-z]|[0-9]|-|_)*([a-z]|[0-9])$";
@@ -56,6 +57,18 @@ export class Validations {
     }
     public static validateAssetMapping = (assetMapping: IClientAssetMapping) => {
         Object.keys(assetMapping).forEach((assetSymbol) => {Validations.validateAssetId(assetMapping[assetSymbol]); });
+    }
+    public static validateParentAssetFallbackKey = (parentAssetFallbackKey: string) => {
+        try {
+            Validations.validateRegex(parentAssetFallbackKey, parentAssetFallbackKeyRegex);
+        } catch (error) {
+            throw new BaseError(null, `ParentAssetFallbackKey: ${parentAssetFallbackKey} is not valid.`);
+        }
+    }
+    public static validateParentAssetFallbackKeys = (parentAssetFallbackKeys: string[]) => {
+        parentAssetFallbackKeys.forEach((parentAssetFallbackKey) => {
+            Validations.validateParentAssetFallbackKey(parentAssetFallbackKey);
+        })
     }
     public static validateNameServiceConfig = (nameServiceConfig: INameServiceConfigurationOverrides) => {
         // TODO: domain name validation

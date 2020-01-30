@@ -1,11 +1,4 @@
-import { CruxOnBoardingClient, ICruxOnBoardingClientOptions } from "../application/clients/crux-wallet-onboarding";
-import { CruxOnBoardingClientError } from "../application/clients/crux-wallet-onboarding/utils";
-import { LocalStorage } from "../packages/storage";
-import { IClientAssetMapping } from "../packages/configuration-service";
-import { IBlockstackServiceInputOptions } from "../packages/name-service/blockstack-service";
-import { DomainRegistrationStatus } from "../core/entities/crux-domain";
-import { ManualKeyManager } from "../infrastructure/implementations/manual-key-manager";
-import { CruxSpec } from "../core/entities/crux-spec";
+import { IBlockstackServiceInputOptions, ManualKeyManager, ICruxOnBoardingClientOptions, CruxOnBoardingClient, DomainRegistrationStatus, CruxOnBoardingClientError, IClientAssetMapping, CruxSpec } from "../index";
 
 const doc = (document as {
     getElementById: Function,
@@ -24,6 +17,7 @@ const sampleAssetMapping = {
     "ltc": "d79b9ece-a918-4523-b2bc-74071675b54a",
     "life": "0fcdab6b-9ca8-48d9-9254-32b078a2b31e"
 }
+const sampleSupportedParentAssetFallbacks = ["ERC20_4e4d9982-3469-421b-ab60-2c0c2f05386a"]
 let sampleNameserviceConfig: IBlockstackServiceInputOptions;
 const sampleAssetList = [
     {
@@ -223,9 +217,10 @@ const getAssetMapping = async () => {
 const putAssetMapping = async () => {
     let UIResponse: string = ""
     const newAssetMap: IClientAssetMapping = sampleAssetMapping;
+    const newSupportedParentAssetFallbacks: string[] = sampleSupportedParentAssetFallbacks;
     try {
         doc.getElementById('putAssetMapAcknowledgement').textContent = "Publishing your global asset mapping..."
-        await cruxOnBoardingClient.putAssetMapping(newAssetMap)
+        await cruxOnBoardingClient.putAssetMapping(newAssetMap, newSupportedParentAssetFallbacks)
         UIResponse = `successfully published asset map!`
     } catch (e) {
         if (e instanceof CruxOnBoardingClientError) {

@@ -16,7 +16,7 @@ import {
     BlockstackCruxUserRepository,
     IBlockstackCruxUserRepositoryOptions,
 } from "../../infrastructure/implementations/blockstack-crux-user-repository";
-import { CruxClientError, ErrorHelper, PackageErrorCode } from "../../packages/error";
+import { CruxClientError, ErrorHelper, PackageErrorCode, BaseError } from "../../packages/error";
 import { CruxDomainId, CruxId, InputIDComponents } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
 import { StorageService } from "../../packages/storage";
@@ -194,6 +194,12 @@ export class CruxWalletClient {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
         const assetIdAssetGroups = symbolAssetGroups.map((assetGroup: string) => this.getCruxAssetTranslator().symbolParentFallbackKeyToParentFallbackKeyDetails(assetGroup).assetIdFallbackKey);
+        // validate the assetIdAssetGroup is supported by the walletClient
+        assetIdAssetGroups.forEach((assetGroup) => {
+            if (!this.getCruxDomain().config.supportedParentAssetFallbacks.includes(assetGroup)) {
+                throw new BaseError(null, "assetGroup not supported by domain");
+            };
+        })
         cruxUser.setParentAssetFallbacks(assetIdAssetGroups);
         cruxUser = await this.cruxUserRepository.save(cruxUser, this.keyManager);
         return cruxUser.config.enabledParentAssetFallbacks;
