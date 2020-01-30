@@ -40,9 +40,6 @@ const sampleAddressMaps: {[walletClientName: string]: IAddressMapping} = {
         life: {
             addressHash: lifeAddress,
         },
-        zrx: {
-            addressHash: zrxAddress,
-        }
     },
     "zel_dev": {
         bitcoin: {
