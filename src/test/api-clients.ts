@@ -3,7 +3,8 @@ import sinon from "sinon";
 import { BlockstackNamingServiceApiClient, BlockstackSubdomainRegistrarApiClient, GaiaServiceApiClient } from "../infrastructure/services/api-clients";
 import * as utils from '../packages/utils';
 import { BlockstackDomainId } from '../packages/identity-utils';
-import { PackageErrorCode } from '../packages/error';
+import { PackageErrorCode, BaseError } from '../packages/error';
+import { InMemStorage } from '../packages/inmem-storage';
 
 describe('API Clients Test', () => {
     let sandbox: sinon.SinonSandbox;
@@ -29,6 +30,13 @@ describe('API Clients Test', () => {
         const address = "17vkTRWLLZrKunkpgSro1ADtZd2yw4uig2";
         const testBlockstackName = "foo@test_wallet.crux";
         const tag = "test_tag";
+        const options = {
+            baseUrl: 'https://core.blockstack.org/',
+            json: true,
+            method: "GET",
+            qs: null,
+            url: `/v1/names/foo@test_wallet.crux`,
+        }
         it('getNameByAddress', async () => {
             // mocks
             const options = {
@@ -82,7 +90,7 @@ describe('API Clients Test', () => {
                     "x-tag": tag,
                 };
             }
-            let nameDetails = {
+            const data = {
                 "status": "registered_subdomain",
                 "zonefile": "$ORIGIN foo\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com",
                 "blockchain": "bitcoin",
@@ -91,13 +99,38 @@ describe('API Clients Test', () => {
                 "address": "17vkTRWLLZrKunkpgSro1ADtZd2yw4uig2",
                 "zonefile_hash": "96ba3fd3253add05b02abddfd36480c39fdaa7b0"
             }
-            mockHttpJSONRequest.withArgs(options).resolves(nameDetails);
+            mockHttpJSONRequest.withArgs(options).resolves(data);
 
             // calling the method
-            const name = await BlockstackNamingServiceApiClient.getNameDetails(bnsNode, testBlockstackName, tag, undefined);
-
+            const nameWithTag = await BlockstackNamingServiceApiClient.getNameDetails(bnsNode, testBlockstackName, tag, new InMemStorage());
             // run expectations
-            expect(name).to.be.eql(nameDetails)
+            expect(nameWithTag).to.be.eql(data)
+            })
+        it('getNameDetailsWithoutTag', async () => {
+            const options = {
+                baseUrl: 'https://core.blockstack.org/',
+                json: true,
+                method: "GET",
+                qs: null,
+                url: `/v1/names/foo@test_wallet.crux`,
+            }
+            const data = {
+                "status": "registered_subdomain",
+                "zonefile": "$ORIGIN foo\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com",
+                "blockchain": "bitcoin",
+                "last_txid": "ca62ea1f9759f6d5570f9533b27b7c5f09df7b0cc1f7ec4b70bfdee0814832db",
+                "did": "did:stack:v0:SUDkVGHV4w3XS6YHDsqsZ4NTDQGQhDBdqu-0",
+                "address": "17vkTRWLLZrKunkpgSro1ADtZd2yw4uig2",
+                "zonefile_hash": "96ba3fd3253add05b02abddfd36480c39fdaa7b0"
+            }
+
+            mockHttpJSONRequest.withArgs(options).resolves(data);
+
+            // calling the method
+            const nameWithoutTag = await BlockstackNamingServiceApiClient.getNameDetails(bnsNode, testBlockstackName, undefined, new InMemStorage());
+            
+            // run expectations
+            expect(nameWithoutTag).to.be.eql(data)
             })
         it('BNS Resolution Failure', async () => {
             // mocks
@@ -126,7 +159,7 @@ describe('API Clients Test', () => {
         const user = 'testUser';
         const ownerAdderss = '17vkTRWLLZrKunkpgSro1ADtZd2yw4uig2';
         const baseUrl = 'https://registrar.cruxpay.com/';
-        const blockstackDomainId = BlockstackDomainId.fromString('testWallet_crux.id');
+        let blockstackDomainId = BlockstackDomainId.fromString('testWallet_crux.id');
         let blockstackSubdomainRegistrarApiClient: BlockstackSubdomainRegistrarApiClient;
         beforeEach(() => {
             const options = {
@@ -334,55 +367,29 @@ describe('API Clients Test', () => {
             // run expectations
             expect(raisedError.errorCode).to.be.equal(PackageErrorCode.SubdomainRegistrationAcknowledgementFailed)
         })
-    })
-    // describe('initPromise Failure Case', () => {
-    //     const user = 'testUser';
-    //     const baseUrl = 'https://registrar.cruxpay.com/';
-    //     const wrongBlockstackDomainId = BlockstackDomainId.fromString('testWalletX_crux.id');
-    //     let blockstackSubdomainRegistrarApiClient: BlockstackSubdomainRegistrarApiClient;
-    //     beforeEach(() => {
-    //         const options = {
-    //             baseUrl: 'https://registrar.cruxpay.com/',
-    //             headers: {
-    //                 "x-domain-name": "testWallet_crux",
-    //             },
-    //             json: true,
-    //             method: "GET",
-    //             url: `/index`,
-    //         };
-    //         let successResponse = {
-    //             "status": true,
-    //             "domainName": "testWallet_crux.id"
-    //         }
-    //         mockHttpJSONRequest.withArgs(options).resolves(successResponse);
-    //         blockstackSubdomainRegistrarApiClient = new BlockstackSubdomainRegistrarApiClient(baseUrl,wrongBlockstackDomainId);
-    //     })
-    //     it('getSubdomainStatus init Failure', async () => {
-    //         // mocks
-    //         const options = {
-    //             baseUrl: baseUrl,
-    //             headers: {
-    //                 "x-domain-name": 'testWallet_crux',
-    //             },
-    //             json: true,
-    //             method: "GET",
-    //             url: `/status/testUser`,
-    //         }
-    //         let registeredResponse = {
-    //             "status": "Subdomain propagated"
-    //         }
-    //         mockHttpJSONRequest.withArgs(options).resolves(registeredResponse);
+        it('initPromise Failure Case', () => {
+            const baseUrl = 'https://registrar.cruxpay.com/';
+            let blockstackDomainIdX = BlockstackDomainId.fromString('testWalletXX_crux.id');
+            const options = {
+                baseUrl: 'https://registrar.cruxpay.com/',
+                headers: {
+                    "x-domain-name": "testWalletXX_crux",
+                },
+                json: true,
+                method: "GET",
+                url: `/index`,
+            };
+            let successResponse = {
+                "status": true,
+                "domainName": "testWalletA_crux.id"
+            }
+            mockHttpJSONRequest.withArgs(options).resolves(successResponse);
+            blockstackSubdomainRegistrarApiClient = new BlockstackSubdomainRegistrarApiClient(baseUrl,blockstackDomainIdX); 
+            }
             
-    //         // calling the method
-    //         // try{
-    //             const name = await blockstackSubdomainRegistrarApiClient.getSubdomainStatus(user);
-    //         // } catch (e){
-    //         //     raisedError = e;
-    //         // }
-    //         // run expectations
-    //         expect(mockHttpJSONRequest.calledOnceWithExactly(options));
-    //     })
-    // })
+        )
+    })
+
     describe('Gaia Service API Tests', () => {
         let baseUrl = "https://hub.cruxpay.com";
         let address = '17vkTRWLLZrKunkpgSro1ADtZd2yw4uig2';
@@ -423,10 +430,34 @@ describe('API Clients Test', () => {
             mockHttpJSONRequest.withArgs(options).resolves(successResponse);
             
             // calling the method
-            const name = GaiaServiceApiClient.store(baseUrl, filename, address, "authToken", '{"content" : "testContent"}', contentType = "application/octet-stream");
+            const name = GaiaServiceApiClient.store(baseUrl, filename, address, "authToken", '{"content" : "testContent"}', contentType);
+            const name2 = GaiaServiceApiClient.store(baseUrl, filename, address, "authToken", '{"content" : "testContent"}', contentType = "application/other-stream");
 
             // run expectations
             expect(name).to.be.empty;
+        })
+        it('Failure to upload to Gaia Hub', () => {
+            const options = {
+                baseUrl: baseUrl,
+                body: JSON.parse('{"content" : "testContent"}'),
+                headers: {
+                    "Authorization": `bearer authToken`,
+                    "Content-Type": contentType,
+                },
+                method: "POST",
+                url: `/store/${address}/${filename}`,
+            };
+            let successResponse = {};
+            mockHttpJSONRequest.withArgs(options).resolves(successResponse);
+            
+            // calling the method
+            try{
+                const name = GaiaServiceApiClient.store(baseUrl, filename, address, "authTokenWrong", '{"content" : "testContent"}', contentType);
+            } catch (e){
+                raisedError = e;
+            }
+            // run expectations
+            expect(mockHttpJSONRequest.calledOnceWithExactly(options));
         })
         it('retrieveFromGaiaHub', () => {
             const options = {
@@ -435,14 +466,15 @@ describe('API Clients Test', () => {
                 method: "GET",
                 url: `${address}/${filename}`,
             };
-            const cacheTTL = filename === 'client-config.json' ? 3600 : undefined;
-            mockHttpJSONRequest.withArgs(options).resolves(true);
+            let successResponse = {};
+            mockHttpJSONRequest.withArgs(options).resolves(successResponse);
             
             // calling the method
-            const name = GaiaServiceApiClient.retrieve(baseUrl, filename, address);
-
+            const nameWithInMemoryStorage = GaiaServiceApiClient.retrieve(baseUrl, filename, address, new InMemStorage());
+            const nameWithoutClientConfig = GaiaServiceApiClient.retrieve(baseUrl, undefined, address, undefined);
+            const nameWithClientConfig = GaiaServiceApiClient.retrieve(baseUrl, filename, address, undefined);
             // run expectations
-            expect(name).to.be.empty;
+            expect(nameWithClientConfig).to.be.empty;
         })
     })    
 });
