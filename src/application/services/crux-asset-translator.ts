@@ -1,7 +1,7 @@
+import { CruxSpec } from "../../core/entities/crux-spec";
 import { IAddress, IAddressMapping } from "../../core/entities/crux-user";
 import { BaseError, ERROR_STRINGS, PackageErrorCode } from "../../packages/error";
 import { getLogger } from "../../packages/logger";
-import { CruxSpec } from "../../core/entities/crux-spec";
 const log = getLogger(__filename);
 
 export interface IClientAssetMapping {
@@ -142,8 +142,8 @@ export class CruxAssetTranslator {
     }
     private constructParentFallbackKeyDetails = (assetType: string, parentSymbol: string, parentAssetId: string): IParentFallbackKeyDetails => {
         return {
-            assetType,
             assetIdFallbackKey: `${assetType}_${parentAssetId}`,
+            assetType,
             parentAssetId,
             symbolFallbackKey: `${assetType}_${parentSymbol}`,
         };
