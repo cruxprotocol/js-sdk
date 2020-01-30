@@ -52,6 +52,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
             }),
             assetMapping: cruxDomain.config.assetMapping,
             nameserviceConfiguration: cruxDomain.config.nameserviceConfiguration,
+            supportedParentAssetFallbacks: cruxDomain.config.supportedParentAssetFallbacks,
         };
         await this.putClientConfig(cruxDomain.id, newConfig, configKeyManager);
         return cruxDomain;
