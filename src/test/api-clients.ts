@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import sinon from "sinon";
-import { BlockstackNamingServiceApiClient, BlockstackSubdomainRegistrarApiClient } from "../infrastructure/services/api-clients";
+import { BlockstackNamingServiceApiClient, BlockstackSubdomainRegistrarApiClient, GaiaServiceApiClient } from "../infrastructure/services/api-clients";
 import * as utils from '../packages/utils';
 import { BlockstackDomainId } from '../packages/identity-utils';
 import { PackageErrorCode } from '../packages/error';
@@ -333,6 +333,116 @@ describe('API Clients Test', () => {
             }
             // run expectations
             expect(raisedError.errorCode).to.be.equal(PackageErrorCode.SubdomainRegistrationAcknowledgementFailed)
-        }) 
+        })
+    })
+    // describe('initPromise Failure Case', () => {
+    //     const user = 'testUser';
+    //     const baseUrl = 'https://registrar.cruxpay.com/';
+    //     const wrongBlockstackDomainId = BlockstackDomainId.fromString('testWalletX_crux.id');
+    //     let blockstackSubdomainRegistrarApiClient: BlockstackSubdomainRegistrarApiClient;
+    //     beforeEach(() => {
+    //         const options = {
+    //             baseUrl: 'https://registrar.cruxpay.com/',
+    //             headers: {
+    //                 "x-domain-name": "testWallet_crux",
+    //             },
+    //             json: true,
+    //             method: "GET",
+    //             url: `/index`,
+    //         };
+    //         let successResponse = {
+    //             "status": true,
+    //             "domainName": "testWallet_crux.id"
+    //         }
+    //         mockHttpJSONRequest.withArgs(options).resolves(successResponse);
+    //         blockstackSubdomainRegistrarApiClient = new BlockstackSubdomainRegistrarApiClient(baseUrl,wrongBlockstackDomainId);
+    //     })
+    //     it('getSubdomainStatus init Failure', async () => {
+    //         // mocks
+    //         const options = {
+    //             baseUrl: baseUrl,
+    //             headers: {
+    //                 "x-domain-name": 'testWallet_crux',
+    //             },
+    //             json: true,
+    //             method: "GET",
+    //             url: `/status/testUser`,
+    //         }
+    //         let registeredResponse = {
+    //             "status": "Subdomain propagated"
+    //         }
+    //         mockHttpJSONRequest.withArgs(options).resolves(registeredResponse);
+            
+    //         // calling the method
+    //         // try{
+    //             const name = await blockstackSubdomainRegistrarApiClient.getSubdomainStatus(user);
+    //         // } catch (e){
+    //         //     raisedError = e;
+    //         // }
+    //         // run expectations
+    //         expect(mockHttpJSONRequest.calledOnceWithExactly(options));
+    //     })
+    // })
+    describe('Gaia Service API Tests', () => {
+        let baseUrl = "https://hub.cruxpay.com";
+        let address = '17vkTRWLLZrKunkpgSro1ADtZd2yw4uig2';
+        let filename = 'client-config.json';
+        let contentType = "application/octet-stream";
+        it('getHubInfo', async() => {
+            const options = {
+                baseUrl: baseUrl,
+                url: "/hub_info",
+            };
+            let hubResponse = {
+                "challenge_text": "[\"gaiahub\",\"0\",\"hub.cruxpay.com\",\"blockstack_storage_please_sign\"]",
+                "latest_auth_version": "v1",
+                "max_file_upload_size_megabytes": 20,
+                "read_url_prefix": "https://gaia.cruxpay.com/"
+            };
+
+            mockHttpJSONRequest.withArgs(options).resolves(hubResponse);
+            
+            // calling the method
+            const name = await GaiaServiceApiClient.getHubInfo(baseUrl);
+
+            // run expectations
+            expect(name).to.be.eql(hubResponse);
+        })
+        it('storeOnGaiaHub', () => {
+            const options = {
+                baseUrl: baseUrl,
+                body: JSON.parse('{"content" : "testContent"}'),
+                headers: {
+                    "Authorization": `bearer authToken`,
+                    "Content-Type": contentType,
+                },
+                method: "POST",
+                url: `/store/${address}/${filename}`,
+            };
+            let successResponse = {};
+            mockHttpJSONRequest.withArgs(options).resolves(successResponse);
+            
+            // calling the method
+            const name = GaiaServiceApiClient.store(baseUrl, filename, address, "authToken", '{"content" : "testContent"}', contentType = "application/octet-stream");
+
+            // run expectations
+            expect(name).to.be.empty;
+        })
+        it('retrieveFromGaiaHub', () => {
+            const options = {
+                baseUrl: baseUrl,
+                json: true,
+                method: "GET",
+                url: `${address}/${filename}`,
+            };
+            const cacheTTL = filename === 'client-config.json' ? 3600 : undefined;
+            mockHttpJSONRequest.withArgs(options).resolves(true);
+            
+            // calling the method
+            const name = GaiaServiceApiClient.retrieve(baseUrl, filename, address);
+
+            // run expectations
+            expect(name).to.be.empty;
+        })
     })    
 });
