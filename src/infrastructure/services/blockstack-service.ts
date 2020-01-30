@@ -50,9 +50,6 @@ export class BlockstackService {
             return response;
         });
         log.debug(nameDetails);
-        if (!nameDetails) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.BnsEmptyData);
-        }
         return nameDetails;
     }
     public static getGaiaHubFromZonefile = (zonefile: string): string => {

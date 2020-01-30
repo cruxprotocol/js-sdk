@@ -11,7 +11,7 @@ import { DomainRegistrationStatus } from '../core/entities/crux-domain';
 import { CruxDomainId, CruxId } from '../packages/identity-utils';
 import { publicKeyToAddress } from 'blockstack';
 import { SubdomainRegistrationStatusDetail, SubdomainRegistrationStatus } from '../core/entities/crux-user';
-import { PackageError, PackageErrorCode } from '../packages/error';
+import { PackageError, PackageErrorCode, BaseError } from '../packages/error';
 interface Global {
     crypto: any;
     TextEncoder: any;
@@ -238,7 +238,9 @@ describe('Infrastructure Services Test', () => {
         })
         describe('getNameDetails tests', () => {
             it('"cruxdev" should return the complete name details', async () => {
-                staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves(cruxdevNameDetail);
+                const options = {}
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.withArgs("https://core.blockstack.org", "cruxdev_crux.id", undefined, undefined).resolves(cruxdevNameDetail);
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.withArgs("https://bns.cruxpay.com", "cruxdev_crux.id", undefined, undefined).resolves(cruxdevNameDetail);
                 const nameDetails = await blockstackService.getNameDetails(cruxdevDomainId);
                 expect(nameDetails).haveOwnProperty("address").to.be.string;
                 expect(nameDetails).haveOwnProperty("blockchain").to.be.string;
@@ -249,6 +251,20 @@ describe('Infrastructure Services Test', () => {
                 expect(nameDetails).haveOwnProperty("zonefile_hash").to.be.string;
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, cruxdevBlockstackName)).to.be.true;
+            })
+            it('"cruxdev" should throw NameIntegrityCheckFailed', async () => {
+                const options = {}
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.withArgs("https://core.blockstack.org", "cruxdev_crux.id", undefined, undefined).resolves(cruxdevNameDetail);
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.withArgs("https://bns.cruxpay.com", "cruxdev_crux.id", undefined, undefined).resolves(cruxdevConfigNameDetails);
+                let raisedError: Error;
+                try {
+                    await blockstackService.getNameDetails(cruxdevDomainId);
+                } catch (err) {
+                    raisedError = err;
+                }
+                expect(raisedError).to.be.instanceOf(PackageError);
+                expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.NameIntegrityCheckFailed);
+                
             })
             it('"testcase should return the status availability"', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves(testcaseNameDetail);
@@ -355,7 +371,16 @@ describe('Infrastructure Services Test', () => {
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, testcaseBlockstackName)).to.be.true;
             })
-            it('"pendingId" should be PENDING')
+            it('Unhandled switch case', async () => {
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({status: ""});
+                let raisedError: Error;
+                try {
+                    await blockstackService.getDomainRegistrationStatus(testcaseCruxDomainId);
+                } catch (e) {
+                    raisedError = e;
+                }
+                expect(raisedError).to.be.instanceOf(BaseError);
+            })
         })
         describe('getCruxDomainIdWithConfigKeyManager tests', () => {
             it('"cruxdev" should be available on the corresponding config key', async () => {

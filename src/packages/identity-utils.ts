@@ -160,21 +160,12 @@ export class BlockstackDomainId {
 
 export class IdTranslator {
     public static cruxDomainToBlockstackDomain = (cruxDomain: CruxDomainId): BlockstackDomainId => {
-        if (cruxDomain.components.namespace !== DEFAULT_CRUX_NAMESPACE) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.CruxDomainNamespaceValidation, cruxDomain.components.namespace);
-        }
         return new BlockstackDomainId(IdTranslator.cruxDomainStringToBlockstackDomainString(cruxDomain.components.domain));
     }
     public static blockstackDomainToCruxDomain = (blockstackDomain: BlockstackDomainId): CruxDomainId => {
-        if (blockstackDomain.components.namespace !== DEFAULT_BLOCKSTACK_NAMESPACE) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.CruxDomainNamespaceValidation, blockstackDomain.components.namespace);
-        }
         return new CruxDomainId(IdTranslator.blockstackDomainStringToCruxDomainString(blockstackDomain.components.domain));
     }
     public static cruxIdToBlockstackId = (cruxId: CruxId): BlockstackId => {
-        if (cruxId.components.namespace !== DEFAULT_CRUX_NAMESPACE) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.CruxIdNamespaceValidation, cruxId.components.namespace);
-        }
         return new BlockstackId({
             domain: IdTranslator.cruxDomainStringToBlockstackDomainString(cruxId.components.domain),
             subdomain: cruxId.components.subdomain,
@@ -183,9 +174,6 @@ export class IdTranslator {
     public static blockstackIdToCruxId = (blockstackId: BlockstackId): CruxId => {
         if (!blockstackId.components.subdomain) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.BlockstackIdInvalidSubdomainForTranslation);
-        }
-        if (blockstackId.components.namespace !== DEFAULT_BLOCKSTACK_NAMESPACE) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.BlockstackIdNamespaceValidation, blockstackId.components.namespace);
         }
         if (!blockstackId.components.domain.endsWith(CRUX_DOMAIN_SUFFIX)) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.InvalidBlockstackDomainForTranslation);
