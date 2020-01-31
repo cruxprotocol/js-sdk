@@ -49,7 +49,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
     public isCruxIdAvailable = async (cruxID: CruxId): Promise<boolean> => {
         return this.blockstackService.isCruxIdAvailable(cruxID);
     }
-    public getByCruxId = async (cruxID: CruxId, tag?: string): Promise<CruxUser|undefined> => {
+    public getByCruxId = async (cruxID: CruxId, tag?: string, onlyRegistered: boolean = true): Promise<CruxUser|undefined> => {
         const cruxUserInformation = await this.blockstackService.getCruxIdInformation(cruxID);
         if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.NONE) {
             return;
@@ -57,6 +57,10 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         let addressMap = {};
         if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.DONE) {
             addressMap = await this.getAddressMap(cruxID, tag);
+        } else {
+            if (onlyRegistered) {
+                return;
+            }
         }
         return new CruxUser(cruxID, addressMap, cruxUserInformation);
     }
