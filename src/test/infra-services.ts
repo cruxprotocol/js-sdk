@@ -124,6 +124,208 @@ describe('Infrastructure Services Test', () => {
                 }
             });
         })
+
+        it('getContentFromGaiaHub TokenVerificationFailed test', async () => {
+            // inputs
+            const ownerAddress = "1HkXFmLCg4zmPZyf2W5hbpV79EHwG52cEA";
+            const fileName = "cruxdev_cruxpay.json"
+
+            // mocks
+            staticMocksGaiaServiceApiClient.retrieve.resolves([
+                {
+                  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJjbGFpbSI6eyJkNzhjMjZmOC03YzEzLTQ5MDktYmY2Mi01N2Q3NjIzZjhlZTgiOnsiYWRkcmVzc0hhc2giOiIxSFg0S3Z0UGRnOVFVWXdRRTFrTnFUQWptTmFERzd3ODJWIn0sImFiMjEyYzkwLWEyYWItNDhjZi04NzNjLWE3YjZlOTdkODkzNSI6eyJhZGRyZXNzSGFzaCI6IlRHM2lGYVZ2VXMzNFNHcFdxOFJHOWduYWdETFRlMWpkeXoifSwiYWJlMDAzMGEtZDhlMy00NTE4LTg3OWYtY2Q5OTM5YjdkOGFiIjp7ImFkZHJlc3NIYXNoIjoicnBmS0FBMkV6cW9xNXdXbzNYRU5kTFlkWjhZR3ppejQ4aCIsInNlY0lkZW50aWZpZXIiOiIxMjM0NSJ9LCIwZmNkYWI2Yi05Y2E4LTQ4ZDktOTI1NC0zMmIwNzhhMmIzMWUiOnsiYWRkcmVzc0hhc2giOiJ0ZXN0In19LCJpc3N1ZXIiOnsicHVibGljS2V5IjoiMDM2MmYxNzFhNDBhYjVlNmFkMjIyNzVlYzE2NmYxNWEyMzJiODNhNTcxYmFiOWMzMDYyMmVkMjk2M2YxZGE0YzA4In0sInN1YmplY3QiOnsicHVibGljS2V5IjoiMDM2MmYxNzFhNDBhYjVlNmFkMjIyNzVlYzE2NmYxNWEyMzJiODNhNTcxYmFiOWMzMDYyMmVkMjk2M2YxZGE0YzA4In19.xhi_saN48eb7RpsF7c4ELjvf3WdYjWJD9h1Tw__rGb9R4w_qQWujRICG552bgv7q7amsy0Qc0vNp5Z3WZAC9Re",
+                  "decodedToken": {
+                    "header": {
+                      "typ": "JWT",
+                      "alg": "ES256K"
+                    },
+                    "payload": {
+                      "claim": {
+                        "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
+                          "addressHash": "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V",
+                          "secIdentifier": ""
+                        },
+                        "abe0030a-d8e3-4518-879f-cd9939b7d8ab": {
+                          "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
+                          "secIdentifier": "5555"
+                        },
+                        "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
+                          "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
+                          "secIdentifier": ""
+                        }
+                      },
+                      "issuer": {
+                        "publicKey": "0362f171a40ab5e6ad22275ec166f15a232b83a571bab9c30622ed2963f1da4c08"
+                      },
+                      "subject": {
+                        "publicKey": "0362f171a40ab5e6ad22275ec166f15a232b83a571bab9c30622ed2963f1da4c08"
+                      }
+                    },
+                    "signature": "GjbwIlaA4WrvEK0Kg5L3DPZwtxOJCodZKpOU-d7HZfpNTiDONYurc1v5PZVyVWadA-4iLce1NfIb5-pYsTLYhQ"
+                  }
+                }
+              ])
+
+            // calling the method
+            let raisedError: Error;
+            try {
+                await gaiaService.getContentFromGaiaHub(ownerAddress, fileName);
+            } catch (e) {
+                raisedError = e;
+            }
+
+            // run expectations
+            expect(raisedError).to.be.instanceOf(PackageError);
+            expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.TokenVerificationFailed);
+        })
+
+        it('getContentFromGaiaHub GaiaEmptyResponse test', async () => {
+            // inputs
+            const ownerAddress = "1HkXFmLCg4zmPZyf2W5hbpV79EHwG52cEA";
+            const fileName = "cruxdev_cruxpay.json"
+
+            // mocks
+            staticMocksGaiaServiceApiClient.retrieve.resolves(`<?xml version="1.0" encoding="utf-8"?><Error><Code>BlobNotFound</Code><Message>The specified blob does not exist.RequestId:62e23ba6-401e-00a2-2b2d-d8779d000000Time:2020-01-31T11:53:30.8719190Z</Message></Error>`)
+
+            // calling the method
+            let raisedError: Error;
+            try {
+                await gaiaService.getContentFromGaiaHub(ownerAddress, fileName);
+            } catch (e) {
+                raisedError = e;
+            }
+
+            // run expectations
+            expect(raisedError).to.be.instanceOf(PackageError);
+            expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.GaiaEmptyResponse);
+        })
+
+        it('getContentFromGaiaHub CouldNotValidateZoneFile test', async () => {
+            // inputs
+            const ownerAddress = "1HkXFmLCg4zmPZyf2W5hbpV79EHwG52cEA";
+            const fileName = "cruxdev_cruxpay.json"
+
+            // mocks
+            staticMocksGaiaServiceApiClient.retrieve.resolves([
+                {
+                  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJjbGFpbSI6eyJhc3NldExpc3QiOlt7ImFzc2V0SWQiOiJkNzhjMjZmOC03YzEzLTQ5MDktYmY2Mi01N2Q3NjIzZjhlZTgiLCJzeW1ib2wiOiJCVEMiLCJuYW1lIjoiQml0Y29pbiIsImFzc2V0VHlwZSI6bnVsbCwiZGVjaW1hbHMiOjgsImFzc2V0SWRlbnRpZmllck5hbWUiOm51bGwsImFzc2V0SWRlbnRpZmllclZhbHVlIjpudWxsLCJwYXJlbnRBc3NldElkIjpudWxsfSx7ImFzc2V0SWQiOiI5NDhhNGI1NS1iZTkzLTRjYWEtYWI2ZS05YjIwNzZhMGE5NTgiLCJzeW1ib2wiOiJFT1MiLCJuYW1lIjoiRU9TIiwiYXNzZXRUeXBlIjpudWxsLCJkZWNpbWFscyI6NCwiYXNzZXRJZGVudGlmaWVyTmFtZSI6bnVsbCwiYXNzZXRJZGVudGlmaWVyVmFsdWUiOm51bGwsInBhcmVudEFzc2V0SWQiOm51bGx9LHsiYXNzZXRJZCI6IjRlNGQ5OTgyLTM0NjktNDIxYi1hYjYwLTJjMGMyZjA1Mzg2YSIsInN5bWJvbCI6IkVUSCIsIm5hbWUiOiJFdGhlcmV1bSIsImFzc2V0VHlwZSI6bnVsbCwiZGVjaW1hbHMiOjgsImFzc2V0SWRlbnRpZmllck5hbWUiOm51bGwsImFzc2V0SWRlbnRpZmllclZhbHVlIjpudWxsLCJwYXJlbnRBc3NldElkIjpudWxsfSx7ImFzc2V0SWQiOiJkNzliOWVjZS1hOTE4LTQ1MjMtYjJiYy03NDA3MTY3NWI1NGEiLCJzeW1ib2wiOiJMVEMiLCJuYW1lIjoiTGl0ZWNvaW4iLCJhc3NldFR5cGUiOm51bGwsImRlY2ltYWxzIjo4LCJhc3NldElkZW50aWZpZXJOYW1lIjpudWxsLCJhc3NldElkZW50aWZpZXJWYWx1ZSI6bnVsbCwicGFyZW50QXNzZXRJZCI6bnVsbH0seyJhc3NldElkIjoiYWJlMDAzMGEtZDhlMy00NTE4LTg3OWYtY2Q5OTM5YjdkOGFiIiwic3ltYm9sIjoiWFJQIiwibmFtZSI6IlJpcHBsZSIsImFzc2V0VHlwZSI6bnVsbCwiZGVjaW1hbHMiOjYsImFzc2V0SWRlbnRpZmllck5hbWUiOm51bGwsImFzc2V0SWRlbnRpZmllclZhbHVlIjpudWxsLCJwYXJlbnRBc3NldElkIjpudWxsfSx7ImFzc2V0SWQiOiJhYjIxMmM5MC1hMmFiLTQ4Y2YtODczYy1hN2I2ZTk3ZDg5MzUiLCJzeW1ib2wiOiJUUlgiLCJuYW1lIjoiVFJPTiIsImFzc2V0VHlwZSI6bnVsbCwiZGVjaW1hbHMiOjYsImFzc2V0SWRlbnRpZmllck5hbWUiOm51bGwsImFzc2V0SWRlbnRpZmllclZhbHVlIjpudWxsLCJwYXJlbnRBc3NldElkIjpudWxsfSx7ImFzc2V0SWQiOiIwZmNkYWI2Yi05Y2E4LTQ4ZDktOTI1NC0zMmIwNzhhMmIzMWUiLCJzeW1ib2wiOiJMSUZFIiwibmFtZSI6IlB1cmVMaWZlQ29pbiIsImFzc2V0VHlwZSI6IkVSQzIwIiwiZGVjaW1hbHMiOjE4LCJhc3NldElkZW50aWZpZXJOYW1lIjoiQ29udHJhY3QgQWRkcmVzcyIsImFzc2V0SWRlbnRpZmllclZhbHVlIjoiMHhmZjE4ZGJjNDg3YjRjMmUzMjIyZDExNTk1MmJhYmZkYThiYTUyZjVmIiwicGFyZW50QXNzZXRJZCI6IjRlNGQ5OTgyLTM0NjktNDIxYi1hYjYwLTJjMGMyZjA1Mzg2YSJ9XSwiYXNzZXRNYXBwaW5nIjp7ImxpZmUiOiIwZmNkYWI2Yi05Y2E4LTQ4ZDktOTI1NC0zMmIwNzhhMmIzMWUiLCJsdGMiOiJkNzliOWVjZS1hOTE4LTQ1MjMtYjJiYy03NDA3MTY3NWI1NGEiLCJlb3MiOiI5NDhhNGI1NS1iZTkzLTRjYWEtYWI2ZS05YjIwNzZhMGE5NTgiLCJ0cngiOiJhYjIxMmM5MC1hMmFiLTQ4Y2YtODczYy1hN2I2ZTk3ZDg5MzUiLCJ4cnAiOiJhYmUwMDMwYS1kOGUzLTQ1MTgtODc5Zi1jZDk5MzliN2Q4YWIiLCJldGgiOiI0ZTRkOTk4Mi0zNDY5LTQyMWItYWI2MC0yYzBjMmYwNTM4NmEiLCJidGMiOiJkNzhjMjZmOC03YzEzLTQ5MDktYmY2Mi01N2Q3NjIzZjhlZTgifSwic3VwcG9ydGVkUGFyZW50QXNzZXRGYWxsYmFja3MiOlsiRVJDMjBfNGU0ZDk5ODItMzQ2OS00MjFiLWFiNjAtMmMwYzJmMDUzODZhIl19LCJpc3N1ZXIiOnsicHVibGljS2V5IjoiMDNjMjE1NjkzMDU5OGE3ZTQ4MzJlYmI4YjQzNWFiY2M2NTdiMWYxNGI3OTUzYjIxNDVhZTI1MjY4ZGQ2MTQxYzFmIn0sInN1YmplY3QiOnsicHVibGljS2V5IjoiMDNjMjE1NjkzMDU5OGE3ZTQ4MzJlYmI4YjQzNWFiY2M2NTdiMWYxNGI3OTUzYjIxNDVhZTI1MjY4ZGQ2MTQxYzFmIn19.68sb0tJPEY5inzOv9J0lR1QZuYhZ152ymsZYcSRgEug-OKQUOZTvD5QD6ne33TP0_NkIR3aJvsS2nmzmaGub9Q",
+                  "decodedToken": {
+                    "header": {
+                      "typ": "JWT",
+                      "alg": "ES256K"
+                    },
+                    "payload": {
+                      "claim": {
+                        "assetList": [
+                          {
+                            "assetId": "d78c26f8-7c13-4909-bf62-57d7623f8ee8",
+                            "symbol": "BTC",
+                            "name": "Bitcoin",
+                            "assetType": null,
+                            "decimals": 8,
+                            "assetIdentifierName": null,
+                            "assetIdentifierValue": null,
+                            "parentAssetId": null
+                          },
+                          {
+                            "assetId": "948a4b55-be93-4caa-ab6e-9b2076a0a958",
+                            "symbol": "EOS",
+                            "name": "EOS",
+                            "assetType": null,
+                            "decimals": 4,
+                            "assetIdentifierName": null,
+                            "assetIdentifierValue": null,
+                            "parentAssetId": null
+                          },
+                          {
+                            "assetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+                            "symbol": "ETH",
+                            "name": "Ethereum",
+                            "assetType": null,
+                            "decimals": 8,
+                            "assetIdentifierName": null,
+                            "assetIdentifierValue": null,
+                            "parentAssetId": null
+                          },
+                          {
+                            "assetId": "d79b9ece-a918-4523-b2bc-74071675b54a",
+                            "symbol": "LTC",
+                            "name": "Litecoin",
+                            "assetType": null,
+                            "decimals": 8,
+                            "assetIdentifierName": null,
+                            "assetIdentifierValue": null,
+                            "parentAssetId": null
+                          },
+                          {
+                            "assetId": "abe0030a-d8e3-4518-879f-cd9939b7d8ab",
+                            "symbol": "XRP",
+                            "name": "Ripple",
+                            "assetType": null,
+                            "decimals": 6,
+                            "assetIdentifierName": null,
+                            "assetIdentifierValue": null,
+                            "parentAssetId": null
+                          },
+                          {
+                            "assetId": "ab212c90-a2ab-48cf-873c-a7b6e97d8935",
+                            "symbol": "TRX",
+                            "name": "TRON",
+                            "assetType": null,
+                            "decimals": 6,
+                            "assetIdentifierName": null,
+                            "assetIdentifierValue": null,
+                            "parentAssetId": null
+                          },
+                          {
+                            "assetId": "0fcdab6b-9ca8-48d9-9254-32b078a2b31e",
+                            "symbol": "LIFE",
+                            "name": "PureLifeCoin",
+                            "assetType": "ERC20",
+                            "decimals": 18,
+                            "assetIdentifierName": "Contract Address",
+                            "assetIdentifierValue": "0xff18dbc487b4c2e3222d115952babfda8ba52f5f",
+                            "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+                          }
+                        ],
+                        "assetMapping": {
+                          "life": "0fcdab6b-9ca8-48d9-9254-32b078a2b31e",
+                          "ltc": "d79b9ece-a918-4523-b2bc-74071675b54a",
+                          "eos": "948a4b55-be93-4caa-ab6e-9b2076a0a958",
+                          "trx": "ab212c90-a2ab-48cf-873c-a7b6e97d8935",
+                          "xrp": "abe0030a-d8e3-4518-879f-cd9939b7d8ab",
+                          "eth": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+                          "btc": "d78c26f8-7c13-4909-bf62-57d7623f8ee8"
+                        },
+                        "supportedParentAssetFallbacks": [
+                          "ERC20_4e4d9982-3469-421b-ab60-2c0c2f05386a"
+                        ]
+                      },
+                      "issuer": {
+                        "publicKey": "03c2156930598a7e4832ebb8b435abcc657b1f14b7953b2145ae25268dd6141c1f"
+                      },
+                      "subject": {
+                        "publicKey": "03c2156930598a7e4832ebb8b435abcc657b1f14b7953b2145ae25268dd6141c1f"
+                      }
+                    },
+                    "signature": "68sb0tJPEY5inzOv9J0lR1QZuYhZ152ymsZYcSRgEug-OKQUOZTvD5QD6ne33TP0_NkIR3aJvsS2nmzmaGub9Q"
+                  }
+                }
+              ])
+
+            // calling the method
+            let raisedError: Error;
+            try {
+                await gaiaService.getContentFromGaiaHub(ownerAddress, fileName);
+            } catch (e) {
+                raisedError = e;
+            }
+
+            // run expectations
+            expect(raisedError).to.be.instanceOf(PackageError);
+            expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.CouldNotValidateZoneFile);
+        })
+
         it('uploading cruxpay.json', async () => {
             // inputs
             const fileName = "cruxdev_cruxpay.json";
@@ -300,25 +502,6 @@ describe('Infrastructure Services Test', () => {
                 }
                 expect(raisedError).to.be.instanceOf(PackageError);
                 expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.MissingZoneFile);
-            })
-            it('"cruxdev" should throw MissingNameOwnerAddress', async () => {
-                staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({
-                    "blockchain": "bitcoin",
-                    "did": "did:stack:v0:SWkf7PikxXchsWM5yZw7jRvKTQzMcdb5Pc-0",
-                    "last_txid": "bfa29d44fd31e4307c9fc0229964aaec1a6efc014e4c94681e2372f5f7d474ec",
-                    "status": "registered_subdomain",
-                    "zonefile": "$ORIGIN _config\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com",
-                    "zonefile_hash": "776172a0bc8400a4046d0325dd87e78b48a2f66b"
-                });
-                let raisedError: Error;
-                try {
-                    await blockstackService.getGaiaHub(cruxdevConfigCruxId)
-                } catch (error) {
-                    raisedError = error;
-                }
-                expect(raisedError).to.be.instanceOf(PackageError);
-                expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.MissingNameOwnerAddress);
-                
             })
             it('"cruxdev" should throw FailedToGetGaiaUrlFromZonefile', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({
@@ -533,6 +716,20 @@ describe('Infrastructure Services Test', () => {
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, newCruxUserBlockstackName)).to.be.true;
                 expect(mockBlockstackSubdomainRegistrarApiClient.getSubdomainStatus.calledOnceWith("newuser")).to.be.true;
+            })
+            it('pending user getCruxIdInformation', async () => {
+                staticMocksBlockstackNamingServiceApiClient.getNameDetails.withArgs(sinon.match.string, testUserBlockstackName).resolves(testUserNameDetails);
+                const cruxUserInformation = await blockstackService.getCruxIdInformation(testUserCruxId);
+                expect(cruxUserInformation).to.be.eql({
+                    ownerAddress: testUserNameDetails.address,
+                    registrationStatus: {
+                        status: SubdomainRegistrationStatus.DONE,
+                        statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                    },
+                    transactionHash: testUserNameDetails.last_txid,
+                });
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
+                expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, testUserBlockstackName)).to.be.true;
             })
         })
     })

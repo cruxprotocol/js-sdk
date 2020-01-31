@@ -9,7 +9,9 @@ import { DomainRegistrationStatus, CruxDomain } from '../core/entities/crux-doma
 import { BasicKeyManager } from '../infrastructure/implementations/basic-key-manager';
 import * as blkStkService from "../infrastructure/services/blockstack-service";
 import * as gs from "../infrastructure/services/gaia-service";
+import { InMemStorage } from "../packages/inmem-storage";
 import { CruxUser, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from '../core/entities/crux-user';
+import { PackageErrorCode, PackageError } from '../packages/error';
 describe('Infrastructure Repositories Test', () => {
     let sandbox: sinon.SinonSandbox;
     let mockBlockstackService;
@@ -62,6 +64,17 @@ describe('Infrastructure Repositories Test', () => {
         const testUserCruxId = CruxId.fromString(testUserCruxIdString);
         const testUserPrivKey = "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37f7c6f";
         const testUserKeyManager = new BasicKeyManager(testUserPrivKey);
+        const testUserAddressMap = {
+            "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
+                "addressHash": "1bEuiLiVDaTJo2poFMfWZFp9SYdhRuUhX",
+            },
+            "abe0030a-d8e3-4518-879f-cd9939b7d8ab": {
+                "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
+            },
+            "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
+                "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
+            }
+        };
         const testUserNameDetails = {
             "address": "1HkXFmLCg4zmPZyf2W5hbpV79EHwG52cEA",
             "blockchain": "bitcoin",
@@ -313,17 +326,7 @@ describe('Infrastructure Repositories Test', () => {
             })
             mockBlockstackService.getGaiaHub.withArgs(testUserCruxId).resolves(cruxGaiaHub);
             mockBlockstackService.getNameDetails.withArgs(testUserCruxId).resolves(testUserNameDetails);
-            mockGaiaService.getContentFromGaiaHub.withArgs(testUserNameDetails.address, "cruxdev_cruxpay.json").resolves({
-                "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
-                    "addressHash": "1bEuiLiVDaTJo2poFMfWZFp9SYdhRuUhX",
-                },
-                "abe0030a-d8e3-4518-879f-cd9939b7d8ab": {
-                    "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
-                },
-                "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
-                    "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
-                }
-            });
+            mockGaiaService.getContentFromGaiaHub.withArgs(testUserNameDetails.address, "cruxdev_cruxpay.json").resolves(testUserAddressMap);
             const cruxUser = await blockstackCruxUserRepository.getByCruxId(testUserCruxId);
             expect(cruxUser).is.instanceOf(CruxUser);
             expect(cruxUser.cruxID).is.eql(testUserCruxId);
@@ -381,7 +384,26 @@ describe('Infrastructure Repositories Test', () => {
             const cruxUser = await blockstackCruxUserRepository.getByCruxId(unregisteredCruxId);
             expect(cruxUser).is.eql(undefined);
         })
-        it('Getting a CruxUser by key', async ()=>{
+        it('Getting pending CruxUser by ID', async ()=>{
+            mockBlockstackService.getCruxIdInformation.withArgs(testUserCruxId).resolves({
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.PENDING,
+                    statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
+                }
+            })
+            const cruxUser = await blockstackCruxUserRepository.getByCruxId(testUserCruxId);
+
+            expect(cruxUser).is.instanceOf(CruxUser);
+            expect(cruxUser.cruxID).is.eql(testUserCruxId);
+            expect(cruxUser.info).is.eql({
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.PENDING,
+                    statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
+                },
+            })
+            expect(mockBlockstackService.getCruxIdInformation.calledOnceWithExactly(testUserCruxId)).to.be.true;
+        })
+        it('Getting registered CruxUser by key', async ()=>{
             mockBlockstackService.getCruxIdWithKeyManager.withArgs(testUserKeyManager, cruxdevDomainId).resolves(testUserCruxId);
             mockBlockstackService.getCruxIdInformation.withArgs(testUserCruxId).resolves({
                 ownerAddress: testUserNameDetails.address,
@@ -414,6 +436,106 @@ describe('Infrastructure Repositories Test', () => {
                 },
                 transactionHash: testUserNameDetails.last_txid,
             })
+        })
+        it('Getting unregistered CruxUser by key', async ()=>{
+            mockBlockstackService.getCruxIdWithKeyManager.withArgs(testUserKeyManager, cruxdevDomainId).resolves(undefined);
+            const cruxUser = await blockstackCruxUserRepository.getWithKey(testUserKeyManager, cruxdevDomainId);
+            expect(cruxUser).to.be.undefined;
+        })
+        it('Getting pending CruxUser by key', async ()=>{
+            mockBlockstackService.getCruxIdWithKeyManager.withArgs(testUserKeyManager, cruxdevDomainId).resolves(testUserCruxId);
+            mockBlockstackService.getCruxIdInformation.withArgs(testUserCruxId).resolves({
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.PENDING,
+                    statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
+                }
+            })
+            mockBlockstackService.getGaiaHub.withArgs(testUserCruxId).resolves(undefined);
+            mockGaiaService.getContentFromGaiaHub.withArgs(testUserNameDetails.address, "cruxdev_cruxpay.json").resolves({
+                "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
+                    "addressHash": "1bEuiLiVDaTJo2poFMfWZFp9SYdhRuUhX",
+                },
+                "abe0030a-d8e3-4518-879f-cd9939b7d8ab": {
+                    "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
+                },
+                "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
+                    "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
+                }
+            });
+            const cruxUser = await blockstackCruxUserRepository.getWithKey(testUserKeyManager, cruxdevDomainId);
+            expect(cruxUser).is.instanceOf(CruxUser);
+            expect(cruxUser.info).is.eql({
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.PENDING,
+                    statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
+                },
+            })
+        })
+        it('Saving registered cruxUser', async ()=>{
+            mockBlockstackService.getCruxIdWithKeyManager.resolves(testUserCruxId);
+            mockBlockstackService.getGaiaHub.withArgs(testUserCruxId).resolves(cruxGaiaHub);
+            mockGaiaService.uploadContentToGaiaHub.withArgs("cruxdev_cruxpay.json", testUserAddressMap, testUserKeyManager).resolves("https://gaia.cruxpay.com/1HkXFmLCg4zmPZyf2W5hbpV79EHwG52cEA/cruxdev_cruxpay.json");
+            const testCruxUserInfo = {
+                ownerAddress: testUserNameDetails.address,
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.DONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                },
+                transactionHash: testUserNameDetails.last_txid,
+            }
+            const testCruxUser = new CruxUser(testUserCruxId, testUserAddressMap, testCruxUserInfo);
+            const returnedCruxUser = await blockstackCruxUserRepository.save(testCruxUser, testUserKeyManager);
+            expect(returnedCruxUser).to.be.instanceOf(CruxUser);
+            expect(returnedCruxUser.cruxID).is.eql(testUserCruxId);
+            expect(returnedCruxUser.info).is.eql({
+                ownerAddress: testUserNameDetails.address,
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.DONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.DONE,
+                },
+                transactionHash: testUserNameDetails.last_txid,
+            })
+        })
+        it('Saving pending cruxUser', async ()=>{
+            mockBlockstackService.getCruxIdWithKeyManager.resolves(testUserCruxId);
+            mockBlockstackService.getGaiaHub.withArgs(testUserCruxId).resolves(undefined);
+            mockGaiaService.uploadContentToGaiaHub.withArgs("cruxdev_cruxpay.json", testUserAddressMap, testUserKeyManager).resolves("https://gaia.cruxpay.com/1HkXFmLCg4zmPZyf2W5hbpV79EHwG52cEA/cruxdev_cruxpay.json");
+            const testCruxUserInfo = {
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.PENDING,
+                    statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
+                },
+            }
+            const testCruxUser = new CruxUser(testUserCruxId, testUserAddressMap, testCruxUserInfo);
+            const returnedCruxUser = await blockstackCruxUserRepository.save(testCruxUser, testUserKeyManager);
+            expect(returnedCruxUser).to.be.instanceOf(CruxUser);
+            expect(returnedCruxUser.cruxID).is.eql(testUserCruxId);
+            expect(returnedCruxUser.info).is.eql({
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.PENDING,
+                    statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
+                }
+            })
+        })
+        it('Saving unregistered cruxUser', async ()=>{
+            mockBlockstackService.getCruxIdWithKeyManager.resolves(undefined);
+            const testCruxUserInfo = {
+                ownerAddress: testUserNameDetails.address,
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.NONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.NONE,
+                },
+                transactionHash: testUserNameDetails.last_txid,
+            }
+            const testCruxUser = new CruxUser(testUserCruxId, testUserAddressMap, testCruxUserInfo);
+            let raisedError: Error;
+            try {
+                await blockstackCruxUserRepository.save(testCruxUser, testUserKeyManager);
+            } catch (e) {
+                raisedError = e;
+            }
+            expect(raisedError).to.be.instanceOf(PackageError);
+            expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.UserDoesNotExist);
         })
     })
     describe('Testing BlockstackCruxDomainRepository', () => {
@@ -450,6 +572,20 @@ describe('Infrastructure Repositories Test', () => {
                 blockstackInfrastructure: CruxSpec.blockstack.infrastructure,
             })
         })
+
+        describe('Creating CruxDomain by DomainId and KeyManager', () => {
+            it('Should throw IsNotSupported', async () => {
+                let raisedError: Error;
+                try {
+                    await blockstackCruxDomainRepository.create(testcaseCruxDomainId, cruxdevConfigKeyManager)
+                } catch (e) {
+                    raisedError = e;
+                }
+                expect(raisedError).to.be.instanceOf(PackageError);
+                expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.IsNotSupported);
+            })
+        })
+
         describe('Finding availability of CruxDomain by DomainId', () => {
             it('"cruxdev" should be unavailable', async () => {
                 mockBlockstackService.getDomainRegistrationStatus.withArgs(cruxdevCruxDomainId).resolves(DomainRegistrationStatus.REGISTERED);
@@ -467,6 +603,24 @@ describe('Infrastructure Repositories Test', () => {
             })
         })
         describe('Getting the CruxDomain by DomainId', () => {
+            it('unregistered CruxDomainId should throw DomainDoesNotExist', async () => {
+                // mocks
+                mockBlockstackService.getNameDetails.resolves(undefined);
+                mockBlockstackService.getGaiaHub.resolves(undefined);
+                mockBlockstackService.getDomainRegistrationStatus.withArgs(cruxdevCruxDomainId).resolves(DomainRegistrationStatus.PENDING);
+
+                // call
+                let raisedError: Error;
+                try {
+                    await blockstackCruxDomainRepository.get(cruxdevCruxDomainId);
+                } catch (e) {
+                    raisedError = e;
+                }
+                // expectations
+                expect(raisedError).to.be.instanceOf(PackageError);
+                expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.DomainDoesNotExist);
+            })
+            
             it('"cruxdev" should resolve proper CruxDomain object', async () => {
                 // mocks
                 mockBlockstackService.getNameDetails.resolves(cruxdevConfigNameDetails);

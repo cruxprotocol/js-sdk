@@ -147,9 +147,6 @@ export class BlockstackService {
         if (!nameDetails.zonefile) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingZoneFile, id.toString());
         }
-        if (!nameDetails.address) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingNameOwnerAddress, id.toString());
-        }
         const gaiaHub = BlockstackService.getGaiaHubFromZonefile(nameDetails.zonefile);
         return gaiaHub;
     }

@@ -69,8 +69,8 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
         const domainConfigFileName = CruxSpec.blockstack.getDomainConfigFileName(cruxDomainId);
         const gaiaHub = await this.blockstackService.getGaiaHub(configCruxId);
         const configNameDetails = await this.blockstackService.getNameDetails(configCruxId);
-        if (!configNameDetails.address) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingNameOwnerAddress, configCruxId.toString());
+        if (!configNameDetails || !configNameDetails.address) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.DomainDoesNotExist, configCruxId.toString());
         }
         return new GaiaService(gaiaHub, this.cacheStorage).getContentFromGaiaHub(configNameDetails.address, domainConfigFileName);
     }

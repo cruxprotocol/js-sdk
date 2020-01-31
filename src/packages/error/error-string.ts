@@ -66,4 +66,5 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.InsecureNetworkCall]: "Insecure network call",
     [PackageErrorCode.PayIDClaimNotFound]: "Pay ID claim not found",
     [PackageErrorCode.FailedToGetGaiaUrlFromZonefile]: "Failed to get Gaia URL from user's zonefile: '{0}'",
+    [PackageErrorCode.DomainDoesNotExist]: "Domain ID does not exist",
 };

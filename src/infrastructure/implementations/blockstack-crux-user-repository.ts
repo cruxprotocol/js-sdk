@@ -66,14 +66,11 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
             return;
         }
         const cruxUserInformation = await this.blockstackService.getCruxIdInformation(cruxID);
-        if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.NONE) {
-            return;
-        }
         let addressMap = {};
         if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.DONE) {
             addressMap = await this.getAddressMap(cruxID);
         } else if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.PENDING) {
-            addressMap = await this.getAddressMap(cruxID, publicKeyToAddress(await keyManager.getPubKey()));
+            addressMap = await this.getAddressMap(cruxID, undefined, publicKeyToAddress(await keyManager.getPubKey()));
         }
         return new CruxUser(cruxID, addressMap, cruxUserInformation);
     }
@@ -90,7 +87,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         if (!ownerAddress) {
             const nameDetails = await this.blockstackService.getNameDetails(cruxId, tag);
             if (!nameDetails.address) {
-                throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingNameOwnerAddress, cruxId.toString());
+                throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist, cruxId.toString());
             }
             return new GaiaService(gaiaHub, this.cacheStorage).getContentFromGaiaHub(nameDetails.address, cruxPayFileName);
         }

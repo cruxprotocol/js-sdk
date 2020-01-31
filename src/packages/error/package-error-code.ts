@@ -15,6 +15,7 @@ export enum PackageErrorCode {
     PayIDClaimNotFound = 1013,
     GetDomainsByAddressFailed = 1014,
     InvalidWalletClientName = 1015,
+    DomainDoesNotExist = 1016,
     // 2000s: Gaia errors
     GaiaUploadFailed = 2001,
     GaiaCruxPayUploadFailed = 2002,
@@ -68,5 +69,5 @@ export enum PackageErrorCode {
     IsNotSupported = 5013,
     MissingCruxDomainInCruxWalletClient = 5014,
     MissingZoneFile = 5015,
-    MissingNameOwnerAddress = 5016,
+    // MissingNameOwnerAddress = 5016,
 }
