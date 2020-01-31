@@ -109,16 +109,17 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
     }
     private putAddressMap = async (addressMap: IAddressMapping, cruxDomainId: CruxDomainId, keyManager: IKeyManager): Promise<string> => {
         const cruxId = await this.blockstackService.getCruxIdWithKeyManager(keyManager, cruxDomainId);
+        if (!cruxId) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
+        }
         let gaiaHub: string|undefined;
-        if (cruxId) {
-            try {
-                gaiaHub = await this.blockstackService.getGaiaHub(cruxId);
-            } catch (error) {
-                if (error instanceof PackageError && [PackageErrorCode.MissingZoneFile, PackageErrorCode.MissingNameOwnerAddress].includes(error.errorCode)) {
-                    log.debug("missing nameDetails, assuming the id to be in pending state and moving forward with the gaia fallback");
-                } else {
-                    throw error;
-                }
+        try {
+            gaiaHub = await this.blockstackService.getGaiaHub(cruxId);
+        } catch (error) {
+            if (error instanceof PackageError && [PackageErrorCode.MissingZoneFile, PackageErrorCode.MissingNameOwnerAddress].includes(error.errorCode)) {
+                log.debug("missing nameDetails, assuming the id to be in pending state and moving forward with the gaia fallback");
+            } else {
+                throw error;
             }
         }
         if (!gaiaHub) {
