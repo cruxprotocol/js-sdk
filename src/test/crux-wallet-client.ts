@@ -63,6 +63,10 @@ describe('CruxWalletClient Tests', function() {
             const promise = this.cc.resolveCurrencyAddressForCruxID('lolwamax', 'bitcoin');
             await expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.CruxIdInvalidStructure);
         });
+        it('CruxUser doesnt exist', async function() {
+            const promise = this.cc.resolveCurrencyAddressForCruxID('lolwamax@testWallet.crux', 'bitcoin');
+            await expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.UserDoesNotExist);
+        });
         it('Wallet doesnt have asset id mapped', async function() {
             const promise = this.cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'foo');
             await expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.AssetIDNotAvailable);
@@ -80,15 +84,32 @@ describe('CruxWalletClient Tests', function() {
 
     describe('ID Availability check', function() {
         beforeEach(function() {
-            this.cc = new CruxWalletClient({
+            this.cc2 = new CruxWalletClient({
                 walletClientName: 'somewallet'
             });
         });
         it('Available ID check', async function() {
-            expect(await this.cc.isCruxIDAvailable('random123')).equals(true);
+            expect(await this.cc2.isCruxIDAvailable('random123')).equals(true);
         });
         it('Unavailable ID check', async function() {
-            expect(await this.cc.isCruxIDAvailable(testCruxUser2.cruxID.components.subdomain)).equals(false);
+            expect(await this.cc2.isCruxIDAvailable(testCruxUser2.cruxID.components.subdomain)).equals(false);
+        });
+        it('KeyManager not available while getting CruxIdState', async function(){
+            const idState = this.cc2.getCruxIDState();
+            await expect(idState).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.PrivateKeyRequired);
+        });
+        it('KeyManager not available while getting AddressMap', async function(){
+            const idState = this.cc2.getAddressMap();
+            await expect(idState).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.PrivateKeyRequired);
+        });
+        it('KeyManager not available while putting AddressMap', async function(){
+            const newAddressMap = {'bitcoin': {'addressHash': 'btcAddressAbc'}, 'invalidsymbol': {'addressHash': 'someRandomAddress'}};
+            const idState = this.cc2.putAddressMap(newAddressMap);
+            await expect(idState).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.PrivateKeyRequired);
+        });
+        it('KeyManager not available while registering CruxId', async function(){
+            const idState = this.cc2.registerCruxID("yolomax");
+            await expect(idState).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.PrivateKeyRequired);
         });
     });
 
@@ -146,7 +167,26 @@ describe('CruxWalletClient Tests', function() {
             const fetchedAddressMap2 = await this.cc.getAddressMap();
             expect(fetchedAddressMap2['bitcoin']['addressHash']).equals(newAddressMap['bitcoin']['addressHash']);
         });
-    });
 
+        it('getAssetMap Check', async function() {
+            const resolvedClientAssetMapping = {
+                "bitcoin" :             {
+                    "assetId": "d78c26f8-7c13-4909-bf62-57d7623f8ee8",
+                    "symbol": "BTC",
+                    "name": "Bitcoin",
+                    "assetType": null,
+                    "decimals": 8,
+                    "assetIdentifierName": null,
+                    "assetIdentifierValue": null,
+                    "parentAssetId": null
+                },
+            };
+            const getAssetMap1 = await this.cc.getAssetMap();
+            const getAssetMap2 = await this.cc.getAssetMap();
+            expect(getAssetMap1['bitcoin']['assetId']).equals(resolvedClientAssetMapping['bitcoin']['assetId']);
+        });
+    });
 });
+
+
 
