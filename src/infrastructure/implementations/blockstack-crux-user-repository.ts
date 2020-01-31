@@ -111,7 +111,15 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         const cruxId = await this.blockstackService.getCruxIdWithKeyManager(keyManager, cruxDomainId);
         let gaiaHub: string|undefined;
         if (cruxId) {
-            gaiaHub = await this.blockstackService.getGaiaHub(cruxId);
+            try {
+                gaiaHub = await this.blockstackService.getGaiaHub(cruxId);
+            } catch (error) {
+                if (error instanceof PackageError && [PackageErrorCode.MissingZoneFile, PackageErrorCode.MissingNameOwnerAddress].includes(error.errorCode)) {
+                    log.debug("missing nameDetails, assuming the id to be in pending state and moving forward with the gaia fallback");
+                } else {
+                    throw error;
+                }
+            }
         }
         if (!gaiaHub) {
             gaiaHub = this.infrastructure.gaiaHub;
