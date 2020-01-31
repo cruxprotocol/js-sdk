@@ -83,6 +83,7 @@ const isCruxIDAvailable = async () => {
 const registerCruxID = async () => {
     let UIResponse: string = ""
     let cruxID = doc.getElementById('newSubdomain').value
+    doc.getElementById('registrationAcknowledgement').textContent = "registering your crux ID...";
     try {
         await cruxClient.registerCruxID(cruxID)
         UIResponse = 'cruxID registration initiated!'
