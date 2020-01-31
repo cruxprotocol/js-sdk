@@ -74,6 +74,11 @@ export class CruxOnBoardingClient {
         return this.getCruxDomain().config.assetMapping;
     }
     @throwCruxOnBoardingClientError
+    public getSupportedParentAssetFallbacks = async (): Promise<string[]> => {
+        await this.initPromise;
+        return this.getCruxDomain().config.supportedParentAssetFallbacks;
+    }
+    @throwCruxOnBoardingClientError
     public putNameServiceConfig = async (newNameServiceConfig: INameServiceConfigurationOverrides): Promise<void> => {
         await this.initPromise;
         const cruxDomain = cloneValue(this.getCruxDomain());
@@ -82,12 +87,18 @@ export class CruxOnBoardingClient {
         return;
     }
     @throwCruxOnBoardingClientError
-    public putAssetMapping = async (newAssetMapping: IClientAssetMapping, newSupportedParentAssetFallbacks?: string[]): Promise<void> => {
+    public putAssetMapping = async (newAssetMapping: IClientAssetMapping): Promise<void> => {
         await this.initPromise;
-        // TODO: fix object cloning to retain old state in case of failed save operation
         const cruxDomain: CruxDomain = cloneValue(this.getCruxDomain());
         cruxDomain.config.assetMapping = newAssetMapping;
-        if (newSupportedParentAssetFallbacks) { cruxDomain.config.supportedParentAssetFallbacks = newSupportedParentAssetFallbacks; }
+        this.cruxDomain = await this.cruxDomainRepository.save(cruxDomain, this.getConfigKeyManager());
+        return;
+    }
+    @throwCruxOnBoardingClientError
+    public putSupportedParentAssetFallbacks = async (newSupportedParentAssetFallbacks: string[]): Promise<void> => {
+        await this.initPromise;
+        const cruxDomain: CruxDomain = cloneValue(this.getCruxDomain());
+        cruxDomain.config.supportedParentAssetFallbacks = newSupportedParentAssetFallbacks;
         this.cruxDomain = await this.cruxDomainRepository.save(cruxDomain, this.getConfigKeyManager());
         return;
     }

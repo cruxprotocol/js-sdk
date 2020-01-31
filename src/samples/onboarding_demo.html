@@ -99,6 +99,12 @@
     </div>
 
     <div class="registered">
+        <br><span class="helper">fetch wallet asset map:</span><br>
+        <button onclick="getSupportedParentAssetFallbacks()">Get Supported Parent Asset Fallbacks</button>
+        <pre id="supportedParentAssetFallbacks"></pre>
+    </div>
+
+    <div class="registered">
         <br><span class="helper">publish asset map:</span><br>
         <div id="publishAssetMap"></div><br>
         <button onclick="putAssetMapping()">Publish Asset Map</button>
@@ -110,6 +116,13 @@
         <div id="publishNameServiceConfig"></div><br>
         <button onclick="putNameServiceConfig()">Publish Nameservice Config</button>
         <pre id="putClientConfigAcknowledgement"></pre>
+    </div>
+
+    <div class="registered">
+        <br><span class="helper">publish supported parent asset fallbacks:</span><br>
+        <div id="publishSupportedParentAssetFallbacks"></div><br>
+        <button onclick="putSupportedParentAssetFallbacks()">Publish Supported Parent Asset Fallbacks</button>
+        <pre id="putSupportedParentAssetFallbacksAcknowledgement"></pre>
     </div>
     ========================
     <script src="./onboarding_demo.ts"></script>
