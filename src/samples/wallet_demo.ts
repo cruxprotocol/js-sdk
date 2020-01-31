@@ -126,7 +126,7 @@ const registerCruxID = async () => {
             UIResponse += `\nsuccessfully published: ${JSON.stringify(success)}, \nFailed publishing: ${JSON.stringify(failures, undefined, 4)}`
             try {
                 const enabledParentAssetFallbacks = await cruxClient.putParentAssetFallbacks(sampleParentAssetFallbacks);
-                UIResponse += `\nsuccessfully enabledParentAssetFallbacks: ${enabledParentAssetFallbacks}`
+                UIResponse += `\nsuccessfully updated ParentAssetFallbacks: ${enabledParentAssetFallbacks}`
             } catch (e_2) {
                 if (e_2 instanceof CruxClientError) {
                     UIResponse += `\n${e_2.errorCode}: ${e_2}`
