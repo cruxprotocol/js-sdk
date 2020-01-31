@@ -5,7 +5,7 @@ import { CruxUser, IAddressMapping, SubdomainRegistrationStatus } from "../../co
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxUserRepository, ICruxUserRepositoryOptions} from "../../core/interfaces/crux-user-repository";
 import { IKeyManager } from "../../core/interfaces/key-manager";
-import { ErrorHelper, PackageErrorCode } from "../../packages/error";
+import { ErrorHelper, PackageError, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId, IdTranslator } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { StorageService } from "../../packages/storage";
@@ -43,6 +43,8 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         log.debug("BlockstackCruxUserRepository initialised");
     }
     public create = async (cruxId: CruxId, keyManager: IKeyManager): Promise<CruxUser> => {
+        // Publishing an empty addressMap while registering the name to be fail safe
+        await this.putAddressMap({}, new CruxDomainId(cruxId.components.domain), keyManager);
         const cruxUserInformation = await this.blockstackService.registerCruxId(cruxId, this.infrastructure.gaiaHub, keyManager);
         return new CruxUser(cruxId, {}, cruxUserInformation);
     }
@@ -73,7 +75,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.DONE) {
             addressMap = await this.getAddressMap(cruxID);
         } else if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.PENDING) {
-            addressMap = await this.getAddressMap(cruxID, publicKeyToAddress(await keyManager.getPubKey()));
+            addressMap = await this.getAddressMap(cruxID, undefined, publicKeyToAddress(await keyManager.getPubKey()));
         }
         return new CruxUser(cruxID, addressMap, cruxUserInformation);
     }
@@ -83,7 +85,16 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
     }
     private getAddressMap = async (cruxId: CruxId, tag?: string, ownerAddress?: string): Promise<IAddressMapping> => {
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(cruxId);
-        let gaiaHub = await this.blockstackService.getGaiaHub(cruxId, tag);
+        let gaiaHub: string|undefined;
+        try {
+            gaiaHub = await this.blockstackService.getGaiaHub(cruxId, tag);
+        } catch (error) {
+            if (error instanceof PackageError && [PackageErrorCode.MissingZoneFile, PackageErrorCode.MissingNameOwnerAddress].includes(error.errorCode)) {
+                log.debug("missing nameDetails, assuming the id to be in pending state and moving forward with the gaia fallback");
+            } else {
+                throw error;
+            }
+        }
         if (!gaiaHub) {
             gaiaHub = this.infrastructure.gaiaHub;
         }

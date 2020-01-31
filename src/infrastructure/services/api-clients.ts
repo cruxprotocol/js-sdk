@@ -50,9 +50,14 @@ export class GaiaServiceApiClient {
         };
 
         const cacheTTL = filename === UPLOADABLE_JSON_FILES.CLIENT_CONFIG ? 3600 : undefined;
-        const responseBody: any = await cachedFunctionCall(cacheStorage, options.url, cacheTTL, httpJSONRequest, [options], async (data) => {
-            return Boolean(filename !== UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
-        });
+        let responseBody;
+        try {
+            responseBody = await cachedFunctionCall(cacheStorage, options.url, cacheTTL, httpJSONRequest, [options], async (data) => {
+                return Boolean(filename !== UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
+            });
+        } catch (error) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaGetFileFailed, filename);
+        }
         return responseBody;
     }
 }
