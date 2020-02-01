@@ -101,7 +101,13 @@ export class BlockstackNamingServiceApiClient {
         }
         let nameData;
         try {
-            nameData = await cachedFunctionCall(cacheStorage, `${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => Boolean(data && data.status && data.status !== "registered_subdomain"));
+            nameData = await cachedFunctionCall(cacheStorage, `${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => {
+                let skipCache = true;
+                if (data && data.status && data.status === "registerd_subdomain") {
+                    skipCache = false;
+                }
+                return skipCache;
+            });
         } catch (error) {
             throw ErrorHelper.getPackageError(error, PackageErrorCode.BnsResolutionFailed, options.baseUrl, error);
         }
