@@ -74,7 +74,7 @@ export class CruxWalletClient {
     private cruxDomainId: CruxDomainId;
     private cruxDomain?: CruxDomain;
     private cruxUserRepository!: ICruxUserRepository;
-    private cruxAssetTranslator?: CruxAssetTranslator;
+    private cruxAssetTranslator!: CruxAssetTranslator;
     private keyManager?: IKeyManager;
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
     private cacheStorage?: StorageService;
@@ -121,7 +121,7 @@ export class CruxWalletClient {
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
-        const assetId = this.getCruxAssetTranslator().symbolToAssetId(walletCurrencySymbol);
+        const assetId = this.cruxAssetTranslator.symbolToAssetId(walletCurrencySymbol);
         if (!assetId) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.AssetIDNotAvailable);
         }
@@ -141,7 +141,7 @@ export class CruxWalletClient {
         const cruxUser = await this.cruxUserRepository.getWithKey(this.keyManager, this.cruxDomainId);
         if (cruxUser) {
             const assetIdAddressMap = cruxUser.getAddressMap();
-            return this.getCruxAssetTranslator().assetIdAddressMapToSymbolAddressMap(assetIdAddressMap);
+            return this.cruxAssetTranslator.assetIdAddressMapToSymbolAddressMap(assetIdAddressMap);
         }
         return {};
     }
@@ -156,7 +156,7 @@ export class CruxWalletClient {
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
-        const {assetAddressMap, success, failures} = this.getCruxAssetTranslator().symbolAddressMapToAssetIdAddressMap(newAddressMap);
+        const {assetAddressMap, success, failures} = this.cruxAssetTranslator.symbolAddressMapToAssetIdAddressMap(newAddressMap);
         cruxUser.setAddressMap(assetAddressMap);
         this.cruxUserRepository.save(cruxUser, this.keyManager);
         return {success, failures};
@@ -220,20 +220,13 @@ export class CruxWalletClient {
         if (this.resolvedClientAssetMapping) {
             return this.resolvedClientAssetMapping;
         }
-        this.resolvedClientAssetMapping = this.getCruxAssetTranslator().assetIdAssetListToSymbolAssetMap(this.getCruxDomain().config.assetList);
+        this.resolvedClientAssetMapping = this.cruxAssetTranslator.assetIdAssetListToSymbolAssetMap(this.getCruxDomain().config.assetList);
         return this.resolvedClientAssetMapping;
     }
 
     private getCruxUserByID = async (cruxIdString: string, tag?: string): Promise<CruxUser|undefined> => {
         const cruxId = CruxId.fromString(cruxIdString);
         return await this.cruxUserRepository.getByCruxId(cruxId, tag);
-    }
-
-    private getCruxAssetTranslator = () => {
-        if (!this.cruxAssetTranslator) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.MissingCruxAssetTranslator);
-        }
-        return this.cruxAssetTranslator;
     }
 
     private getCruxDomain = () => {
