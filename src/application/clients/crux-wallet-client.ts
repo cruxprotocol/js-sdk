@@ -16,7 +16,7 @@ import {
     BlockstackCruxUserRepository,
     IBlockstackCruxUserRepositoryOptions,
 } from "../../infrastructure/implementations/blockstack-crux-user-repository";
-import { CruxClientError, ErrorHelper, PackageErrorCode, BaseError } from "../../packages/error";
+import { CruxClientError, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId, InputIDComponents } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
 import { StorageService } from "../../packages/storage";
