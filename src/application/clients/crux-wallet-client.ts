@@ -158,6 +158,7 @@ export class CruxWalletClient {
         }
         const {assetAddressMap, success, failures} = this.getCruxAssetTranslator().symbolAddressMapToAssetIdAddressMap(newAddressMap);
         cruxUser.setAddressMap(assetAddressMap);
+        this.cruxUserRepository.save(cruxUser, this.keyManager);
         return {success, failures};
     }
 

@@ -81,6 +81,8 @@ describe('Infrastructure Repositories Test', () => {
             })
         })
         it('New CruxUser Creation', async () => {
+            mockBlockstackService.getCruxIdWithKeyManager.resolves();
+            mockGaiaService.uploadContentToGaiaHub.resolves("https://gaia.cruxpay.com/174UBkUY4rte5jvRKzP7xJjGSRyTE6NcqA/cruxdev_cruxpay.json");
             mockBlockstackService.registerCruxId.withArgs(newUserCruxId, cruxGaiaHub, randomKeyManager).resolves({
                 registrationStatus: {
                     status: SubdomainRegistrationStatus.PENDING,

@@ -106,8 +106,8 @@ export const CruxSpec = {
                 subdomain: CruxSpec.blockstack.configSubdomain,
             });
         }
-        public static getCruxPayFilename = (cruxId: CruxId): string => {
-            return `${cruxId.components.domain}_cruxpay.json`;
+        public static getCruxPayFilename = (cruxDomainId: CruxDomainId): string => {
+            return `${cruxDomainId.components.domain}_cruxpay.json`;
         }
     },
     globalAssetList,
