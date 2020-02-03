@@ -226,7 +226,7 @@ export class CruxWalletClient {
 
     private getCruxUserByID = async (cruxIdString: string, tag?: string): Promise<CruxUser|undefined> => {
         const cruxId = CruxId.fromString(cruxIdString);
-        return await this.cruxUserRepository.getByCruxId(cruxId, tag);
+        return await this.cruxUserRepository.getByCruxId(cruxId, tag, true);
     }
 
     private getCruxAssetTranslator = () => {

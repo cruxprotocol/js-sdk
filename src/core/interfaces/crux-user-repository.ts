@@ -5,7 +5,7 @@ import { IKeyManager } from "./key-manager";
 export interface ICruxUserRepository {
     isCruxIdAvailable: (cruxID: CruxId) => Promise<boolean>;
     create: (cruxID: CruxId, keyManager: IKeyManager) => Promise<CruxUser>;
-    getByCruxId: (cruxID: CruxId, tag?: string) => Promise<CruxUser|undefined>;
+    getByCruxId: (cruxID: CruxId, tag?: string, onlyRegistered?: boolean) => Promise<CruxUser|undefined>;
     getWithKey: (keyManager: IKeyManager, cruxDomainId: CruxDomainId) => Promise<CruxUser|undefined>;
     save: (cruxUser: CruxUser, keyManager: IKeyManager) => Promise<CruxUser>;
     // restore: (keyManager: IKeyManager) => Promise<CruxUser|undefined>;
