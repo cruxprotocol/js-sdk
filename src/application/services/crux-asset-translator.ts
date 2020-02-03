@@ -40,8 +40,8 @@ export interface IPutAddressMapFailures {
 export class CruxAssetTranslator {
     private assetMap: IClientAssetMapping;
     private reverseAssetMap: IReverseClientAssetMapping;
-    constructor(assetMapping: IClientAssetMapping) {
-        Validations.validateAssetMapping(assetMapping);
+    constructor(assetMapping: IClientAssetMapping, assetList: IGlobalAssetList) {
+        Validations.validateAssetMapping(assetMapping, assetList);
         this.assetMap = this.getLowerAssetMapping(assetMapping);
         this.reverseAssetMap = {};
         for (const walletCurrencySymbol of Object.keys(this.assetMap)) {

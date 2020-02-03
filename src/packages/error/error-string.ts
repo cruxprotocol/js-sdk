@@ -48,7 +48,6 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.KeyPairMismatch]: "Invalid keyPair provided",
     [PackageErrorCode.MissingCruxDomainInCruxOnBoardingClient]: "No domain found with the key provided or missing key in the CruxOnBoardingClient",
     [PackageErrorCode.MissingCruxDomainInCruxWalletClient]: "No domain found with the key provided or missing key in the CruxWalletClient",
-    [PackageErrorCode.MissingCruxAssetTranslator]: "No CruxAssetTranslator found",
     [PackageErrorCode.MissingDomainContext]: "Domain context is required in BlockstackCruxAssetTranslatorRepository initialisation",
     [PackageErrorCode.MissingAssetMapping]: "ManualCruxAssetTranslatorRepository should be initialised with an assetMapping",
     [PackageErrorCode.MissingZoneFile]: "Missing zonefile for: '{0}'",
