@@ -41,7 +41,7 @@ export class Validations {
         } catch (e) {
             throw new BaseError(e, `Invalid AssetID: ${assetId}`);
         }
-        if (!CruxSpec.globalAssetList.map((asset) => asset.assetId).includes(assetId)) {
+        if (!CruxSpec.globalAssetList.find((asset) => asset.assetId)) {
             throw new BaseError(null, `AssetID: ${assetId} is not recognized.`);
         }
     }
