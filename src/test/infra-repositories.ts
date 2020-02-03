@@ -528,14 +528,8 @@ describe('Infrastructure Repositories Test', () => {
                 transactionHash: testUserNameDetails.last_txid,
             }
             const testCruxUser = new CruxUser(testUserCruxId, testUserAddressMap, testCruxUserInfo);
-            let raisedError: Error;
-            try {
-                await blockstackCruxUserRepository.save(testCruxUser, testUserKeyManager);
-            } catch (e) {
-                raisedError = e;
-            }
-            expect(raisedError).to.be.instanceOf(PackageError);
-            expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.UserDoesNotExist);
+            const promise = blockstackCruxUserRepository.save(testCruxUser, testUserKeyManager);
+            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.UserDoesNotExist);
         })
     })
     describe('Testing BlockstackCruxDomainRepository', () => {
@@ -575,14 +569,8 @@ describe('Infrastructure Repositories Test', () => {
 
         describe('Creating CruxDomain by DomainId and KeyManager', () => {
             it('Should throw IsNotSupported', async () => {
-                let raisedError: Error;
-                try {
-                    await blockstackCruxDomainRepository.create(testcaseCruxDomainId, cruxdevConfigKeyManager)
-                } catch (e) {
-                    raisedError = e;
-                }
-                expect(raisedError).to.be.instanceOf(PackageError);
-                expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.IsNotSupported);
+                const promise = blockstackCruxDomainRepository.create(testcaseCruxDomainId, cruxdevConfigKeyManager);
+                return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.IsNotSupported);
             })
         })
 
@@ -610,15 +598,8 @@ describe('Infrastructure Repositories Test', () => {
                 mockBlockstackService.getDomainRegistrationStatus.withArgs(cruxdevCruxDomainId).resolves(DomainRegistrationStatus.PENDING);
 
                 // call
-                let raisedError: Error;
-                try {
-                    await blockstackCruxDomainRepository.get(cruxdevCruxDomainId);
-                } catch (e) {
-                    raisedError = e;
-                }
-                // expectations
-                expect(raisedError).to.be.instanceOf(PackageError);
-                expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.DomainDoesNotExist);
+                const promise = blockstackCruxDomainRepository.get(cruxdevCruxDomainId);
+                return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.DomainDoesNotExist);
             })
             
             it('"cruxdev" should resolve proper CruxDomain object', async () => {

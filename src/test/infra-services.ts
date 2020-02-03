@@ -167,16 +167,8 @@ describe('Infrastructure Services Test', () => {
               ])
 
             // calling the method
-            let raisedError: Error;
-            try {
-                await gaiaService.getContentFromGaiaHub(ownerAddress, fileName);
-            } catch (e) {
-                raisedError = e;
-            }
-
-            // run expectations
-            expect(raisedError).to.be.instanceOf(PackageError);
-            expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.TokenVerificationFailed);
+            const promise = gaiaService.getContentFromGaiaHub(ownerAddress, fileName);
+            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.TokenVerificationFailed);
         })
 
         it('getContentFromGaiaHub GaiaEmptyResponse test', async () => {
@@ -188,16 +180,8 @@ describe('Infrastructure Services Test', () => {
             staticMocksGaiaServiceApiClient.retrieve.resolves(`<?xml version="1.0" encoding="utf-8"?><Error><Code>BlobNotFound</Code><Message>The specified blob does not exist.RequestId:62e23ba6-401e-00a2-2b2d-d8779d000000Time:2020-01-31T11:53:30.8719190Z</Message></Error>`)
 
             // calling the method
-            let raisedError: Error;
-            try {
-                await gaiaService.getContentFromGaiaHub(ownerAddress, fileName);
-            } catch (e) {
-                raisedError = e;
-            }
-
-            // run expectations
-            expect(raisedError).to.be.instanceOf(PackageError);
-            expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.GaiaEmptyResponse);
+            const promise = gaiaService.getContentFromGaiaHub(ownerAddress, fileName);
+            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.GaiaEmptyResponse);
         })
 
         it('getContentFromGaiaHub CouldNotValidateZoneFile test', async () => {
@@ -314,16 +298,8 @@ describe('Infrastructure Services Test', () => {
               ])
 
             // calling the method
-            let raisedError: Error;
-            try {
-                await gaiaService.getContentFromGaiaHub(ownerAddress, fileName);
-            } catch (e) {
-                raisedError = e;
-            }
-
-            // run expectations
-            expect(raisedError).to.be.instanceOf(PackageError);
-            expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.CouldNotValidateZoneFile);
+            const promise = gaiaService.getContentFromGaiaHub(ownerAddress, fileName);
+            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.CouldNotValidateZoneFile);
         })
 
         it('uploading cruxpay.json', async () => {
@@ -458,14 +434,8 @@ describe('Infrastructure Services Test', () => {
                 const options = {}
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.withArgs("https://core.blockstack.org", "cruxdev_crux.id", undefined, undefined).resolves(cruxdevNameDetail);
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.withArgs("https://bns.cruxpay.com", "cruxdev_crux.id", undefined, undefined).resolves(cruxdevConfigNameDetails);
-                let raisedError: Error;
-                try {
-                    await blockstackService.getNameDetails(cruxdevDomainId);
-                } catch (err) {
-                    raisedError = err;
-                }
-                expect(raisedError).to.be.instanceOf(PackageError);
-                expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.NameIntegrityCheckFailed);
+                const promise = blockstackService.getNameDetails(cruxdevDomainId);
+                return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.NameIntegrityCheckFailed);
                 
             })
             it('"testcase should return the status availability"', async () => {
@@ -475,7 +445,6 @@ describe('Infrastructure Services Test', () => {
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, testcaseBlockstackName)).to.be.true;
             })
-            it('"pendingId" should return with "more" field')
         })
         describe('getGaiaHub tests', () => {
             it('"cruxdev" should return cruxpay gaia hub', async () => {
@@ -494,14 +463,8 @@ describe('Infrastructure Services Test', () => {
                     "status": "registered_subdomain",
                     "zonefile_hash": "776172a0bc8400a4046d0325dd87e78b48a2f66b"
                 });
-                let raisedError: Error;
-                try {
-                    await blockstackService.getGaiaHub(cruxdevConfigCruxId)
-                } catch (error) {
-                    raisedError = error;
-                }
-                expect(raisedError).to.be.instanceOf(PackageError);
-                expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.MissingZoneFile);
+                const promise = blockstackService.getGaiaHub(cruxdevConfigCruxId);
+                return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.MissingZoneFile);
             })
             it('"cruxdev" should throw FailedToGetGaiaUrlFromZonefile', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({
@@ -513,15 +476,8 @@ describe('Infrastructure Services Test', () => {
                     "zonefile": "$ORIGIN _config\n$TTL 3600\n_https._tcp URI 10 1",
                     "zonefile_hash": "776172a0bc8400a4046d0325dd87e78b48a2f66b"
                 });
-                let raisedError: Error;
-                try {
-                    await blockstackService.getGaiaHub(cruxdevConfigCruxId)
-                } catch (error) {
-                    raisedError = error;
-                }
-                expect(raisedError).to.be.instanceOf(PackageError);
-                expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.FailedToGetGaiaUrlFromZonefile);
-                
+                const promise = blockstackService.getGaiaHub(cruxdevConfigCruxId);
+                return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.FailedToGetGaiaUrlFromZonefile);
             })
             it('Zonefile with hub and profile.json case', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({
@@ -556,13 +512,8 @@ describe('Infrastructure Services Test', () => {
             })
             it('Unhandled switch case', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({status: ""});
-                let raisedError: Error;
-                try {
-                    await blockstackService.getDomainRegistrationStatus(testcaseCruxDomainId);
-                } catch (e) {
-                    raisedError = e;
-                }
-                expect(raisedError).to.be.instanceOf(BaseError);
+                const promise = blockstackService.getDomainRegistrationStatus(testcaseCruxDomainId);
+                return expect(promise).to.be.eventually.rejected;
             })
         })
         describe('getCruxDomainIdWithConfigKeyManager tests', () => {

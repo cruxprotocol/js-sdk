@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import 'mocha';
 import { getKeyPairFromPrivKey } from '../packages/utils';
-import { PackageErrorCode } from '../packages/error';
+import { PackageErrorCode, PackageError } from '../packages/error';
 
 describe('Utils tests', () => {
     describe('getKeyPairFromPrivKey tests', () => {
@@ -19,14 +19,7 @@ describe('Utils tests', () => {
             expect(keyPair.address).is.a('string')
         })
         it('incorrect WIF should throw error', () => {
-            let raisedError;
-            try {
-                const keyPair = getKeyPairFromPrivKey(incorrectWIF)
-            } catch (error) {
-                raisedError = error;
-            }
-            expect(raisedError).is.not.undefined
-            expect(raisedError.errorCode).to.be.equal(PackageErrorCode.InvalidPrivateKeyFormat)
+            expect(() => getKeyPairFromPrivKey(incorrectWIF)).to.throw(PackageError).with.property('errorCode', PackageErrorCode.InvalidPrivateKeyFormat);
         })
         it('correct hex should return the keyPair object', () => {
             const keyPair = getKeyPairFromPrivKey(correctHex)
@@ -35,14 +28,7 @@ describe('Utils tests', () => {
             expect(keyPair.address).is.a('string')
         })
         it('incorrect hex should throw error', () => {
-            let raisedError;
-            try {
-                const keyPair = getKeyPairFromPrivKey(incorrectHex)
-            } catch (error) {
-                raisedError = error;
-            }
-            expect(raisedError).is.not.undefined
-            expect(raisedError.errorCode).to.be.equal(PackageErrorCode.InvalidPrivateKeyFormat)
+            expect(() => getKeyPairFromPrivKey(incorrectHex)).to.throw(PackageError).with.property('errorCode', PackageErrorCode.InvalidPrivateKeyFormat);
         })
         it('correct base64 should return the keyPair object', () => {
             const keyPair = getKeyPairFromPrivKey(correctBase64)
@@ -51,14 +37,7 @@ describe('Utils tests', () => {
             expect(keyPair.address).is.a('string')
         })
         it('incorrect base64 should throw error', () => {
-            let raisedError;
-            try {
-                const keyPair = getKeyPairFromPrivKey(incorrectBase64)
-            } catch (error) {
-                raisedError = error;
-            }
-            expect(raisedError).is.not.undefined
-            expect(raisedError.errorCode).to.be.equal(PackageErrorCode.InvalidPrivateKeyFormat)
+            expect(() => getKeyPairFromPrivKey(incorrectBase64)).to.throw(PackageError).with.property('errorCode', PackageErrorCode.InvalidPrivateKeyFormat);
         }) 
     })
 })

@@ -29,14 +29,7 @@ describe('ID Translation Tests', () => {
     })
 
     it('BlockstackId.fromString should fail with BlockstackIdInvalidStructure', () => {
-        let raisedError: Error;
-        try {
-            BlockstackId.fromString("alice")
-        } catch (error) {
-            raisedError = error;
-        }
-        expect(raisedError).to.be.instanceOf(PackageError);
-        expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.BlockstackIdInvalidStructure);
+        expect(() => BlockstackId.fromString("alice")).to.throw(PackageError).with.property('errorCode', PackageErrorCode.BlockstackIdInvalidStructure);
     })
 
     it('blockstack id translates to crux id', () => {
@@ -52,58 +45,23 @@ describe('ID Translation Tests', () => {
     })
 
     it('CruxDomainId.fromString should fail with CruxDomainInvalidStructure', () => {
-        let raisedError: Error;
-        try {
-            CruxDomainId.fromString("alice")
-        } catch (error) {
-            raisedError = error;
-        }
-        expect(raisedError).to.be.instanceOf(PackageError);
-        expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.CruxDomainInvalidStructure);
+        expect(() => CruxDomainId.fromString("alice")).to.throw(PackageError).with.property('errorCode', PackageErrorCode.CruxDomainInvalidStructure);
     })
 
     it('CruxDomainId.fromString should fail with CruxDomainNamespaceValidation', () => {
-        let raisedError: Error;
-        try {
-            CruxDomainId.fromString(testInvalidNamespaceId)
-        } catch (error) {
-            raisedError = error;
-        }
-        expect(raisedError).to.be.instanceOf(PackageError);
-        expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.CruxDomainNamespaceValidation);
+        expect(() => CruxDomainId.fromString(testInvalidNamespaceId)).to.throw(PackageError).with.property('errorCode', PackageErrorCode.CruxDomainNamespaceValidation);
     })
 
     it('CruxId.fromString should fail with CruxIdNamespaceValidation', () => {
-        let raisedError: Error;
-        try {
-            CruxId.fromString(testCruxInvalidNamespaceId)
-        } catch (error) {
-            raisedError = error;
-        }
-        expect(raisedError).to.be.instanceOf(PackageError);
-        expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.CruxIdNamespaceValidation);
+        expect(() => CruxId.fromString(testCruxInvalidNamespaceId)).to.throw(PackageError).with.property('errorCode', PackageErrorCode.CruxIdNamespaceValidation);
     })
 
     it('BlockstackDomainId.fromString should fail with BlockstackDomainInvalidStructure', () => {
-        let raisedError: Error;
-        try {
-            BlockstackDomainId.fromString("alice")
-        } catch (error) {
-            raisedError = error;
-        }
-        expect(raisedError).to.be.instanceOf(PackageError);
-        expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.BlockstackDomainInvalidStructure);
+        expect(() => BlockstackDomainId.fromString("alice")).to.throw(PackageError).with.property('errorCode', PackageErrorCode.BlockstackDomainInvalidStructure);
     })
 
     it('BlockstackDomainId.fromString should fail with CruxDomainNamespaceValidation', () => {
-        let raisedError: Error;
-        try {
-            BlockstackDomainId.fromString(testInvalidNamespaceId)
-        } catch (error) {
-            raisedError = error;
-        }
-        expect(raisedError).to.be.instanceOf(PackageError);
-        expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.BlockstackDomainNamespaceValidation);
+        expect(() => BlockstackDomainId.fromString(testInvalidNamespaceId)).to.throw(PackageError).with.property('errorCode', PackageErrorCode.BlockstackDomainNamespaceValidation);
     })
 
     it('crux id translates to blockstack id', () => {
@@ -112,87 +70,38 @@ describe('ID Translation Tests', () => {
     })
 
     it('blockstack id which cant be translated because of domain', () => {
-        let raisedError;
-        try {
-            let bsid = BlockstackId.fromString(testBlockstackId2)
-            IdTranslator.blockstackToCrux(bsid) //  INVALID DOMAIN TO TRANSLATE
-        } catch (e) {
-            raisedError = e;
-        }
-        expect(raisedError.errorCode).to.be.equal(PackageErrorCode.InvalidBlockstackDomainForTranslation)
+        let bsid = BlockstackId.fromString(testBlockstackId2)
+        expect(() => IdTranslator.blockstackToCrux(bsid)).to.throw(PackageError).with.property('errorCode', PackageErrorCode.InvalidBlockstackDomainForTranslation);
     })
 
     it('blockstack id which cant be translated because of namespace', () => {
-        let raisedError;
-        try {
-            let bsid = BlockstackId.fromString(testBlockstackId3) // SHOULD RAISE ERROR
-            IdTranslator.blockstackToCrux(bsid) // INVALID NAMESPACE TO TRANSLATE
-        } catch (e) {
-            raisedError = e;
-        }
-        expect(raisedError.errorCode).to.be.equal(PackageErrorCode.BlockstackIdNamespaceValidation)
+        expect(() => BlockstackId.fromString(testBlockstackId3)).to.throw(PackageError).with.property('errorCode', PackageErrorCode.BlockstackIdNamespaceValidation);
     })
 
     it('blockstackToCrux should throw BlockstackIdInvalidSubdomainForTranslation', () => {
-        let raisedError;
-        try {
-            let bsid = BlockstackId.fromString(testBlockstackId) // SHOULD RAISE ERROR
-            IdTranslator.blockstackToCrux(bsid) // INVALID NAMESPACE TO TRANSLATE
-        } catch (e) {
-            raisedError = e;
-        }
-        expect(raisedError.errorCode).to.be.equal(PackageErrorCode.BlockstackIdInvalidSubdomainForTranslation)
+        let bsid = BlockstackId.fromString(testBlockstackId) // SHOULD RAISE ERROR
+        expect(() => IdTranslator.blockstackToCrux(bsid)).to.throw(PackageError).with.property('errorCode', PackageErrorCode.BlockstackIdInvalidSubdomainForTranslation)
     })
 
     it('blockstackDomainStringToCruxDomainString should throw InvalidBlockstackDomainForTranslation', () => {
-        let raisedError;
-        try {
-            const testBlockstackDomainString = "foobar.id";
-            IdTranslator.blockstackDomainStringToCruxDomainString(testBlockstackDomainString);
-        } catch (e) {
-            raisedError = e;
-        }
-        expect(raisedError.errorCode).to.be.equal(PackageErrorCode.InvalidBlockstackDomainForTranslation);
+        const testBlockstackDomainString = "foobar.id";
+        expect(() => IdTranslator.blockstackDomainStringToCruxDomainString(testBlockstackDomainString)).to.throw(PackageError).with.property('errorCode', PackageErrorCode.InvalidBlockstackDomainForTranslation);
     })
 
     it('invalid crux id because of structure', () => {
-        let raisedError;
-        try {
-            CruxId.fromString('abcd@foobar') // SHOULD RAISE ERROR
-        } catch (e) {
-            raisedError = e;
-        }
-        expect(raisedError.errorCode).to.be.equal(PackageErrorCode.CruxIdInvalidStructure)
+        expect(() => CruxId.fromString('abcd@foobar')).to.throw(PackageError).with.property('errorCode', PackageErrorCode.CruxIdInvalidStructure)
     })
 
     it('invalid subdomain due to regex', () => {
-        let raisedError;
-        try {
-            validateSubdomain('_foofoo')
-        } catch (e) {
-            raisedError = e;
-        }
-        expect(raisedError.errorCode).to.be.equal(PackageErrorCode.SubdomainRegexMatchFailure)
+        expect(() => validateSubdomain('_foofoo')).to.throw(PackageError).with.property('errorCode', PackageErrorCode.SubdomainRegexMatchFailure);
     })
 
     it('invalid subdomain due to min length', () => {
-        let raisedError;
-        try {
-            validateSubdomain('foo')
-        } catch (e) {
-            raisedError = e;
-        }
-        expect(raisedError.errorCode).to.be.equal(PackageErrorCode.SubdomainLengthCheckFailure)
+        expect(() => validateSubdomain('foo')).to.throw(PackageError).with.property('errorCode', PackageErrorCode.SubdomainLengthCheckFailure);
     })
 
     it('invalid subdomain due to max length', () => {
-        let raisedError;
-        try {
-            validateSubdomain('foobarfoobarfoobarfoobarfoobarfoobarfoobar')
-        } catch (e) {
-            raisedError = e;
-        }
-        expect(raisedError.errorCode).to.be.equal(PackageErrorCode.SubdomainLengthCheckFailure)
+        expect(() => validateSubdomain('foobarfoobarfoobarfoobarfoobarfoobarfoobar')).to.throw(PackageError).with.property('errorCode', PackageErrorCode.SubdomainLengthCheckFailure);
     })
 
     it('valid subdomain case', () => {

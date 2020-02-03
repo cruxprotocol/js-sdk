@@ -3,13 +3,12 @@ import sinon from "sinon";
 import { BlockstackNamingServiceApiClient, BlockstackSubdomainRegistrarApiClient, GaiaServiceApiClient } from "../infrastructure/services/api-clients";
 import * as utils from '../packages/utils';
 import { BlockstackDomainId } from '../packages/identity-utils';
-import { PackageErrorCode, BaseError } from '../packages/error';
+import { PackageErrorCode, BaseError, PackageError } from '../packages/error';
 import { InMemStorage } from '../packages/inmem-storage';
 
 describe('API Clients Test', () => {
     let sandbox: sinon.SinonSandbox;
     let mockHttpJSONRequest: sinon.SinonStub;
-    let raisedError;
     const options_error = {
         baseUrl: "https://core.blockstack.org/",
         headers: {
@@ -68,14 +67,9 @@ describe('API Clients Test', () => {
             mockHttpJSONRequest.withArgs(options_error).resolves(namesOwnedByAddress);
 
             // calling the method
-            try{
-                const name = await BlockstackNamingServiceApiClient.getNamesByAddress(bnsNode, address);
-            } catch(e){
-                raisedError = e;
-            }
-            // run expectations
-            expect(raisedError.errorCode).to.be.equal(PackageErrorCode.GetNamesByAddressFailed)
-            })
+            const promise = BlockstackNamingServiceApiClient.getNamesByAddress(bnsNode, address);
+            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.GetNamesByAddressFailed);
+        })
         it('getNameDetails', async () => {
             // mocks
             const options = {
@@ -146,15 +140,10 @@ describe('API Clients Test', () => {
             mockHttpJSONRequest.withArgs(options_error).resolves(nameDetails);
 
             // calling the method
-            try{
-                const name = await BlockstackNamingServiceApiClient.getNameDetails(bnsNode, testBlockstackName, tag, undefined);
-            } catch(e){
-                raisedError = e;
-            }
-            // run expectations
-            expect(raisedError.errorCode).to.be.equal(PackageErrorCode.BnsResolutionFailed)
-            })
-        });
+            const promise = BlockstackNamingServiceApiClient.getNameDetails(bnsNode, testBlockstackName, tag, undefined);
+            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.BnsResolutionFailed);
+        })
+    });
     describe('Subdomain API Tests', () => {
         const user = 'testUser';
         const ownerAdderss = '17vkTRWLLZrKunkpgSro1ADtZd2yw4uig2';
@@ -274,14 +263,8 @@ describe('API Clients Test', () => {
             mockHttpJSONRequest.withArgs(options_error).resolves(registrartionResponse);
             
             // calling the method
-            try{
-                const name = await blockstackSubdomainRegistrarApiClient.getSubdomainRegistrarEntriesByAddress("17LLpUjHjwH6FzjrhbbwHTNweQN3bCKs7N");
-            } catch(e){
-                raisedError = e;
-            }
-
-            // run expectations
-            expect(raisedError.errorCode).to.be.equal(PackageErrorCode.FetchPendingRegistrationsByAddressFailed)
+            const promise = blockstackSubdomainRegistrarApiClient.getSubdomainRegistrarEntriesByAddress("17LLpUjHjwH6FzjrhbbwHTNweQN3bCKs7N");
+            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.FetchPendingRegistrationsByAddressFailed);
         })
         it('registerSubdomain', async () => {
             // mocks
@@ -325,13 +308,8 @@ describe('API Clients Test', () => {
             mockHttpJSONRequest.withArgs(options_error).resolves(registrarResponse);
             
             // calling the method
-            try{
-                const name = await blockstackSubdomainRegistrarApiClient.registerSubdomain(user, "https://hub.cruxpay.com", ownerAdderss);
-            } catch(e){
-                raisedError = e;
-            }
-            // run expectations
-            expect(raisedError.errorCode).to.be.equal(PackageErrorCode.SubdomainRegistrationFailed)
+            const promise = blockstackSubdomainRegistrarApiClient.registerSubdomain(user, "https://hub.cruxpay.com", ownerAdderss);
+            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.SubdomainRegistrationFailed);
         })
         it('Subdomain Registration Acknowledgement Failure', async () => {
             // mocks
@@ -359,13 +337,8 @@ describe('API Clients Test', () => {
             mockHttpJSONRequest.withArgs(options).resolves(registrarResponse);
             
             // calling the method
-            try{
-                const name = await blockstackSubdomainRegistrarApiClient.registerSubdomain(user, "https://hub.cruxpay.com", ownerAdderss);
-            } catch(e){
-                raisedError = e;
-            }
-            // run expectations
-            expect(raisedError.errorCode).to.be.equal(PackageErrorCode.SubdomainRegistrationAcknowledgementFailed)
+            const promise = blockstackSubdomainRegistrarApiClient.registerSubdomain(user, "https://hub.cruxpay.com", ownerAdderss);
+            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.SubdomainRegistrationAcknowledgementFailed);
         })
         it('initPromise Failure Case', () => {
             const baseUrl = 'https://registrar.cruxpay.com/';
@@ -451,6 +424,7 @@ describe('API Clients Test', () => {
             mockHttpJSONRequest.withArgs(options).resolves(successResponse);
             
             // calling the method
+            let raisedError: Error;
             try{
                 const name = GaiaServiceApiClient.store(baseUrl, filename, address, "authTokenWrong", '{"content" : "testContent"}', contentType);
             } catch (e){
