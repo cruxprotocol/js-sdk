@@ -5,7 +5,7 @@ import { CruxSpec } from "../../core/entities/crux-spec";
 import { ICruxUserInformation, ICruxUserRegistrationStatus } from "../../core/entities/crux-user";
 import { SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
 import { IKeyManager } from "../../core/interfaces/key-manager";
-import { ErrorHelper, PackageErrorCode, BaseError } from "../../packages/error";
+import { BaseError, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import {
     BlockstackDomainId,
     BlockstackId,
