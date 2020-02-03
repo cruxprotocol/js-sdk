@@ -16,9 +16,8 @@ export interface IClientConfig {
 }
 export enum DomainRegistrationStatus {
     AVAILABLE = "AVAILABLE",
-    PENDING = "PENDING",
     REGISTERED = "REGISTERED",
-    REJECTED = "REJECTED",
+    REVOKED = "REVOKED",
 }
 export class CruxDomain {
     private domainId: CruxDomainId;

@@ -211,7 +211,6 @@ describe('Infrastructure Services Test', () => {
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, testcaseBlockstackName)).to.be.true;
             })
-            it('"pendingId" should be PENDING')
         })
         describe('getCruxDomainIdWithConfigKeyManager tests', () => {
             it('"cruxdev" should be available on the corresponding config key', async () => {
