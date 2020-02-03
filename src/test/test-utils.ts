@@ -177,3 +177,14 @@ export const getValidCruxUser2 = () => {
 
     return new CruxUser(testCruxId, testValidAddressMap, validUserInformation);
 };
+
+export const getValidPendingCruxUser = () => {
+    const testCruxId = CruxId.fromString('pending@somewallet.crux');
+    const validUserInformation: ICruxUserInformation = {
+        registrationStatus: {
+            'status': SubdomainRegistrationStatus.PENDING,
+            'statusDetail': SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
+        }
+    };
+    return new CruxUser(testCruxId, {}, validUserInformation);
+}
