@@ -148,7 +148,8 @@ class SecureMessenger extends EventEmitter{
         this.transport.on('newMessage', this.handleNewMessage)
 
     }
-    public send(to: SecureMessengerId, message: any) {
+    public send({to: SecureMessengerId, message: any}) {
+        // need to refactor with cipher abstraction not encryptor
         const serializedMessage = this.serde.serialize(message)
         const encryptedSerializedMessage = this.encryptor.encrypt(serializedMessage)
         this.transport.send(to, encryptedSerializedMessage)
