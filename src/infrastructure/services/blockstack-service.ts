@@ -244,7 +244,7 @@ export class BlockstackService {
         if (onlyRegistered) {
             return {
                 registrationStatus: {
-                    status: SubdomainRegistrationStatus.DONE,
+                    status: SubdomainRegistrationStatus.NONE,
                     statusDetail: SubdomainRegistrationStatusDetail.NONE,
                 },
             };
