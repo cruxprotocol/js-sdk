@@ -10,7 +10,7 @@
     "copy-latest-docs": "cp -a docs/$npm_package_version/. docs/",
     "version-docs": "./node_modules/.bin/typedoc --out docs/$npm_package_version src/index.ts",
     "coverage": "./node_modules/.bin/nyc npm run test",
-    "wallet_demo_v1": "./node_modules/.bin/parcel src/samples/wallet_demo_v1.html --https --no-cache",
+    "wallet_demo_legacy": "./node_modules/.bin/parcel src/samples/wallet_demo_legacy.html --https --no-cache",
     "wallet_demo": "./node_modules/.bin/parcel src/samples/wallet_demo.html --https --no-cache",
     "onboarding_demo": "./node_modules/.bin/parcel src/samples/onboarding_demo.html --https --no-cache",
     "typecheck": "./node_modules/.bin/tsc --noEmit",
