@@ -421,17 +421,10 @@ describe('API Clients Test', () => {
                 url: `/store/${address}/${filename}`,
             };
             let successResponse = {};
-            mockHttpJSONRequest.withArgs(options).resolves(successResponse);
-            
+            mockHttpJSONRequest.withArgs(options).rejects(successResponse);
             // calling the method
-            let raisedError: Error;
-            try{
-                const name = GaiaServiceApiClient.store(baseUrl, filename, address, "authTokenWrong", '{"content" : "testContent"}', contentType);
-            } catch (e){
-                raisedError = e;
-            }
-            // run expectations
-            expect(mockHttpJSONRequest.calledOnceWithExactly(options));
+            const name = GaiaServiceApiClient.store(baseUrl, filename, address, "authTokenWrong", '{"content" : "testContent"}', contentType);    
+            expect(name).to.be.eventually.rejected.with.property('BaseError', "Error when uploading to Gaia hub");
         })
         it('retrieveFromGaiaHub', () => {
             const options = {
