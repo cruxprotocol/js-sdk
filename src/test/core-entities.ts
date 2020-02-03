@@ -71,7 +71,7 @@ describe('Core Entities Tests', () => {
         };
         it('Valid CruxDomain should be constructed', () => {
             const testDomain = new CruxDomain(testCruxDomainId, availableDomainStatus, testValidDomainConfig);
-            expect(testDomain);
+            expect(testDomain).to.be.instanceOf(CruxDomain);
 
         });
         it('CruxDomain should not be constructed with invalid asset mapping', () => {
