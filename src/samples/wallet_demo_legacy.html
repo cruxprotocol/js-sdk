@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Exodus Gamma Sample</title>
+</head>
+<body>
+    <style>
+        .helper {
+            color: grey;
+        }
+        #init {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: rgba(1, 1, 1, 0.7);
+            color: white;
+            text-align: center;
+            height: 100vh;
+            width: 100vw;
+            z-index: 1;
+        }
+        .registered {
+            display: none;
+        }
+        .unregistered {
+            display: block;
+        }
+    </style>
+
+    <h4>Demo Wallet</h4>
+    <br><span class="helper">wallet client:</span> <span class="walletClientName"></span><br>
+    <br><span class="helper">wallet addresses:</span><br>
+    <pre id="userAddresses"></pre>
+    <br><span class="helper">Init Mode:</span> <span id="mode"></span><br>
+
+    ========================
+
+    <h5>CruxPay Interface</h5>
+
+    <div id="init">
+        Initialising cruxClient...
+    </div>
+
+    <div class="registered unregistered">
+        <br><span class="helper">cruxID status:</span><br>
+        <pre id="cruxIDStatus"></pre>
+    </div>
+
+    <div class="unregistered">
+        <br><span class="helper">cruxID availability:</span><br>
+        <input id="registrationId" placeholder="ankit" style="text-align: right;">@<span class="walletClientName"></span>.crux <button onclick="isCruxIDAvailable()">Check</button><br>
+        <pre id='availability'></pre>
+    </div>
+
+    <div class="unregistered">
+        <br><span class="helper">cruxID registration:</span><br>
+        <input id="newSubdomain" placeholder="ankit" style="text-align: right;">@<span class="walletClientName"></span>.crux <button onclick="registerCruxID()">Register</button>
+        <pre id='registrationAcknowledgement'></pre>
+    </div>
+
+    <div class="registered unregistered">
+        <br><span class="helper">resolving public addresses:</span><br>
+        <input id="receiverVirtualAddress" placeholder="ankit@scatter_dev.crux">
+        <select id="currency"></select>
+        <button onclick="resolveCurrencyAddressForCruxID()">Resolve Address</button><br>
+        <pre id='addresses'></pre>
+    </div>
+
+    <div class="registered unregistered">
+        <br><span class="helper">fetch wallet asset map:</span><br>
+        <button onclick="getAssetMap()">Get Supported Assets</button>
+        <pre id="assetMap"></pre>
+    </div>
+
+    <div class="registered">
+        <br><span class="helper">fetch public address map:</span><br>
+        <button onclick="getAddressMap()">Get Public Addresses</button>
+        <pre id="addressMap"></pre>
+    </div>
+
+    <div class="registered">
+        <br><span class="helper">publish address map:</span><br>
+        <div id="publishAddresses"></div><br>
+        <button onclick="putAddressMap()">Publish Address</button>
+        <pre id="putAddressMapAcknowledgement"></pre>
+    </div>
+
+    ========================
+
+    <script src="./wallet_demo_legacy.ts"></script>
+</body>
+</html>

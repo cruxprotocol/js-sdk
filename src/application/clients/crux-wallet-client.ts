@@ -93,7 +93,13 @@ export class CruxWalletClient {
             }
         }
         this.cruxDomainId = new CruxDomainId(this.walletClientName);
-        this.initPromise = this.init(options);
+        this.initPromise = this.asyncInit();
+    }
+
+    @throwCruxClientError
+    public init = async () => {
+        // for backward-compatibility;
+        return this.initPromise;
     }
 
     @throwCruxClientError
@@ -242,7 +248,7 @@ export class CruxWalletClient {
         return this.cruxDomain;
     }
 
-    private init = async (options: ICruxWalletClientOptions): Promise<void> => {
+    private asyncInit = async (): Promise<void> => {
         const cruxDomainRepo: ICruxDomainRepository = getCruxDomainRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure});
         this.cruxDomain = await cruxDomainRepo.get(this.cruxDomainId);
         if (!this.cruxDomain) {
