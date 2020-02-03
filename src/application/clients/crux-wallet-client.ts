@@ -258,6 +258,6 @@ export class CruxWalletClient {
         if (!this.cruxDomain.config) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
-        this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping);
+        this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping, this.cruxDomain.config.assetList);
     }
 }
