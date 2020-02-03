@@ -64,7 +64,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
         const domainClientConfig = await this.getClientConfig(associatedDomainId);
         return new CruxDomain(associatedDomainId, DomainRegistrationStatus.REGISTERED, domainClientConfig);
     }
-    private getClientConfig = async (cruxDomainId: CruxDomainId) => {
+    private getClientConfig = async (cruxDomainId: CruxDomainId): Promise<IClientConfig> => {
         const configCruxId = CruxSpec.blockstack.getConfigCruxId(cruxDomainId);
         const domainConfigFileName = CruxSpec.blockstack.getDomainConfigFileName(cruxDomainId);
         const gaiaHub = await this.blockstackService.getGaiaHub(configCruxId);
