@@ -2,8 +2,26 @@ import { expect } from 'chai';
 import 'mocha';
 import { BasicKeyManager } from '../infrastructure/implementations/basic-key-manager';
 import { decodeToken } from 'jsontokens';
+import { isInstanceOfKeyManager } from '../core';
 
 describe("Infrastructure Utils tests", () => {
+    describe("instanceOfKeyManager tests", () => {
+        it("invalid case with non-conforming typeof", () => {
+            const invalidKeyManager = {
+                "getPubKey": "test",
+                "signWebToken": "test",
+            }
+            const boolean = isInstanceOfKeyManager(invalidKeyManager);
+            expect(boolean).to.be.false;
+        })
+        it("invalid case with non-conforming methods", () => {
+            const invalidKeyManager = {
+                "getPubKey": () => "test",
+            }
+            const boolean = isInstanceOfKeyManager(invalidKeyManager);
+            expect(boolean).to.be.false;
+        })
+    })
     describe("BasicKeyManager tests", () => {
         let basicKeyManager: BasicKeyManager;
         const testPrivateKey = "2982735d0b69751e1d13fcb045757e372c1d85b8bdc66995a5a073be648e5f26";

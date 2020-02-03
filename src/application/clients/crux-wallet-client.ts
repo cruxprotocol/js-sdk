@@ -6,7 +6,7 @@ import { CruxUser, IAddress, IAddressMapping, ICruxUserRegistrationStatus, Subdo
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxDomainRepository} from "../../core/interfaces/crux-domain-repository";
 import { ICruxUserRepository } from "../../core/interfaces/crux-user-repository";
-import { IKeyManager } from "../../core/interfaces/key-manager";
+import { IKeyManager, isInstanceOfKeyManager } from "../../core/interfaces/key-manager";
 import { BasicKeyManager } from "../../infrastructure/implementations/basic-key-manager";
 import {
     BlockstackCruxDomainRepository,
@@ -16,7 +16,7 @@ import {
     BlockstackCruxUserRepository,
     IBlockstackCruxUserRepositoryOptions,
 } from "../../infrastructure/implementations/blockstack-crux-user-repository";
-import { CruxClientError, ErrorHelper, PackageErrorCode } from "../../packages/error";
+import { CruxClientError, ErrorHelper, PackageErrorCode, BaseError } from "../../packages/error";
 import { CruxDomainId, CruxId, InputIDComponents } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
 import { StorageService } from "../../packages/storage";
@@ -84,7 +84,13 @@ export class CruxWalletClient {
         this.cruxBlockstackInfrastructure = options.blockstackInfrastructure || CruxSpec.blockstack.infrastructure;
         this.walletClientName = options.walletClientName;
         if (options.privateKey) {
-            this.keyManager = typeof options.privateKey === "string" ? new BasicKeyManager(options.privateKey) : options.privateKey;
+            if (typeof options.privateKey === "string") {
+                this.keyManager = new BasicKeyManager(options.privateKey);
+            } else if (isInstanceOfKeyManager(options.privateKey)) {
+                this.keyManager = options.privateKey;
+            } else {
+                throw ErrorHelper.getPackageError(null, PackageErrorCode.InvalidPrivateKeyFormat);
+            }
         }
         this.cruxDomainId = new CruxDomainId(this.walletClientName);
         this.initPromise = this.init(options);
