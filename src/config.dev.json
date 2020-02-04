@@ -1,8 +1,0 @@
-{
-    "CONFIG_MODE": "DEV",
-    "BLOCKSTACK": {
-        "SUBDOMAIN_REGISTRAR": "https://registrar.coinswitch.co:3000",
-        "GAIA_HUB": "https://hub.cruxpay.com",
-        "BNS_NODES": ["https://core.blockstack.org", "https://bns.cruxpay.com"]
-    }
-}

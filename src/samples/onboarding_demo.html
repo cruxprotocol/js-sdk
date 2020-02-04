@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Onboarding Demo</title>
+</head>
+
+<body>
+    <style>
+        .helper {
+            color: grey;
+        }
+
+        #init {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: rgba(1, 1, 1, 0.7);
+            color: white;
+            text-align: center;
+            height: 100vh;
+            width: 100vw;
+            z-index: 1;
+        }
+
+        #signer {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: rgba(1, 1, 1, 0.7);
+            color: white;
+            text-align: center;
+            height: 100vh;
+            width: 100vw;
+            z-index: 1;
+        }
+
+        .registered {
+            display: none;
+        }
+
+        .unregistered {
+            display: block;
+        }
+    </style>
+
+    <h4>Client On-Boarding Demo</h4> 
+    <br><span class="helper">client assets:</span><br>
+    <pre id="clientAssets"></pre>
+
+    ========================
+
+    <h5>CruxPay Wallet OnBoarding Interface</h5>
+    <!-- TODO: make dropdown to select the domain context -->
+    <div id="init">
+        Initialising cruxOnBoardingClient...
+    </div>
+
+    <div id="signer">
+        Manual Signer:
+        <div id="signatureRequests">
+            waiting for signature requests...
+        </div>
+        <br>
+        <button id="submitSignatures">Submit Signatures</button>
+    </div>
+
+    <div class="registered unregistered">
+        <br><span class="helper">cruxDomain status:</span><br>
+        <pre id="cruxDomainStatus"></pre>
+    </div>
+
+    <div class="unregistered">
+        <br><span class="helper">cruxDomain availability:</span><br>
+        <span>ankit@</span><input id="registrationDomain" placeholder="exodus" style="text-align: right;">.crux <button onclick="iscruxDomainAvailable()">Check</button><br>
+        <pre id='availability'></pre>
+    </div>
+
+    <div class="unregistered">
+        <br><span class="helper">cruxDomain registration:</span><br>
+        <span>ankit@</span><input id="newDomain" placeholder="exodus" style="text-align: right;">.crux <button onclick="registercruxDomain()">Register</button>
+        <pre id='registrationAcknowledgement'></pre>
+    </div>
+
+    <div class="registered">
+        <br><span class="helper">fetch wallet asset map:</span><br>
+        <button onclick="getAssetMapping()">Get Supported Assets</button>
+        <pre id="assetMap"></pre>
+    </div>
+
+    <div class="registered">
+        <br><span class="helper">fetch nameservice config:</span><br>
+        <button onclick="getNameServiceConfig()">Get Nameservice Config</button>
+        <pre id="nameServiceConfig"></pre>
+    </div>
+
+    <div class="registered">
+        <br><span class="helper">publish asset map:</span><br>
+        <div id="publishAssetMap"></div><br>
+        <button onclick="putAssetMapping()">Publish Asset Map</button>
+        <pre id="putAssetMapAcknowledgement"></pre>
+    </div>
+
+    <div class="registered">
+        <br><span class="helper">publish nameservice config:</span><br>
+        <div id="publishNameServiceConfig"></div><br>
+        <button onclick="putNameServiceConfig()">Publish Nameservice Config</button>
+        <pre id="putClientConfigAcknowledgement"></pre>
+    </div>
+    ========================
+    <script src="./onboarding_demo.ts"></script>
+</body>
+
+</html>

@@ -17,10 +17,11 @@ export class ErrorHelper {
             return errorMessage;
         }
 
-        let result: string = errorMessage as string;
+        let result: string = errorMessage;
         const args: string[] = ErrorHelper.getOptionalArgsArrayFromFunctionCall(arguments, 1);
         if (args) {
             for (let i: number = 0; i < args.length; i++) {
+                // tslint:disable-next-line: tsr-detect-non-literal-regexp
                 result = result.replace(new RegExp("\\{" + i + "\\}", "g"), args[i]);
             }
         }
