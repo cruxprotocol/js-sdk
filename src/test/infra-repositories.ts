@@ -88,6 +88,91 @@ describe('Infrastructure Repositories Test', () => {
         const unregisteredCruxId = CruxId.fromString("alice@cruxdev.crux");
         const randomPrivKey = "95611bcefd15913cba2c673ef61ba56d1a48de1d3df383222ddcb715e41e8ffb";
         const randomKeyManager = new BasicKeyManager(randomPrivKey);
+
+        const testClientConfig = {
+            "assetList": [
+              {
+                "assetId": "d78c26f8-7c13-4909-bf62-57d7623f8ee8",
+                "symbol": "BTC",
+                "name": "Bitcoin",
+                "assetType": null,
+                "decimals": 8,
+                "assetIdentifierName": null,
+                "assetIdentifierValue": null,
+                "parentAssetId": null
+              },
+              {
+                "assetId": "948a4b55-be93-4caa-ab6e-9b2076a0a958",
+                "symbol": "EOS",
+                "name": "EOS",
+                "assetType": null,
+                "decimals": 4,
+                "assetIdentifierName": null,
+                "assetIdentifierValue": null,
+                "parentAssetId": null
+              },
+              {
+                "assetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+                "symbol": "ETH",
+                "name": "Ethereum",
+                "assetType": null,
+                "decimals": 8,
+                "assetIdentifierName": null,
+                "assetIdentifierValue": null,
+                "parentAssetId": null
+              },
+              {
+                "assetId": "d79b9ece-a918-4523-b2bc-74071675b54a",
+                "symbol": "LTC",
+                "name": "Litecoin",
+                "assetType": null,
+                "decimals": 8,
+                "assetIdentifierName": null,
+                "assetIdentifierValue": null,
+                "parentAssetId": null
+              },
+              {
+                "assetId": "abe0030a-d8e3-4518-879f-cd9939b7d8ab",
+                "symbol": "XRP",
+                "name": "Ripple",
+                "assetType": null,
+                "decimals": 6,
+                "assetIdentifierName": null,
+                "assetIdentifierValue": null,
+                "parentAssetId": null
+              },
+              {
+                "assetId": "ab212c90-a2ab-48cf-873c-a7b6e97d8935",
+                "symbol": "TRX",
+                "name": "TRON",
+                "assetType": null,
+                "decimals": 6,
+                "assetIdentifierName": null,
+                "assetIdentifierValue": null,
+                "parentAssetId": null
+              },
+              {
+                "assetId": "0fcdab6b-9ca8-48d9-9254-32b078a2b31e",
+                "symbol": "LIFE",
+                "name": "PureLifeCoin",
+                "assetType": "ERC20",
+                "decimals": 18,
+                "assetIdentifierName": "Contract Address",
+                "assetIdentifierValue": "0xff18dbc487b4c2e3222d115952babfda8ba52f5f",
+                "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+              }
+            ],
+            "assetMapping": {
+              "life": "0fcdab6b-9ca8-48d9-9254-32b078a2b31e",
+              "ltc": "d79b9ece-a918-4523-b2bc-74071675b54a",
+              "eos": "948a4b55-be93-4caa-ab6e-9b2076a0a958",
+              "trx": "ab212c90-a2ab-48cf-873c-a7b6e97d8935",
+              "xrp": "abe0030a-d8e3-4518-879f-cd9939b7d8ab",
+              "eth": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+              "btc": "d78c26f8-7c13-4909-bf62-57d7623f8ee8"
+            }
+          }
+
         beforeEach(() => {
             blockstackCruxUserRepository = new BlockstackCruxUserRepository({
                 blockstackInfrastructure: CruxSpec.blockstack.infrastructure,
@@ -95,89 +180,6 @@ describe('Infrastructure Repositories Test', () => {
         })
 
         it('blockstackCruxUserRepository initialization with cruxDomain without overrides', async () => {
-            const testClientConfig = {
-                "assetList": [
-                  {
-                    "assetId": "d78c26f8-7c13-4909-bf62-57d7623f8ee8",
-                    "symbol": "BTC",
-                    "name": "Bitcoin",
-                    "assetType": null,
-                    "decimals": 8,
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null
-                  },
-                  {
-                    "assetId": "948a4b55-be93-4caa-ab6e-9b2076a0a958",
-                    "symbol": "EOS",
-                    "name": "EOS",
-                    "assetType": null,
-                    "decimals": 4,
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null
-                  },
-                  {
-                    "assetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
-                    "symbol": "ETH",
-                    "name": "Ethereum",
-                    "assetType": null,
-                    "decimals": 8,
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null
-                  },
-                  {
-                    "assetId": "d79b9ece-a918-4523-b2bc-74071675b54a",
-                    "symbol": "LTC",
-                    "name": "Litecoin",
-                    "assetType": null,
-                    "decimals": 8,
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null
-                  },
-                  {
-                    "assetId": "abe0030a-d8e3-4518-879f-cd9939b7d8ab",
-                    "symbol": "XRP",
-                    "name": "Ripple",
-                    "assetType": null,
-                    "decimals": 6,
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null
-                  },
-                  {
-                    "assetId": "ab212c90-a2ab-48cf-873c-a7b6e97d8935",
-                    "symbol": "TRX",
-                    "name": "TRON",
-                    "assetType": null,
-                    "decimals": 6,
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null
-                  },
-                  {
-                    "assetId": "0fcdab6b-9ca8-48d9-9254-32b078a2b31e",
-                    "symbol": "LIFE",
-                    "name": "PureLifeCoin",
-                    "assetType": "ERC20",
-                    "decimals": 18,
-                    "assetIdentifierName": "Contract Address",
-                    "assetIdentifierValue": "0xff18dbc487b4c2e3222d115952babfda8ba52f5f",
-                    "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
-                  }
-                ],
-                "assetMapping": {
-                  "life": "0fcdab6b-9ca8-48d9-9254-32b078a2b31e",
-                  "ltc": "d79b9ece-a918-4523-b2bc-74071675b54a",
-                  "eos": "948a4b55-be93-4caa-ab6e-9b2076a0a958",
-                  "trx": "ab212c90-a2ab-48cf-873c-a7b6e97d8935",
-                  "xrp": "abe0030a-d8e3-4518-879f-cd9939b7d8ab",
-                  "eth": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
-                  "btc": "d78c26f8-7c13-4909-bf62-57d7623f8ee8"
-                }
-              }
             const testDomainRegistrationStatus: DomainRegistrationStatus = DomainRegistrationStatus.REGISTERED;
             const testCruxDomainId = CruxDomainId.fromString("cruxdev.crux")
             const cruxDomain = new CruxDomain(testCruxDomainId, testDomainRegistrationStatus, testClientConfig);
@@ -189,94 +191,11 @@ describe('Infrastructure Repositories Test', () => {
         })
         
         it('blockstackCruxUserRepository initialization with cruxDomain with overrides', async () => {
-            const testClientConfig = {
-                "nameserviceConfiguration": {
-                    "bnsNodes": [
-                        "https://bns.cruxpay.com"
-                    ]
-                },
-                "assetList": [
-                  {
-                    "assetId": "d78c26f8-7c13-4909-bf62-57d7623f8ee8",
-                    "symbol": "BTC",
-                    "name": "Bitcoin",
-                    "assetType": null,
-                    "decimals": 8,
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null
-                  },
-                  {
-                    "assetId": "948a4b55-be93-4caa-ab6e-9b2076a0a958",
-                    "symbol": "EOS",
-                    "name": "EOS",
-                    "assetType": null,
-                    "decimals": 4,
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null
-                  },
-                  {
-                    "assetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
-                    "symbol": "ETH",
-                    "name": "Ethereum",
-                    "assetType": null,
-                    "decimals": 8,
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null
-                  },
-                  {
-                    "assetId": "d79b9ece-a918-4523-b2bc-74071675b54a",
-                    "symbol": "LTC",
-                    "name": "Litecoin",
-                    "assetType": null,
-                    "decimals": 8,
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null
-                  },
-                  {
-                    "assetId": "abe0030a-d8e3-4518-879f-cd9939b7d8ab",
-                    "symbol": "XRP",
-                    "name": "Ripple",
-                    "assetType": null,
-                    "decimals": 6,
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null
-                  },
-                  {
-                    "assetId": "ab212c90-a2ab-48cf-873c-a7b6e97d8935",
-                    "symbol": "TRX",
-                    "name": "TRON",
-                    "assetType": null,
-                    "decimals": 6,
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null
-                  },
-                  {
-                    "assetId": "0fcdab6b-9ca8-48d9-9254-32b078a2b31e",
-                    "symbol": "LIFE",
-                    "name": "PureLifeCoin",
-                    "assetType": "ERC20",
-                    "decimals": 18,
-                    "assetIdentifierName": "Contract Address",
-                    "assetIdentifierValue": "0xff18dbc487b4c2e3222d115952babfda8ba52f5f",
-                    "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
-                  }
-                ],
-                "assetMapping": {
-                  "life": "0fcdab6b-9ca8-48d9-9254-32b078a2b31e",
-                  "ltc": "d79b9ece-a918-4523-b2bc-74071675b54a",
-                  "eos": "948a4b55-be93-4caa-ab6e-9b2076a0a958",
-                  "trx": "ab212c90-a2ab-48cf-873c-a7b6e97d8935",
-                  "xrp": "abe0030a-d8e3-4518-879f-cd9939b7d8ab",
-                  "eth": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
-                  "btc": "d78c26f8-7c13-4909-bf62-57d7623f8ee8"
-                }
-              }
+            testClientConfig["nameserviceConfiguration"] = {
+                "bnsNodes": [
+                    "https://bns.cruxpay.com"
+                ]
+            };
             const testDomainRegistrationStatus: DomainRegistrationStatus = DomainRegistrationStatus.REGISTERED;
             const testCruxDomainId = CruxDomainId.fromString("cruxdev.crux")
             const cruxDomain = new CruxDomain(testCruxDomainId, testDomainRegistrationStatus, testClientConfig);

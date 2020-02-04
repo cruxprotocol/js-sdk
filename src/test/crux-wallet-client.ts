@@ -182,7 +182,6 @@ describe('CruxWalletClient Tests', function() {
                 },
             };
             const getAssetMap1 = await this.cc.getAssetMap();
-            const getAssetMap2 = await this.cc.getAssetMap();
             expect(getAssetMap1['bitcoin']['assetId']).equals(resolvedClientAssetMapping['bitcoin']['assetId']);
         });
     });

@@ -447,26 +447,22 @@ describe('Infrastructure Services Test', () => {
             })
         })
         describe('getGaiaHub tests', () => {
-            it('"cruxdev" should return cruxpay gaia hub', async () => {
+            it('Should return cruxpay gaia hub', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves(cruxdevConfigNameDetails);
                 const gaiaHub = await blockstackService.getGaiaHub(cruxdevConfigCruxId);
                 expect(gaiaHub).to.be.equal(cruxGaiaHub);
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledTwice).to.be.true;
                 expect(staticMocksBlockstackNamingServiceApiClient.getNameDetails.calledWith(sinon.match.string, cruxdevConfigBlockstackName)).to.be.true;
             })
-            it('"cruxdev" should throw MissingZoneFile', async () => {
+            it('Should throw MissingZoneFile', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({
-                    "address": "16wXkSf8kwFGz3oGbHW2aofHuBLX6MWgeh",
-                    "blockchain": "bitcoin",
-                    "did": "did:stack:v0:SWkf7PikxXchsWM5yZw7jRvKTQzMcdb5Pc-0",
-                    "last_txid": "bfa29d44fd31e4307c9fc0229964aaec1a6efc014e4c94681e2372f5f7d474ec",
-                    "status": "registered_subdomain",
-                    "zonefile_hash": "776172a0bc8400a4046d0325dd87e78b48a2f66b"
+                    "status": "available",
+                    "more":	"failed to find parent domain's resolver"
                 });
                 const promise = blockstackService.getGaiaHub(cruxdevConfigCruxId);
                 return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.MissingZoneFile);
             })
-            it('"cruxdev" should throw FailedToGetGaiaUrlFromZonefile', async () => {
+            it('Should throw FailedToGetGaiaUrlFromZonefile', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({
                     "address": "16wXkSf8kwFGz3oGbHW2aofHuBLX6MWgeh",
                     "blockchain": "bitcoin",

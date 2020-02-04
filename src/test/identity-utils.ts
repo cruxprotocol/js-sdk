@@ -105,13 +105,7 @@ describe('ID Translation Tests', () => {
     })
 
     it('valid subdomain case', () => {
-        let raisedError;
-        try {
-            validateSubdomain('foobar');
-        } catch (e) {
-            raisedError = e;
-        }
-        expect(raisedError).to.be.undefined;
+        expect(() => validateSubdomain('foobar')).to.not.throw();
     })
 
 })
