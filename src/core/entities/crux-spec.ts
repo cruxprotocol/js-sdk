@@ -58,7 +58,6 @@ export class Validations {
     }
     public static validateAssetMapping = (assetMapping: IClientAssetMapping, assetList: IGlobalAssetList) => {
         Object.keys(assetMapping).forEach((assetSymbol) => {
-            console.log(assetSymbol);
             Validations.validateAssetId(assetMapping[assetSymbol]);
             Validations.validateAssetIdAgainstAssetList(assetMapping[assetSymbol], assetList);
         });

@@ -109,7 +109,6 @@ describe('Application Services Tests', () => {
 
         it('Translate symbolAddressMap to assetIdAddressMap', ()=>{
             const assetIdAddressMap = cruxAssetTranslator.symbolAddressMapToAssetIdAddressMap(testUserUpperCaseCurrencyAddressMap);
-            console.log(assetIdAddressMap)
             expect(assetIdAddressMap).is.eql({
                 assetAddressMap: testUserAssetIdAddressMap,
                 success: testUserLowerCaseCurrencyAddressMap,
