@@ -200,7 +200,7 @@ const getCruxIDState = async (): Promise<ICruxIDState> => {
 }
 
 function handleCruxIDStatus(cruxIDStatus) {
-    if (cruxIDStatus.status && cruxIDStatus.status.status === "DONE") {
+    if (cruxIDStatus.status && ["DONE", "PENDING"].includes(cruxIDStatus.status.status)) {
         [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => {
             el.style.display = "none"
         });
