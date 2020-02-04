@@ -92,7 +92,7 @@ export class InMemoryCruxDomainRepository implements ICruxDomainRepository {
     }
 
     public create = (domainId: CruxDomainId, identityKeyManager: IKeyManager): Promise<CruxDomain> => {
-        const newDomain = new CruxDomain(domainId, DomainRegistrationStatus.REGISTERED, {} as any);
+        const newDomain = new CruxDomain(domainId, DomainRegistrationStatus.REGISTERED, {assetList: [], assetMapping: {}});
         this.domainById[domainId.toString()] = newDomain;
         return new Promise((resolve, reject) => resolve(newDomain));
     };
@@ -177,3 +177,14 @@ export const getValidCruxUser2 = () => {
 
     return new CruxUser(testCruxId, testValidAddressMap, validUserInformation);
 };
+
+export const getValidPendingCruxUser = () => {
+    const testCruxId = CruxId.fromString('pending@somewallet.crux');
+    const validUserInformation: ICruxUserInformation = {
+        registrationStatus: {
+            'status': SubdomainRegistrationStatus.PENDING,
+            'statusDetail': SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
+        }
+    };
+    return new CruxUser(testCruxId, {}, validUserInformation);
+}

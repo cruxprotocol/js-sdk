@@ -46,6 +46,10 @@ describe('Core Entities Tests', () => {
             const testUserBtcAddressHash = testUser.getAddressMap()[BTC_ASSET_ID]['addressHash'];
             expect(testUserBtcAddressHash).to.be.equal(testValidAddressMap[BTC_ASSET_ID]['addressHash']);
         });
+        it('CruxUser should not be constructed with invalid CruxId', () => {
+            const createInvalidUser = () => new CruxUser(undefined, {}, newUserInformation);
+            expect(createInvalidUser).to.throw();
+        })
 
     });
     describe('Testing Entity CruxDomain', () => {
@@ -67,7 +71,7 @@ describe('Core Entities Tests', () => {
         };
         it('Valid CruxDomain should be constructed', () => {
             const testDomain = new CruxDomain(testCruxDomainId, availableDomainStatus, testValidDomainConfig);
-            expect(testDomain);
+            expect(testDomain).to.be.instanceOf(CruxDomain);
 
         });
         it('CruxDomain should not be constructed with invalid asset mapping', () => {

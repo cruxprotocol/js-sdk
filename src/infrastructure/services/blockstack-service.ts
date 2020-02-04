@@ -79,7 +79,7 @@ export class BlockstackService {
                 domainRegistrationStatus = DomainRegistrationStatus.REGISTERED;
                 break;
             default:
-                throw new BaseError(null, "Unhandled domain registration status found.");
+                throw new BaseError(null, "Invalid name data for CruxDomain");
         }
         return domainRegistrationStatus;
     }
@@ -214,7 +214,7 @@ export class BlockstackService {
         await registrarApiClient.registerSubdomain(cruxId.components.subdomain, gaiaHub, publicKeyToAddress(await keyManager.getPubKey()));
         return this.getCruxIdInformation(cruxId);
     }
-    public getCruxIdInformation = async (cruxId: CruxId): Promise<ICruxUserInformation> => {
+    public getCruxIdInformation = async (cruxId: CruxId, onlyRegistered?: boolean): Promise<ICruxUserInformation> => {
         const nameDetails = await this.getNameDetails(cruxId);
         let status: SubdomainRegistrationStatus;
         let statusDetail: SubdomainRegistrationStatusDetail;
@@ -232,6 +232,14 @@ export class BlockstackService {
                     statusDetail,
                 },
                 transactionHash,
+            };
+        }
+        if (onlyRegistered) {
+            return {
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.NONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.NONE,
+                },
             };
         }
         const blockstackId = CruxSpec.idTranslator.cruxToBlockstack(cruxId);

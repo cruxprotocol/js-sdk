@@ -14,7 +14,8 @@ import {
     getValidCruxDomain,
     getValidCruxUser, getValidCruxUser2,
     InMemoryCruxDomainRepository,
-    InMemoryCruxUserRepository
+    InMemoryCruxUserRepository,
+    getValidPendingCruxUser
 } from "./test-utils";
 
 chai.use(chaiAsPromised);
@@ -24,8 +25,10 @@ const expect = require('chai').expect;
 const testCruxDomain = getValidCruxDomain();
 const testCruxUser = getValidCruxUser();
 const testCruxUser2 = getValidCruxUser2();
+const testPendingCruxUser = getValidPendingCruxUser();
 const testPvtKey = '6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f';  // 1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ
 const testPvtKey2 = '12381ab829318742938647283cd462738462873642ef34abefcd123501827193'; // 1JoZwbjMnTmcpAyjjtRBfuqXAb2xiqZRjx
+const testPvtKey3 = 'KyEurUTRpQkWnQFQs3dfeFQ1P7yjPNEa3cbM3VWfecnqUzoDUFm4'; // 1DJXVNHXxV3HaVFfbttZURFK1ciBUezypR
 
 describe('CruxWalletClient Tests', function() {
     beforeEach(function() {
@@ -33,6 +36,7 @@ describe('CruxWalletClient Tests', function() {
         this.inmemDomainRepo = new InMemoryCruxDomainRepository();
         addUserToRepo(testCruxUser, this.inmemUserRepo, new BasicKeyManager(testPvtKey));
         addUserToRepo(testCruxUser2, this.inmemUserRepo, new BasicKeyManager(testPvtKey2));
+        addUserToRepo(testPendingCruxUser, this.inmemUserRepo, new BasicKeyManager(testPvtKey3));
         addDomainToRepo(testCruxDomain, this.inmemDomainRepo);
         this.stubGetCruxDomainRepository = sinon.stub(cwc, 'getCruxDomainRepository').callsFake(() => this.inmemDomainRepo as any);
         this.stubGetCruxUserRepository = sinon.stub(cwc, 'getCruxUserRepository').callsFake(() => this.inmemUserRepo as any);
@@ -126,7 +130,18 @@ describe('CruxWalletClient Tests', function() {
         expect(idState.cruxID).equals('newtestuser@somewallet.crux');
         expect(idState.status.status).equals(SubdomainRegistrationStatus.PENDING);
     });
-
+    describe('Client tests with private key of pending user', async function() {
+        beforeEach(function() {
+            this.cc = new CruxWalletClient({
+                walletClientName: 'somewallet',
+                privateKey: testPvtKey3
+            });
+        });
+        it('Cannot register because user is already registered', async function() {
+            const registerPromise = this.cc.registerCruxID('anything')
+            await expect(registerPromise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.ExistingCruxIDFound);
+        });
+    })
     describe('Client tests with private key of existing user', async function() {
 
         beforeEach(function() {

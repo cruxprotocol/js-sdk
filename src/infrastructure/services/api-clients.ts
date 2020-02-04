@@ -50,9 +50,14 @@ export class GaiaServiceApiClient {
         };
 
         const cacheTTL = filename === UPLOADABLE_JSON_FILES.CLIENT_CONFIG ? 3600 : undefined;
-        const responseBody: any = await cachedFunctionCall(cacheStorage, options.url, cacheTTL, httpJSONRequest, [options], async (data) => {
-            return Boolean(filename !== UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
-        });
+        let responseBody;
+        try {
+            responseBody = await cachedFunctionCall(cacheStorage, options.url, cacheTTL, httpJSONRequest, [options], async (data) => {
+                return Boolean(filename !== UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
+            });
+        } catch (error) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaGetFileFailed, filename);
+        }
         return responseBody;
     }
 }
@@ -96,7 +101,13 @@ export class BlockstackNamingServiceApiClient {
         }
         let nameData;
         try {
-            nameData = await cachedFunctionCall(cacheStorage, `${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => Boolean(data && data.status && data.status !== "registered_subdomain"));
+            nameData = await cachedFunctionCall(cacheStorage, `${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => {
+                let skipCache = true;
+                if (data && data.status && data.status === "registerd_subdomain") {
+                    skipCache = false;
+                }
+                return skipCache;
+            });
         } catch (error) {
             throw ErrorHelper.getPackageError(error, PackageErrorCode.BnsResolutionFailed, options.baseUrl, error);
         }
