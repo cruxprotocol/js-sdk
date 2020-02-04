@@ -12,6 +12,15 @@ import * as gs from "../infrastructure/services/gaia-service";
 import { InMemStorage } from "../packages/inmem-storage";
 import { CruxUser, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from '../core/entities/crux-user';
 import { PackageErrorCode, PackageError } from '../packages/error';
+import WebCrypto from "node-webcrypto-ossl";
+
+interface Global {
+    crypto: any;
+}
+declare const global: Global;
+
+const crypto = new WebCrypto();
+global.crypto = crypto
 describe('Infrastructure Repositories Test', () => {
     let sandbox: sinon.SinonSandbox;
     let mockBlockstackService;
@@ -322,7 +331,7 @@ describe('Infrastructure Repositories Test', () => {
                     statusDetail: SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
                 },
             })
-            expect(mockBlockstackService.getCruxIdInformation.calledOnceWithExactly(testUserCruxId)).to.be.true;
+            expect(mockBlockstackService.getCruxIdInformation.calledOnceWithExactly(testUserCruxId, false)).to.be.true;
         })
         it('Getting registered CruxUser by key', async ()=>{
             mockBlockstackService.getCruxIdWithKeyManager.withArgs(testUserKeyManager, cruxdevDomainId).resolves(testUserCruxId);
@@ -440,6 +449,7 @@ describe('Infrastructure Repositories Test', () => {
         })
         it('Saving unregistered cruxUser', async ()=>{
             mockBlockstackService.getCruxIdWithKeyManager.resolves(undefined);
+            mockGaiaService.uploadContentToGaiaHub.withArgs("cruxdev_cruxpay.json", testUserAddressMap, testUserKeyManager).resolves("https://gaia.cruxpay.com/1HkXFmLCg4zmPZyf2W5hbpV79EHwG52cEA/cruxdev_cruxpay.json");
             const testCruxUserInfo = {
                 ownerAddress: testUserNameDetails.address,
                 registrationStatus: {
@@ -449,8 +459,10 @@ describe('Infrastructure Repositories Test', () => {
                 transactionHash: testUserNameDetails.last_txid,
             }
             const testCruxUser = new CruxUser(testUserCruxId, testUserAddressMap, testCruxUserInfo);
-            const promise = blockstackCruxUserRepository.save(testCruxUser, testUserKeyManager);
-            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.UserDoesNotExist);
+            const returnedCruxUser = await blockstackCruxUserRepository.save(testCruxUser, testUserKeyManager);
+            expect(returnedCruxUser).to.be.instanceOf(CruxUser);
+            expect(returnedCruxUser.cruxID).is.eql(testUserCruxId);
+            expect(returnedCruxUser.info).is.eql(testCruxUserInfo);
         })
     })
     describe('Testing BlockstackCruxDomainRepository', () => {

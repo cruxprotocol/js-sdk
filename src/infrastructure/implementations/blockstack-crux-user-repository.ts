@@ -86,7 +86,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         try {
             gaiaHub = await this.blockstackService.getGaiaHub(cruxId, tag);
         } catch (error) {
-            if (error instanceof PackageError && [PackageErrorCode.MissingZoneFile, PackageErrorCode.MissingNameOwnerAddress].includes(error.errorCode)) {
+            if (error instanceof PackageError && [PackageErrorCode.MissingZoneFile].includes(error.errorCode)) {
                 log.debug("missing nameDetails, assuming the id to be in pending state and moving forward with the gaia fallback");
             } else {
                 throw error;
@@ -111,7 +111,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
             try {
                 gaiaHub = await this.blockstackService.getGaiaHub(cruxId);
             } catch (error) {
-                if (error instanceof PackageError && [PackageErrorCode.MissingZoneFile, PackageErrorCode.MissingNameOwnerAddress].includes(error.errorCode)) {
+                if (error instanceof PackageError && [PackageErrorCode.MissingZoneFile].includes(error.errorCode)) {
                     log.debug("missing nameDetails, assuming the id to be in pending state and moving forward with the gaia fallback");
                 } else {
                     throw error;
