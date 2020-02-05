@@ -1,4 +1,4 @@
-import {ErrorHelper, PackageErrorCode} from "./error";
+import {ErrorHelper, PackageErrorCode, BaseError} from "./error";
 
 export const DEFAULT_CRUX_NAMESPACE = "crux";
 export const DEFAULT_BLOCKSTACK_NAMESPACE = "id";
@@ -160,18 +160,30 @@ export class BlockstackDomainId {
 
 export class IdTranslator {
     public static cruxDomainToBlockstackDomain = (cruxDomain: CruxDomainId): BlockstackDomainId => {
+        if (!cruxDomain) {
+            throw new BaseError(null, "Undefined / null cruxDomain provided to translator");
+        }
         return new BlockstackDomainId(IdTranslator.cruxDomainStringToBlockstackDomainString(cruxDomain.components.domain));
     }
     public static blockstackDomainToCruxDomain = (blockstackDomain: BlockstackDomainId): CruxDomainId => {
+        if (!blockstackDomain) {
+            throw new BaseError(null, "Undefined / null blockstackDomain provided to translator");
+        }
         return new CruxDomainId(IdTranslator.blockstackDomainStringToCruxDomainString(blockstackDomain.components.domain));
     }
     public static cruxIdToBlockstackId = (cruxId: CruxId): BlockstackId => {
+        if (!cruxId) {
+            throw new BaseError(null, "Undefined / null cruxId provided to translator");
+        }
         return new BlockstackId({
             domain: IdTranslator.cruxDomainStringToBlockstackDomainString(cruxId.components.domain),
             subdomain: cruxId.components.subdomain,
         });
     }
     public static blockstackIdToCruxId = (blockstackId: BlockstackId): CruxId => {
+        if (!blockstackId) {
+            throw new BaseError(null, "Undefined / null blockstackId provided to translator");
+        }
         if (!blockstackId.components.subdomain) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.BlockstackIdInvalidSubdomainForTranslation);
         }
@@ -194,17 +206,23 @@ export class IdTranslator {
         return `${cruxDomainString}_crux`;
     }
     public static cruxToBlockstack = (crux: CruxId|CruxDomainId): BlockstackId|BlockstackDomainId => {
+        if (!crux) {
+            throw new BaseError(null, "Undefined / null crux provided to translator");
+        }
         if (crux instanceof CruxDomainId) {
             return IdTranslator.cruxDomainToBlockstackDomain(crux);
         } else {
             return IdTranslator.cruxIdToBlockstackId(crux);
         }
     }
-    public static blockstackToCrux = (crux: BlockstackId|BlockstackDomainId): CruxId|CruxDomainId => {
-        if (crux instanceof BlockstackDomainId) {
-            return IdTranslator.blockstackDomainToCruxDomain(crux);
+    public static blockstackToCrux = (blockstack: BlockstackId|BlockstackDomainId): CruxId|CruxDomainId => {
+        if (!blockstack) {
+            throw new BaseError(null, "Undefined / null blockstack provided to translator");
+        }
+        if (blockstack instanceof BlockstackDomainId) {
+            return IdTranslator.blockstackDomainToCruxDomain(blockstack);
         } else {
-            return IdTranslator.blockstackIdToCruxId(crux);
+            return IdTranslator.blockstackIdToCruxId(blockstack);
         }
     }
 }

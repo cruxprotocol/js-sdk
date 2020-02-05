@@ -503,7 +503,7 @@ describe('Infrastructure Repositories Test', () => {
         describe('Creating CruxDomain by DomainId and KeyManager', () => {
             it('Should throw IsNotSupported', async () => {
                 const promise = blockstackCruxDomainRepository.create(testcaseCruxDomainId, cruxdevConfigKeyManager);
-                return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.IsNotSupported);
+                expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.IsNotSupported);
             })
         })
 
@@ -532,7 +532,7 @@ describe('Infrastructure Repositories Test', () => {
 
                 // call
                 const promise = blockstackCruxDomainRepository.get(cruxdevCruxDomainId);
-                return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.DomainDoesNotExist);
+                expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.DomainDoesNotExist);
             })
             
             it('"cruxdev" should resolve proper CruxDomain object', async () => {

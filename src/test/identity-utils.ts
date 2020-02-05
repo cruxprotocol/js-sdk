@@ -41,7 +41,7 @@ describe('ID Translation Tests', () => {
         const bsDomainId = new BlockstackDomainId(testBlockstackDomain);
         const cruxDomainId = IdTranslator.blockstackToCrux(bsDomainId);
         expect(cruxDomainId).to.be.instanceOf(CruxDomainId);
-        expect(IdTranslator.blockstackToCrux(bsDomainId).toString()).to.equal(testCruxDomainId);
+        expect(cruxDomainId.toString()).to.equal(testCruxDomainId);
     })
 
     it('CruxDomainId.fromString should fail with CruxDomainInvalidStructure', () => {

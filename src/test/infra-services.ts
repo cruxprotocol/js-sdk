@@ -168,7 +168,7 @@ describe('Infrastructure Services Test', () => {
 
             // calling the method
             const promise = gaiaService.getContentFromGaiaHub(ownerAddress, fileName);
-            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.TokenVerificationFailed);
+            expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.TokenVerificationFailed);
         })
 
         it('getContentFromGaiaHub GaiaEmptyResponse test', async () => {
@@ -181,7 +181,7 @@ describe('Infrastructure Services Test', () => {
 
             // calling the method
             const promise = gaiaService.getContentFromGaiaHub(ownerAddress, fileName);
-            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.GaiaEmptyResponse);
+            expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.GaiaEmptyResponse);
         })
 
         it('getContentFromGaiaHub CouldNotValidateZoneFile test', async () => {
@@ -299,7 +299,7 @@ describe('Infrastructure Services Test', () => {
 
             // calling the method
             const promise = gaiaService.getContentFromGaiaHub(ownerAddress, fileName);
-            return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.CouldNotValidateZoneFile);
+            expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.CouldNotValidateZoneFile);
         })
 
         it('uploading cruxpay.json', async () => {
@@ -415,7 +415,7 @@ describe('Infrastructure Services Test', () => {
             });
         })
         describe('getNameDetails tests', () => {
-            it('"cruxdev" should return the complete name details', async () => {
+            it('"cruxdev" should the complete name details', async () => {
                 const options = {}
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.withArgs("https://core.blockstack.org", "cruxdev_crux.id", undefined, undefined).resolves(cruxdevNameDetail);
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.withArgs("https://bns.cruxpay.com", "cruxdev_crux.id", undefined, undefined).resolves(cruxdevNameDetail);
@@ -435,10 +435,10 @@ describe('Infrastructure Services Test', () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.withArgs("https://core.blockstack.org", "cruxdev_crux.id", undefined, undefined).resolves(cruxdevNameDetail);
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.withArgs("https://bns.cruxpay.com", "cruxdev_crux.id", undefined, undefined).resolves(cruxdevConfigNameDetails);
                 const promise = blockstackService.getNameDetails(cruxdevDomainId);
-                return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.NameIntegrityCheckFailed);
+                expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.NameIntegrityCheckFailed);
                 
             })
-            it('"testcase should return the status availability"', async () => {
+            it('"testcase should the status availability"', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves(testcaseNameDetail);
                 const nameDetails = await blockstackService.getNameDetails(testcaseCruxDomainId);
                 expect(nameDetails).haveOwnProperty("status").to.be.equal("available");
@@ -447,7 +447,7 @@ describe('Infrastructure Services Test', () => {
             })
         })
         describe('getGaiaHub tests', () => {
-            it('Should return cruxpay gaia hub', async () => {
+            it('Should cruxpay gaia hub', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves(cruxdevConfigNameDetails);
                 const gaiaHub = await blockstackService.getGaiaHub(cruxdevConfigCruxId);
                 expect(gaiaHub).to.be.equal(cruxGaiaHub);
@@ -460,7 +460,7 @@ describe('Infrastructure Services Test', () => {
                     "more":	"failed to find parent domain's resolver"
                 });
                 const promise = blockstackService.getGaiaHub(cruxdevConfigCruxId);
-                return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.MissingZoneFile);
+                expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.MissingZoneFile);
             })
             it('Should throw FailedToGetGaiaUrlFromZonefile', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({
@@ -473,7 +473,7 @@ describe('Infrastructure Services Test', () => {
                     "zonefile_hash": "776172a0bc8400a4046d0325dd87e78b48a2f66b"
                 });
                 const promise = blockstackService.getGaiaHub(cruxdevConfigCruxId);
-                return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.FailedToGetGaiaUrlFromZonefile);
+                expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.FailedToGetGaiaUrlFromZonefile);
             })
             it('Zonefile with hub and profile.json case', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({
@@ -509,7 +509,7 @@ describe('Infrastructure Services Test', () => {
             it('Unhandled switch case', async () => {
                 staticMocksBlockstackNamingServiceApiClient.getNameDetails.resolves({status: ""});
                 const promise = blockstackService.getDomainRegistrationStatus(testcaseCruxDomainId);
-                return expect(promise).to.be.eventually.rejected;
+                expect(promise).to.be.eventually.rejected;
             })
         })
         describe('getCruxDomainIdWithConfigKeyManager tests', () => {
@@ -601,7 +601,7 @@ describe('Infrastructure Services Test', () => {
             })
         })
         describe('registerCruxId tests', () => {
-            it('normal registration should return a valid crux user information', async () => {
+            it('normal registration should a valid crux user information', async () => {
                 mockBlockstackSubdomainRegistrarApiClient.getSubdomainStatus.withArgs("newuser")
                 .onFirstCall().resolves({
                     "status": "Subdomain not registered with this registrar",

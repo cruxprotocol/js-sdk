@@ -29,6 +29,18 @@ const testPendingCruxUser = getValidPendingCruxUser();
 const testPvtKey = '6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f';  // 1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ
 const testPvtKey2 = '12381ab829318742938647283cd462738462873642ef34abefcd123501827193'; // 1JoZwbjMnTmcpAyjjtRBfuqXAb2xiqZRjx
 const testPvtKey3 = 'KyEurUTRpQkWnQFQs3dfeFQ1P7yjPNEa3cbM3VWfecnqUzoDUFm4'; // 1DJXVNHXxV3HaVFfbttZURFK1ciBUezypR
+const testresolvedClientAssetMapping = {
+    "bitcoin" :             {
+        "assetId": "d78c26f8-7c13-4909-bf62-57d7623f8ee8",
+        "symbol": "BTC",
+        "name": "Bitcoin",
+        "assetType": null,
+        "decimals": 8,
+        "assetIdentifierName": null,
+        "assetIdentifierValue": null,
+        "parentAssetId": null
+    },
+};
 
 describe('CruxWalletClient Tests', function() {
     beforeEach(function() {
@@ -50,7 +62,7 @@ describe('CruxWalletClient Tests', function() {
             walletClientName: 'nonexistent'
         });
         const promise = cc.resolveCurrencyAddressForCruxID(testCruxUser.cruxID.toString(), 'bitcoin');
-        return expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.InvalidWalletClientName);
+        expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.InvalidWalletClientName);
     });
     describe('Resolving a Users ID', function() {
         beforeEach(function() {
@@ -184,18 +196,7 @@ describe('CruxWalletClient Tests', function() {
         });
 
         it('getAssetMap Check', async function() {
-            const resolvedClientAssetMapping = {
-                "bitcoin" :             {
-                    "assetId": "d78c26f8-7c13-4909-bf62-57d7623f8ee8",
-                    "symbol": "BTC",
-                    "name": "Bitcoin",
-                    "assetType": null,
-                    "decimals": 8,
-                    "assetIdentifierName": null,
-                    "assetIdentifierValue": null,
-                    "parentAssetId": null
-                },
-            };
+            const resolvedClientAssetMapping = testresolvedClientAssetMapping;
             const getAssetMap1 = await this.cc.getAssetMap();
             expect(getAssetMap1['bitcoin']['assetId']).equals(resolvedClientAssetMapping['bitcoin']['assetId']);
         });
