@@ -30,7 +30,7 @@ describe('API Clients Test', () => {
         const testBlockstackName = "foo@test_wallet.crux";
         const tag = "test_tag";
         const options = {
-            baseUrl: 'https://core.blockstack.org/',
+            baseUrl: 'https://core.blockstack.org',
             json: true,
             method: "GET",
             qs: null,
@@ -59,12 +59,13 @@ describe('API Clients Test', () => {
             })
         it('getNameByAddress Failure', async () => {
             // mocks
-            let namesOwnedByAddress = {
-                "names": [
-                    "user.wallet_crux.id"
-                    ]
+            const options = {
+                baseUrl: 'https://core.blockstack.org/',
+                json: true,
+                method: "GET",
+                url: `/v1/addresses/bitcoin/17vkTRWLLZrKunkpgSro1ADtZd2yw4uig2`,
             }
-            mockHttpJSONRequest.withArgs(options_error).resolves(namesOwnedByAddress);
+            mockHttpJSONRequest.withArgs(options).rejects(new BaseError(null, "mockedError"));
 
             // calling the method
             const promise = BlockstackNamingServiceApiClient.getNamesByAddress(bnsNode, address);
@@ -137,7 +138,13 @@ describe('API Clients Test', () => {
                 "address": "17vkTRWLLZrKunkpgSro1ADtZd2yw4uig2",
                 "zonefile_hash": "96ba3fd3253add05b02abddfd36480c39fdaa7b0"
             }
-            mockHttpJSONRequest.withArgs(options_error).resolves(nameDetails);
+            const options = {
+                baseUrl: 'https://core.blockstack.org/',
+                json: true,
+                method: "GET",
+                url: `/v1/addresses/bitcoin/17vkTRWLLZrKunkpgSro1ADtZd2yw4uig2`,
+            }
+            mockHttpJSONRequest.withArgs(options).rejects(new BaseError(null, "mockedError"));
 
             // calling the method
             const promise = BlockstackNamingServiceApiClient.getNameDetails(bnsNode, testBlockstackName, tag, undefined);
@@ -259,8 +266,17 @@ describe('API Clients Test', () => {
                     "received_ts": "2019-12-12T09:21:11.000Z"
                 }
             ]
+            const options = {
+                baseUrl: baseUrl,
+                headers: {
+                    "x-domain-name": 'testWallet_crux',
+                },
+                json: true,
+                method: "GET",
+                url: '/subdomain/17LLpUjHjwH6FzjrhbbwHTNweQN3bCKs7N',
+            }
 
-            mockHttpJSONRequest.withArgs(options_error).resolves(registrartionResponse);
+            mockHttpJSONRequest.withArgs(options).rejects(new BaseError(null, "mockedError"));
             
             // calling the method
             const promise = blockstackSubdomainRegistrarApiClient.getSubdomainRegistrarEntriesByAddress("17LLpUjHjwH6FzjrhbbwHTNweQN3bCKs7N");
@@ -303,9 +319,24 @@ describe('API Clients Test', () => {
             let registrarResponse = {
                 "status": true,
                 "message": "Your subdomain registration was received, and will be included in the blockchain soon."
-            }
+            };
+            const options = {
+                baseUrl: baseUrl,
+                body: {
+                    name: user,
+                    owner_address: ownerAdderss,
+                    zonefile: `$ORIGIN ${user}\n$TTL 3600\n_https._tcp URI 10 1 https://hub.cruxpay.com`,
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-domain-name": 'testWallet_crux',
+                },
+                json: true,
+                method: "POST",
+                url: "/register",
+            };
 
-            mockHttpJSONRequest.withArgs(options_error).resolves(registrarResponse);
+            mockHttpJSONRequest.withArgs(options).rejects(new BaseError(null, "mockedError"));
             
             // calling the method
             const promise = blockstackSubdomainRegistrarApiClient.registerSubdomain(user, "https://hub.cruxpay.com", ownerAdderss);
@@ -334,7 +365,7 @@ describe('API Clients Test', () => {
                 "message": "Failed to validate your registration request."
             }
 
-            mockHttpJSONRequest.withArgs(options).resolves(registrarResponse);
+            mockHttpJSONRequest.withArgs(options).rejects(new BaseError(null, "mockedError"));
             
             // calling the method
             const promise = blockstackSubdomainRegistrarApiClient.registerSubdomain(user, "https://hub.cruxpay.com", ownerAdderss);
@@ -356,8 +387,9 @@ describe('API Clients Test', () => {
                 "status": true,
                 "domainName": "testWalletA_crux.id"
             }
-            mockHttpJSONRequest.withArgs(options).resolves(successResponse);
-            blockstackSubdomainRegistrarApiClient = new BlockstackSubdomainRegistrarApiClient(baseUrl,blockstackDomainIdX); 
+            mockHttpJSONRequest.withArgs(options).rejects(new BaseError(null, "mockedError"));
+            blockstackSubdomainRegistrarApiClient = new BlockstackSubdomainRegistrarApiClient(baseUrl,blockstackDomainIdX);
+            expect(mockHttpJSONRequest.calledOnceWithExactly(options)); 
             }
             
         )
