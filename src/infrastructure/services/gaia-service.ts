@@ -37,10 +37,10 @@ export class GaiaService {
         } catch (e) {
             // TODO: validate the token properly after publishing the subject
             log.error(e);
-            throw ErrorHelper.getPackageError(e, PackageErrorCode.TokenVerificationFailed, filename);
+            throw ErrorHelper.getPackageError(e, PackageErrorCode.GaiaRecordIntegrityFailed, filename, address);
         }
         if (addressFromPub !== address) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotValidateZoneFile);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaRecordIntegrityFailed, filename, address);
         }
         return content;
     }

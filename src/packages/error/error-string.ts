@@ -54,7 +54,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.SubdomainRegexMatchFailure]: "Validation failed: Subdomain should start with alphabet and end with alphabet or number. Allowed characters are lowercase alphabets, numbers, - and _",
     [PackageErrorCode.SubdomainRegistrationAcknowledgementFailed]: "Register call to registrar failed: '{0}'",
     [PackageErrorCode.SubdomainRegistrationFailed]: "Register call to registrar failed: '{0}'",
-    [PackageErrorCode.TokenVerificationFailed]: "Token verification failed for '{0}'",
+    [PackageErrorCode.GaiaRecordIntegrityFailed]: "Gaia record integrity failed for file '{0}' of '{1}'",
     [PackageErrorCode.UserDoesNotExist]: "ID does not exist",
     [PackageErrorCode.IdentityMismatch]: "Identity mismatch",
     [PackageErrorCode.InvalidWalletClientName]: "Invalid Wallet Client Name",
