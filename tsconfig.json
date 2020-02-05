@@ -72,7 +72,7 @@
     "excludePrivate": true,
     "excludeNotExported": true,
     "excludeProtected": true,
-    "excludeExternals": true
+    // "excludeExternals": true
     // "theme": "minimal",
   }
 
