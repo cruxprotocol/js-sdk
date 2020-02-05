@@ -1,4 +1,4 @@
-import {ErrorHelper, PackageErrorCode, BaseError} from "./error";
+import {BaseError, ErrorHelper, PackageErrorCode} from "./error";
 
 export const DEFAULT_CRUX_NAMESPACE = "crux";
 export const DEFAULT_BLOCKSTACK_NAMESPACE = "id";
