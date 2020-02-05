@@ -20,7 +20,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.CouldNotFindIdentityKeyPairToPutAddressMapping]: "Missing IdentityKeyPair",
     [PackageErrorCode.CouldNotFindKeyPairToRestoreIdentity]: "Require keypair for restoring the identity",
     [PackageErrorCode.CouldNotFindKeyPairToRegisterName]: "Require keypair for registering name/subdomain",
-    [PackageErrorCode.CouldNotValidateZoneFile]: "Invalid zonefile",
+    // [PackageErrorCode.CouldNotValidateZoneFile]: "Invalid zonefile",
     [PackageErrorCode.CruxDomainInvalidStructure]: "Invalid Crux Domian",
     [PackageErrorCode.CruxDomainNamespaceValidation]: "Invalid Crux Domain namespace: '{0}', should end with .crux",
     [PackageErrorCode.CruxIdNamespaceValidation]: "Invalid Crux ID namespace: '{0}', should end with .crux",
