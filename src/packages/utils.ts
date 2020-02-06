@@ -1,6 +1,7 @@
 import * as bitcoin from "bitcoinjs-lib";
 import * as cloner from "cloner";
 import request from "request";
+import URL from "url-parse";
 import { BaseError, ErrorHelper, PackageErrorCode } from "./error";
 import { getLogger } from "./logger";
 import { StorageService } from "./storage";
@@ -55,6 +56,12 @@ const sanitizePrivKey = (privKey: string): string => {
         privKey = privKey.slice(0, 64);
     }
     return privKey;
+};
+
+const sanitizeUrl = (url: string): string => {
+    const parsedUrl = new URL(url);
+    // TODO: sanitize the pathname
+    return `${parsedUrl.origin}${parsedUrl.pathname}`;
 };
 
 const getRandomHexString = (length: number = 32): string => {
@@ -142,6 +149,7 @@ const getKeyPairFromPrivKey = (privKey: string): {
 export {
     httpJSONRequest,
     sanitizePrivKey,
+    sanitizeUrl,
     cachedFunctionCall,
     getKeyPairFromPrivKey,
     getRandomHexString,

@@ -46,7 +46,7 @@ export class GaiaServiceApiClient {
             baseUrl: readURLPrefix,
             json: true,
             method: "GET",
-            url: `${address}/${filename}`,
+            url: `/${address}/${filename}`,
         };
 
         const cacheTTL = filename === UPLOADABLE_JSON_FILES.CLIENT_CONFIG ? 3600 : undefined;
