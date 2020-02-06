@@ -61,6 +61,10 @@ const sanitizePrivKey = (privKey: string): string => {
 const sanitizeUrl = (url: string): string => {
     const parsedUrl = new URL(url);
     // TODO: sanitize the pathname
+    const restrictedCharacters = "!@#$^&%*()+=-[]{}|:<>?,.";
+    if (parsedUrl.pathname.split("").some((ch) => restrictedCharacters.indexOf(ch) !== -1)) {
+        throw new BaseError(null, `Url path: ${parsedUrl.pathname} contains invalid characters`);
+    }
     return `${parsedUrl.origin}${parsedUrl.pathname}`;
 };
 

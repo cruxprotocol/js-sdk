@@ -83,6 +83,24 @@ describe("CruxWalletClient integration tests", () => {
             // @ts-ignore
             expect(mockHttpJSONRequest.parent.neverCalledWith(sinon.match({ baseUrl: "https://gaia.cruxpay.com?fakeKey=${console.log('test')}" }))).to.be.true;
         })
+        it("resolving address of a user whose gaiaHub is tampered (malicious gaiaHub info response 2)", async () => {
+            const requestOptions = {
+                baseUrl: "https://hub.cruxpay.com",
+                url: "/hub_info",
+            };
+            const mockGaiaHubInfoResponse = {"challenge_text":"[\"gaiahub\",\"0\",\"hub.cruxpay.com\",\"blockstack_storage_please_sign\"]","latest_auth_version":"v1","max_file_upload_size_megabytes":20,"read_url_prefix":"https://gaia.cruxpay.com/f@akeHubPath!"};
+            const mockHttpJSONRequest = sandbox.stub(utils, "httpJSONRequest").callThrough().withArgs(sinon.match(requestOptions)).resolves(mockGaiaHubInfoResponse);
+            let raisedError;
+            try {
+                const resolvedAddress = await cruxWalletClient.resolveCurrencyAddressForCruxID(testCruxId.toString(), "btc");
+            } catch (error) {
+                raisedError = error;
+            }
+            expect(raisedError).to.be.instanceOf(CruxClientError);
+            expect(raisedError.message).to.include.string("invalid characters");
+            // @ts-ignore
+            expect(mockHttpJSONRequest.parent.neverCalledWith(sinon.match({ baseUrl: "https://gaia.cruxpay.com/f@akeHubPath!" }))).to.be.true;
+        })
     })
     describe("CruxWalletClient with testPrivateKey (registered)", () => {
         beforeEach(() => {
