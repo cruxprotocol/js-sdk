@@ -8,6 +8,16 @@ describe('Application Services Tests', () => {
     describe('Testing AssetTranslator', () => {
         const testClientAssetList: IGlobalAssetList = [
             {
+                "assetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+                "symbol": "ETH",
+                "name": "Ethereum",
+                "assetType": null,
+                "decimals": 8,
+                "assetIdentifierName": null,
+                "assetIdentifierValue": null,
+                "parentAssetId": null
+            },
+            {
                 "assetId": "b0115257-13f2-4fb1-8796-07becdcacf8f",
                 "symbol": "XTZ",
                 "name": "Tezos",
@@ -56,7 +66,27 @@ describe('Application Services Tests', () => {
                 "assetIdentifierName": "Contract Address",
                 "assetIdentifierValue": "0xd26114cd6EE289AccF82350c8d8487fedB8A0C07",
                 "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
-            }
+            },
+            {
+                "assetId": "5ed4d7ac-f741-4af0-bca9-3c02acd00beb",
+                "symbol": "DASH",
+                "name": "Dash",
+                "assetType": null,
+                "decimals": 8,
+                "assetIdentifierName": null,
+                "assetIdentifierValue": null,
+                "parentAssetId": null
+            },
+            {
+                "assetId": "d4b874c4-7cf7-456f-8225-eb20e33767f2",
+                "symbol": "XMR",
+                "name": "Monero",
+                "assetType": null,
+                "decimals": 8,
+                "assetIdentifierName": null,
+                "assetIdentifierValue": null,
+                "parentAssetId": null
+            },
         ]
         const testClientAssetMapping: IClientAssetMapping = {
             "XTZ": "b0115257-13f2-4fb1-8796-07becdcacf8f",
@@ -127,7 +157,6 @@ describe('Application Services Tests', () => {
         })
         it('Translate symbolAddressMap to assetIdAddressMap', ()=>{
             const assetIdAddressMap = cruxAssetTranslator.symbolAddressMapToAssetIdAddressMap(testUserUpperCaseCurrencyAddressMap);
-            console.log(assetIdAddressMap)
             expect(assetIdAddressMap).is.eql({
                 assetAddressMap: testUserAssetIdAddressMap,
                 success: testUserLowerCaseCurrencyAddressMap,
@@ -156,6 +185,16 @@ describe('Application Services Tests', () => {
         it('Translate assetIdAssetList to SymbolAssetMap', ()=>{
             const symbolAssetMap = cruxAssetTranslator.assetIdAssetListToSymbolAssetMap(testClientAssetList);
             expect(symbolAssetMap).is.eql({
+                "eth": {
+                    "assetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+                    "symbol": "ETH",
+                    "name": "Ethereum",
+                    "assetType": null,
+                    "decimals": 8,
+                    "assetIdentifierName": null,
+                    "assetIdentifierValue": null,
+                    "parentAssetId": null
+                },
                 "xtz" : {
                     "assetId": "b0115257-13f2-4fb1-8796-07becdcacf8f",
                     "symbol": "XTZ",
@@ -205,7 +244,27 @@ describe('Application Services Tests', () => {
                     "assetIdentifierName": "Contract Address",
                     "assetIdentifierValue": "0xd26114cd6EE289AccF82350c8d8487fedB8A0C07",
                     "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
-                }
+                },
+                "dash": {
+                    "assetId": "5ed4d7ac-f741-4af0-bca9-3c02acd00beb",
+                    "symbol": "DASH",
+                    "name": "Dash",
+                    "assetType": null,
+                    "decimals": 8,
+                    "assetIdentifierName": null,
+                    "assetIdentifierValue": null,
+                    "parentAssetId": null
+                },
+                "xmr": {
+                    "assetId": "d4b874c4-7cf7-456f-8225-eb20e33767f2",
+                    "symbol": "XMR",
+                    "name": "Monero",
+                    "assetType": null,
+                    "decimals": 8,
+                    "assetIdentifierName": null,
+                    "assetIdentifierValue": null,
+                    "parentAssetId": null
+                },
             });
         })
         it('Translate assetId to symbol', ()=>{

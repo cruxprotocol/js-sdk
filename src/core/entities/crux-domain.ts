@@ -17,9 +17,8 @@ export interface IClientConfig {
 }
 export enum DomainRegistrationStatus {
     AVAILABLE = "AVAILABLE",
-    PENDING = "PENDING",
     REGISTERED = "REGISTERED",
-    REJECTED = "REJECTED",
+    REVOKED = "REVOKED",
 }
 export class CruxDomain {
     private domainId: CruxDomainId;
@@ -51,10 +50,16 @@ export class CruxDomain {
         this.registrationStatus = registrationStatus;
     }
     private setConfig = (domainConfig: IClientConfig) => {
+        if (!domainConfig.assetList) {
+            throw new BaseError(null, "assetList required in domainConfig");
+        }
+        if (!domainConfig.assetMapping) {
+            throw new BaseError(null, "assetMapping required in domainConfig");
+        }
         // validate and set the config
         try {
-            if (domainConfig.assetList) {CruxSpec.validations.validateAssetList(domainConfig.assetList); }
-            if (domainConfig.assetMapping) {CruxSpec.validations.validateAssetMapping(domainConfig.assetMapping); }
+            CruxSpec.validations.validateAssetList(domainConfig.assetList);
+            CruxSpec.validations.validateAssetMapping(domainConfig.assetMapping, domainConfig.assetList);
             if (domainConfig.nameserviceConfiguration) {CruxSpec.validations.validateNameServiceConfig(domainConfig.nameserviceConfiguration); }
             if (domainConfig.supportedParentAssetFallbacks) {CruxSpec.validations.validateParentAssetFallbackKeys(domainConfig.supportedParentAssetFallbacks); }
         } catch (e) {

@@ -42,7 +42,9 @@ export class Validations {
         } catch (e) {
             throw new BaseError(e, `Invalid AssetID: ${assetId}`);
         }
-        if (!CruxSpec.globalAssetList.map((asset) => asset.assetId).includes(assetId)) {
+    }
+    public static validateAssetIdAgainstAssetList = (assetId: string, assetList: IGlobalAssetList) => {
+        if (!assetList.find((asset) => asset.assetId === assetId)) {
             throw new BaseError(null, `AssetID: ${assetId} is not recognized.`);
         }
     }
@@ -55,8 +57,11 @@ export class Validations {
     public static validateAssetList = (assetList: IGlobalAssetList) => {
         assetList.forEach(Validations.validateGlobalAsset);
     }
-    public static validateAssetMapping = (assetMapping: IClientAssetMapping) => {
-        Object.keys(assetMapping).forEach((assetSymbol) => {Validations.validateAssetId(assetMapping[assetSymbol]); });
+    public static validateAssetMapping = (assetMapping: IClientAssetMapping, assetList: IGlobalAssetList) => {
+        Object.keys(assetMapping).forEach((assetSymbol) => {
+            Validations.validateAssetId(assetMapping[assetSymbol]);
+            Validations.validateAssetIdAgainstAssetList(assetMapping[assetSymbol], assetList);
+        });
     }
     public static validateParentAssetFallbackKey = (parentAssetFallbackKey: string) => {
         try {
@@ -119,11 +124,11 @@ export const CruxSpec = {
                 subdomain: CruxSpec.blockstack.configSubdomain,
             });
         }
-        public static getCruxPayFilename = (cruxId: CruxId): string => {
-            return `${cruxId.components.domain}_cruxpay.json`;
+        public static getCruxPayFilename = (cruxDomainId: CruxDomainId): string => {
+            return `${cruxDomainId.components.domain}_cruxpay.json`;
         }
-        public static getCruxUserConfigFileName = (cruxId: CruxId): string => {
-            return `${cruxId.components.domain}_user-config.json`;
+        public static getCruxUserConfigFileName = (cruxDomainId: CruxDomainId): string => {
+            return `${cruxDomainId.components.domain}_user-config.json`;
         }
     },
     globalAssetList,

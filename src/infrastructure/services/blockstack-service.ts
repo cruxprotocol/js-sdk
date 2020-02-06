@@ -5,7 +5,7 @@ import { CruxSpec } from "../../core/entities/crux-spec";
 import { ICruxUserInformation, ICruxUserRegistrationStatus } from "../../core/entities/crux-user";
 import { SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
 import { IKeyManager } from "../../core/interfaces/key-manager";
-import { ErrorHelper, PackageErrorCode } from "../../packages/error";
+import { BaseError, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import {
     BlockstackDomainId,
     BlockstackId,
@@ -82,8 +82,7 @@ export class BlockstackService {
                 domainRegistrationStatus = DomainRegistrationStatus.REGISTERED;
                 break;
             default:
-                // TODO: handle if status === undefined
-                domainRegistrationStatus = DomainRegistrationStatus.PENDING;
+                throw new BaseError(null, "Invalid name data for CruxDomain");
         }
         return domainRegistrationStatus;
     }
@@ -221,7 +220,7 @@ export class BlockstackService {
         await registrarApiClient.registerSubdomain(cruxId.components.subdomain, gaiaHub, publicKeyToAddress(await keyManager.getPubKey()));
         return this.getCruxIdInformation(cruxId);
     }
-    public getCruxIdInformation = async (cruxId: CruxId): Promise<ICruxUserInformation> => {
+    public getCruxIdInformation = async (cruxId: CruxId, onlyRegistered?: boolean): Promise<ICruxUserInformation> => {
         const nameDetails = await this.getNameDetails(cruxId);
         let status: SubdomainRegistrationStatus;
         let statusDetail: SubdomainRegistrationStatusDetail;
@@ -239,6 +238,14 @@ export class BlockstackService {
                     statusDetail,
                 },
                 transactionHash,
+            };
+        }
+        if (onlyRegistered) {
+            return {
+                registrationStatus: {
+                    status: SubdomainRegistrationStatus.NONE,
+                    statusDetail: SubdomainRegistrationStatusDetail.NONE,
+                },
             };
         }
         const blockstackId = CruxSpec.idTranslator.cruxToBlockstack(cruxId);

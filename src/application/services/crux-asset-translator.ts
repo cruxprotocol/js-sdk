@@ -54,9 +54,9 @@ export class CruxAssetTranslator {
     private assetMap!: IClientAssetMapping;
     private reverseAssetMap!: IReverseClientAssetMapping;
     constructor(assetMapping: IClientAssetMapping, assetList: IGlobalAssetList) {
+        this.setAssetList(assetList);
         this.setAssetMap(assetMapping);
         this.setReverseAssetMap(assetMapping);
-        this.setAssetList(assetList);
         log.debug("CruxAssetTranslator initialised");
     }
     get assetMapping() {
@@ -149,7 +149,7 @@ export class CruxAssetTranslator {
         };
     }
     private setAssetMap = (assetMapping: IClientAssetMapping): void => {
-        CruxSpec.validations.validateAssetMapping(assetMapping);
+        CruxSpec.validations.validateAssetMapping(assetMapping, this.assetList);
         this.assetMap = this.getLowerAssetMapping(assetMapping);
     }
     private setReverseAssetMap = (assetMapping: IClientAssetMapping): void => {

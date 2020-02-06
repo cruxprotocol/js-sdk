@@ -45,12 +45,12 @@ export enum SubdomainRegistrationStatusDetail {
 
 export class CruxUser {
     private cruxUserInformation!: ICruxUserInformation;
-    private cruxUserID: CruxId;
+    private cruxUserID!: CruxId;
     private addressMap!: IAddressMapping;
     private cruxUserConfig!: ICruxUserConfiguration;
 
     constructor(cruxID: CruxId, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation, cruxUserConfig: ICruxUserConfiguration) {
-        this.cruxUserID = cruxID;
+        this.setCruxUserID(cruxID);
         this.setAddressMap(addressMap);
         this.setCruxUserInformation(cruxUserInformation);
         this.setCruxUserConfig(cruxUserConfig);
@@ -83,6 +83,13 @@ export class CruxUser {
     }
     public getAddressWithAssetId(assetId: string): IAddress|undefined {
         return this.addressMap[assetId];
+    }
+    private setCruxUserID = (cruxID: CruxId) => {
+        if (cruxID instanceof CruxId) {
+            this.cruxUserID = cruxID;
+        } else {
+            throw new BaseError(null, "Invalid CruxID");
+        }
     }
     private setCruxUserInformation = (cruxUserInformation: ICruxUserInformation) => {
         // validate and set the cruxUserInformation
