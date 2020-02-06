@@ -299,7 +299,8 @@ describe('Application Services Tests', () => {
             {
                 configuration: {
                     enabledParentAssetFallbacks: ["ERC20_4e4d9982-3469-421b-ab60-2c0c2f05386a"],
-                }
+                },
+                privateAddresses: {},
             }
         );
         const strictAssetWalletUser = new CruxUser(
@@ -316,7 +317,8 @@ describe('Application Services Tests', () => {
             {
                 configuration: {
                     enabledParentAssetFallbacks: [],
-                }
+                },
+                privateAddresses: {},
             }
         )
         const strictAssetWalletTranslator = new CruxAssetTranslator(
@@ -384,18 +386,18 @@ describe('Application Services Tests', () => {
                 }
             ]
         )
-        it('resolveAddressBySymbol test', () => {
+        it('resolveAddressBySymbol test', async () => {
             const walletCurrencySymbol = "zrx";
             const cruxAddressResolver = new CruxAddressResolver({
                 cruxAssetTranslator: strictAssetWalletTranslator,
                 cruxUser: customAssetWalletUser,
                 userCruxAssetTranslator: customAssetWalletTranslator,
             });
-            const resolvedAddress = cruxAddressResolver.resolveAddressBySymbol(walletCurrencySymbol);
+            const resolvedAddress = await cruxAddressResolver.resolveAddressBySymbol(walletCurrencySymbol);
             expect(resolvedAddress).to.be.eql(testEthAddress);
         })
         describe('resolveAddressByAssetMatcher tests', () => {
-            it('sender resolving erc20 (address available with receiver)', () => {
+            it('sender resolving erc20 (address available with receiver)', async () => {
                 const assetMatcher: IAssetMatcher = {
                     assetGroup: "ERC20_eth",
                 };
@@ -404,10 +406,10 @@ describe('Application Services Tests', () => {
                     cruxUser: customAssetWalletUser,
                     userCruxAssetTranslator: customAssetWalletTranslator,
                 });
-                const resolvedAddress = cruxAddressResolver.resolveAddressByAssetMatcher(assetMatcher);
+                const resolvedAddress = await cruxAddressResolver.resolveAddressByAssetMatcher(assetMatcher);
                 expect(resolvedAddress).to.be.eql(testEthAddress);
             })
-            it('sender resolving using zrx contract address (without receiver asset information)', () => {
+            it('sender resolving using zrx contract address (without receiver asset information)', async () => {
                 const assetMatcher: IAssetMatcher = {
                     assetGroup: "ERC20_eth",
                     assetIdentifierValue: "0xE41d2489571d322189246DaFA5ebDe1F4699F498",
@@ -418,13 +420,13 @@ describe('Application Services Tests', () => {
                 });
                 let raisedError;
                 try {
-                    const resolvedAddress = cruxAddressResolver.resolveAddressByAssetMatcher(assetMatcher);
+                    const resolvedAddress = await cruxAddressResolver.resolveAddressByAssetMatcher(assetMatcher);
                 } catch (error) {
                     raisedError = error;
                 }
                 expect(raisedError).to.be.not.undefined;
             })
-            it('sender resolving omg (asset available with receiver) with omg specific address', () => {
+            it('sender resolving omg (asset available with receiver) with omg specific address', async () => {
                 const assetMatcher: IAssetMatcher = {
                     assetGroup: "ERC20_eth",
                     assetIdentifierValue: "0xd26114cd6EE289AccF82350c8d8487fedB8A0C07",
@@ -435,10 +437,10 @@ describe('Application Services Tests', () => {
                     userCruxAssetTranslator: customAssetWalletTranslator,
                 });
                 let raisedError;
-                const resolvedAddress = cruxAddressResolver.resolveAddressByAssetMatcher(assetMatcher);
+                const resolvedAddress = await cruxAddressResolver.resolveAddressByAssetMatcher(assetMatcher);
                 expect(resolvedAddress).to.be.eql(testOmgAddress);
             })
-            it('sender resolving zrx (asset & address available with receiver)', () => {
+            it('sender resolving zrx (asset & address available with receiver)', async () => {
                 const assetMatcher: IAssetMatcher = {
                     assetGroup: "ERC20_eth",
                     assetIdentifierValue: "0xE41d2489571d322189246DaFA5ebDe1F4699F498",
@@ -448,10 +450,10 @@ describe('Application Services Tests', () => {
                     cruxUser: customAssetWalletUser,
                     userCruxAssetTranslator: customAssetWalletTranslator,
                 });
-                const resolvedAddress = cruxAddressResolver.resolveAddressByAssetMatcher(assetMatcher);
+                const resolvedAddress = await cruxAddressResolver.resolveAddressByAssetMatcher(assetMatcher);
                 expect(resolvedAddress).to.be.eql(testEthAddress);
             })
-            it('sender resolving life (asset & address not available with receiver)', () => {
+            it('sender resolving life (asset & address not available with receiver)', async () => {
                 const assetMatcher: IAssetMatcher = {
                     assetGroup: "ERC20_eth",
                     assetIdentifierValue: "0xff18dbc487b4c2e3222d115952babfda8ba52f5f",
@@ -461,10 +463,10 @@ describe('Application Services Tests', () => {
                     cruxUser: customAssetWalletUser,
                     userCruxAssetTranslator: customAssetWalletTranslator,
                 });
-                const resolvedAddress = cruxAddressResolver.resolveAddressByAssetMatcher(assetMatcher);
+                const resolvedAddress = await cruxAddressResolver.resolveAddressByAssetMatcher(assetMatcher);
                 expect(resolvedAddress).to.be.eql(testEthAddress);
             })
-            it('sender resolving rbtc_erc20 (asset & addres not available with receiver)', () => {
+            it('sender resolving rbtc_erc20 (asset & addres not available with receiver)', async () => {
                 const assetMatcher: IAssetMatcher = {
                     assetGroup: "ERC20_rbtc",
                 };
@@ -475,7 +477,7 @@ describe('Application Services Tests', () => {
                 });
                 let raisedError;
                 try {
-                    const resolvedAddress = cruxAddressResolver.resolveAddressByAssetMatcher(assetMatcher);
+                    const resolvedAddress = await cruxAddressResolver.resolveAddressByAssetMatcher(assetMatcher);
                 } catch (error) {
                     raisedError = error;
                 }
@@ -484,35 +486,35 @@ describe('Application Services Tests', () => {
                 expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.AddressNotAvailable);
             })
         })
-        it('resolveAddressWithAssetId test', () => {
+        it('resolveAddressWithAssetId test', async () => {
             const assetId = "ed919ad4-c0d0-42a7-a2b3-9728cbb81f26";
             const cruxAddressResolver = new CruxAddressResolver({
                 cruxAssetTranslator: strictAssetWalletTranslator,
                 cruxUser: customAssetWalletUser,
                 userCruxAssetTranslator: customAssetWalletTranslator,
             });
-            const resolvedAddress = cruxAddressResolver.resolveAddressWithAssetId(assetId);
+            const resolvedAddress = await cruxAddressResolver.resolveAddressWithAssetId(assetId);
             expect(resolvedAddress).to.be.eql(testEthAddress);
         })
         describe('resolveAddressByAssetGroup tests', () => {
-            it('sender resolving erc20 address (receiver has the fallback enabled)', () => {
+            it('sender resolving erc20 address (receiver has the fallback enabled)', async () => {
                 const assetGroup = "ERC20_eth";
                 const cruxAddressResolver = new CruxAddressResolver({
                     cruxAssetTranslator: strictAssetWalletTranslator,
                     cruxUser: customAssetWalletUser,
                     userCruxAssetTranslator: customAssetWalletTranslator,
                 });
-                const resolvedAddress = cruxAddressResolver.resolveAddressByAssetGroup(assetGroup);
+                const resolvedAddress = await cruxAddressResolver.resolveAddressByAssetGroup(assetGroup);
                 expect(resolvedAddress).to.be.eql(testEthAddress);
             })
-            it('sender resolving erc20 address (receiver has the fallback disabled)', () => {
+            it('sender resolving erc20 address (receiver has the fallback disabled)', async () => {
                 const assetGroup = "ERC20_eth";
                 const cruxAddressResolver = new CruxAddressResolver({
                     cruxAssetTranslator: strictAssetWalletTranslator,
                     cruxUser: strictAssetWalletUser,
                     userCruxAssetTranslator: customAssetWalletTranslator,
                 });
-                const resolvedAddress = cruxAddressResolver.resolveAddressByAssetGroup(assetGroup);
+                const resolvedAddress = await cruxAddressResolver.resolveAddressByAssetGroup(assetGroup);
                 expect(resolvedAddress).to.be.undefined;
             })
         })

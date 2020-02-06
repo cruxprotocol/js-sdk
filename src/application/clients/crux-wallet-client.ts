@@ -16,6 +16,7 @@ import {
     BlockstackCruxUserRepository,
     IBlockstackCruxUserRepositoryOptions,
 } from "../../infrastructure/implementations/blockstack-crux-user-repository";
+import { Encryption } from "../../packages/encryption";
 import { BaseError, CruxClientError, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId, InputIDComponents } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
@@ -69,6 +70,7 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
     return new BlockstackCruxUserRepository(options);
 };
 export class CruxWalletClient {
+    public e = Encryption;
     public walletClientName: string;
     private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
     private initPromise: Promise<void>;
@@ -140,7 +142,7 @@ export class CruxWalletClient {
             cruxAssetTranslator: this.cruxAssetTranslator,
             cruxUser,
         });
-        const userAddress = addressResolver.resolveAddressBySymbol(walletCurrencySymbol);
+        const userAddress = await addressResolver.resolveAddressBySymbol(walletCurrencySymbol, this.keyManager);
         return userAddress;
     }
 
@@ -162,7 +164,7 @@ export class CruxWalletClient {
             addressResolverOptions.userCruxAssetTranslator = new CruxAssetTranslator(userCruxDomain!.config.assetMapping, userCruxDomain!.config.assetList);
         }
         const addressResolver = new CruxAddressResolver(addressResolverOptions);
-        const userAddress = addressResolver.resolveAddressByAssetMatcher(assetMatcher);
+        const userAddress = await addressResolver.resolveAddressByAssetMatcher(assetMatcher);
         return userAddress;
     }
 
@@ -192,7 +194,26 @@ export class CruxWalletClient {
         }
         const {assetAddressMap, success, failures} = this.cruxAssetTranslator.symbolAddressMapToAssetIdAddressMap(newAddressMap);
         cruxUser.setAddressMap(assetAddressMap);
-        this.cruxUserRepository.save(cruxUser, this.keyManager);
+        await this.cruxUserRepository.save(cruxUser, this.keyManager);
+        return {success, failures};
+    }
+
+    public putPrivateAddressMap = async (fullCruxID: string, newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {
+        await this.initPromise;
+        if (!this.keyManager) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
+        }
+        const cruxUserWithKey = await this.cruxUserRepository.getWithKey(this.keyManager, this.cruxDomainId);
+        const cruxUser = await await this.getCruxUserByID(fullCruxID.toLowerCase());
+        if (!cruxUser || !cruxUserWithKey) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
+        }
+        const {assetAddressMap, success, failures} = this.cruxAssetTranslator.symbolAddressMapToAssetIdAddressMap(newAddressMap);
+        if (!cruxUser.publicKey) {
+            throw new BaseError(null, `not supported with user: ${fullCruxID}`);
+        }
+        cruxUserWithKey.setPrivateAddressMap(cruxUser.publicKey, assetAddressMap, this.keyManager);
+        await this.cruxUserRepository.save(cruxUserWithKey, this.keyManager);
         return {success, failures};
     }
 

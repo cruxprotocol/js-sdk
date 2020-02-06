@@ -1,6 +1,8 @@
+import { Encryption } from "../../packages/encryption";
 import { BaseError } from "../../packages/error";
 import { CruxId } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
+import { IKeyManager } from "../interfaces";
 import { CruxSpec } from "./crux-spec";
 
 const log = getLogger(__filename);
@@ -26,11 +28,17 @@ export interface ICruxUserInformation {
 }
 
 export interface ICruxUserData {
+    publicKey?: string;
     configuration: ICruxUserConfiguration;
+    privateAddresses: ICruxUserPrivateAddresses;
 }
 
 export interface ICruxUserConfiguration {
     enabledParentAssetFallbacks: string[];
+}
+
+export interface ICruxUserPrivateAddresses {
+    [sharedSecretHash: string]: string;
 }
 
 export enum SubdomainRegistrationStatus {
@@ -48,16 +56,20 @@ export enum SubdomainRegistrationStatusDetail {
 }
 
 export class CruxUser {
+    private pubKey?: string;
     private cruxUserInformation!: ICruxUserInformation;
     private cruxUserID!: CruxId;
     private addressMap!: IAddressMapping;
     private cruxUserConfig!: ICruxUserConfiguration;
+    private cruxUserPrivateAddresses!: ICruxUserPrivateAddresses;
 
     constructor(cruxID: CruxId, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation, cruxUserData: ICruxUserData) {
         this.setCruxUserID(cruxID);
         this.setAddressMap(addressMap);
         this.setCruxUserInformation(cruxUserInformation);
         this.setCruxUserConfig(cruxUserData.configuration);
+        this.setPublicKey(cruxUserData.publicKey);
+        this.setCruxUserPrivateAddresses(cruxUserData.privateAddresses);
         log.debug("CruxUser initialised");
     }
     get cruxID() {
@@ -68,6 +80,12 @@ export class CruxUser {
     }
     get config() {
         return this.cruxUserConfig;
+    }
+    get publicKey() {
+        return this.pubKey;
+    }
+    get privateAddresses() {
+        return this.cruxUserPrivateAddresses;
     }
     public setParentAssetFallbacks = (assetGroups: string[]) => {
         // TODO: validate the assetGroups provided;
@@ -85,8 +103,31 @@ export class CruxUser {
         }
         this.addressMap = addressMap;
     }
-    public getAddressWithAssetId(assetId: string): IAddress|undefined {
-        return this.addressMap[assetId];
+    public setPrivateAddressMap = async (publicKey: string, addressMap: IAddressMapping, keyManager: IKeyManager): Promise<void> => {
+        if (keyManager && "deriveSharedSecret" in keyManager && typeof keyManager.deriveSharedSecret === "function") {
+            const sharedSecret = await keyManager.deriveSharedSecret(publicKey);
+            const sharedSecretHash = Encryption.hash(sharedSecret);
+            const encryptedAddressMapObject = await Encryption.encryptJSON(addressMap, sharedSecret);
+            this.cruxUserPrivateAddresses[sharedSecretHash] = JSON.stringify(encryptedAddressMapObject);
+        } else {
+            throw new BaseError(null, "Not supported by the keyManager in use");
+        }
+    }
+    public getAddressWithAssetId = async (assetId: string, keyManager?: IKeyManager): Promise<IAddress|undefined> => {
+        let address: IAddress|undefined;
+        if (this.pubKey && keyManager && "deriveSharedSecret" in keyManager && typeof keyManager.deriveSharedSecret === "function") {
+            const sharedSecret = await keyManager.deriveSharedSecret(this.pubKey);
+            const sharedSecretHash = Encryption.hash(sharedSecret);
+            const encryptedAddressMapObject: {encBuffer: string, iv: string} = JSON.parse(this.cruxUserPrivateAddresses[sharedSecretHash]);
+            if (encryptedAddressMapObject) {
+                const decryptedAddressMap = await Encryption.decryptJSON(encryptedAddressMapObject.encBuffer, encryptedAddressMapObject.iv, sharedSecret) as IAddressMapping;
+                address = decryptedAddressMap[assetId];
+            }
+        }
+        if (!address) {
+            address = this.addressMap[assetId];
+        }
+        return address;
     }
     private setCruxUserID = (cruxID: CruxId) => {
         if (cruxID instanceof CruxId) {
@@ -108,5 +149,13 @@ export class CruxUser {
     private setCruxUserConfig = (cruxUserConfiguration: ICruxUserConfiguration) => {
         // TODO: validation of the configurations
         this.cruxUserConfig = cruxUserConfiguration;
+    }
+    private setPublicKey = (publicKey?: string) => {
+        // TODO: validation of the publicKey;
+        this.pubKey = publicKey;
+    }
+    private setCruxUserPrivateAddresses = (cruxUserPrivateAddresses: ICruxUserPrivateAddresses) => {
+        // TODO: validation of the private addresses
+        this.cruxUserPrivateAddresses = cruxUserPrivateAddresses;
     }
 }

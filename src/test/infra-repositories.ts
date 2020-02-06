@@ -4,12 +4,25 @@ import 'mocha';
 import { BlockstackCruxDomainRepository } from "../infrastructure/implementations/blockstack-crux-domain-repository";
 import { BlockstackCruxUserRepository } from "../infrastructure/implementations/blockstack-crux-user-repository";
 import { CruxSpec } from "../core/entities/crux-spec";
-import { CruxDomainId, CruxId, IdTranslator, BlockstackId } from "../packages/identity-utils";
+import { CruxDomainId, CruxId } from "../packages/identity-utils";
 import { DomainRegistrationStatus, CruxDomain } from '../core/entities/crux-domain';
 import { BasicKeyManager } from '../infrastructure/implementations/basic-key-manager';
 import * as blkStkService from "../infrastructure/services/blockstack-service";
 import * as gs from "../infrastructure/services/gaia-service";
 import { CruxUser, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from '../core/entities/crux-user';
+import WebCrypto from "node-webcrypto-ossl";
+interface Global {
+    crypto: any;
+    TextEncoder: any;
+    TextDecoder: any;
+}
+declare const global: Global;
+
+const crypto = new WebCrypto();
+let util = require('util')
+global.crypto = crypto
+global.TextEncoder = util.TextEncoder
+global.TextDecoder = util.TextDecoder
 describe('Infrastructure Repositories Test', () => {
     let sandbox: sinon.SinonSandbox;
     let mockBlockstackService;

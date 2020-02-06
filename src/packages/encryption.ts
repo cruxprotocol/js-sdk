@@ -7,6 +7,13 @@ const typedArrayToBuffer = (array: Uint8Array): ArrayBuffer => {
 
 export class Encryption {
 
+    public static hash = (value: string): string => {
+        const valueUtf8 = Buffer.from(value, "UTF-8");
+        const hash = ncrypto.createHash("sha256");
+        hash.update(valueUtf8);
+        return hash.digest("hex");
+    }
+
     public static encryptJSON = async (jsonObj: object, password: string): Promise<{encBuffer: string, iv: string}> => {
         const plainText = JSON.stringify(jsonObj);
         return Encryption.encryptText(plainText, password);
