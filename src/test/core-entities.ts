@@ -5,7 +5,8 @@ import {
     ICruxUserRegistrationStatus,
     ICruxUserInformation,
     SubdomainRegistrationStatus,
-    SubdomainRegistrationStatusDetail
+    SubdomainRegistrationStatusDetail,
+    ICruxUserData
 } from "../core/entities/crux-user";
 import {CruxDomainId, CruxId} from "../packages/identity-utils";
 import {expect} from 'chai';
@@ -32,22 +33,25 @@ describe('Core Entities Tests', () => {
             'transactionHash': transactionHash,
             'ownerAddress': ownerAddress
         };
+        const newUserData: ICruxUserData = {
+            'configuration': {enabledParentAssetFallbacks: []}
+        }
 
         it('Valid CruxUser can be created', () => {
-            const testUser = new CruxUser(testCruxId, testValidAddressMap, newUserInformation);
+            const testUser = new CruxUser(testCruxId, testValidAddressMap, newUserInformation, newUserData);
             expect(testUser.cruxID.toString()).to.be.equal(testCruxId.toString());
         });
         it('CruxUser should not be constructed with invalid address map', () => {
-            const createInvalidUser = () => new CruxUser(testCruxId, testInvalidAddressMap, newUserInformation);
+            const createInvalidUser = () => new CruxUser(testCruxId, testInvalidAddressMap, newUserInformation, newUserData);
             expect(createInvalidUser).to.throw();
         });
         it('Valid CruxUser getAddress method works as expected', () => {
-            const testUser = new CruxUser(testCruxId, testValidAddressMap, newUserInformation);
+            const testUser = new CruxUser(testCruxId, testValidAddressMap, newUserInformation, newUserData);
             const testUserBtcAddressHash = testUser.getAddressMap()[BTC_ASSET_ID]['addressHash'];
             expect(testUserBtcAddressHash).to.be.equal(testValidAddressMap[BTC_ASSET_ID]['addressHash']);
         });
         it('CruxUser should not be constructed with invalid CruxId', () => {
-            const createInvalidUser = () => new CruxUser(undefined, {}, newUserInformation);
+            const createInvalidUser = () => new CruxUser(undefined, {}, newUserInformation, newUserData);
             expect(createInvalidUser).to.throw();
         })
 
@@ -64,10 +68,12 @@ describe('Core Entities Tests', () => {
         const testValidDomainConfig: IClientConfig = {
             assetMapping: testValidDomainAssetMapping,
             assetList: CruxSpec.globalAssetList.filter((asset) => Object.values(testValidDomainAssetMapping).includes(asset.assetId)),
+            supportedParentAssetFallbacks: [],
         };
         const testInvalidDomainConfig: IClientConfig = {
             assetMapping: testInvalidDomainAssetMapping,
             assetList: CruxSpec.globalAssetList.filter((asset) => Object.values(testInvalidDomainAssetMapping).includes(asset.assetId)),
+            supportedParentAssetFallbacks: [],
         };
         it('Valid CruxDomain should be constructed', () => {
             const testDomain = new CruxDomain(testCruxDomainId, availableDomainStatus, testValidDomainConfig);

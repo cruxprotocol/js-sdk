@@ -297,7 +297,9 @@ describe('Application Services Tests', () => {
                 }
             },
             {
-                enabledParentAssetFallbacks: ["ERC20_4e4d9982-3469-421b-ab60-2c0c2f05386a"],
+                configuration: {
+                    enabledParentAssetFallbacks: ["ERC20_4e4d9982-3469-421b-ab60-2c0c2f05386a"],
+                }
             }
         );
         const strictAssetWalletUser = new CruxUser(
@@ -312,7 +314,9 @@ describe('Application Services Tests', () => {
                 }
             },
             {
-                enabledParentAssetFallbacks: [],
+                configuration: {
+                    enabledParentAssetFallbacks: [],
+                }
             }
         )
         const strictAssetWalletTranslator = new CruxAssetTranslator(

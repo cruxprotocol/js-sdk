@@ -25,6 +25,10 @@ export interface ICruxUserInformation {
     ownerAddress?: string;
 }
 
+export interface ICruxUserData {
+    configuration: ICruxUserConfiguration;
+}
+
 export interface ICruxUserConfiguration {
     enabledParentAssetFallbacks: string[];
 }
@@ -49,11 +53,11 @@ export class CruxUser {
     private addressMap!: IAddressMapping;
     private cruxUserConfig!: ICruxUserConfiguration;
 
-    constructor(cruxID: CruxId, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation, cruxUserConfig: ICruxUserConfiguration) {
+    constructor(cruxID: CruxId, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation, cruxUserData: ICruxUserData) {
         this.setCruxUserID(cruxID);
         this.setAddressMap(addressMap);
         this.setCruxUserInformation(cruxUserInformation);
-        this.setCruxUserConfig(cruxUserConfig);
+        this.setCruxUserConfig(cruxUserData.configuration);
         log.debug("CruxUser initialised");
     }
     get cruxID() {

@@ -9,7 +9,8 @@ import {
     SubdomainRegistrationStatus,
     SubdomainRegistrationStatusDetail,
     ICruxUserInformation,
-    ICruxUserConfiguration
+    ICruxUserConfiguration,
+    ICruxUserData
 } from "../core/entities/crux-user";
 import {ICruxDomainRepository} from "../core/interfaces/crux-domain-repository";
 import {ICruxUserRepository} from "../core/interfaces/crux-user-repository";
@@ -54,8 +55,9 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
                 statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
             }
         },{
-            enabledParentAssetFallbacks: [],
-        });
+            configuration: {
+                enabledParentAssetFallbacks: [],
+        }});
         const addressFromKeyManager = publicKeyToAddress(await keyManager.getPubKey());
         this.userStore.store(newUser, addressFromKeyManager);
         return new Promise((resolve, reject) => resolve(newUser));
@@ -95,7 +97,7 @@ export class InMemoryCruxDomainRepository implements ICruxDomainRepository {
     }
 
     public create = (domainId: CruxDomainId, identityKeyManager: IKeyManager): Promise<CruxDomain> => {
-        const newDomain = new CruxDomain(domainId, DomainRegistrationStatus.REGISTERED, {assetList: [], assetMapping: {}});
+        const newDomain = new CruxDomain(domainId, DomainRegistrationStatus.REGISTERED, {assetList: [], assetMapping: {}, supportedParentAssetFallbacks: []});
         this.domainById[domainId.toString()] = newDomain;
         return new Promise((resolve, reject) => resolve(newDomain));
     };
@@ -144,6 +146,7 @@ export const getValidCruxDomain = () => {
     const testValidDomainConfig: IClientConfig = {
         assetMapping: testValidDomainAssetMapping,
         assetList: CruxSpec.globalAssetList.filter((asset) => Object.values(testValidDomainAssetMapping).includes(asset.assetId)),
+        supportedParentAssetFallbacks: [],
     };
     return new CruxDomain(testCruxDomainId, domainStatus, testValidDomainConfig);
 };
@@ -160,11 +163,12 @@ export const getValidCruxUser = () => {
             'statusDetail': SubdomainRegistrationStatusDetail.DONE,
         }
     };
-    const validUserConfiguration: ICruxUserConfiguration = {
-        enabledParentAssetFallbacks: [],
-    }
+    const validCruxUserData: ICruxUserData = {
+        configuration: {
+            enabledParentAssetFallbacks: [],
+    }}
 
-    return new CruxUser(testCruxId, testValidAddressMap, validUserInformation, validUserConfiguration);
+    return new CruxUser(testCruxId, testValidAddressMap, validUserInformation, validCruxUserData);
 };
 
 export const getValidCruxUser2 = () => {
@@ -180,11 +184,12 @@ export const getValidCruxUser2 = () => {
             'statusDetail': SubdomainRegistrationStatusDetail.DONE,
         }
     };
-    const validUserConfiguration: ICruxUserConfiguration = {
-        enabledParentAssetFallbacks: [],
-    }
+    const validCruxUserData: ICruxUserData = {
+        configuration: {
+            enabledParentAssetFallbacks: [],
+    }}
 
-    return new CruxUser(testCruxId, testValidAddressMap, validUserInformation, validUserConfiguration);
+    return new CruxUser(testCruxId, testValidAddressMap, validUserInformation, validCruxUserData);
 };
 
 export const getValidPendingCruxUser = () => {
@@ -195,5 +200,9 @@ export const getValidPendingCruxUser = () => {
             'statusDetail': SubdomainRegistrationStatusDetail.PENDING_BLOCKCHAIN,
         }
     };
-    return new CruxUser(testCruxId, {}, validUserInformation);
+    const validCruxUserData: ICruxUserData = {
+        configuration: {
+            enabledParentAssetFallbacks: [],
+    }}
+    return new CruxUser(testCruxId, {}, validUserInformation, validCruxUserData);
 }
