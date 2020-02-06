@@ -1,3 +1,4 @@
+import "regenerator-runtime";
 import * as CruxPay from "./backward-compatibility";
 import * as Crux from "./index";
 
