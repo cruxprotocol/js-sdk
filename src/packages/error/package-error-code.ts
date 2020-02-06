@@ -63,4 +63,5 @@ export enum PackageErrorCode {
     MissingCruxDomainInCruxWalletClient = 5011,
     MissingZoneFile = 5012,
     MissingNameOwnerAddress = 5013,
+    FileNotFound = 5014,
 }

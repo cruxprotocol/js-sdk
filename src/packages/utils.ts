@@ -2,6 +2,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import * as cloner from "cloner";
 import request from "request";
 import { BaseError, ErrorHelper, PackageErrorCode } from "./error";
+import { PackageError } from "./error/package-error";
 import { getLogger } from "./logger";
 import { StorageService } from "./storage";
 
@@ -11,15 +12,20 @@ const httpsPrefixRegex = new RegExp(`^https:\/\/.+$`);
 /* istanbul ignore next */
 const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (request.UrlOptions & request.CoreOptions)): Promise<object> => {
     log.debug("network_call:", options);
-    const promise: Promise<object> = new Promise((resolve, reject) => {
+    const promise: Promise<any> = new Promise((resolve, reject) => {
         const { url, fetchOptions } = translateRequestOptionsToFetchOptions(options);
         if (!httpsPrefixRegex.test(url)) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.InsecureNetworkCall);
         }
         fetch(url, fetchOptions)
-            .then((res) => res.json())
+            .then((res) => {
+                if (res.status === 404) {
+                    throw ErrorHelper.getPackageError(null, PackageErrorCode.FileNotFound);
+                }
+                return res.json();
+            })
             .then((json) => resolve(json))
-            .catch((err) => reject(new BaseError(null, err)));
+            .catch((err) => reject(err));
     });
     return promise;
 };

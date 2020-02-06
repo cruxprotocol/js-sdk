@@ -60,4 +60,5 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.InvalidWalletClientName]: "Invalid Wallet Client Name",
     [PackageErrorCode.InsecureNetworkCall]: "Insecure network call",
     [PackageErrorCode.FailedToGetGaiaUrlFromZonefile]: "Failed to get Gaia URL from user's zonefile: '{0}'",
+    [PackageErrorCode.FileNotFound]: "File not Found 404",
 };
