@@ -135,14 +135,19 @@ describe('Infrastructure Repositories Test', () => {
             mockBlockstackService.getGaiaHub.withArgs(testUserCruxId).resolves(cruxGaiaHub);
             mockBlockstackService.getNameDetails.withArgs(testUserCruxId).resolves(testUserNameDetails);
             mockGaiaService.getContentFromGaiaHub.withArgs(testUserNameDetails.address, "cruxdev_cruxpay.json").resolves({
-                "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
-                    "addressHash": "1bEuiLiVDaTJo2poFMfWZFp9SYdhRuUhX",
-                },
-                "abe0030a-d8e3-4518-879f-cd9939b7d8ab": {
-                    "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
-                },
-                "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
-                    "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
+                "payload": {
+                    "subject": "0362f171a40ab5e6ad22275ec166f15a232b83a571bab9c30622ed2963f1da4c08",
+                    "claim": {
+                        "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
+                            "addressHash": "1bEuiLiVDaTJo2poFMfWZFp9SYdhRuUhX",
+                        },
+                        "abe0030a-d8e3-4518-879f-cd9939b7d8ab": {
+                            "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
+                        },
+                        "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
+                            "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
+                        }
+                    }
                 }
             });
             mockGaiaService.getContentFromGaiaHub.withArgs(testUserNameDetails.address, "cruxdev_user-config.json").resolves({
@@ -173,8 +178,13 @@ describe('Infrastructure Repositories Test', () => {
             mockBlockstackService.getGaiaHub.withArgs(testUserCruxId, "testtag").resolves(cruxGaiaHub);
             mockBlockstackService.getNameDetails.withArgs(testUserCruxId, "testtag").resolves(testUserNameDetails);
             mockGaiaService.getContentFromGaiaHub.withArgs(testUserNameDetails.address, "cruxdev_cruxpay.json").resolves({
-                "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
-                    "addressHash":"1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V",
+                "payload": {
+                    "subject": "0362f171a40ab5e6ad22275ec166f15a232b83a571bab9c30622ed2963f1da4c08",
+                    "claim": {
+                        "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
+                            "addressHash":"1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V",
+                        }
+                    }
                 }
             });
             mockGaiaService.getContentFromGaiaHub.withArgs(testUserNameDetails.address, "cruxdev_user-config.json").resolves({
@@ -221,14 +231,19 @@ describe('Infrastructure Repositories Test', () => {
             mockBlockstackService.getGaiaHub.withArgs(testUserCruxId).resolves(cruxGaiaHub);
             mockBlockstackService.getNameDetails.withArgs(testUserCruxId).resolves(testUserNameDetails);
             mockGaiaService.getContentFromGaiaHub.withArgs(testUserNameDetails.address, "cruxdev_cruxpay.json").resolves({
-                "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
-                    "addressHash": "1bEuiLiVDaTJo2poFMfWZFp9SYdhRuUhX",
-                },
-                "abe0030a-d8e3-4518-879f-cd9939b7d8ab": {
-                    "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
-                },
-                "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
-                    "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
+                "payload": {
+                    "subject": "0362f171a40ab5e6ad22275ec166f15a232b83a571bab9c30622ed2963f1da4c08",
+                    "claim": {
+                        "d78c26f8-7c13-4909-bf62-57d7623f8ee8": {
+                            "addressHash": "1bEuiLiVDaTJo2poFMfWZFp9SYdhRuUhX",
+                        },
+                        "abe0030a-d8e3-4518-879f-cd9939b7d8ab": {
+                            "addressHash": "rpfKAA2Ezqoq5wWo3XENdLYdZ8YGziz48h",
+                        },
+                        "4e4d9982-3469-421b-ab60-2c0c2f05386a": {
+                            "addressHash": "0x0a2311594059b468c9897338b027c8782398b481",
+                        }
+                    }
                 }
             });
             mockGaiaService.getContentFromGaiaHub.withArgs(testUserNameDetails.address, "cruxdev_user-config.json").resolves({
@@ -258,11 +273,22 @@ describe('Infrastructure Repositories Test', () => {
         const cruxdevRegistrationStatus = DomainRegistrationStatus.REGISTERED;
         const cruxdevAssetMapping = {};
         const cruxdevAssetList = [];
-        const cruxdevNameserviceConfig = {};
+        // const cruxdevNameserviceConfig = {};
         const cruxdevClientConfig = {
             assetMapping: cruxdevAssetMapping,
             assetList: cruxdevAssetList,
         }
+        const cruxdevClientConfigJson = {
+            "payload": {
+                "issuer": {
+                    "publicKey": "03c2156930598a7e4832ebb8b435abcc657b1f14b7953b2145ae25268dd6141c1f"
+                },
+                "subject": {
+                    "publicKey": "03c2156930598a7e4832ebb8b435abcc657b1f14b7953b2145ae25268dd6141c1f"
+                },
+                "claim": cruxdevClientConfig
+            }
+        };
         const cruxdevConfigNameDetails = {
             "address": "1ATf5YwcEARWMCZdS8x3BXmkodkvnMW4Tf",
             "blockchain": "bitcoin",
@@ -302,7 +328,7 @@ describe('Infrastructure Repositories Test', () => {
                 mockBlockstackService.getNameDetails.resolves(cruxdevConfigNameDetails);
                 mockBlockstackService.getGaiaHub.resolves(cruxGaiaHub);
                 mockBlockstackService.getDomainRegistrationStatus.withArgs(cruxdevCruxDomainId).resolves(DomainRegistrationStatus.REGISTERED);
-                mockGaiaService.getContentFromGaiaHub.resolves(cruxdevClientConfig);
+                mockGaiaService.getContentFromGaiaHub.resolves(cruxdevClientConfigJson);
                 // call
                 const cruxDomain = await blockstackCruxDomainRepository.get(cruxdevCruxDomainId);
                 // expectations
@@ -330,7 +356,7 @@ describe('Infrastructure Repositories Test', () => {
                 mockBlockstackService.getNameDetails.resolves(cruxdevConfigNameDetails);
                 mockBlockstackService.getGaiaHub.resolves(cruxGaiaHub);
                 mockBlockstackService.getCruxDomainIdWithConfigKeyManager.withArgs(sinon.match(cruxdevConfigKeyManager)).resolves(cruxdevCruxDomainId);
-                mockGaiaService.getContentFromGaiaHub.resolves(cruxdevClientConfig);
+                mockGaiaService.getContentFromGaiaHub.resolves(cruxdevClientConfigJson);
                 const cruxDomain = await blockstackCruxDomainRepository.getWithConfigKeyManager(cruxdevConfigKeyManager);
                 expect(cruxDomain).is.instanceOf(CruxDomain);
                 expect(cruxDomain.status === cruxdevRegistrationStatus).to.be.true;
@@ -368,7 +394,7 @@ describe('Infrastructure Repositories Test', () => {
                 mockBlockstackService.getNameDetails.resolves(cruxdevConfigNameDetails);
                 mockBlockstackService.getGaiaHub.resolves(cruxGaiaHub);
                 mockBlockstackService.getDomainRegistrationStatus.withArgs(cruxdevCruxDomainId).resolves(DomainRegistrationStatus.REGISTERED);
-                mockGaiaService.getContentFromGaiaHub.resolves(cruxdevClientConfig);
+                mockGaiaService.getContentFromGaiaHub.resolves(cruxdevClientConfigJson);
                 mockGaiaService.uploadContentToGaiaHub.resolves("https://gaia.cruxpay.com/1ATf5YwcEARWMCZdS8x3BXmkodkvnMW4Tf/cruxdev_client-config.json");
                 // callling the method
                 const cruxDomain = await blockstackCruxDomainRepository.get(cruxdevCruxDomainId);
