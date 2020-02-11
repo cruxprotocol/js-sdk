@@ -19,6 +19,11 @@ export interface ICruxpayObject {
     [assetId: string]: string|ICruxUserData|undefined;
 }
 
+export interface ICruxpayObjectAndPubKey {
+    "cruxpayObject": ICruxpayObject;
+    "pubKey": string;
+}
+
 export interface IBlockstackCruxUserRepositoryOptions extends ICruxUserRepositoryOptions {
     blockstackInfrastructure: ICruxBlockstackInfrastructure;
     cacheStorage?: StorageService;
@@ -68,21 +73,24 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
             return;
         }
         let addressMap = {};
-        let cruxUserData: any = {
+        let cruxUserData: ICruxUserData = {
             configuration: {
                 enabledParentAssetFallbacks: [],
             },
             privateAddresses: {},
         };
+        let cruxpayPubKey;
         if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.DONE) {
-            const cruxpayObject: ICruxpayObject = await this.getCruxpayObject(cruxID, tag);
+            const cruxpayJson = await this.getCruxpayObjectAndPubKey(cruxID, tag);
+            const cruxpayObject: ICruxpayObject = cruxpayJson.cruxpayObject;
+            cruxpayPubKey = cruxpayJson.pubKey;
             const dereferencedCruxpayObject = this.dereferenceCruxpayObject(cruxpayObject);
             addressMap = dereferencedCruxpayObject.addressMap;
             if (dereferencedCruxpayObject.cruxUserData) {
                 cruxUserData = dereferencedCruxpayObject.cruxUserData;
             }
         }
-        return new CruxUser(cruxID, addressMap, cruxUserInformation, cruxUserData);
+        return new CruxUser(cruxID, addressMap, cruxUserInformation, cruxUserData, cruxpayPubKey);
     }
     public getWithKey = async (keyManager: IKeyManager, cruxDomainId: CruxDomainId): Promise<CruxUser|undefined> => {
         const cruxID = await this.blockstackService.getCruxIdWithKeyManager(keyManager, cruxDomainId);
@@ -99,33 +107,41 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
                 enabledParentAssetFallbacks: [],
             },
             privateAddresses: {},
-            publicKey: await keyManager.getPubKey(),
         };
+        let cruxpayPubKey = await keyManager.getPubKey();
         if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.DONE) {
-            const cruxpayObject: ICruxpayObject = await this.getCruxpayObject(cruxID);
+            const cruxpayJson = await this.getCruxpayObjectAndPubKey(cruxID);
+            const cruxpayObject: ICruxpayObject = cruxpayJson.cruxpayObject;
+            cruxpayPubKey = cruxpayJson.pubKey;
             const dereferencedCruxpayObject = this.dereferenceCruxpayObject(cruxpayObject);
             addressMap = dereferencedCruxpayObject.addressMap;
             if (dereferencedCruxpayObject.cruxUserData) {
                 cruxUserData = dereferencedCruxpayObject.cruxUserData;
             }
         } else if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.PENDING) {
-            const cruxpayObject: ICruxpayObject = await this.getCruxpayObject(cruxID, undefined, publicKeyToAddress(await keyManager.getPubKey()));
+            const cruxpayJson = await this.getCruxpayObjectAndPubKey(cruxID, undefined, publicKeyToAddress(await keyManager.getPubKey()));
+            const cruxpayObject: ICruxpayObject = cruxpayJson.cruxpayObject;
+            cruxpayPubKey = cruxpayJson.pubKey;
             const dereferencedCruxpayObject = this.dereferenceCruxpayObject(cruxpayObject);
             addressMap = dereferencedCruxpayObject.addressMap;
             if (dereferencedCruxpayObject.cruxUserData) {
                 cruxUserData = dereferencedCruxpayObject.cruxUserData;
             }
         }
-        return new CruxUser(cruxID, addressMap, cruxUserInformation, cruxUserData);
+        return new CruxUser(cruxID, addressMap, cruxUserInformation, cruxUserData, cruxpayPubKey);
     }
     public save = async (cruxUser: CruxUser, keyManager: IKeyManager): Promise<CruxUser> => {
         const cruxpayObject = this.constructCruxpayObject(cruxUser.getAddressMap(), cruxUser.info, cruxUser.config, await keyManager.getPubKey(), cruxUser.privateAddresses);
         await this.putCruxpayObject(new CruxDomainId(cruxUser.cruxID.components.domain), cruxpayObject, keyManager);
         return cruxUser;
     }
-    private getCruxpayObject = async (cruxId: CruxId, tag?: string, ownerAddress?: string): Promise<ICruxpayObject> => {
+    private getCruxpayObjectAndPubKey = async (cruxId: CruxId, tag?: string, ownerAddress?: string): Promise<ICruxpayObjectAndPubKey> => {
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(new CruxDomainId(cruxId.components.domain));
-        return this.getContentByFilename(cruxId, cruxPayFileName, tag, ownerAddress);
+        const cruxpay = await this.getContentByFilename(cruxId, cruxPayFileName, tag, ownerAddress);
+        return {
+            cruxpayObject: cruxpay.payload.claim,
+            pubKey: cruxpay.payload.subject.publicKey,
+        };
     }
     private putCruxpayObject = async (cruxDomainId: CruxDomainId, cruxpayObject: ICruxpayObject, keyManager: IKeyManager): Promise<string> => {
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(cruxDomainId);

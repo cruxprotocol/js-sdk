@@ -63,12 +63,12 @@ export class CruxUser {
     private cruxUserConfig!: ICruxUserConfiguration;
     private cruxUserPrivateAddresses!: ICruxUserPrivateAddresses;
 
-    constructor(cruxID: CruxId, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation, cruxUserData: ICruxUserData) {
+    constructor(cruxID: CruxId, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation, cruxUserData: ICruxUserData, publicKey?: string) {
         this.setCruxUserID(cruxID);
         this.setAddressMap(addressMap);
         this.setCruxUserInformation(cruxUserInformation);
         this.setCruxUserConfig(cruxUserData.configuration);
-        this.setPublicKey(cruxUserData.publicKey);
+        this.setPublicKey(publicKey);
         this.setCruxUserPrivateAddresses(cruxUserData.privateAddresses);
         log.debug("CruxUser initialised");
     }
@@ -156,6 +156,10 @@ export class CruxUser {
     }
     private setCruxUserPrivateAddresses = (cruxUserPrivateAddresses: ICruxUserPrivateAddresses) => {
         // TODO: validation of the private addresses
-        this.cruxUserPrivateAddresses = cruxUserPrivateAddresses;
+        if (!cruxUserPrivateAddresses) {
+            this.cruxUserPrivateAddresses = {};
+        } else {
+            this.cruxUserPrivateAddresses = cruxUserPrivateAddresses;
+        }
     }
 }
