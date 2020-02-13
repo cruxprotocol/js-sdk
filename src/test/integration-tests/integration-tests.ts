@@ -78,6 +78,7 @@ describe("CruxWalletClient integration tests", () => {
             const resolvedAddress = await cruxWalletClient.resolveCurrencyAddressForCruxID(testCruxId.toString(), "btc");
             // @ts-ignore
             expect(mockHttpJSONRequest.parent.neverCalledWith(sinon.match({ baseUrl: "https://gaia.cruxpay.com?fakeKey=${console.log('test')}" }))).to.be.true;
+            expect(mockHttpJSONRequest.calledOnceWith(sinon.match(requestOptions))).to.be.true;
         })
         it("resolving address of a user whose gaiaHub is tampered (malicious gaiaHub info response 2)", async () => {
             const requestOptions = {
