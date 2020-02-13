@@ -1,6 +1,6 @@
 import { Decoder, object, optional, string as stringValidator } from "@mojotech/json-type-validation";
-import { IClientAssetMapping, IGlobalAsset, IGlobalAssetList } from "../../application/services/crux-asset-translator";
 import config from "../../config";
+import { IClientAssetMapping, IGlobalAsset, IGlobalAssetList } from "../../core/entities/crux-domain";
 import { BaseError, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId, IdTranslator } from "../../packages/identity-utils";
 import { IAddress, IAddressMapping } from "../entities/crux-user";
@@ -97,14 +97,6 @@ export class Validations {
         } catch (e) {
             throw ErrorHelper.getPackageError(e, PackageErrorCode.AddressMappingDecodingFailure);
         }
-    }
-    public static validateAssetIdAddressMap = (addressMap: IAddressMapping) => {
-        for (const assetId in addressMap) {
-            if (addressMap.hasOwnProperty(assetId)) {
-                Validations.validateAssetId(assetId);
-                Validations.validateAddressObj(addressMap[assetId]);
-            }
-          }
     }
 }
 export const CruxSpec = {
