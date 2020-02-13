@@ -2,7 +2,6 @@ import { BaseError } from "../../packages/error";
 import { CruxId } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { CruxDomain, IGlobalAsset, IGlobalAssetList } from "./crux-domain";
-import { CruxSpec } from "./crux-spec";
 
 const log = getLogger(__filename);
 
