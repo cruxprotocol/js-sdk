@@ -5,7 +5,7 @@ import { CruxUser, IAddressMapping, ICruxUserConfiguration, ICruxUserData, Subdo
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxUserRepository, ICruxUserRepositoryOptions} from "../../core/interfaces/crux-user-repository";
 import { IKeyManager } from "../../core/interfaces/key-manager";
-import { ErrorHelper, PackageError, PackageErrorCode, BaseError } from "../../packages/error";
+import { BaseError, ErrorHelper, PackageError, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { StorageService } from "../../packages/storage";
