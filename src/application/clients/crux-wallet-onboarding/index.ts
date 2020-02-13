@@ -1,5 +1,5 @@
 export * from "./utils";
-import { IClientAssetMapping } from "../../../application/services/crux-asset-translator";
+import { IClientAssetMapping } from "../../../core/entities/crux-domain";
 import { DomainRegistrationStatus, INameServiceConfigurationOverrides } from "../../../core/entities/crux-domain";
 import { CruxDomain } from "../../../core/entities/crux-domain";
 import { CruxSpec } from "../../../core/entities/crux-spec";

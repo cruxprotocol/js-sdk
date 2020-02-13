@@ -1,5 +1,6 @@
 import {CruxDomain, DomainRegistrationStatus, IClientConfig} from "../core/entities/crux-domain";
 import {CruxSpec} from "../core/entities/crux-spec";
+import { getValidCruxDomain } from "./test-utils";
 import {
     CruxUser, IAddress, IAddressMapping,
     ICruxUserRegistrationStatus,
@@ -15,6 +16,8 @@ describe('Core Entities Tests', () => {
 
     describe('Testing Entity CruxUser', () => {
 
+        const testCruxUserSubdomain = "foobar";
+        const testUserCruxDomain = getValidCruxDomain();
         const testCruxId = CruxId.fromString('foobar@somewallet.crux');
         const testAddress: IAddress = {
             'addressHash': 'foobtcaddress'
@@ -38,20 +41,21 @@ describe('Core Entities Tests', () => {
         }
 
         it('Valid CruxUser can be created', () => {
-            const testUser = new CruxUser(testCruxId, testValidAddressMap, newUserInformation, newUserData);
+            const testUser = new CruxUser(testCruxUserSubdomain, testUserCruxDomain, testValidAddressMap, newUserInformation, newUserData);
             expect(testUser.cruxID.toString()).to.be.equal(testCruxId.toString());
         });
         it('CruxUser should not be constructed with invalid address map', () => {
-            const createInvalidUser = () => new CruxUser(testCruxId, testInvalidAddressMap, newUserInformation, newUserData);
-            expect(createInvalidUser).to.throw();
+            const createInvalidUser = () => new CruxUser(testCruxUserSubdomain, testUserCruxDomain, testInvalidAddressMap, newUserInformation, newUserData);
+            // not throwing in the case of invalid addressMap to support "__userData__" key;
+            expect(createInvalidUser).to.not.throw();
         });
         it('Valid CruxUser getAddress method works as expected', () => {
-            const testUser = new CruxUser(testCruxId, testValidAddressMap, newUserInformation, newUserData);
+            const testUser = new CruxUser(testCruxUserSubdomain, testUserCruxDomain, testValidAddressMap, newUserInformation, newUserData);
             const testUserBtcAddressHash = testUser.getAddressMap()[BTC_ASSET_ID]['addressHash'];
             expect(testUserBtcAddressHash).to.be.equal(testValidAddressMap[BTC_ASSET_ID]['addressHash']);
         });
-        it('CruxUser should not be constructed with invalid CruxId', () => {
-            const createInvalidUser = () => new CruxUser(undefined, {}, newUserInformation, newUserData);
+        it('CruxUser should not be constructed with invalid CruxDomain', () => {
+            const createInvalidUser = () => new CruxUser(testCruxUserSubdomain, undefined, {}, newUserInformation, newUserData);
             expect(createInvalidUser).to.throw();
         })
 
