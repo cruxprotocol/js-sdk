@@ -1,30 +1,9 @@
+import { IClientAssetMapping, IGlobalAsset, IGlobalAssetList } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
 import { IAddress, IAddressMapping } from "../../core/entities/crux-user";
-import { BaseError, ERROR_STRINGS, PackageErrorCode } from "../../packages/error";
+import { ERROR_STRINGS, PackageErrorCode } from "../../packages/error";
 import { getLogger } from "../../packages/logger";
 const log = getLogger(__filename);
-
-export interface IClientAssetMapping {
-    [currencySymbol: string]: string;
-}
-
-export interface IGlobalAsset {
-    assetId: string;
-    symbol: string;
-    name: string;
-    assetType: string|null;
-    decimals: number|null;
-    assetIdentifierName: string|null;
-    assetIdentifierValue: number|string|null;
-    parentAssetId: string|null;
-}
-
-export interface IGlobalAssetList extends Array<IGlobalAsset> {}
-
-export interface IAssetMatcher {
-    assetGroup: string;
-    assetIdentifierValue?: string|number;
-}
 
 export interface IResolvedClientAssetMap {
     [currencySymbol: string]: IGlobalAsset;
@@ -42,13 +21,6 @@ export interface IPutAddressMapFailures {
     [currency: string]: string;
 }
 
-export interface IParentFallbackKeyDetails {
-    symbolFallbackKey: string;
-    assetIdFallbackKey: string;
-    parentAssetId: string;
-    assetType: string;
-}
-
 export class CruxAssetTranslator {
     private assetList!: IGlobalAssetList;
     private assetMap!: IClientAssetMapping;
@@ -62,9 +34,18 @@ export class CruxAssetTranslator {
     get assetMapping() {
         return this.assetMap;
     }
-    public symbolToAssetId(currencySymbol: string): string {
+    public symbolToAssetId(currencySymbol: string): string|undefined {
         currencySymbol = currencySymbol.toLowerCase();
         return this.assetMap[currencySymbol];
+    }
+    public symbolFallbackKeyToAssetIdFallbackKey = (parentFallbackKey: string) => {
+        return parentFallbackKey.replace(new RegExp("(.+)_(.+)"), (match: string, assetType: string, assetSymbol: string) => `${assetType}_${this.symbolToAssetId(assetSymbol)}`);
+    }
+    public assetIdFallbackKeyToSymbolFallbackKey = (parentFallbackKey: string) => {
+        return parentFallbackKey.replace(new RegExp("(.+)_(.+)"), (match: string, assetType: string, assetId: string) => `${assetType}_${this.assetIdToSymbol(assetId)}`);
+    }
+    public symbolToAsset(currencySymbol: string): IGlobalAsset|undefined {
+        return this.assetList.find((asset) => asset.assetId === this.symbolToAssetId(currencySymbol));
     }
     public assetIdToSymbol(assetId: string): string {
         return this.reverseAssetMap[assetId];
@@ -104,48 +85,6 @@ export class CruxAssetTranslator {
             assetAddressMap,
             failures,
             success,
-        };
-    }
-    public symbolParentFallbackKeyToParentFallbackKeyDetails = (symbolFallbackKey: string): IParentFallbackKeyDetails => {
-        const fallbackKeyRegex = new RegExp("^(.+)_(.+)$");
-        const match = symbolFallbackKey.match(fallbackKeyRegex);
-        if (!match) {
-            throw new BaseError(null, "Invalid fallback key");
-        }
-        const parentSymbol = match[2];
-        const parentAssetId = this.symbolToAssetId(parentSymbol);
-        return this.constructParentFallbackKeyDetails(match[1], match[2], parentAssetId);
-    }
-    public assetIdToParentFallbackKeyDetails = (assetId: string): IParentFallbackKeyDetails|undefined => {
-        const asset = this.assetList.find((a) => a.assetId === assetId);
-        if (!asset || asset.assetType === null || asset.parentAssetId === null) {
-            return;
-        }
-        const parentAssetId = asset.parentAssetId;
-        const parentSymbol = this.assetIdToSymbol(parentAssetId);
-        return this.constructParentFallbackKeyDetails(asset.assetType, parentSymbol, parentAssetId);
-    }
-    public assetMatcherToAsset = (assetMatcher: IAssetMatcher): IGlobalAsset|undefined => {
-        const filteredAssets = this.assetList.filter((asset) => {
-            const parentFallbackKeyDetails = this.symbolParentFallbackKeyToParentFallbackKeyDetails(assetMatcher.assetGroup);
-            // can only validate the properties that are not using symbols (client specific)
-            const assetParentFallbackKeyMatch = parentFallbackKeyDetails && (parentFallbackKeyDetails.parentAssetId === asset.parentAssetId) && (parentFallbackKeyDetails.assetType === asset.assetType);
-            const assetIdentifierValueMatch = asset.assetIdentifierValue === assetMatcher.assetIdentifierValue;
-            // should match all the criteria given in the matcher
-            return assetParentFallbackKeyMatch && assetIdentifierValueMatch;
-        });
-        if (filteredAssets.length === 1) {
-            return filteredAssets[0];
-        } else {
-            return;
-        }
-    }
-    private constructParentFallbackKeyDetails = (assetType: string, parentSymbol: string, parentAssetId: string): IParentFallbackKeyDetails => {
-        return {
-            assetIdFallbackKey: `${assetType}_${parentAssetId}`,
-            assetType,
-            parentAssetId,
-            symbolFallbackKey: `${assetType}_${parentSymbol}`,
         };
     }
     private setAssetMap = (assetMapping: IClientAssetMapping): void => {

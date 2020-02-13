@@ -1,9 +1,23 @@
-import { IClientAssetMapping, IGlobalAssetList } from "../../application/services/crux-asset-translator";
 import { BaseError } from "../../packages/error";
 import { CruxDomainId } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { CruxSpec } from "./crux-spec";
 const log = getLogger(__filename);
+export interface IClientAssetMapping {
+    [currencySymbol: string]: string;
+}
+export interface IGlobalAsset {
+    assetId: string;
+    symbol: string;
+    name: string;
+    assetType: string|null;
+    decimals: number|null;
+    assetIdentifierName: string|null;
+    assetIdentifierValue: number|string|null;
+    parentAssetId: string|null;
+}
+
+export interface IGlobalAssetList extends Array<IGlobalAsset> {}
 export interface INameServiceConfigurationOverrides {
     bnsNodes?: string[];
     gaiaHub?: string;

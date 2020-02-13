@@ -1,8 +1,8 @@
 // Importing packages
-import { CruxAssetTranslator, IAssetMatcher, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
+import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
 import { CruxDomain } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
-import { CruxUser, IAddress, IAddressMapping, ICruxUserRegistrationStatus, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
+import { CruxUser, IAddress, IAddressMapping, IAssetMatcher, ICruxUserRegistrationStatus, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxDomainRepository} from "../../core/interfaces/crux-domain-repository";
 import { ICruxUserRepository } from "../../core/interfaces/crux-user-repository";
@@ -18,10 +18,9 @@ import {
 } from "../../infrastructure/implementations/blockstack-crux-user-repository";
 import { Encryption } from "../../packages/encryption";
 import { BaseError, CruxClientError, ErrorHelper, PackageErrorCode } from "../../packages/error";
-import { CruxDomainId, CruxId, InputIDComponents } from "../../packages/identity-utils";
+import { CruxDomainId, CruxId } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
 import { StorageService } from "../../packages/storage";
-import { CruxAddressResolver, ICruxAddressResolverOptions } from "../services/curx-address-resolver";
 
 export const throwCruxClientError = (target: any, prop: any, descriptor?: { value?: any; }): any => {
     let fn: any;
@@ -110,10 +109,7 @@ export class CruxWalletClient {
     @throwCruxClientError
     public getCruxIDState = async (): Promise<ICruxIDState> => {
         await this.initPromise;
-        if (!this.keyManager) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
-        }
-        const cruxUser = await this.cruxUserRepository.getWithKey(this.keyManager, this.cruxDomainId);
+        const cruxUser = await this.getCruxUserByKey();
         if (!cruxUser) {
             return {
                 cruxID: null,
@@ -138,12 +134,15 @@ export class CruxWalletClient {
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
-        const addressResolver = new CruxAddressResolver({
-            cruxAssetTranslator: this.cruxAssetTranslator,
-            cruxUser,
-        });
-        const userAddress = await addressResolver.resolveAddressBySymbol(walletCurrencySymbol, this.keyManager);
-        return userAddress;
+        const asset = this.cruxAssetTranslator.symbolToAsset(walletCurrencySymbol);
+        if (!asset) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.AssetIDNotAvailable);
+        }
+        const address = await cruxUser.getAddressFromAsset(asset, this.keyManager);
+        if (!address) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.AddressNotAvailable);
+        }
+        return address;
     }
 
     @throwCruxClientError
@@ -154,27 +153,18 @@ export class CruxWalletClient {
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
-        const addressResolverOptions: ICruxAddressResolverOptions = {
-            cruxAssetTranslator: this.cruxAssetTranslator,
-            cruxUser,
-        };
-        if (assetMatcher.assetIdentifierValue) {
-            const userCruxDomain = await this.cruxDomainRepo.get(new CruxDomainId(cruxUser.cruxID.components.domain));
-            // we assume that the userCruxDomain is always available as we have a valid cruxUser (which is a subdomain under the domain);
-            addressResolverOptions.userCruxAssetTranslator = new CruxAssetTranslator(userCruxDomain!.config.assetMapping, userCruxDomain!.config.assetList);
+        assetMatcher.assetGroup = this.cruxAssetTranslator.symbolFallbackKeyToAssetIdFallbackKey(assetMatcher.assetGroup);
+        const address =  await cruxUser.getAddressFromAssetMatcher(assetMatcher);
+        if (!address) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.AddressNotAvailable);
         }
-        const addressResolver = new CruxAddressResolver(addressResolverOptions);
-        const userAddress = await addressResolver.resolveAddressByAssetMatcher(assetMatcher);
-        return userAddress;
+        return address;
     }
 
     @throwCruxClientError
     public getAddressMap = async (): Promise<IAddressMapping> => {
         await this.initPromise;
-        if (!this.keyManager) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
-        }
-        const cruxUser = await this.cruxUserRepository.getWithKey(this.keyManager, this.cruxDomainId);
+        const cruxUser = await this.cruxUserRepository.getWithKey(this.getKeyManager());
         if (cruxUser) {
             const assetIdAddressMap = cruxUser.getAddressMap();
             return this.cruxAssetTranslator.assetIdAddressMapToSymbolAddressMap(assetIdAddressMap);
@@ -185,25 +175,19 @@ export class CruxWalletClient {
     @throwCruxClientError
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {
         await this.initPromise;
-        if (!this.keyManager) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
-        }
-        const cruxUser = await this.cruxUserRepository.getWithKey(this.keyManager, this.cruxDomainId);
+        const cruxUser = await this.getCruxUserByKey();
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
         const {assetAddressMap, success, failures} = this.cruxAssetTranslator.symbolAddressMapToAssetIdAddressMap(newAddressMap);
         cruxUser.setAddressMap(assetAddressMap);
-        await this.cruxUserRepository.save(cruxUser, this.keyManager);
+        await this.cruxUserRepository.save(cruxUser, this.getKeyManager());
         return {success, failures};
     }
 
     public putPrivateAddressMap = async (fullCruxID: string, newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {
         await this.initPromise;
-        if (!this.keyManager) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
-        }
-        const cruxUserWithKey = await this.cruxUserRepository.getWithKey(this.keyManager, this.cruxDomainId);
+        const cruxUserWithKey = await this.getCruxUserByKey();
         const cruxUser = await await this.getCruxUserByID(fullCruxID.toLowerCase());
         if (!cruxUser || !cruxUserWithKey) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
@@ -212,42 +196,29 @@ export class CruxWalletClient {
         if (!cruxUser.publicKey) {
             throw new BaseError(null, `not supported with user: ${fullCruxID}`);
         }
-        cruxUserWithKey.setPrivateAddressMap(cruxUser.publicKey, assetAddressMap, this.keyManager);
-        await this.cruxUserRepository.save(cruxUserWithKey, this.keyManager);
+        cruxUserWithKey.setPrivateAddressMap(cruxUser.publicKey, assetAddressMap, this.getKeyManager());
+        await this.cruxUserRepository.save(cruxUserWithKey, this.getKeyManager());
         return {success, failures};
     }
 
     @throwCruxClientError
     public putParentAssetFallbacks = async (symbolAssetGroups: string[]): Promise<string[]> => {
         await this.initPromise;
-        if (!this.keyManager) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
-        }
-        let cruxUser = await this.cruxUserRepository.getWithKey(this.keyManager, this.cruxDomainId);
+        let cruxUser = await this.getCruxUserByKey();
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
-        const assetIdAssetGroups = symbolAssetGroups.map((assetGroup: string) => this.cruxAssetTranslator.symbolParentFallbackKeyToParentFallbackKeyDetails(assetGroup).assetIdFallbackKey);
-        // validate the assetIdAssetGroup is supported by the walletClient
-        assetIdAssetGroups.forEach((assetGroup) => {
-            if (!this.getCruxDomain().config.supportedParentAssetFallbacks.includes(assetGroup)) {
-                throw new BaseError(null, "assetGroup not supported by domain");
-            }
-        });
+        const assetIdAssetGroups = symbolAssetGroups.map((assetGroup: string) => this.cruxAssetTranslator.symbolFallbackKeyToAssetIdFallbackKey(assetGroup));
         cruxUser.setParentAssetFallbacks(assetIdAssetGroups);
-        cruxUser = await this.cruxUserRepository.save(cruxUser, this.keyManager);
-        return cruxUser.config.enabledParentAssetFallbacks;
+        cruxUser = await this.cruxUserRepository.save(cruxUser, this.getKeyManager());
+        const enabledParentAssetFallbacks = cruxUser.config.enabledParentAssetFallbacks.map((assetIdFallbackKey: string) => this.cruxAssetTranslator.assetIdFallbackKeyToSymbolFallbackKey(assetIdFallbackKey));
+        return enabledParentAssetFallbacks;
     }
 
     @throwCruxClientError
     public isCruxIDAvailable = async (cruxIDSubdomain: string): Promise<boolean> => {
         await this.initPromise;
-        const cruxIdInput: InputIDComponents = {
-            domain: this.walletClientName,
-            subdomain: cruxIDSubdomain.toLowerCase(),
-        };
-        const cruxId = new CruxId(cruxIdInput);
-        return this.cruxUserRepository.isCruxIdAvailable(cruxId);
+        return this.cruxUserRepository.isCruxIdAvailable(cruxIDSubdomain);
     }
 
     /**
@@ -276,19 +247,11 @@ export class CruxWalletClient {
     @throwCruxClientError
     public registerCruxID = async (cruxIDSubdomain: string): Promise<void> => {
         await this.initPromise;
-        if (!this.keyManager) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
-        }
-        const cruxUser = await this.cruxUserRepository.getWithKey(this.keyManager, this.cruxDomainId);
+        const cruxUser = await this.getCruxUserByKey();
         if (cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.ExistingCruxIDFound, cruxUser.cruxID);
         }
-        const cruxIdInput: InputIDComponents = {
-            domain: this.walletClientName,
-            subdomain: cruxIDSubdomain.toLowerCase(),
-        };
-        const cruxId = new CruxId(cruxIdInput);
-        await this.cruxUserRepository.create(cruxId, this.keyManager);
+        await this.cruxUserRepository.create(cruxIDSubdomain.toLowerCase(), this.getKeyManager());
     }
 
     @throwCruxClientError
@@ -304,6 +267,18 @@ export class CruxWalletClient {
     private getCruxUserByID = async (cruxIdString: string, tag?: string): Promise<CruxUser|undefined> => {
         const cruxId = CruxId.fromString(cruxIdString);
         return await this.cruxUserRepository.getByCruxId(cruxId, tag, true);
+    }
+
+    private getCruxUserByKey = async (): Promise<CruxUser|undefined> => {
+        const cruxUser = await this.cruxUserRepository.getWithKey(this.getKeyManager());
+        return cruxUser;
+    }
+
+    private getKeyManager = (): IKeyManager => {
+        if (!this.keyManager) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
+        }
+        return this.keyManager;
     }
 
     private getCruxDomain = () => {

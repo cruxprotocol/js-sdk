@@ -3,6 +3,7 @@ import { BaseError } from "../../packages/error";
 import { CruxId } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { IKeyManager } from "../interfaces";
+import { CruxDomain, IGlobalAsset, IGlobalAssetList } from "./crux-domain";
 import { CruxSpec } from "./crux-spec";
 
 const log = getLogger(__filename);
@@ -62,9 +63,11 @@ export class CruxUser {
     private addressMap!: IAddressMapping;
     private cruxUserConfig!: ICruxUserConfiguration;
     private cruxUserPrivateAddresses!: ICruxUserPrivateAddresses;
+    private cruxDomain!: CruxDomain;
 
-    constructor(cruxID: CruxId, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation, cruxUserData: ICruxUserData, publicKey?: string) {
-        this.setCruxUserID(cruxID);
+    constructor(cruxUserSubdomain: string, cruxDomain: CruxDomain, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation, cruxUserData: ICruxUserData, publicKey?: string) {
+        this.setCruxDomain(cruxDomain);
+        this.setCruxUserID(cruxUserSubdomain);
         this.setAddressMap(addressMap);
         this.setCruxUserInformation(cruxUserInformation);
         this.setCruxUserConfig(cruxUserData.configuration);
@@ -74,6 +77,9 @@ export class CruxUser {
     }
     get cruxID() {
         return this.cruxUserID;
+    }
+    get domain() {
+        return this.cruxDomain;
     }
     get info() {
         return this.cruxUserInformation;
@@ -88,7 +94,12 @@ export class CruxUser {
         return this.cruxUserPrivateAddresses;
     }
     public setParentAssetFallbacks = (assetGroups: string[]) => {
-        // TODO: validate the assetGroups provided;
+        // validate the assetIdAssetGroup is supported by the walletClient
+        assetGroups.forEach((assetGroup) => {
+            if (!this.cruxDomain.config.supportedParentAssetFallbacks.includes(assetGroup)) {
+                throw new BaseError(null, "assetGroup not supported by domain");
+            }
+        });
         const enabledFallbacksSet = new Set(assetGroups);
         this.cruxUserConfig.enabledParentAssetFallbacks = [...enabledFallbacksSet];
     }
@@ -96,11 +107,7 @@ export class CruxUser {
         return this.addressMap;
     }
     public setAddressMap(addressMap: IAddressMapping) {
-        try {
-            CruxSpec.validations.validateAssetIdAddressMap(addressMap);
-        } catch (error) {
-            throw new BaseError(error, `Address Map validation failed!`);
-        }
+        // addressMap is not validated due to the presence of magic key: "__userData__";
         this.addressMap = addressMap;
     }
     public setPrivateAddressMap = async (publicKey: string, addressMap: IAddressMapping, keyManager: IKeyManager): Promise<void> => {
@@ -113,28 +120,55 @@ export class CruxUser {
             throw new BaseError(null, "Not supported by the keyManager in use");
         }
     }
-    public getAddressWithAssetId = async (assetId: string, keyManager?: IKeyManager): Promise<IAddress|undefined> => {
+    public getAddressFromAsset = async (asset: IGlobalAsset, keyManager?: IKeyManager): Promise<IAddress|undefined> => {
         let address: IAddress|undefined;
-        if (this.pubKey && keyManager && "deriveSharedSecret" in keyManager && typeof keyManager.deriveSharedSecret === "function") {
+        if (keyManager) {
+            const decryptedAddressMap = await this.getDecryptedAddressMap(keyManager);
+            const addressResolver = new CruxUserAddressResolver(decryptedAddressMap, this.cruxDomain.config.assetList, this.cruxUserConfig);
+            address = addressResolver.resolveAddressWithAsset(asset);
+        }
+        if (!address) {
+            const addressResolver = new CruxUserAddressResolver(this.addressMap, this.cruxDomain.config.assetList, this.cruxUserConfig);
+            address = addressResolver.resolveAddressWithAsset(asset);
+        }
+        return address;
+    }
+    public getAddressFromAssetMatcher = async (assetMatcher: IAssetMatcher, keyManager?: IKeyManager): Promise<IAddress|undefined> => {
+        let address: IAddress|undefined;
+        if (keyManager) {
+            const decryptedAddressMap = await this.getDecryptedAddressMap(keyManager);
+            const addressResolver = new CruxUserAddressResolver(decryptedAddressMap, this.cruxDomain.config.assetList, this.cruxUserConfig);
+            address = addressResolver.resolveAddressWithAssetMatcher(assetMatcher);
+        }
+        if (!address) {
+            const addressResolver = new CruxUserAddressResolver(this.addressMap, this.cruxDomain.config.assetList, this.cruxUserConfig);
+            address = addressResolver.resolveAddressWithAssetMatcher(assetMatcher);
+        }
+        return address;
+    }
+    private getDecryptedAddressMap = async (keyManager: IKeyManager) => {
+        if (this.pubKey && "deriveSharedSecret" in keyManager && typeof keyManager.deriveSharedSecret === "function") {
             const sharedSecret = await keyManager.deriveSharedSecret(this.pubKey);
             const sharedSecretHash = Encryption.hash(sharedSecret);
             const encryptedAddressMapObject: {encBuffer: string, iv: string} = JSON.parse(this.cruxUserPrivateAddresses[sharedSecretHash]);
             if (encryptedAddressMapObject) {
                 const decryptedAddressMap = await Encryption.decryptJSON(encryptedAddressMapObject.encBuffer, encryptedAddressMapObject.iv, sharedSecret) as IAddressMapping;
-                address = decryptedAddressMap[assetId];
+                return decryptedAddressMap;
             }
         }
-        if (!address) {
-            address = this.addressMap[assetId];
-        }
-        return address;
+        return {};
     }
-    private setCruxUserID = (cruxID: CruxId) => {
-        if (cruxID instanceof CruxId) {
-            this.cruxUserID = cruxID;
-        } else {
-            throw new BaseError(null, "Invalid CruxID");
+    private setCruxDomain = (cruxDomain: CruxDomain) => {
+        if (!(cruxDomain instanceof CruxDomain)) {
+            throw new BaseError(null, "Invalid cruxDomain provided in CruxUser");
         }
+        this.cruxDomain = cruxDomain;
+    }
+    private setCruxUserID = (cruxUserSubdomain: string) => {
+        this.cruxUserID = new CruxId({
+            domain: this.cruxDomain.id.components.domain,
+            subdomain: cruxUserSubdomain,
+        });
     }
     private setCruxUserInformation = (cruxUserInformation: ICruxUserInformation) => {
         // validate and set the cruxUserInformation
@@ -161,5 +195,83 @@ export class CruxUser {
         } else {
             this.cruxUserPrivateAddresses = cruxUserPrivateAddresses;
         }
+    }
+}
+
+export interface IAssetMatcher {
+    assetGroup: string;
+    assetIdentifierValue?: string|number;
+}
+
+export class CruxUserAddressResolver {
+    private userAddressMap: IAddressMapping;
+    private userClientAssetList: IGlobalAssetList;
+    private userConfig: ICruxUserConfiguration;
+    constructor(cruxUserAddressMap: IAddressMapping, cruxUserClientAssetList: IGlobalAssetList, cruxUserConfig: ICruxUserConfiguration) {
+        this.userAddressMap = cruxUserAddressMap;
+        this.userClientAssetList = cruxUserClientAssetList;
+        this.userConfig = cruxUserConfig;
+    }
+    public resolveAddressWithAsset = (asset: IGlobalAsset): IAddress|undefined => {
+        let address: IAddress|undefined;
+        // check for the address using the assetId
+        address = this.userAddressMap[asset.assetId];
+        // if address not found, check the parentAssetFallback config
+        if (!address) {
+            const parentFallbackKey = this.assetToParentFallbackKey(asset);
+            address = parentFallbackKey ? this.resolveFallbackAddressIfEnabled(parentFallbackKey) : undefined;
+        }
+        return address;
+    }
+    public resolveAddressWithAssetMatcher = (assetMatcher: IAssetMatcher): IAddress|undefined => {
+        let address: IAddress|undefined;
+        // if assetIdentifier is provided, find the asset matching the identifier
+        if (assetMatcher.assetIdentifierValue) {
+            const asset = this.findAssetWithAssetMatcher(assetMatcher);
+            // if asset is available, resolve the address with asset found
+            if (asset) {
+                address = this.resolveAddressWithAsset(asset);
+            } else {
+                address = this.resolveFallbackAddressIfEnabled(assetMatcher.assetGroup);
+            }
+        } else {
+            address = this.resolveFallbackAddressIfEnabled(assetMatcher.assetGroup);
+        }
+        return address;
+    }
+    private findAssetWithAssetMatcher = (assetMatcher: IAssetMatcher): IGlobalAsset|undefined => {
+        const asset = this.userClientAssetList.find((a) => {
+            let match = false;
+            let assetIdentifierValueMatch = false;
+            // matching the assetIdentifierValue
+            if (typeof a.assetIdentifierValue === "string" && typeof assetMatcher.assetIdentifierValue === "string" && a.assetIdentifierValue.toLowerCase() === assetMatcher.assetIdentifierValue.toLowerCase()) {
+                assetIdentifierValueMatch = true;
+            } else if (typeof a.assetIdentifierValue === "number" && typeof assetMatcher.assetIdentifierValue === "number" && a.assetIdentifierValue === assetMatcher.assetIdentifierValue) {
+                assetIdentifierValueMatch = true;
+            }
+            // matching the parentFallbackKey
+            if (assetIdentifierValueMatch) {
+                const parentFallbackKey = this.assetToParentFallbackKey(a);
+                match = Boolean(parentFallbackKey && (parentFallbackKey === assetMatcher.assetGroup));
+            }
+            return match;
+        });
+        return asset;
+    }
+    private resolveFallbackAddressIfEnabled = (parentFallbackKey: string): IAddress|undefined => {
+        let address: IAddress|undefined;
+        const isFallbackEnabled = this.userConfig.enabledParentAssetFallbacks.includes(parentFallbackKey);
+        // if fallback enabled, find the parentAsset's address
+        if (isFallbackEnabled) {
+            const parentAssetId = parentFallbackKey.split("_")[1];
+            address = this.userAddressMap[parentAssetId];
+        }
+        return address;
+    }
+    private assetToParentFallbackKey = (asset: IGlobalAsset): string|undefined => {
+        if (!asset.assetType || !asset.parentAssetId) {
+            return;
+        }
+        return `${asset.assetType}_${asset.parentAssetId}`;
     }
 }
