@@ -68,6 +68,10 @@ const sanitizeUrl = (url: string): string => {
     return `${parsedUrl.origin}${parsedUrl.pathname}`;
 };
 
+const trimTrailingSlash = (value: string): string => {
+    return value.replace(/\/$/, "");
+};
+
 const getRandomHexString = (length: number = 32): string => {
     const randomValues = crypto.getRandomValues(new Uint8Array(length));
     let result: string = "";
@@ -158,4 +162,5 @@ export {
     getKeyPairFromPrivKey,
     getRandomHexString,
     cloneValue,
+    trimTrailingSlash,
 };

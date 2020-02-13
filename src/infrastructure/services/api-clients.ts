@@ -2,7 +2,7 @@ import { BaseError, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import {BlockstackDomainId} from "../../packages/identity-utils";
 import {getLogger} from "../../packages/logger";
 import { StorageService } from "../../packages/storage";
-import { cachedFunctionCall, httpJSONRequest } from "../../packages/utils";
+import { cachedFunctionCall, httpJSONRequest, trimTrailingSlash } from "../../packages/utils";
 const log = getLogger(__filename);
 export interface IHubInfo {
     challenge_text: string;
@@ -17,14 +17,14 @@ export enum UPLOADABLE_JSON_FILES {
 export class GaiaServiceApiClient {
     public static getHubInfo = async (gaiaHub: string, cacheStorage?: StorageService): Promise<IHubInfo> => {
         const options = {
-            baseUrl: gaiaHub,
+            baseUrl: trimTrailingSlash(gaiaHub),
             url: "/hub_info",
         };
         return cachedFunctionCall(cacheStorage, `${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options]) as Promise<IHubInfo>;
     }
     public static store = async (gaiaHub: string, filename: string, address: string, authToken: string, contents: string, contentType = "application/octet-stream"): Promise<{publicURL: string}> => {
         const options = {
-            baseUrl: gaiaHub,
+            baseUrl: trimTrailingSlash(gaiaHub),
             body: JSON.parse(contents),
             headers: {
                 "Authorization": `bearer ${authToken}`,
@@ -43,7 +43,7 @@ export class GaiaServiceApiClient {
     }
     public static retrieve = async (readURLPrefix: string, filename: string, address: string, cacheStorage?: StorageService) => {
         const options = {
-            baseUrl: readURLPrefix,
+            baseUrl: trimTrailingSlash(readURLPrefix),
             json: true,
             method: "GET",
             url: `/${address}/${filename}`,
@@ -74,7 +74,7 @@ export interface INameDetails {
 export class BlockstackNamingServiceApiClient {
     public static getNamesByAddress = async (bnsNode: string, address: string, cacheStorage?: StorageService): Promise<{names: string[]}> => {
         const options = {
-            baseUrl: bnsNode,
+            baseUrl: trimTrailingSlash(bnsNode),
             json: true,
             method: "GET",
             url: `/v1/addresses/bitcoin/${address}`,
@@ -88,7 +88,7 @@ export class BlockstackNamingServiceApiClient {
     }
     public static getNameDetails = async (bnsNode: string, blockstackName: string, tag?: string, cacheStorage?: StorageService): Promise<INameDetails> => {
         const options: any = {
-            baseUrl: bnsNode,
+            baseUrl: trimTrailingSlash(bnsNode),
             json: true,
             method: "GET",
             qs: null,
@@ -138,7 +138,7 @@ export class BlockstackSubdomainRegistrarApiClient {
     public getSubdomainStatus = async (subdomainString: string): Promise<{status: string, statusCode?: number}> => {
         await this.initPromise;
         const options = {
-            baseUrl: this.baseUrl,
+            baseUrl: trimTrailingSlash(this.baseUrl),
             headers: {
                 "x-domain-name": this.blockstackDomainId.components.domain,
             },
@@ -152,7 +152,7 @@ export class BlockstackSubdomainRegistrarApiClient {
     public registerSubdomain = async (name: string, gaiaHubUrl: string, ownerAdderss: string): Promise<void> => {
         await this.initPromise;
         const options = {
-            baseUrl: this.baseUrl,
+            baseUrl: trimTrailingSlash(this.baseUrl),
             body: {
                 name,
                 owner_address: ownerAdderss,
@@ -186,7 +186,7 @@ export class BlockstackSubdomainRegistrarApiClient {
         await this.initPromise;
         const url = `/subdomain/${address}`;
         const options = {
-            baseUrl: this.baseUrl,
+            baseUrl: trimTrailingSlash(this.baseUrl),
             headers: {
                 "x-domain-name": this.blockstackDomainId.components.domain,
             },
@@ -204,7 +204,7 @@ export class BlockstackSubdomainRegistrarApiClient {
     }
     public getIndex = async (): Promise<any> => {
         const options = {
-            baseUrl: this.baseUrl,
+            baseUrl: trimTrailingSlash(this.baseUrl),
             headers: {
                 "x-domain-name": this.blockstackDomainId.components.domain,
             },

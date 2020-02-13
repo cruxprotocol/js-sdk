@@ -53,24 +53,20 @@ describe("CruxWalletClient integration tests", () => {
         it("resolving address of a user whose gaia record is tampered (non-conforming decodedToken)", async () => {
             // mocking
             const requestOptions = {
-                baseUrl: "https://gaia.cruxpay.com/",
+                baseUrl: "https://gaia.cruxpay.com",
                 json: true,
                 method: "GET",
-                url: "1ATf5YwcEARWMCZdS8x3BXmkodkvnMW4Tf/cruxdev_client-config.json",
+                url: "/1ATf5YwcEARWMCZdS8x3BXmkodkvnMW4Tf/cruxdev_client-config.json",
             }
             const mockGaiaRecord = [{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJjbGFpbSI6eyJkNzhjMjZmOC03YzEzLTQ5MDktYmY2Mi01N2Q3NjIzZjhlZTgiOnsiYWRkcmVzc0hhc2giOiIxSFg0S3Z0UGRnOVFVWXdRRTFrTnFUQWptTmFERzd3ODJWIn19LCJpc3N1ZXIiOnsicHVibGljS2V5IjoiMDJlOGUxZGVhYmI3MGFlMGY4YzQzNjVkZDc0ZTE3ZjIwMmEwNzU3NjBmZjVhMDI4MDgzOGVmNGI2ZjUyMWM0NjE0In0sInN1YmplY3QiOnsicHVibGljS2V5IjoiMDJlOGUxZGVhYmI3MGFlMGY4YzQzNjVkZDc0ZTE3ZjIwMmEwNzU3NjBmZjVhMDI4MDgzOGVmNGI2ZjUyMWM0NjE0In19.fVony1HEW0oz5hewmBEfB0dIX5OqsYnrN5qqcnVLwOm3dHqTsCjyjbMcmvYQzlUuBdt2S8Lh8mK0Gdxm_5VFyw","decodedToken":{"header":{"typ":"JWT","alg":"ES256K"},"payload":{"claim":{"d78c26f8-7c13-4909-bf62-57d7623f8ee8":{"addressHash":"MALICIOUS_BTC_ADDRESS"}},"issuer":{"publicKey":"02e8e1deabb70ae0f8c4365dd74e17f202a075760ff5a0280838ef4b6f521c4614"},"subject":{"publicKey":"02e8e1deabb70ae0f8c4365dd74e17f202a075760ff5a0280838ef4b6f521c4614"}},"signature":"fVony1HEW0oz5hewmBEfB0dIX5OqsYnrN5qqcnVLwOm3dHqTsCjyjbMcmvYQzlUuBdt2S8Lh8mK0Gdxm_5VFyw"}}]
             const mockHttpJSONRequest = sandbox.stub(utils, "httpJSONRequest").callThrough().withArgs(sinon.match(requestOptions)).resolves(mockGaiaRecord);
             // calling the method
-            let raisedError;
-            try {
-                const resolvedAddress = await cruxWalletClient.resolveCurrencyAddressForCruxID(testCruxId.toString(), "btc");
-            } catch (error) {
-                raisedError = error;
-            }
+            const resolvedAddress = cruxWalletClient.resolveCurrencyAddressForCruxID(testCruxId.toString(), "btc");
             // expectations
-            expect(mockHttpJSONRequest.calledOnce).to.be.true;
-            expect(raisedError).to.be.instanceOf(CruxClientError);
-            expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.GaiaRecordIntegrityFailed);
+            await resolvedAddress.should.be.rejectedWith(CruxClientError).then((error) => {
+                expect(error["errorCode"]).to.be.equal(PackageErrorCode.GaiaRecordIntegrityFailed);
+                expect(mockHttpJSONRequest.calledOnce).to.be.true;
+            });
         })
         it("resolving address of a user whose gaiaHub is tampered (malicious gaiaHub info response)", async () => {
             const requestOptions = {
@@ -90,16 +86,13 @@ describe("CruxWalletClient integration tests", () => {
             };
             const mockGaiaHubInfoResponse = {"challenge_text":"[\"gaiahub\",\"0\",\"hub.cruxpay.com\",\"blockstack_storage_please_sign\"]","latest_auth_version":"v1","max_file_upload_size_megabytes":20,"read_url_prefix":"https://gaia.cruxpay.com/f@akeHubPath!"};
             const mockHttpJSONRequest = sandbox.stub(utils, "httpJSONRequest").callThrough().withArgs(sinon.match(requestOptions)).resolves(mockGaiaHubInfoResponse);
-            let raisedError;
-            try {
-                const resolvedAddress = await cruxWalletClient.resolveCurrencyAddressForCruxID(testCruxId.toString(), "btc");
-            } catch (error) {
-                raisedError = error;
-            }
-            expect(raisedError).to.be.instanceOf(CruxClientError);
-            expect(raisedError.message).to.include.string("invalid characters");
-            // @ts-ignore
-            expect(mockHttpJSONRequest.parent.neverCalledWith(sinon.match({ baseUrl: "https://gaia.cruxpay.com/f@akeHubPath!" }))).to.be.true;
+            const resolvedAddress = cruxWalletClient.resolveCurrencyAddressForCruxID(testCruxId.toString(), "btc");
+            await resolvedAddress.should.be.rejectedWith(CruxClientError).then((error) => {
+                expect(error.message).to.include.string("invalid characters");
+                // @ts-ignore
+                expect(mockHttpJSONRequest.parent.neverCalledWith(sinon.match({ baseUrl: "https://gaia.cruxpay.com/f@akeHubPath!" }))).to.be.true;
+            })             
+            
         })
     })
     describe("CruxWalletClient with testPrivateKey (registered)", () => {
@@ -132,22 +125,18 @@ describe("CruxWalletClient integration tests", () => {
         })
         it("getAddressMap for the testCruxId when the gaia record is tampered", async () => {
             const requestOptions = {
-                baseUrl: "https://gaia.cruxpay.com/",
+                baseUrl: "https://gaia.cruxpay.com",
                 json: true,
                 method: "GET",
-                url: "1ATf5YwcEARWMCZdS8x3BXmkodkvnMW4Tf/cruxdev_client-config.json",
+                url: "/1ATf5YwcEARWMCZdS8x3BXmkodkvnMW4Tf/cruxdev_client-config.json",
             };
             const mockGaiaRecord = [{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJjbGFpbSI6eyJkNzhjMjZmOC03YzEzLTQ5MDktYmY2Mi01N2Q3NjIzZjhlZTgiOnsiYWRkcmVzc0hhc2giOiIxSFg0S3Z0UGRnOVFVWXdRRTFrTnFUQWptTmFERzd3ODJWIn19LCJpc3N1ZXIiOnsicHVibGljS2V5IjoiMDJlOGUxZGVhYmI3MGFlMGY4YzQzNjVkZDc0ZTE3ZjIwMmEwNzU3NjBmZjVhMDI4MDgzOGVmNGI2ZjUyMWM0NjE0In0sInN1YmplY3QiOnsicHVibGljS2V5IjoiMDJlOGUxZGVhYmI3MGFlMGY4YzQzNjVkZDc0ZTE3ZjIwMmEwNzU3NjBmZjVhMDI4MDgzOGVmNGI2ZjUyMWM0NjE0In19.fVony1HEW0oz5hewmBEfB0dIX5OqsYnrN5qqcnVLwOm3dHqTsCjyjbMcmvYQzlUuBdt2S8Lh8mK0Gdxm_5VFyw","decodedToken":{"header":{"typ":"JWT","alg":"ES256K"},"payload":{"claim":{"d78c26f8-7c13-4909-bf62-57d7623f8ee8":{"addressHash":"MALICIOUS_BTC_ADDRESS"}},"issuer":{"publicKey":"02e8e1deabb70ae0f8c4365dd74e17f202a075760ff5a0280838ef4b6f521c4614"},"subject":{"publicKey":"02e8e1deabb70ae0f8c4365dd74e17f202a075760ff5a0280838ef4b6f521c4614"}},"signature":"fVony1HEW0oz5hewmBEfB0dIX5OqsYnrN5qqcnVLwOm3dHqTsCjyjbMcmvYQzlUuBdt2S8Lh8mK0Gdxm_5VFyw"}}];
             const mockHttpJSONRequest = sinon.stub(utils, "httpJSONRequest").callThrough().withArgs(sinon.match(requestOptions)).resolves(mockGaiaRecord);
-            let raisedError;
-            try {
-                const addressMap = await cruxWalletClient.getAddressMap();
-            } catch (error) {
-                raisedError = error;
-            }
-            expect(mockHttpJSONRequest.calledOnce).to.be.true;
-            expect(raisedError).to.be.instanceOf(CruxClientError);
-            expect(raisedError["errorCode"]).to.be.equal(PackageErrorCode.GaiaRecordIntegrityFailed);
+            const addressMap = cruxWalletClient.getAddressMap();
+            await addressMap.should.be.rejectedWith(CruxClientError).then((error) => {
+                expect(error["errorCode"]).to.be.equal(PackageErrorCode.GaiaRecordIntegrityFailed);
+                expect(mockHttpJSONRequest.calledOnce).to.be.true;
+            })            
         })
     })
     describe("CruxWalletClient with newPrivateKey (unregistered)", () => {
