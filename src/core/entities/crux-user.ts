@@ -29,7 +29,6 @@ export interface ICruxUserInformation {
 }
 
 export interface ICruxUserData {
-    publicKey?: string;
     configuration: ICruxUserConfiguration;
     privateAddresses: ICruxUserPrivateAddresses;
 }
