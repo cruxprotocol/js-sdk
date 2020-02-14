@@ -57,7 +57,7 @@ export class GaiaServiceApiClient {
                 return Boolean(filename !== UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
             });
         } catch (error) {
-            if (error instanceof PackageError) {
+            if (error instanceof PackageError && error.errorCode === PackageErrorCode.FileNotFound) {
                 throw ErrorHelper.getPackageError(error, PackageErrorCode.GaiaEmptyResponse);
             }
             throw ErrorHelper.getPackageError(error, PackageErrorCode.GaiaGetFileFailed, filename);

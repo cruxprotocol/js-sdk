@@ -25,7 +25,7 @@ const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (
                 return res.json();
             })
             .then((json) => resolve(json))
-            .catch((err) => reject(err));
+            .catch(reject);
     });
     return promise;
 };
