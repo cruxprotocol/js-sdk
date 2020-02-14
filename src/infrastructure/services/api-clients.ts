@@ -1,4 +1,5 @@
 import { BaseError, ErrorHelper, PackageErrorCode } from "../../packages/error";
+import { PackageError } from "../../packages/error/package-error";
 import {BlockstackDomainId} from "../../packages/identity-utils";
 import {getLogger} from "../../packages/logger";
 import { StorageService } from "../../packages/storage";
@@ -56,7 +57,10 @@ export class GaiaServiceApiClient {
                 return Boolean(filename !== UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
             });
         } catch (error) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaGetFileFailed, filename);
+            if (error instanceof PackageError && error.errorCode === PackageErrorCode.FileNotFound) {
+                throw ErrorHelper.getPackageError(error, PackageErrorCode.GaiaEmptyResponse);
+            }
+            throw ErrorHelper.getPackageError(error, PackageErrorCode.GaiaGetFileFailed, filename);
         }
         return responseBody;
     }
