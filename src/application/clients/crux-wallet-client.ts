@@ -18,7 +18,7 @@ import {
 } from "../../infrastructure/implementations/blockstack-crux-user-repository";
 import { Encryption } from "../../packages/encryption";
 import { BaseError, CruxClientError, ErrorHelper, PackageErrorCode } from "../../packages/error";
-import { CruxDomainId, CruxId, InputIDComponents } from "../../packages/identity-utils";
+import { CruxDomainId, CruxId } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
 import { StorageService } from "../../packages/storage";
 
@@ -109,7 +109,7 @@ export class CruxWalletClient {
     @throwCruxClientError
     public getCruxIDState = async (): Promise<ICruxIDState> => {
         await this.initPromise;
-        const cruxUser = await this.cruxUserRepository.getWithKey(this.getKeyManager());
+        const cruxUser = await this.getCruxUserByKey();
         if (!cruxUser) {
             return {
                 cruxID: null,
