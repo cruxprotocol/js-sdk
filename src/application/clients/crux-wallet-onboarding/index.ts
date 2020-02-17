@@ -74,9 +74,9 @@ export class CruxOnBoardingClient {
         return this.getCruxDomain().config.assetMapping;
     }
     @throwCruxOnBoardingClientError
-    public getSupportedParentAssetFallbacks = async (): Promise<string[]> => {
+    public getSupportedAssetGroups = async (): Promise<string[]> => {
         await this.initPromise;
-        return this.getCruxDomain().config.supportedParentAssetFallbacks;
+        return this.getCruxDomain().config.supportedAssetGroups;
     }
     @throwCruxOnBoardingClientError
     public putNameServiceConfig = async (newNameServiceConfig: INameServiceConfigurationOverrides): Promise<void> => {
@@ -95,10 +95,10 @@ export class CruxOnBoardingClient {
         return;
     }
     @throwCruxOnBoardingClientError
-    public putSupportedParentAssetFallbacks = async (newSupportedParentAssetFallbacks: string[]): Promise<void> => {
+    public putSupportedAssetGroups = async (newSupportedAssetGroups: string[]): Promise<void> => {
         await this.initPromise;
         const cruxDomain: CruxDomain = cloneValue(this.getCruxDomain());
-        cruxDomain.config.supportedParentAssetFallbacks = newSupportedParentAssetFallbacks;
+        cruxDomain.config.supportedAssetGroups = newSupportedAssetGroups;
         this.cruxDomain = await this.cruxDomainRepository.save(cruxDomain, this.getConfigKeyManager());
         return;
     }

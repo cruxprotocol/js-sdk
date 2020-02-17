@@ -67,6 +67,7 @@
     "@types/mocha": "^5.2.7",
     "@types/request": "^2.48.3",
     "@types/sinon": "^7.0.13",
+    "@types/url-parse": "^1.4.3",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "git-branch-is": "^3.0.0",
@@ -96,6 +97,7 @@
     "elliptic": "^6.5.2",
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
-    "regenerator-runtime": "^0.13.3"
+    "regenerator-runtime": "^0.13.3",
+    "url-parse": "^1.4.7"
   }
 }

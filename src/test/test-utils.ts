@@ -5,11 +5,9 @@ import {
     CruxUser,
     IAddress,
     IAddressMapping,
-    ICruxUserRegistrationStatus,
     SubdomainRegistrationStatus,
     SubdomainRegistrationStatusDetail,
     ICruxUserInformation,
-    ICruxUserConfiguration,
     ICruxUserData
 } from "../core/entities/crux-user";
 import {ICruxDomainRepository} from "../core/interfaces/crux-domain-repository";
@@ -58,7 +56,7 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
             }
         },{
             configuration: {
-                enabledParentAssetFallbacks: [],
+                enabledAssetGroups: [],
         }});
         const addressFromKeyManager = publicKeyToAddress(await keyManager.getPubKey());
         this.userStore.store(newUser, addressFromKeyManager);
@@ -100,7 +98,7 @@ export class InMemoryCruxDomainRepository implements ICruxDomainRepository {
     }
 
     public create = (domainId: CruxDomainId, identityKeyManager: IKeyManager): Promise<CruxDomain> => {
-        const newDomain = new CruxDomain(domainId, DomainRegistrationStatus.REGISTERED, {assetList: [], assetMapping: {}, supportedParentAssetFallbacks: []});
+        const newDomain = new CruxDomain(domainId, DomainRegistrationStatus.REGISTERED, {assetList: [], assetMapping: {}, supportedAssetGroups: []});
         this.domainById[domainId.toString()] = newDomain;
         return new Promise((resolve, reject) => resolve(newDomain));
     };
@@ -149,7 +147,7 @@ export const getValidCruxDomain = () => {
     const testValidDomainConfig: IClientConfig = {
         assetMapping: testValidDomainAssetMapping,
         assetList: CruxSpec.globalAssetList.filter((asset) => Object.values(testValidDomainAssetMapping).includes(asset.assetId)),
-        supportedParentAssetFallbacks: [],
+        supportedAssetGroups: [],
     };
     return new CruxDomain(testCruxDomainId, domainStatus, testValidDomainConfig);
 };
@@ -163,7 +161,7 @@ export const getCruxdevCruxDomain = () => {
     const testValidDomainConfig: IClientConfig = {
         assetMapping: testValidDomainAssetMapping,
         assetList: CruxSpec.globalAssetList.filter((asset) => Object.values(testValidDomainAssetMapping).includes(asset.assetId)),
-        supportedParentAssetFallbacks: [],
+        supportedAssetGroups: [],
     };
     return new CruxDomain(testCruxDomainId, domainStatus, testValidDomainConfig);
 };
@@ -183,7 +181,7 @@ export const getValidCruxUser = () => {
     };
     const validCruxUserData: ICruxUserData = {
         configuration: {
-            enabledParentAssetFallbacks: [],
+            enabledAssetGroups: [],
     }}
 
     return new CruxUser(testCruxUserSubdomain, getValidCruxDomain() , testValidAddressMap, validUserInformation, validCruxUserData);
@@ -205,7 +203,7 @@ export const getValidCruxUser2 = () => {
     };
     const validCruxUserData: ICruxUserData = {
         configuration: {
-            enabledParentAssetFallbacks: [],
+            enabledAssetGroups: [],
     }}
 
     return new CruxUser(testCruxUserSubdomain, getValidCruxDomain(), testValidAddressMap, validUserInformation, validCruxUserData);
@@ -222,7 +220,7 @@ export const getValidPendingCruxUser = () => {
     };
     const validCruxUserData: ICruxUserData = {
         configuration: {
-            enabledParentAssetFallbacks: [],
+            enabledAssetGroups: [],
     }}
     return new CruxUser(testCruxUserSubdomain, getValidCruxDomain(), {}, validUserInformation, validCruxUserData);
 }

@@ -61,7 +61,7 @@ const sampleAddressMaps: {[walletClientName: string]: IAddressMapping} = {
     }
 };
 
-const parentAssetFallbacks = {
+const supportedAssetGroups = {
     "cruxdev": ["ERC20_eth"],
     "zel_dev": ["ERC20_ethereum"],
 };
@@ -70,7 +70,7 @@ const url = new URL(window.location.href);
 mode = url.searchParams.get("mode") || mode;
 walletClientName = url.searchParams.get("walletClientName") || walletClientName;
 const sampleAddressMap = sampleAddressMaps[Object.keys(sampleAddressMaps).find((keyString) => keyString.split(',').includes(walletClientName))];
-const sampleParentAssetFallbacks = parentAssetFallbacks[Object.keys(parentAssetFallbacks).find((keyString) => keyString.split(',').includes(walletClientName))];
+const sampleSupportedAssetGroups = supportedAssetGroups[Object.keys(supportedAssetGroups).find((keyString) => keyString.split(',').includes(walletClientName))];
 const privateKey = url.searchParams.get("key");
 // mascot6699@cruxdev.crux - ["cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37f7c6f"]
 
@@ -80,8 +80,8 @@ doc.getElementById('currency').innerHTML = Object.keys(sampleAddressMap).map((cu
 doc.getElementById('userAddresses').textContent = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; let secIdentifier = sampleAddressMap[currency].secIdentifier; return `${currency.toUpperCase()} - ${address} ${secIdentifier ? `(${secIdentifier})` : '' }` }).join('\n')
 doc.getElementById('publishAddresses').innerHTML = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; let secIdentifier = sampleAddressMap[currency].secIdentifier; return `<input type="checkbox" name="publishAddressOption" currency="${currency.toUpperCase()}" addressHash="${address}" secIdentifier="${secIdentifier}" checked>${currency.toUpperCase()}` }).join('\n')
 doc.getElementById('publishPrivateAddresses').innerHTML = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; let secIdentifier = sampleAddressMap[currency].secIdentifier; return `<input type="checkbox" name="publishPrivateAddressOption" currency="${currency.toUpperCase()}" addressHash="${address}" secIdentifier="${secIdentifier}" checked>${currency.toUpperCase()}` }).join('\n')
-doc.getElementById('assetMatcher_assetGroups').innerHTML = [...sampleParentAssetFallbacks].map((assetGroup) => `<option value="${assetGroup}">${assetGroup.toUpperCase()}</option>`).join('\n')
-doc.getElementById('putParentAssetFallbacks').innerHTML = [...sampleParentAssetFallbacks].map((assetGroup) => `<input type="checkbox" name="putParentAssetFallbacksOption" assetGroup="${assetGroup}" checked>${assetGroup.toUpperCase()}`).join('\n')
+doc.getElementById('assetMatcher_assetGroups').innerHTML = [...sampleSupportedAssetGroups].map((assetGroup) => `<option value="${assetGroup}">${assetGroup.toUpperCase()}</option>`).join('\n')
+doc.getElementById('putEnabledAssetGroups').innerHTML = [...sampleSupportedAssetGroups].map((assetGroup) => `<input type="checkbox" name="putEnabledAssetGroupsOption" assetGroup="${assetGroup}" checked>${assetGroup.toUpperCase()}`).join('\n')
 
 
 // --- @crux/js-sdk integration --- //
@@ -99,8 +99,8 @@ const cruxClient = new CruxWalletClient(cruxClientOptions)
 // SDK functional interface
 
 const isCruxIDAvailable = async () => {
-    let UIResponse: string = ""
-    doc.getElementById('availability').textContent = "checking availability ..."
+    let UIResponse: string = "checking availability ..."
+    doc.getElementById('availability').textContent = UIResponse
     let cruxID = doc.getElementById('registrationId').value
     try {
         let available = await cruxClient.isCruxIDAvailable(cruxID)
@@ -117,9 +117,9 @@ const isCruxIDAvailable = async () => {
     }
 }
 const registerCruxID = async () => {
-    let UIResponse: string = ""
+    let UIResponse: string = "registering your crux ID..."
     let cruxID = doc.getElementById('newSubdomain').value
-    doc.getElementById('registrationAcknowledgement').textContent = "registering your crux ID...";
+    doc.getElementById('registrationAcknowledgement').textContent = UIResponse;
     try {
         await cruxClient.registerCruxID(cruxID)
         UIResponse = 'cruxID registration initiated!'
@@ -127,8 +127,8 @@ const registerCruxID = async () => {
             const { success, failures } = await cruxClient.putAddressMap(sampleAddressMap)
             UIResponse += `\nsuccessfully published: ${JSON.stringify(success)}, \nFailed publishing: ${JSON.stringify(failures, undefined, 4)}`
             try {
-                const enabledParentAssetFallbacks = await cruxClient.putParentAssetFallbacks(sampleParentAssetFallbacks);
-                UIResponse += `\nsuccessfully updated ParentAssetFallbacks: ${enabledParentAssetFallbacks}`
+                const enabledAssetGroups = await cruxClient.putEnabledAssetGroups(sampleSupportedAssetGroups);
+                UIResponse += `\nsuccessfully enabled assetGroups: ${enabledAssetGroups}`
             } catch (e_2) {
                 if (e_2 instanceof CruxClientError) {
                     UIResponse += `\n${e_2.errorCode}: ${e_2}`
@@ -154,10 +154,10 @@ const registerCruxID = async () => {
     }
 }
 const resolveCurrencyAddressForCruxID = async () => {
-    let UIResponse: string = ""
     let cruxID = doc.getElementById('receiverVirtualAddress').value
     let walletCurrencySymbol = doc.getElementById('currency').value
-    doc.getElementById('addresses').textContent = `resolving cruxID (${cruxID}) ${walletCurrencySymbol} address ...`
+    let UIResponse: string = `resolving cruxID (${cruxID}) ${walletCurrencySymbol} address ...`
+    doc.getElementById('addresses').textContent = UIResponse
     try {
         let resolvedAddress = await cruxClient.resolveCurrencyAddressForCruxID(cruxID, walletCurrencySymbol)
         UIResponse = JSON.stringify(resolvedAddress, undefined, 4)
@@ -173,13 +173,13 @@ const resolveCurrencyAddressForCruxID = async () => {
 
 }
 const resolveAssetAddressForCruxID = async () => {
-    let UIResponse: string = ""
     let cruxID = doc.getElementById('receiverVirtualAddress').value
+    let UIResponse: string = `resolving cruxID (${cruxID}) with the given assetMatcher...`
     let assetMatcher: IAssetMatcher = {
         assetGroup: doc.getElementById('assetMatcher_assetGroups').value,
         assetIdentifierValue: doc.getElementById('assetMatcher_assetIdentifierValue').value || undefined,
     };
-    doc.getElementById('addresses').textContent = `resolving cruxID (${cruxID}) with the given assetMatcher...`
+    doc.getElementById('addresses').textContent = UIResponse
     try {
         let resolvedAddress = await cruxClient.resolveAssetAddressForCruxID(cruxID, assetMatcher);
         UIResponse = JSON.stringify(resolvedAddress, undefined, 4)
@@ -195,7 +195,8 @@ const resolveAssetAddressForCruxID = async () => {
 
 }
 const getAssetMap = async () => {
-    let UIResponse: string = ""
+    let UIResponse: string = "fetching assetMap ..."
+    doc.getElementById('assetMap').textContent = UIResponse;
     try {
         let assetMap = await cruxClient.getAssetMap()
         UIResponse = JSON.stringify(assetMap, undefined, 4)
@@ -210,7 +211,8 @@ const getAssetMap = async () => {
     }
 }
 const getAddressMap = async () => {
-    let UIResponse: string = ""
+    let UIResponse: string = "fetching addressMap ..."
+    doc.getElementById('addressMap').textContent = UIResponse;
     try {
         let addressMap = await cruxClient.getAddressMap()
         UIResponse = JSON.stringify(addressMap, undefined, 4)
@@ -224,8 +226,24 @@ const getAddressMap = async () => {
         doc.getElementById('addressMap').textContent = UIResponse
     }
 }
+const getEnabledAssetGroups = async () => {
+    let UIResponse: string = "fetching enabled assetGroups..."
+    doc.getElementById('enabledAssetGroups').textContent = UIResponse;
+    try {
+        let addressMap = await cruxClient.getEnabledAssetGroups()
+        UIResponse = JSON.stringify(addressMap, undefined, 4)
+    } catch (e) {
+        if (e instanceof CruxClientError) {
+            UIResponse = `${e.errorCode}: ${e}`
+        } else {
+            UIResponse = e
+        }
+    } finally {
+        doc.getElementById('enabledAssetGroups').textContent = UIResponse
+    }
+}
 const putAddressMap = async () => {
-    let UIResponse: string = ""
+    let UIResponse: string = "Publishing your selected addresses..."
     let addressMap: IAddressMapping = {};
     [].forEach.call(doc.getElementsByName('publishAddressOption'), (el: HTMLInputElement) => {
         if (el.checked) {
@@ -235,8 +253,8 @@ const putAddressMap = async () => {
             }
         }
     });
+    doc.getElementById('putAddressMapAcknowledgement').textContent = UIResponse
     try {
-        doc.getElementById('putAddressMapAcknowledgement').textContent = "Publishing your selected addresses..."
         let {success, failures} = await cruxClient.putAddressMap(addressMap)
         UIResponse = `successfully published: ${JSON.stringify(success)}, \nFailed publishing: ${JSON.stringify(failures, undefined, 4)}`
     } catch (e) {
@@ -275,18 +293,18 @@ const putPrivateAddressMap = async () => {
         doc.getElementById('putPrivateAddressMapAcknowledgement').textContent = UIResponse
     }
 }
-const putParentAssetFallbacks = async () => {
-    let UIResponse: string = ""
+const putEnabledAssetGroups = async () => {
+    let UIResponse: string = "Publishing your assetGroups configuration..."
     let assetGroups: string[] = [];
-    [].forEach.call(doc.getElementsByName('putParentAssetFallbacksOption'), (el: HTMLInputElement) => {
+    [].forEach.call(doc.getElementsByName('putEnabledAssetGroupsOption'), (el: HTMLInputElement) => {
         if (el.checked) {
             assetGroups.push(el.attributes['assetGroup'].nodeValue);
         }
     });
+    doc.getElementById('putEnabledAssetGroupsAcknowledgement').textContent = UIResponse
     try {
-        doc.getElementById('putParentAssetFallbacksAcknowledgement').textContent = "Publishing your parent fallback configuration..."
-        const enabledParentAssetFallbacks = await cruxClient.putParentAssetFallbacks(assetGroups)
-        UIResponse = `successfully enabledParentAssetFallbacks: ${enabledParentAssetFallbacks}`
+        const enabledAssetGroups = await cruxClient.putEnabledAssetGroups(assetGroups)
+        UIResponse = `successfully enabledAssetGroups: [${enabledAssetGroups}]`
     } catch (e) {
         if (e instanceof CruxClientError) {
             UIResponse = `${e.errorCode}: ${e}`
@@ -294,12 +312,13 @@ const putParentAssetFallbacks = async () => {
             UIResponse = e
         }
     } finally {
-        doc.getElementById('putParentAssetFallbacksAcknowledgement').textContent = UIResponse
+        doc.getElementById('putEnabledAssetGroupsAcknowledgement').textContent = UIResponse
     }
 }
 const getCruxIDState = async (): Promise<ICruxIDState> => {
-    let UIResponse: string = ""
+    let UIResponse: string = "getting CruxIDState ..."
     let cruxIDStatus: ICruxIDState = {cruxID: null, status: {status: SubdomainRegistrationStatus.NONE, statusDetail: SubdomainRegistrationStatusDetail.NONE}}
+    doc.getElementById('cruxIDStatus').textContent = UIResponse
     try {
         cruxIDStatus = await cruxClient.getCruxIDState()
         UIResponse = JSON.stringify(cruxIDStatus, undefined, 4)
@@ -355,7 +374,8 @@ declare global {
         getAddressMap: Function;
         putAddressMap: Function;
         putPrivateAddressMap: Function;
-        putParentAssetFallbacks: Function;
+        getEnabledAssetGroups: Function;
+        putEnabledAssetGroups: Function;
         getCruxIDState: Function;
     }
 }
@@ -369,5 +389,6 @@ window.getAssetMap = getAssetMap;
 window.getAddressMap = getAddressMap;
 window.putAddressMap = putAddressMap;
 window.putPrivateAddressMap = putPrivateAddressMap;
-window.putParentAssetFallbacks = putParentAssetFallbacks;
+window.getEnabledAssetGroups = getEnabledAssetGroups;
+window.putEnabledAssetGroups = putEnabledAssetGroups;
 window.getCruxIDState = getCruxIDState;

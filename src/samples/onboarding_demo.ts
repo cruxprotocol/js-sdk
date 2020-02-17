@@ -70,7 +70,7 @@ const sampleAssetMappings = {
         "bnb": "7c3baa3c-f5e8-490a-88a1-e0a052b7caa4"
     }
 }
-const sampleSupportedParentAssetFallbacks = ["ERC20_4e4d9982-3469-421b-ab60-2c0c2f05386a"]
+const sampleSupportedAssetGroups = ["ERC20_4e4d9982-3469-421b-ab60-2c0c2f05386a"]
 let sampleNameserviceConfig: IBlockstackServiceInputOptions;
 const sampleAssetList = [
     {
@@ -552,11 +552,11 @@ const getAssetMapping = async () => {
         doc.getElementById('assetMap').textContent = UIResponse
     }
 }
-const getSupportedParentAssetFallbacks = async () => {
+const getSupportedAssetGroups = async () => {
     let UIResponse: string = ""
     try {
-        let supportedParentAssetFallbacks = await cruxOnBoardingClient.getSupportedParentAssetFallbacks()
-        UIResponse = JSON.stringify(supportedParentAssetFallbacks, undefined, 4)
+        let supportedAssetGroups = await cruxOnBoardingClient.getSupportedAssetGroups()
+        UIResponse = JSON.stringify(supportedAssetGroups, undefined, 4)
     } catch (e) {
         if (e instanceof CruxOnBoardingClientError) {
             UIResponse = `${e.errorCode}: ${e}`
@@ -564,7 +564,7 @@ const getSupportedParentAssetFallbacks = async () => {
             UIResponse = e
         }
     } finally {
-        doc.getElementById('supportedParentAssetFallbacks').textContent = UIResponse
+        doc.getElementById('supportedAssetGroups').textContent = UIResponse
     }
 }
 const putAssetMapping = async () => {
@@ -584,13 +584,13 @@ const putAssetMapping = async () => {
         doc.getElementById('putAssetMapAcknowledgement').textContent = UIResponse
     }
 }
-const putSupportedParentAssetFallbacks = async () => {
+const putSupportedAssetGroups = async () => {
     let UIResponse: string = ""
-    const newSupportedParentAssetFallbacks: string[] = sampleSupportedParentAssetFallbacks;
+    const newSupportedAssetGroups: string[] = sampleSupportedAssetGroups;
     try {
-        doc.getElementById('putSupportedParentAssetFallbacksAcknowledgement').textContent = "Publishing your supported parent asset fallbacks..."
-        await cruxOnBoardingClient.putSupportedParentAssetFallbacks(newSupportedParentAssetFallbacks)
-        UIResponse = `successfully published supported parent asset fallbacks!`
+        doc.getElementById('putSupportedAssetGroupsAcknowledgement').textContent = "Publishing your supported assetGroups ..."
+        await cruxOnBoardingClient.putSupportedAssetGroups(newSupportedAssetGroups)
+        UIResponse = `successfully published supported assetGroups!`
     } catch (e) {
         if (e instanceof CruxOnBoardingClientError) {
             UIResponse = `${e.errorCode}: ${e}`
@@ -598,7 +598,7 @@ const putSupportedParentAssetFallbacks = async () => {
             UIResponse = e
         }
     } finally {
-        doc.getElementById('putSupportedParentAssetFallbacksAcknowledgement').textContent = UIResponse
+        doc.getElementById('putSupportedAssetGroupsAcknowledgement').textContent = UIResponse
     }
 }
 const getNameServiceConfig = async () => {
@@ -672,8 +672,8 @@ declare global {
         getNameServiceConfig: Function;
         putNameServiceConfig: Function;
         getCruxDomainState: Function;
-        getSupportedParentAssetFallbacks: Function;
-        putSupportedParentAssetFallbacks: Function;
+        getSupportedAssetGroups: Function;
+        putSupportedAssetGroups: Function;
     }
 }
 window.CruxSpec = CruxSpec;
@@ -685,5 +685,5 @@ window.putAssetMapping = putAssetMapping;
 window.getNameServiceConfig = getNameServiceConfig;
 window.putNameServiceConfig = putNameServiceConfig;
 window.getCruxDomainState = getCruxDomainState;
-window.getSupportedParentAssetFallbacks = getSupportedParentAssetFallbacks;
-window.putSupportedParentAssetFallbacks = putSupportedParentAssetFallbacks;
+window.getSupportedAssetGroups = getSupportedAssetGroups;
+window.putSupportedAssetGroups = putSupportedAssetGroups;

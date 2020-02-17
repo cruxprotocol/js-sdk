@@ -87,6 +87,12 @@
     </div>
 
     <div class="registered">
+        <br><span class="helper">fetch enabled assetGroups:</span><br>
+        <button onclick="getEnabledAssetGroups()">Get Enabled AssetGroups</button>
+        <pre id="enabledAssetGroups"></pre>
+    </div>
+
+    <div class="registered">
         <br><span class="helper">publish address map:</span><br>
         <div id="publishAddresses"></div><br>
         <button onclick="putAddressMap()">Publish Address</button>
@@ -102,10 +108,10 @@
     </div>
 
     <div class="registered">
-        <br><span class="helper">publish parent asset fallbacks:</span><br>
-        <div id="putParentAssetFallbacks"></div><br>
-        <button onclick="putParentAssetFallbacks()">Publish fallbacks</button>
-        <pre id="putParentAssetFallbacksAcknowledgement"></pre>
+        <br><span class="helper">publish enabled assetGroups:</span><br>
+        <div id="putEnabledAssetGroups"></div><br>
+        <button onclick="putEnabledAssetGroups()">Publish AssetGroups config</button>
+        <pre id="putEnabledAssetGroupsAcknowledgement"></pre>
     </div>
 
     ========================

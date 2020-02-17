@@ -153,7 +153,7 @@ export class CruxWalletClient {
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
-        assetMatcher.assetGroup = this.cruxAssetTranslator.symbolFallbackKeyToAssetIdFallbackKey(assetMatcher.assetGroup);
+        assetMatcher.assetGroup = this.cruxAssetTranslator.symbolAssetGroupToAssetIdAssetGroup(assetMatcher.assetGroup);
         const address =  await cruxUser.getAddressFromAssetMatcher(assetMatcher);
         if (!address) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.AddressNotAvailable);
@@ -202,17 +202,38 @@ export class CruxWalletClient {
     }
 
     @throwCruxClientError
-    public putParentAssetFallbacks = async (symbolAssetGroups: string[]): Promise<string[]> => {
+    public getEnabledAssetGroups = async (): Promise<string[]> => {
+        await this.initPromise;
+        if (!this.keyManager) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.PrivateKeyRequired);
+        }
+        const cruxUser = await this.getCruxUserByKey();
+        if (!cruxUser) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
+        }
+        const enabledAssetGroups = cruxUser.config.enabledAssetGroups.map((assetIdAssetGroup: string) => this.cruxAssetTranslator.assetIdAssetGroupToSymbolAssetGroup(assetIdAssetGroup));
+        return enabledAssetGroups;
+    }
+
+    /**
+     * ```ts
+     *  const sampleEnabledAssetGroups: string[] = ["ERC20_eth"];
+     *  // assetGroups can be constructed in the format "{assetType}_{parentAssetId}";
+     *  const enabledAssetGroups = await cruxClient.putEnabledAssetGroups(sampleEnabledAssetGroups);
+     * ```
+     */
+    @throwCruxClientError
+    public putEnabledAssetGroups = async (symbolAssetGroups: string[]): Promise<string[]> => {
         await this.initPromise;
         let cruxUser = await this.getCruxUserByKey();
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
-        const assetIdAssetGroups = symbolAssetGroups.map((assetGroup: string) => this.cruxAssetTranslator.symbolFallbackKeyToAssetIdFallbackKey(assetGroup));
-        cruxUser.setParentAssetFallbacks(assetIdAssetGroups);
+        const assetIdAssetGroups = symbolAssetGroups.map((assetGroup: string) => this.cruxAssetTranslator.symbolAssetGroupToAssetIdAssetGroup(assetGroup));
+        cruxUser.setSupportedAssetGroups(assetIdAssetGroups);
         cruxUser = await this.cruxUserRepository.save(cruxUser, this.getKeyManager());
-        const enabledParentAssetFallbacks = cruxUser.config.enabledParentAssetFallbacks.map((assetIdFallbackKey: string) => this.cruxAssetTranslator.assetIdFallbackKeyToSymbolFallbackKey(assetIdFallbackKey));
-        return enabledParentAssetFallbacks;
+        const enabledAssetGroups = cruxUser.config.enabledAssetGroups.map((assetIdAssetGroup: string) => this.cruxAssetTranslator.assetIdAssetGroupToSymbolAssetGroup(assetIdAssetGroup));
+        return enabledAssetGroups;
     }
 
     @throwCruxClientError

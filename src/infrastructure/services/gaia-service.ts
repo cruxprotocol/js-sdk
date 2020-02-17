@@ -3,7 +3,7 @@ import { IKeyManager } from "../../core/interfaces/key-manager";
 import { ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { getLogger } from "../../packages/logger";
 import { StorageService } from "../../packages/storage";
-import { getRandomHexString } from "../../packages/utils";
+import { getRandomHexString, sanitizeUrl } from "../../packages/utils";
 import { GaiaServiceApiClient, IHubInfo } from "./api-clients";
 const log = getLogger(__filename);
 export interface IHubConfig {
@@ -37,10 +37,10 @@ export class GaiaService {
         } catch (e) {
             // TODO: validate the token properly after publishing the subject
             log.error(e);
-            throw ErrorHelper.getPackageError(e, PackageErrorCode.TokenVerificationFailed, filename);
+            throw ErrorHelper.getPackageError(e, PackageErrorCode.GaiaRecordIntegrityFailed, filename, address);
         }
         if (addressFromPub !== address) {
-            throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotValidateZoneFile);
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaRecordIntegrityFailed, filename, address);
         }
         return decodedToken;
     }
@@ -52,7 +52,7 @@ export class GaiaService {
     }
     public getContentFromGaiaHub = async (address: string, filename: string): Promise<any> => {
         const hubInfo: IHubInfo = await GaiaServiceApiClient.getHubInfo(this.gaiaHub, this.cacheStorage);
-        const readURL = hubInfo.read_url_prefix;
+        const readURL = sanitizeUrl(hubInfo.read_url_prefix);
         return GaiaService.getContentFromGaiaHub(readURL, address, filename, this.cacheStorage);
     }
     public uploadContentToGaiaHub = async (filename: string, content: any, keyManager: IKeyManager, type = "application/json"): Promise<string> => {
@@ -66,7 +66,7 @@ export class GaiaService {
     private connectToGaiaHubAsync = async (keyManager: IKeyManager, associationToken?: string) => {
         log.debug(`connectToGaiaHub: ${this.gaiaHub}/hub_info`);
         const hubInfo: IHubInfo = await GaiaServiceApiClient.getHubInfo(this.gaiaHub, this.cacheStorage);
-        const readURL = hubInfo.read_url_prefix;
+        const readURL = sanitizeUrl(hubInfo.read_url_prefix);
         const token = await this.makeV1GaiaAuthTokenAsync(hubInfo, keyManager, associationToken);
         const address = publicKeyToAddress(await keyManager.getPubKey());
         return {
