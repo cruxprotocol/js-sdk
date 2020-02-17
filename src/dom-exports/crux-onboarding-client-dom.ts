@@ -1,3 +1,4 @@
+import "regenerator-runtime";
 import { CruxOnBoardingClientError, CruxSpec, CruxWalletClient } from "../index";
 
 declare global {
