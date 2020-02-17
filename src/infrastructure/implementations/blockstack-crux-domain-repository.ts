@@ -52,6 +52,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
             }),
             assetMapping: cruxDomain.config.assetMapping,
             nameserviceConfiguration: cruxDomain.config.nameserviceConfiguration,
+            supportedAssetGroups: cruxDomain.config.supportedAssetGroups,
         };
         await this.putClientConfig(cruxDomain.id, newConfig, configKeyManager);
         return cruxDomain;
@@ -62,6 +63,7 @@ export class BlockstackCruxDomainRepository implements ICruxDomainRepository {
             return;
         }
         const domainClientConfig = await this.getClientConfig(associatedDomainId);
+        // TODO: add fallback assetList from the CruxSpec if asset list is not available from the domainConfig
         return new CruxDomain(associatedDomainId, DomainRegistrationStatus.REGISTERED, domainClientConfig);
     }
     private getClientConfig = async (cruxDomainId: CruxDomainId): Promise<IClientConfig> => {

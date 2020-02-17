@@ -15,7 +15,7 @@ import {
     getValidCruxUser, getValidCruxUser2,
     InMemoryCruxDomainRepository,
     InMemoryCruxUserRepository,
-    getValidPendingCruxUser
+    getValidPendingCruxUser,
 } from "./test-utils";
 
 chai.use(chaiAsPromised);
@@ -29,15 +29,16 @@ const testPendingCruxUser = getValidPendingCruxUser();
 const testPvtKey = '6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f';  // 1HtFkbXFWHFW5Kd4GLfiRqkffS5KLZ91eJ
 const testPvtKey2 = '12381ab829318742938647283cd462738462873642ef34abefcd123501827193'; // 1JoZwbjMnTmcpAyjjtRBfuqXAb2xiqZRjx
 const testPvtKey3 = 'KyEurUTRpQkWnQFQs3dfeFQ1P7yjPNEa3cbM3VWfecnqUzoDUFm4'; // 1DJXVNHXxV3HaVFfbttZURFK1ciBUezypR
+const testPvtKey4 = 'L3LdUa4iUDMcbdoTbeRXCRXLnV6kCCFwGNz2zXKVoGcRvZmcjRZm'; // 1NrMvx43pVTbLLyBK4atmFFvHjvBZBsKzJ
 
 describe('CruxWalletClient Tests', function() {
-    beforeEach(function() {
-        this.inmemUserRepo = new InMemoryCruxUserRepository();
+    beforeEach(async function() {
+        this.inmemUserRepo = new InMemoryCruxUserRepository(getValidCruxDomain());
         this.inmemDomainRepo = new InMemoryCruxDomainRepository();
-        addUserToRepo(testCruxUser, this.inmemUserRepo, new BasicKeyManager(testPvtKey));
-        addUserToRepo(testCruxUser2, this.inmemUserRepo, new BasicKeyManager(testPvtKey2));
-        addUserToRepo(testPendingCruxUser, this.inmemUserRepo, new BasicKeyManager(testPvtKey3));
-        addDomainToRepo(testCruxDomain, this.inmemDomainRepo);
+        this.inmemUserRepo = await addUserToRepo(testCruxUser, this.inmemUserRepo, new BasicKeyManager(testPvtKey));
+        this.inmemUserRepo = await addUserToRepo(testCruxUser2, this.inmemUserRepo, new BasicKeyManager(testPvtKey2));
+        this.inmemUserRepo = await addUserToRepo(testPendingCruxUser, this.inmemUserRepo, new BasicKeyManager(testPvtKey3));
+        this.inmemDomainRepo = await addDomainToRepo(testCruxDomain, this.inmemDomainRepo);
         this.stubGetCruxDomainRepository = sinon.stub(cwc, 'getCruxDomainRepository').callsFake(() => this.inmemDomainRepo as any);
         this.stubGetCruxUserRepository = sinon.stub(cwc, 'getCruxUserRepository').callsFake(() => this.inmemUserRepo as any);
     });
@@ -76,7 +77,7 @@ describe('CruxWalletClient Tests', function() {
             await expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.AddressNotAvailable);
         });
         it('ID is case insensitive', async function() {
-            const address = await this.cc.resolveCurrencyAddressForCruxID('Foo123@testwallet.crux', 'bitcoin');
+            const address = await this.cc.resolveCurrencyAddressForCruxID('Foo123@somewallet.crux', 'bitcoin');
             await expect(address).to.have.property('addressHash').equals('foobtcaddress');
         });
 
@@ -99,7 +100,7 @@ describe('CruxWalletClient Tests', function() {
     it('New ID Registration works properly', async function() {
         let cc = new CruxWalletClient({
             walletClientName: 'somewallet',
-            privateKey: testPvtKey
+            privateKey: testPvtKey4
         });
         const initIdState = await cc.getCruxIDState();
         expect(initIdState.cruxID).to.equals(null);

@@ -63,9 +63,14 @@
 
     <div class="registered unregistered">
         <br><span class="helper">resolving public addresses:</span><br>
-        <input id="receiverVirtualAddress" placeholder="ankit@scatter_dev.crux">
+        <input id="receiverVirtualAddress" placeholder="ankit@scatter_dev.crux"><br>
+        <!-- resolving with mapped currency symbols -->
         <select id="currency"></select>
-        <button onclick="resolveCurrencyAddressForCruxID()">Resolve Address</button><br>
+        <button onclick="resolveCurrencyAddressForCruxID()">Resolve Currency Address</button><br>
+        <!-- resolving with asset matcher -->
+        <select id="assetMatcher_assetGroups"></select>
+        <input id="assetMatcher_assetIdentifierValue" type="text" placeholder='0xE41d2489571d322189246DaFA5ebDe1F4699F498'>
+        <button onclick="resolveAssetAddressForCruxID()">Resolve Asset Address</button><br>
         <pre id='addresses'></pre>
     </div>
 
@@ -82,10 +87,23 @@
     </div>
 
     <div class="registered">
+        <br><span class="helper">fetch enabled assetGroups:</span><br>
+        <button onclick="getEnabledAssetGroups()">Get Enabled AssetGroups</button>
+        <pre id="enabledAssetGroups"></pre>
+    </div>
+
+    <div class="registered">
         <br><span class="helper">publish address map:</span><br>
         <div id="publishAddresses"></div><br>
         <button onclick="putAddressMap()">Publish Address</button>
         <pre id="putAddressMapAcknowledgement"></pre>
+    </div>
+
+    <div class="registered">
+        <br><span class="helper">publish enabled assetGroups:</span><br>
+        <div id="putEnabledAssetGroups"></div><br>
+        <button onclick="putEnabledAssetGroups()">Publish AssetGroups config</button>
+        <pre id="putEnabledAssetGroupsAcknowledgement"></pre>
     </div>
 
     ========================

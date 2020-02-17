@@ -48,6 +48,7 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.MissingCruxDomainInCruxWalletClient]: "No domain found with the key provided or missing key in the CruxWalletClient",
     [PackageErrorCode.MissingZoneFile]: "Missing zonefile for: '{0}'",
     [PackageErrorCode.MissingNameOwnerAddress]: "Missing owner address for: '{0}'",
+    [PackageErrorCode.MissingUserCruxAssetTranslator]: "User client's assetTranslator is required while resolving with assetMatcher properties",
     [PackageErrorCode.NameIntegrityCheckFailed]: "Name resolution integrity check failed",
     [PackageErrorCode.PrivateKeyRequired]: "CruxClient should be intantiated with a private key",
     [PackageErrorCode.SubdomainLengthCheckFailure]: "Validation failed: Subdomain length must be between 4 to 20",

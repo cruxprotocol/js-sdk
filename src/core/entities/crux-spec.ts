@@ -1,6 +1,6 @@
 import { Decoder, object, optional, string as stringValidator } from "@mojotech/json-type-validation";
-import { IClientAssetMapping, IGlobalAsset, IGlobalAssetList } from "../../application/services/crux-asset-translator";
 import config from "../../config";
+import { IClientAssetMapping, IGlobalAsset, IGlobalAssetList } from "../../core/entities/crux-domain";
 import { BaseError, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId, IdTranslator } from "../../packages/identity-utils";
 import { IAddress, IAddressMapping } from "../entities/crux-user";
@@ -10,6 +10,7 @@ import { INameServiceConfigurationOverrides } from "./crux-domain";
 const assetIdRegex = new RegExp(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$`);
 // tslint:disable-next-line: tsr-detect-unsafe-regexp
 const urlRegex = new RegExp(`^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$`);
+const assetGroupRegex = new RegExp(`^(.+)_[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$`);
 export class Validations {
     public static validateSubdomainString = (subDomainString: string) => {
         const subdomainRegex: string = "^[a-z]([a-z]|[0-9]|-|_)*([a-z]|[0-9])$";
@@ -62,6 +63,18 @@ export class Validations {
             Validations.validateAssetIdAgainstAssetList(assetMapping[assetSymbol], assetList);
         });
     }
+    public static validateAssetGroup = (assetGroup: string) => {
+        try {
+            Validations.validateRegex(assetGroup, assetGroupRegex);
+        } catch (error) {
+            throw new BaseError(null, `AssetGroup: ${assetGroup} is not valid.`);
+        }
+    }
+    public static validateAssetGroups = (assetGroups: string[]) => {
+        assetGroups.forEach((assetGroup) => {
+            Validations.validateAssetGroup(assetGroup);
+        });
+    }
     public static validateNameServiceConfig = (nameServiceConfig: INameServiceConfigurationOverrides) => {
         // TODO: domain name validation
         if (nameServiceConfig.gaiaHub) {
@@ -85,14 +98,6 @@ export class Validations {
             throw ErrorHelper.getPackageError(e, PackageErrorCode.AddressMappingDecodingFailure);
         }
     }
-    public static validateAssetIdAddressMap = (addressMap: IAddressMapping) => {
-        for (const assetId in addressMap) {
-            if (addressMap.hasOwnProperty(assetId)) {
-                Validations.validateAssetId(assetId);
-                Validations.validateAddressObj(addressMap[assetId]);
-            }
-          }
-    }
 }
 export const CruxSpec = {
     blockstack: class blockstack {
@@ -113,6 +118,9 @@ export const CruxSpec = {
         }
         public static getCruxPayFilename = (cruxDomainId: CruxDomainId): string => {
             return `${cruxDomainId.components.domain}_cruxpay.json`;
+        }
+        public static getCruxUserConfigFileName = (cruxDomainId: CruxDomainId): string => {
+            return `${cruxDomainId.components.domain}_user-config.json`;
         }
     },
     globalAssetList,

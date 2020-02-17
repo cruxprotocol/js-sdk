@@ -1,10 +1,24 @@
-import { IClientAssetMapping, IGlobalAssetList } from "../../application/services/crux-asset-translator";
 import { sanitizeUrl } from "../../packages";
 import { BaseError } from "../../packages/error";
 import { CruxDomainId } from "../../packages/identity-utils";
 import { getLogger } from "../../packages/logger";
 import { CruxSpec } from "./crux-spec";
 const log = getLogger(__filename);
+export interface IClientAssetMapping {
+    [currencySymbol: string]: string;
+}
+export interface IGlobalAsset {
+    assetId: string;
+    symbol: string;
+    name: string;
+    assetType: string|null;
+    decimals: number|null;
+    assetIdentifierName: string|null;
+    assetIdentifierValue: number|string|null;
+    parentAssetId: string|null;
+}
+
+export interface IGlobalAssetList extends Array<IGlobalAsset> {}
 export interface INameServiceConfigurationOverrides {
     bnsNodes?: string[];
     gaiaHub?: string;
@@ -14,6 +28,7 @@ export interface IClientConfig {
     assetMapping: IClientAssetMapping;
     assetList: IGlobalAssetList;
     nameserviceConfiguration?: INameServiceConfigurationOverrides;
+    supportedAssetGroups: string[];
 }
 export enum DomainRegistrationStatus {
     AVAILABLE = "AVAILABLE",
@@ -74,9 +89,12 @@ export class CruxDomain {
                 }
                 CruxSpec.validations.validateNameServiceConfig(domainConfig.nameserviceConfiguration);
             }
+            if (domainConfig.supportedAssetGroups) {CruxSpec.validations.validateAssetGroups(domainConfig.supportedAssetGroups); }
         } catch (e) {
             throw new BaseError(e, `Domain config validation failed!`);
         }
+        // managing fallbacks
+        if (!domainConfig.supportedAssetGroups) { domainConfig.supportedAssetGroups = []; }
         this.domainConfig = domainConfig;
     }
 }
