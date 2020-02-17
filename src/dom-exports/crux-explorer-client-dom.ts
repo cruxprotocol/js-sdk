@@ -1,3 +1,4 @@
+import "regenerator-runtime";
 import { CruxExplorerClient, CruxSpec } from "../index";
 
 declare global {
