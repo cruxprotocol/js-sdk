@@ -1,5 +1,5 @@
 export * from "./utils";
-import { IClientAssetMapping } from "../../../application/services/crux-asset-translator";
+import { IClientAssetMapping } from "../../../core/entities/crux-domain";
 import { DomainRegistrationStatus, INameServiceConfigurationOverrides } from "../../../core/entities/crux-domain";
 import { CruxDomain } from "../../../core/entities/crux-domain";
 import { CruxSpec } from "../../../core/entities/crux-spec";
@@ -74,6 +74,11 @@ export class CruxOnBoardingClient {
         return this.getCruxDomain().config.assetMapping;
     }
     @throwCruxOnBoardingClientError
+    public getSupportedAssetGroups = async (): Promise<string[]> => {
+        await this.initPromise;
+        return this.getCruxDomain().config.supportedAssetGroups;
+    }
+    @throwCruxOnBoardingClientError
     public putNameServiceConfig = async (newNameServiceConfig: INameServiceConfigurationOverrides): Promise<void> => {
         await this.initPromise;
         const cruxDomain = cloneValue(this.getCruxDomain());
@@ -84,9 +89,16 @@ export class CruxOnBoardingClient {
     @throwCruxOnBoardingClientError
     public putAssetMapping = async (newAssetMapping: IClientAssetMapping): Promise<void> => {
         await this.initPromise;
-        // TODO: fix object cloning to retain old state in case of failed save operation
-        const cruxDomain = cloneValue(this.getCruxDomain());
+        const cruxDomain: CruxDomain = cloneValue(this.getCruxDomain());
         cruxDomain.config.assetMapping = newAssetMapping;
+        this.cruxDomain = await this.cruxDomainRepository.save(cruxDomain, this.getConfigKeyManager());
+        return;
+    }
+    @throwCruxOnBoardingClientError
+    public putSupportedAssetGroups = async (newSupportedAssetGroups: string[]): Promise<void> => {
+        await this.initPromise;
+        const cruxDomain: CruxDomain = cloneValue(this.getCruxDomain());
+        cruxDomain.config.supportedAssetGroups = newSupportedAssetGroups;
         this.cruxDomain = await this.cruxDomainRepository.save(cruxDomain, this.getConfigKeyManager());
         return;
     }

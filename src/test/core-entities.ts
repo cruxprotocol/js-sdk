@@ -1,11 +1,13 @@
 import {CruxDomain, DomainRegistrationStatus, IClientConfig} from "../core/entities/crux-domain";
 import {CruxSpec} from "../core/entities/crux-spec";
+import { getValidCruxDomain } from "./test-utils";
 import {
     CruxUser, IAddress, IAddressMapping,
     ICruxUserRegistrationStatus,
     ICruxUserInformation,
     SubdomainRegistrationStatus,
-    SubdomainRegistrationStatusDetail
+    SubdomainRegistrationStatusDetail,
+    ICruxUserData
 } from "../core/entities/crux-user";
 import {CruxDomainId, CruxId} from "../packages/identity-utils";
 import {expect} from 'chai';
@@ -14,6 +16,8 @@ describe('Core Entities Tests', () => {
 
     describe('Testing Entity CruxUser', () => {
 
+        const testCruxUserSubdomain = "foobar";
+        const testUserCruxDomain = getValidCruxDomain();
         const testCruxId = CruxId.fromString('foobar@somewallet.crux');
         const testAddress: IAddress = {
             'addressHash': 'foobtcaddress'
@@ -32,22 +36,26 @@ describe('Core Entities Tests', () => {
             'transactionHash': transactionHash,
             'ownerAddress': ownerAddress
         };
+        const newUserData: ICruxUserData = {
+            'configuration': {enabledAssetGroups: []}
+        }
 
         it('Valid CruxUser can be created', () => {
-            const testUser = new CruxUser(testCruxId, testValidAddressMap, newUserInformation);
+            const testUser = new CruxUser(testCruxUserSubdomain, testUserCruxDomain, testValidAddressMap, newUserInformation, newUserData);
             expect(testUser.cruxID.toString()).to.be.equal(testCruxId.toString());
         });
         it('CruxUser should not be constructed with invalid address map', () => {
-            const createInvalidUser = () => new CruxUser(testCruxId, testInvalidAddressMap, newUserInformation);
-            expect(createInvalidUser).to.throw();
+            const createInvalidUser = () => new CruxUser(testCruxUserSubdomain, testUserCruxDomain, testInvalidAddressMap, newUserInformation, newUserData);
+            // not throwing in the case of invalid addressMap to support "__userData__" key;
+            expect(createInvalidUser).to.not.throw();
         });
         it('Valid CruxUser getAddress method works as expected', () => {
-            const testUser = new CruxUser(testCruxId, testValidAddressMap, newUserInformation);
+            const testUser = new CruxUser(testCruxUserSubdomain, testUserCruxDomain, testValidAddressMap, newUserInformation, newUserData);
             const testUserBtcAddressHash = testUser.getAddressMap()[BTC_ASSET_ID]['addressHash'];
             expect(testUserBtcAddressHash).to.be.equal(testValidAddressMap[BTC_ASSET_ID]['addressHash']);
         });
-        it('CruxUser should not be constructed with invalid CruxId', () => {
-            const createInvalidUser = () => new CruxUser(undefined, {}, newUserInformation);
+        it('CruxUser should not be constructed with invalid CruxDomain', () => {
+            const createInvalidUser = () => new CruxUser(testCruxUserSubdomain, undefined, {}, newUserInformation, newUserData);
             expect(createInvalidUser).to.throw();
         })
 
@@ -64,10 +72,12 @@ describe('Core Entities Tests', () => {
         const testValidDomainConfig: IClientConfig = {
             assetMapping: testValidDomainAssetMapping,
             assetList: CruxSpec.globalAssetList.filter((asset) => Object.values(testValidDomainAssetMapping).includes(asset.assetId)),
+            supportedAssetGroups: [],
         };
         const testInvalidDomainConfig: IClientConfig = {
             assetMapping: testInvalidDomainAssetMapping,
             assetList: CruxSpec.globalAssetList.filter((asset) => Object.values(testInvalidDomainAssetMapping).includes(asset.assetId)),
+            supportedAssetGroups: [],
         };
         it('Valid CruxDomain should be constructed', () => {
             const testDomain = new CruxDomain(testCruxDomainId, availableDomainStatus, testValidDomainConfig);

@@ -21,7 +21,7 @@ export enum PackageErrorCode {
     GaiaCruxPayGetFailed = 2102,
     GaiaClientConfigGetFailed = 2103,
     GaiaGetFileFailed = 2105,
-    TokenVerificationFailed = 2106,
+    GaiaRecordIntegrityFailed = 2106,
     GaiaEmptyResponse = 2107,
     FailedToGetGaiaUrlFromZonefile = 2018,
     // 3000s: Registry errors
@@ -52,7 +52,7 @@ export enum PackageErrorCode {
     // Internal errors
     CouldNotFindBlockstackConfigurationServiceClientConfig = 5001,
     CouldNotFindKeyPairToRestoreIdentity = 5002,
-    CouldNotValidateZoneFile = 5003,
+    // CouldNotValidateZoneFile = 5003,
     CouldNotFindIdentityKeyPairToPutAddressMapping = 5004,
     CouldNotFindAssetListInClientConfig = 5005,
     CouldNotFindKeyPairToRegisterName = 5006,
@@ -63,4 +63,5 @@ export enum PackageErrorCode {
     MissingCruxDomainInCruxWalletClient = 5011,
     MissingZoneFile = 5012,
     MissingNameOwnerAddress = 5013,
+    MissingUserCruxAssetTranslator = 5014,
 }

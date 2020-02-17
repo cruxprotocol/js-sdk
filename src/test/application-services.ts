@@ -1,8 +1,19 @@
-import { CruxAssetTranslator, IClientAssetMapping, IGlobalAssetList } from "../application/services/crux-asset-translator";
+import { CruxAssetTranslator} from "../application/services/crux-asset-translator";
 import { expect } from 'chai';
+import { IGlobalAssetList, IClientAssetMapping } from "../core/entities/crux-domain";
 describe('Application Services Tests', () => {
     describe('Testing AssetTranslator', () => {
         const testClientAssetList: IGlobalAssetList = [
+            {
+                "assetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+                "symbol": "ETH",
+                "name": "Ethereum",
+                "assetType": null,
+                "decimals": 8,
+                "assetIdentifierName": null,
+                "assetIdentifierValue": null,
+                "parentAssetId": null
+            },
             {
                 "assetId": "b0115257-13f2-4fb1-8796-07becdcacf8f",
                 "symbol": "XTZ",
@@ -44,6 +55,16 @@ describe('Application Services Tests', () => {
                 "parentAssetId": null
             },
             {
+                "assetId": "1c70b1cd-0bc2-4ea4-a3d2-c031fcdd04e5",
+                "symbol": "OMG",
+                "name": "OMGToken",
+                "assetType": "ERC20",
+                "decimals": 18,
+                "assetIdentifierName": "Contract Address",
+                "assetIdentifierValue": "0xd26114cd6EE289AccF82350c8d8487fedB8A0C07",
+                "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
+            },
+            {
                 "assetId": "5ed4d7ac-f741-4af0-bca9-3c02acd00beb",
                 "symbol": "DASH",
                 "name": "Dash",
@@ -69,8 +90,10 @@ describe('Application Services Tests', () => {
             "TRX": "ab212c90-a2ab-48cf-873c-a7b6e97d8935",
             "BNB": "d88f558a-7a0e-4cd4-8629-07e5f7326a3c",
             "XEM": "7333c9c9-976a-4045-b6fa-176ac13ddf6d",
+            "XMR": "d4b874c4-7cf7-456f-8225-eb20e33767f2",
+            "ETH": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
             "DASH": "5ed4d7ac-f741-4af0-bca9-3c02acd00beb",
-            "XMR": "d4b874c4-7cf7-456f-8225-eb20e33767f2"
+            "OMG": "1c70b1cd-0bc2-4ea4-a3d2-c031fcdd04e5",
         }
         let cruxAssetTranslator: CruxAssetTranslator = new CruxAssetTranslator(testClientAssetMapping, testClientAssetList);
         let testUserAssetIdAddressMap = {
@@ -106,7 +129,6 @@ describe('Application Services Tests', () => {
                 "addressHash" : "4B55CzRGBAcfysixFcPffSTe2bRFkjDEcAb5mKXbbjuR8uHRZjsf3BXUkh6qhiswqsDxpNcx3xhjPJ7XezZrwEaL1ybRzoD"
             }
         }
-
         it('Translate symbolAddressMap to assetIdAddressMap', ()=>{
             const assetIdAddressMap = cruxAssetTranslator.symbolAddressMapToAssetIdAddressMap(testUserUpperCaseCurrencyAddressMap);
             expect(assetIdAddressMap).is.eql({
@@ -137,6 +159,16 @@ describe('Application Services Tests', () => {
         it('Translate assetIdAssetList to SymbolAssetMap', ()=>{
             const symbolAssetMap = cruxAssetTranslator.assetIdAssetListToSymbolAssetMap(testClientAssetList);
             expect(symbolAssetMap).is.eql({
+                "eth": {
+                    "assetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
+                    "symbol": "ETH",
+                    "name": "Ethereum",
+                    "assetType": null,
+                    "decimals": 8,
+                    "assetIdentifierName": null,
+                    "assetIdentifierValue": null,
+                    "parentAssetId": null
+                },
                 "xtz" : {
                     "assetId": "b0115257-13f2-4fb1-8796-07becdcacf8f",
                     "symbol": "XTZ",
@@ -176,6 +208,16 @@ describe('Application Services Tests', () => {
                     "assetIdentifierName": null,
                     "assetIdentifierValue": null,
                     "parentAssetId": null
+                },
+                "omg": {
+                    "assetId": "1c70b1cd-0bc2-4ea4-a3d2-c031fcdd04e5",
+                    "symbol": "OMG",
+                    "name": "OMGToken",
+                    "assetType": "ERC20",
+                    "decimals": 18,
+                    "assetIdentifierName": "Contract Address",
+                    "assetIdentifierValue": "0xd26114cd6EE289AccF82350c8d8487fedB8A0C07",
+                    "parentAssetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a"
                 },
                 "dash": {
                     "assetId": "5ed4d7ac-f741-4af0-bca9-3c02acd00beb",
