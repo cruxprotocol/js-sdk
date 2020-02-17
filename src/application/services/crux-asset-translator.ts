@@ -38,11 +38,11 @@ export class CruxAssetTranslator {
         currencySymbol = currencySymbol.toLowerCase();
         return this.assetMap[currencySymbol];
     }
-    public symbolFallbackKeyToAssetIdFallbackKey = (parentFallbackKey: string) => {
-        return parentFallbackKey.replace(new RegExp("(.+)_(.+)"), (match: string, assetType: string, assetSymbol: string) => `${assetType}_${this.symbolToAssetId(assetSymbol)}`);
+    public symbolAssetGroupToAssetIdAssetGroup = (symbolAssetGroup: string) => {
+        return symbolAssetGroup.replace(new RegExp("(.+)_(.+)"), (match: string, assetType: string, assetSymbol: string) => `${assetType}_${this.symbolToAssetId(assetSymbol)}`);
     }
-    public assetIdFallbackKeyToSymbolFallbackKey = (parentFallbackKey: string) => {
-        return parentFallbackKey.replace(new RegExp("(.+)_(.+)"), (match: string, assetType: string, assetId: string) => `${assetType}_${this.assetIdToSymbol(assetId)}`);
+    public assetIdAssetGroupToSymbolAssetGroup = (assetIdAssetGroup: string) => {
+        return assetIdAssetGroup.replace(new RegExp("(.+)_(.+)"), (match: string, assetType: string, assetId: string) => `${assetType}_${this.assetIdToSymbol(assetId)}`);
     }
     public symbolToAsset(currencySymbol: string): IGlobalAsset|undefined {
         return this.assetList.find((asset) => asset.assetId === this.symbolToAssetId(currencySymbol));

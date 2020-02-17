@@ -37,7 +37,7 @@ describe('Core Entities Tests', () => {
             'ownerAddress': ownerAddress
         };
         const newUserData: ICruxUserData = {
-            'configuration': {enabledParentAssetFallbacks: []}
+            'configuration': {enabledAssetGroups: []}
         }
 
         it('Valid CruxUser can be created', () => {
@@ -72,12 +72,12 @@ describe('Core Entities Tests', () => {
         const testValidDomainConfig: IClientConfig = {
             assetMapping: testValidDomainAssetMapping,
             assetList: CruxSpec.globalAssetList.filter((asset) => Object.values(testValidDomainAssetMapping).includes(asset.assetId)),
-            supportedParentAssetFallbacks: [],
+            supportedAssetGroups: [],
         };
         const testInvalidDomainConfig: IClientConfig = {
             assetMapping: testInvalidDomainAssetMapping,
             assetList: CruxSpec.globalAssetList.filter((asset) => Object.values(testInvalidDomainAssetMapping).includes(asset.assetId)),
-            supportedParentAssetFallbacks: [],
+            supportedAssetGroups: [],
         };
         it('Valid CruxDomain should be constructed', () => {
             const testDomain = new CruxDomain(testCruxDomainId, availableDomainStatus, testValidDomainConfig);

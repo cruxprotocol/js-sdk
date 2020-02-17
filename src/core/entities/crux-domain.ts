@@ -28,7 +28,7 @@ export interface IClientConfig {
     assetMapping: IClientAssetMapping;
     assetList: IGlobalAssetList;
     nameserviceConfiguration?: INameServiceConfigurationOverrides;
-    supportedParentAssetFallbacks: string[];
+    supportedAssetGroups: string[];
 }
 export enum DomainRegistrationStatus {
     AVAILABLE = "AVAILABLE",
@@ -89,12 +89,12 @@ export class CruxDomain {
                 }
                 CruxSpec.validations.validateNameServiceConfig(domainConfig.nameserviceConfiguration);
             }
-            if (domainConfig.supportedParentAssetFallbacks) {CruxSpec.validations.validateParentAssetFallbackKeys(domainConfig.supportedParentAssetFallbacks); }
+            if (domainConfig.supportedAssetGroups) {CruxSpec.validations.validateAssetGroups(domainConfig.supportedAssetGroups); }
         } catch (e) {
             throw new BaseError(e, `Domain config validation failed!`);
         }
         // managing fallbacks
-        if (!domainConfig.supportedParentAssetFallbacks) { domainConfig.supportedParentAssetFallbacks = []; }
+        if (!domainConfig.supportedAssetGroups) { domainConfig.supportedAssetGroups = []; }
         this.domainConfig = domainConfig;
     }
 }

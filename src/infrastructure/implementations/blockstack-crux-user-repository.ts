@@ -52,8 +52,8 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
     }
     public create = async (cruxIdSubdomain: string, keyManager: IKeyManager): Promise<CruxUser> => {
         // Publishing an empty addressMap while registering the name to be fail safe
-        const cruxUserData = {
-            configuration: {enabledParentAssetFallbacks: []},
+        const cruxUserData: ICruxUserData = {
+            configuration: {enabledAssetGroups: []},
         };
         await this.putCruxpayObject(this.getCruxDomain().id, {}, keyManager);
         const cruxUserInformation = await this.blockstackService.registerCruxId(this.getCruxIdFromSubdomain(cruxIdSubdomain), this.infrastructure.gaiaHub, keyManager);
@@ -70,7 +70,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         let addressMap = {};
         let cruxUserData: ICruxUserData = {
             configuration: {
-                enabledParentAssetFallbacks: [],
+                enabledAssetGroups: [],
             },
         };
         if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.DONE) {
@@ -95,7 +95,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         let addressMap = {};
         let cruxUserData: ICruxUserData = {
             configuration: {
-                enabledParentAssetFallbacks: [],
+                enabledAssetGroups: [],
             },
         };
         if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.DONE) {

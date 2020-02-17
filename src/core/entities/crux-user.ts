@@ -30,7 +30,7 @@ export interface ICruxUserData {
 }
 
 export interface ICruxUserConfiguration {
-    enabledParentAssetFallbacks: string[];
+    enabledAssetGroups: string[];
 }
 
 export enum SubdomainRegistrationStatus {
@@ -74,15 +74,15 @@ export class CruxUser {
     get config() {
         return this.cruxUserConfig;
     }
-    public setParentAssetFallbacks = (assetGroups: string[]) => {
+    public setSupportedAssetGroups = (assetIdAssetGroups: string[]) => {
         // validate the assetIdAssetGroup is supported by the walletClient
-        assetGroups.forEach((assetGroup) => {
-            if (!this.cruxDomain.config.supportedParentAssetFallbacks.includes(assetGroup)) {
+        assetIdAssetGroups.forEach((assetGroup) => {
+            if (!this.cruxDomain.config.supportedAssetGroups.includes(assetGroup)) {
                 throw new BaseError(null, "assetGroup not supported by domain");
             }
         });
-        const enabledFallbacksSet = new Set(assetGroups);
-        this.cruxUserConfig.enabledParentAssetFallbacks = [...enabledFallbacksSet];
+        const enabledAssetGroupsSet = new Set(assetIdAssetGroups);
+        this.cruxUserConfig.enabledAssetGroups = [...enabledAssetGroupsSet];
     }
     public getAddressMap(): IAddressMapping {
         return this.addressMap;
@@ -123,7 +123,9 @@ export class CruxUser {
     }
     private setCruxUserConfig = (cruxUserConfiguration: ICruxUserConfiguration) => {
         // TODO: validation of the configurations
-        this.cruxUserConfig = cruxUserConfiguration;
+        this.cruxUserConfig = {
+            enabledAssetGroups: cruxUserConfiguration.enabledAssetGroups || [],
+        };
     }
 }
 
@@ -147,8 +149,8 @@ export class CruxUserAddressResolver {
         address = this.userAddressMap[asset.assetId];
         // if address not found, check the parentAssetFallback config
         if (!address) {
-            const parentFallbackKey = this.assetToParentFallbackKey(asset);
-            address = parentFallbackKey ? this.resolveFallbackAddressIfEnabled(parentFallbackKey) : undefined;
+            const assetGroup = this.assetToAssetGroup(asset);
+            address = assetGroup ? this.resolveFallbackAddressIfEnabled(assetGroup) : undefined;
         }
         return address;
     }
@@ -178,26 +180,26 @@ export class CruxUserAddressResolver {
             } else if (typeof a.assetIdentifierValue === "number" && typeof assetMatcher.assetIdentifierValue === "number" && a.assetIdentifierValue === assetMatcher.assetIdentifierValue) {
                 assetIdentifierValueMatch = true;
             }
-            // matching the parentFallbackKey
+            // matching the assetGroup
             if (assetIdentifierValueMatch) {
-                const parentFallbackKey = this.assetToParentFallbackKey(a);
-                match = Boolean(parentFallbackKey && (parentFallbackKey === assetMatcher.assetGroup));
+                const assetGroup = this.assetToAssetGroup(a);
+                match = Boolean(assetGroup && (assetGroup === assetMatcher.assetGroup));
             }
             return match;
         });
         return asset;
     }
-    private resolveFallbackAddressIfEnabled = (parentFallbackKey: string): IAddress|undefined => {
+    private resolveFallbackAddressIfEnabled = (assetGroup: string): IAddress|undefined => {
         let address: IAddress|undefined;
-        const isFallbackEnabled = this.userConfig.enabledParentAssetFallbacks.includes(parentFallbackKey);
+        const isFallbackEnabled = this.userConfig.enabledAssetGroups.includes(assetGroup);
         // if fallback enabled, find the parentAsset's address
         if (isFallbackEnabled) {
-            const parentAssetId = parentFallbackKey.split("_")[1];
+            const parentAssetId = assetGroup.split("_")[1];
             address = this.userAddressMap[parentAssetId];
         }
         return address;
     }
-    private assetToParentFallbackKey = (asset: IGlobalAsset): string|undefined => {
+    private assetToAssetGroup = (asset: IGlobalAsset): string|undefined => {
         if (!asset.assetType || !asset.parentAssetId) {
             return;
         }

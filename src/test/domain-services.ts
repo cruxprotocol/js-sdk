@@ -9,7 +9,7 @@ const expect = require('chai').expect;
 
 describe('Testing domain services', () => {
     describe('CruxUserAddressResolver tests', () => {
-        const ethERC20FallbackKey = "ERC20_4e4d9982-3469-421b-ab60-2c0c2f05386a";
+        const ethERC20AssetGroup = "ERC20_4e4d9982-3469-421b-ab60-2c0c2f05386a";
         const ethAsset: IGlobalAsset = {
             "assetId": "4e4d9982-3469-421b-ab60-2c0c2f05386a",
             "symbol": "ETH",
@@ -50,7 +50,7 @@ describe('Testing domain services', () => {
             it('resolving OMG -- config disabled  || asset absent || address absent', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [ethAsset, zrxAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: []};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: []};
                 const userAddressMap: IAddressMapping = {};
                 userAddressMap[ethAsset.assetId] = testEthAddress
                 // execution
@@ -63,7 +63,7 @@ describe('Testing domain services', () => {
             it('resolving OMG -- config enabled  || asset absent || address absent', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [ethAsset, zrxAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: [ethERC20FallbackKey]};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: [ethERC20AssetGroup]};
                 const userAddressMap: IAddressMapping = {};
                 userAddressMap[ethAsset.assetId] = testEthAddress
                 // execution
@@ -76,7 +76,7 @@ describe('Testing domain services', () => {
             it('resolving OMG -- config enabled  || asset present || address absent', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [ethAsset, zrxAsset, omgAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: [ethERC20FallbackKey]};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: [ethERC20AssetGroup]};
                 const userAddressMap: IAddressMapping = {};
                 userAddressMap[ethAsset.assetId] = testEthAddress
                 // execution
@@ -89,7 +89,7 @@ describe('Testing domain services', () => {
             it('resolving OMG -- config enabled  || asset present || address present', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [ethAsset, zrxAsset, omgAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: [ethERC20FallbackKey]};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: [ethERC20AssetGroup]};
                 const userAddressMap: IAddressMapping = {};
                 userAddressMap[ethAsset.assetId] = testEthAddress;
                 userAddressMap[omgAsset.assetId] = testOmgAddress;
@@ -103,7 +103,7 @@ describe('Testing domain services', () => {
             it('(NOT expected case) resolving OMG -- config disabled  || asset absent || address present', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [ethAsset, zrxAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: []};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: []};
                 const userAddressMap: IAddressMapping = {};
                 userAddressMap[ethAsset.assetId] = testEthAddress;
                 userAddressMap[omgAsset.assetId] = testOmgAddress;
@@ -119,10 +119,10 @@ describe('Testing domain services', () => {
             it('resolving ether ERC20 -- config disabled  || asset absent || address absent', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [zrxAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: []};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: []};
                 const userAddressMap: IAddressMapping = {};
                 // execution
-                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20FallbackKey};
+                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20AssetGroup};
                 const addressResolver = new CruxUserAddressResolver(userAddressMap, userAssetList, userConfig);
                 const address = addressResolver.resolveAddressWithAssetMatcher(assetMatcher);
                 // expectations - should NOT resolve the parentAsset's address
@@ -131,10 +131,10 @@ describe('Testing domain services', () => {
             it('resolving ether ERC20 -- config disabled  || asset present || address absent', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [ethAsset, zrxAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: []};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: []};
                 const userAddressMap: IAddressMapping = {};
                 // execution
-                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20FallbackKey};
+                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20AssetGroup};
                 const addressResolver = new CruxUserAddressResolver(userAddressMap, userAssetList, userConfig);
                 const address = addressResolver.resolveAddressWithAssetMatcher(assetMatcher);
                 // expectations - should NOT resolve the parentAsset's address
@@ -143,11 +143,11 @@ describe('Testing domain services', () => {
             it('resolving ether ERC20 -- config disabled  || asset present || address present', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [ethAsset, zrxAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: []};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: []};
                 const userAddressMap: IAddressMapping = {};
                 userAddressMap[ethAsset.assetId] = testEthAddress;
                 // execution
-                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20FallbackKey};
+                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20AssetGroup};
                 const addressResolver = new CruxUserAddressResolver(userAddressMap, userAssetList, userConfig);
                 const address = addressResolver.resolveAddressWithAssetMatcher(assetMatcher);
                 // expectations - should NOT resolve the parentAsset's address
@@ -156,10 +156,10 @@ describe('Testing domain services', () => {
             it('resolving ether ERC20 -- config enabled  || asset present || address absent', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [ethAsset, zrxAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: [ethERC20FallbackKey]};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: [ethERC20AssetGroup]};
                 const userAddressMap: IAddressMapping = {};
                 // execution
-                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20FallbackKey};
+                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20AssetGroup};
                 const addressResolver = new CruxUserAddressResolver(userAddressMap, userAssetList, userConfig);
                 const address = addressResolver.resolveAddressWithAssetMatcher(assetMatcher);
                 // expectations - should NOT resolve the parentAsset's address
@@ -168,11 +168,11 @@ describe('Testing domain services', () => {
             it('resolving ether ERC20 -- config enabled  || asset present || address present', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [ethAsset, zrxAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: [ethERC20FallbackKey]};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: [ethERC20AssetGroup]};
                 const userAddressMap: IAddressMapping = {};
                 userAddressMap[ethAsset.assetId] = testEthAddress;
                 // execution
-                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20FallbackKey};
+                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20AssetGroup};
                 const addressResolver = new CruxUserAddressResolver(userAddressMap, userAssetList, userConfig);
                 const address = addressResolver.resolveAddressWithAssetMatcher(assetMatcher);
                 // expectations - should resolve the parentAsset's address
@@ -181,11 +181,11 @@ describe('Testing domain services', () => {
             it('resolving with OMG contract -- config disabled  || asset absent || address absent', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [ethAsset, zrxAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: []};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: []};
                 const userAddressMap: IAddressMapping = {};
                 userAddressMap[ethAsset.assetId] = testEthAddress;
                 // execution
-                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20FallbackKey, assetIdentifierValue: omgAsset.assetIdentifierValue};
+                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20AssetGroup, assetIdentifierValue: omgAsset.assetIdentifierValue};
                 const addressResolver = new CruxUserAddressResolver(userAddressMap, userAssetList, userConfig);
                 const address = addressResolver.resolveAddressWithAssetMatcher(assetMatcher);
                 // expectations - should NOT resolve the parentAsset's address
@@ -194,11 +194,11 @@ describe('Testing domain services', () => {
             it('resolving with OMG contract -- config enabled  || asset absent || address absent', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [ethAsset, zrxAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: [ethERC20FallbackKey]};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: [ethERC20AssetGroup]};
                 const userAddressMap: IAddressMapping = {};
                 userAddressMap[ethAsset.assetId] = testEthAddress;
                 // execution
-                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20FallbackKey, assetIdentifierValue: omgAsset.assetIdentifierValue};
+                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20AssetGroup, assetIdentifierValue: omgAsset.assetIdentifierValue};
                 const addressResolver = new CruxUserAddressResolver(userAddressMap, userAssetList, userConfig);
                 const address = addressResolver.resolveAddressWithAssetMatcher(assetMatcher);
                 // expectations - should resolve the parentAsset's address
@@ -207,11 +207,11 @@ describe('Testing domain services', () => {
             it('resolving with OMG contract -- config enabled  || asset present || address absent', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [ethAsset, zrxAsset, omgAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: [ethERC20FallbackKey]};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: [ethERC20AssetGroup]};
                 const userAddressMap: IAddressMapping = {};
                 userAddressMap[ethAsset.assetId] = testEthAddress;
                 // execution
-                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20FallbackKey, assetIdentifierValue: omgAsset.assetIdentifierValue};
+                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20AssetGroup, assetIdentifierValue: omgAsset.assetIdentifierValue};
                 const addressResolver = new CruxUserAddressResolver(userAddressMap, userAssetList, userConfig);
                 const address = addressResolver.resolveAddressWithAssetMatcher(assetMatcher);
                 // expectations - should resolve the parentAsset's address
@@ -220,12 +220,12 @@ describe('Testing domain services', () => {
             it('resolving with OMG contract -- config enabled  || asset present || address present', () => {
                 // mock-fixtures
                 const userAssetList: IGlobalAssetList = [ethAsset, zrxAsset, omgAsset];
-                const userConfig: ICruxUserConfiguration = {enabledParentAssetFallbacks: [ethERC20FallbackKey]};
+                const userConfig: ICruxUserConfiguration = {enabledAssetGroups: [ethERC20AssetGroup]};
                 const userAddressMap: IAddressMapping = {};
                 userAddressMap[ethAsset.assetId] = testEthAddress;
                 userAddressMap[omgAsset.assetId] = testOmgAddress;
                 // execution
-                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20FallbackKey, assetIdentifierValue: omgAsset.assetIdentifierValue};
+                const assetMatcher: IAssetMatcher = {assetGroup: ethERC20AssetGroup, assetIdentifierValue: omgAsset.assetIdentifierValue};
                 const addressResolver = new CruxUserAddressResolver(userAddressMap, userAssetList, userConfig);
                 const address = addressResolver.resolveAddressWithAssetMatcher(assetMatcher);
                 // expectations - should resolve OMG specific address
