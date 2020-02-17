@@ -203,6 +203,13 @@ export class CruxWalletClient {
         return enabledAssetGroups;
     }
 
+    /**
+     * ```ts
+     *  const sampleEnabledAssetGroups: string[] = ["ERC20_eth"];
+     *  // Advised to pipe the method putAddressMap to registerCruxID call
+     *  const enabledAssetGroups = await cruxClient.putEnabledAssetGroups(sampleEnabledAssetGroups);
+     * ```
+     */
     @throwCruxClientError
     public putEnabledAssetGroups = async (symbolAssetGroups: string[]): Promise<string[]> => {
         await this.initPromise;
