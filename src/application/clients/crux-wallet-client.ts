@@ -206,7 +206,7 @@ export class CruxWalletClient {
     /**
      * ```ts
      *  const sampleEnabledAssetGroups: string[] = ["ERC20_eth"];
-     *  // Advised to pipe the method putAddressMap to registerCruxID call
+     *  // assetGroups can be constructed in the format "{assetType}_{parentAssetId}";
      *  const enabledAssetGroups = await cruxClient.putEnabledAssetGroups(sampleEnabledAssetGroups);
      * ```
      */
