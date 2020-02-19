@@ -21,8 +21,7 @@ interface GenericEncryptor {
 }
 
 interface GenericTransport {
-    on(newMessage: string, handleNewMessage: (encryptedMessage: string) => void): void;
-
+    on(newMessage: string, handleNewMessage: (fromId:SecureMessengerId, encryptedMessage: string) => void): void;
     send(to: SecureMessengerId, encryptedSerializedMessage: string): void;
 }
 
@@ -38,22 +37,22 @@ class NullEncryptor implements GenericEncryptor{
 }
 
 
-class ECDHEncryptor implements GenericEncryptor{
-    private selfId: SecureMessengerId;
-    constructor(selfId: SecureMessengerId, ecdhParamsStore, selfKeyManager){
-        this.selfId = selfId
-
-    }
-
-    public encryptFor(serializedMessage: string, forId: SecureMessengerId) {
-        encryptEcdh(serializedMessage, ecdhParamsStore.getPublicKey(forId))
-        return serializedMessage
-    }
-
-    public decryptFrom(encryptedMessage: any, fromId: SecureMessengerId) {
-        return encryptedMessage
-    }
-}
+// class ECDHEncryptor implements GenericEncryptor{
+//     private selfId: SecureMessengerId;
+//     constructor(selfId: SecureMessengerId, ecdhParamsStore, selfKeyManager){
+//         this.selfId = selfId
+//
+//     }
+//
+//     public encryptFor(serializedMessage: string, forId: SecureMessengerId) {
+//         encryptEcdh(serializedMessage, ecdhParamsStore.getPublicKey(forId))
+//         return serializedMessage
+//     }
+//
+//     public decryptFrom(encryptedMessage: any, fromId: SecureMessengerId) {
+//         return encryptedMessage
+//     }
+// }
 
 // class Transport extends EventEmitter{
 //
@@ -86,8 +85,10 @@ class SharedEventBuses {
 class InMemTransport implements GenericTransport{
     public sharedEventBuses: SharedEventBuses;
     public eventBusForSelf: any;
+    private selfId: SecureMessengerId;
     constructor(sharedEventBuses: any, selfId: SecureMessengerId) {
         this.sharedEventBuses = sharedEventBuses;
+        this.selfId = selfId;
         this.eventBusForSelf = this.sharedEventBuses.getEventBusFor(selfId)
         // this.on = this.eventBusForSelf.on;
         // this.on.bind(this.eventBusForSelf)
@@ -95,7 +96,7 @@ class InMemTransport implements GenericTransport{
     }
 
     send(to: SecureMessengerId, message: string) {
-        this.sharedEventBuses.getEventBusFor(to).emit('newMessage', message)
+        this.sharedEventBuses.getEventBusFor(to).emit('newMessage', this.selfId, message)
     }
 
     on(eventName: string, handler: any){
@@ -148,27 +149,19 @@ class SecureMessenger extends EventEmitter{
         this.transport.on('newMessage', this.handleNewMessage)
 
     }
-    public send({to: SecureMessengerId, message: any}) {
+    public send(to: SecureMessengerId, message: any) {
         // need to refactor with cipher abstraction not encryptor
         const serializedMessage = this.serde.serialize(message)
-        const encryptedSerializedMessage = this.encryptor.encrypt(serializedMessage)
+        const encryptedSerializedMessage = this.encryptor.encryptFor(serializedMessage, to)
         this.transport.send(to, encryptedSerializedMessage)
 
     }
-    public handleNewMessage = (encryptedMessage: string) => {
-        const decryptedSerializedMessage = this.encryptor.decrypt(encryptedMessage)
-        this.emit('newMessage', this.serde.deserialize(decryptedSerializedMessage))
+    public handleNewMessage = (from: SecureMessengerId, encryptedMessage: string) => {
+        const decryptedSerializedMessage = this.encryptor.decryptFrom(encryptedMessage, from)
+        this.emit('newMessage', from, this.serde.deserialize(decryptedSerializedMessage))
     }
 
 }
-
-
-function getSecureMessenger() {
-    const encryptor = new NullEncryptor()
-    const transport = new Transport()
-}
-
-
 
 
 
@@ -221,7 +214,7 @@ describe('test basic secure messaging design', async function() {
 
 
         userATransport.eventBusForSelf.on('newMessage', function(msg){
-            console.log("New Message on userBTransport.eventBusForSelf")
+            console.log("New Message on userATransport.eventBusForSelf")
             console.log(msg);
             done()
 
@@ -243,8 +236,9 @@ describe('test basic secure messaging design', async function() {
 
 
 
-        userATransport.on('newMessage', function(msg) {
+        userATransport.on('newMessage', function(from: SecureMessengerId, msg: any) {
             console.log("userATransport.on")
+            console.log(from);
             console.log(msg);
             done()
         })
@@ -271,8 +265,8 @@ describe('test basic secure messaging design', async function() {
         // person A wants to send person B some data -
         console.log('prep done. adding listener')
 
-        userBSecureMessenger.on('newMessage', function(msg){
-            console.log('User B received newMessage')
+        userBSecureMessenger.on('newMessage', function(from, msg){
+            console.log(`User B received newMessage from:${from} msg:${msg}`)
             console.log(msg);
             done()
         });
