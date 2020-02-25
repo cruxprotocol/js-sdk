@@ -148,7 +148,7 @@ export class CruxUser {
         if (this.pubKey && "deriveSharedSecret" in keyManager && typeof keyManager.deriveSharedSecret === "function") {
             const sharedSecret = await keyManager.deriveSharedSecret(this.pubKey);
             const sharedSecretHash = Encryption.hash(sharedSecret);
-            const encryptedAddressMapObject: {encBuffer: string, iv: string} = JSON.parse(this.cruxUserPrivateAddresses[sharedSecretHash]);
+            const encryptedAddressMapObject: {encBuffer: string, iv: string} = this.cruxUserPrivateAddresses[sharedSecretHash] && JSON.parse(this.cruxUserPrivateAddresses[sharedSecretHash]);
             if (encryptedAddressMapObject) {
                 const decryptedAddressMap = await Encryption.decryptJSON(encryptedAddressMapObject.encBuffer, encryptedAddressMapObject.iv, sharedSecret) as IAddressMapping;
                 return decryptedAddressMap;
