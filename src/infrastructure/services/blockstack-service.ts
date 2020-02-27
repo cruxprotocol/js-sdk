@@ -96,11 +96,9 @@ export class BlockstackService {
                 status: SubdomainRegistrationStatus.PENDING,
                 statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
             };
-            // tslint:disable-next-line: tsr-detect-unsafe-regexp
-            const txHashRegex = /(?<=\btransaction\s)(\w+)/;
-            const regexExec = txHashRegex.exec(rawStatus);
-            if (regexExec !== null) {
-                transactionHash = regexExec[0].toString();
+            const regexMatch = rawStatus.match(new RegExp(".+transaction (.+) --.+"));
+            if (regexMatch !== null) {
+                transactionHash = regexMatch[1];
             }
         } else {
             transactionHash = undefined;
