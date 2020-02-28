@@ -108,9 +108,9 @@ export class CruxUser {
         // addressMap is not validated due to the presence of magic key: "__userData__";
         this.addressMap = addressMap;
     }
-    public setPrivateAddressMap = async (publicKey: string, addressMap: IAddressMapping, keyManager: IKeyManager): Promise<void> => {
+    public setPrivateAddressMap = async (cruxUser: CruxUser, addressMap: IAddressMapping, keyManager: IKeyManager): Promise<void> => {
         if (keyManager && "deriveSharedSecret" in keyManager && typeof keyManager.deriveSharedSecret === "function") {
-            const sharedSecret = await keyManager.deriveSharedSecret(publicKey);
+            const sharedSecret = await keyManager.deriveSharedSecret(cruxUser.publicKey!);
             const sharedSecretHash = Encryption.hash(sharedSecret);
             const encryptedAddressMapObject = await Encryption.encryptJSON(addressMap, sharedSecret);
             this.cruxUserPrivateAddresses[sharedSecretHash] = JSON.stringify(encryptedAddressMapObject);

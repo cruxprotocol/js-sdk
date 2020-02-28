@@ -21,6 +21,22 @@ export interface IPutAddressMapFailures {
     [currency: string]: string;
 }
 
+export interface IPutPrivateAddressMapFailures {
+    [fullCruxID: string]: IGenericFailures;
+}
+
+export interface IPutPrivateAddressMapSuccess {
+    [fullCruxID: string]: {
+        success: IPutAddressMapSuccess,
+        failures: IPutAddressMapFailures,
+    };
+}
+
+export interface IGenericFailures {
+    errorCode: number;
+    errorMessage: string;
+}
+
 export class CruxAssetTranslator {
     private assetList!: IGlobalAssetList;
     private assetMap!: IClientAssetMapping;

@@ -269,7 +269,7 @@ const putAddressMap = async () => {
 }
 const putPrivateAddressMap = async () => {
     let UIResponse: string = ""
-    let cruxID = doc.getElementById('privateUserVirtualAddress').value
+    let cruxID = [doc.getElementById('privateUserVirtualAddress').value];
     let addressMap: IAddressMapping = {};
     [].forEach.call(doc.getElementsByName('publishPrivateAddressOption'), (el: HTMLInputElement) => {
         if (el.checked) {
