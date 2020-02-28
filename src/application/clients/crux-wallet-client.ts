@@ -1,5 +1,5 @@
 // Importing packages
-import { CruxAssetTranslator, IGenericFailures, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap, IPutPrivateAddressMapFailures, IPutPrivateAddressMapSuccess } from "../../application/services/crux-asset-translator";
+import { CruxAssetTranslator, IGenericFailures, IPutAddressMapFailures, IPutAddressMapSuccess, IPutPrivateAddressMapFailures, IPutPrivateAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
 import { CruxDomain } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
 import { CruxUser, IAddress, IAddressMapping, IAssetMatcher, ICruxUserRegistrationStatus, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
@@ -17,7 +17,7 @@ import {
     IBlockstackCruxUserRepositoryOptions,
 } from "../../infrastructure/implementations/blockstack-crux-user-repository";
 import { Encryption } from "../../packages/encryption";
-import { BaseError, CruxClientError, ErrorHelper, PackageErrorCode, ERROR_STRINGS } from "../../packages/error";
+import { CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
 import { StorageService } from "../../packages/storage";
