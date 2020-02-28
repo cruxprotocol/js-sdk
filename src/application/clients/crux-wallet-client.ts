@@ -1,5 +1,5 @@
 // Importing packages
-import { CruxAssetTranslator, IGenericFailures, IPutAddressMapFailures, IPutAddressMapSuccess, IPutPrivateAddressMapFailures, IPutPrivateAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
+import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
 import { CruxDomain } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
 import { CruxUser, IAddress, IAddressMapping, IAssetMatcher, ICruxUserRegistrationStatus, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
@@ -21,6 +21,22 @@ import { CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode } from ".
 import { CruxDomainId, CruxId } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
 import { StorageService } from "../../packages/storage";
+
+export interface IPutPrivateAddressMapFailures {
+    [fullCruxID: string]: IGenericFailures;
+}
+
+export interface IPutPrivateAddressMapSuccess {
+    [fullCruxID: string]: {
+        success: IPutAddressMapSuccess,
+        failures: IPutAddressMapFailures,
+    };
+}
+
+export interface IGenericFailures {
+    errorCode: number;
+    errorMessage: string;
+}
 
 export const throwCruxClientError = (target: any, prop: any, descriptor?: { value?: any; }): any => {
     let fn: any;
