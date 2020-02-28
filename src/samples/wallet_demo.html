@@ -100,6 +100,14 @@
     </div>
 
     <div class="registered">
+        <br><span class="helper">publish private address map:</span><br>
+        <input id="privateUserVirtualAddress" placeholder="ankit@scatter_dev.crux"><br>
+        <div id="publishPrivateAddresses"></div><br>
+        <button onclick="putPrivateAddressMap()">Publish Private Address</button>
+        <pre id="putPrivateAddressMapAcknowledgement"></pre>
+    </div>
+
+    <div class="registered">
         <br><span class="helper">publish enabled assetGroups:</span><br>
         <div id="putEnabledAssetGroups"></div><br>
         <button onclick="putEnabledAssetGroups()">Publish AssetGroups config</button>

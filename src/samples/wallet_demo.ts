@@ -79,6 +79,7 @@ doc.getElementById('mode').textContent = `'${mode}'`;
 doc.getElementById('currency').innerHTML = Object.keys(sampleAddressMap).map((currency) => { return `<option value="${currency}">${currency}</option>` }).join('\n')
 doc.getElementById('userAddresses').textContent = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; let secIdentifier = sampleAddressMap[currency].secIdentifier; return `${currency.toUpperCase()} - ${address} ${secIdentifier ? `(${secIdentifier})` : '' }` }).join('\n')
 doc.getElementById('publishAddresses').innerHTML = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; let secIdentifier = sampleAddressMap[currency].secIdentifier; return `<input type="checkbox" name="publishAddressOption" currency="${currency.toUpperCase()}" addressHash="${address}" secIdentifier="${secIdentifier}" checked>${currency.toUpperCase()}` }).join('\n')
+doc.getElementById('publishPrivateAddresses').innerHTML = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; let secIdentifier = sampleAddressMap[currency].secIdentifier; return `<input type="checkbox" name="publishPrivateAddressOption" currency="${currency.toUpperCase()}" addressHash="${address}" secIdentifier="${secIdentifier}" checked>${currency.toUpperCase()}` }).join('\n')
 doc.getElementById('assetMatcher_assetGroups').innerHTML = [...sampleSupportedAssetGroups].map((assetGroup) => `<option value="${assetGroup}">${assetGroup.toUpperCase()}</option>`).join('\n')
 doc.getElementById('putEnabledAssetGroups').innerHTML = [...sampleSupportedAssetGroups].map((assetGroup) => `<input type="checkbox" name="putEnabledAssetGroupsOption" assetGroup="${assetGroup}" checked>${assetGroup.toUpperCase()}`).join('\n')
 
@@ -266,6 +267,32 @@ const putAddressMap = async () => {
         doc.getElementById('putAddressMapAcknowledgement').textContent = UIResponse
     }
 }
+const putPrivateAddressMap = async () => {
+    let UIResponse: string = ""
+    let cruxID = doc.getElementById('privateUserVirtualAddress').value.split(",");
+    let addressMap: IAddressMapping = {};
+    [].forEach.call(doc.getElementsByName('publishPrivateAddressOption'), (el: HTMLInputElement) => {
+        if (el.checked) {
+            addressMap[el.attributes['currency'].nodeValue] = {
+                addressHash: el.attributes['addressHash'].nodeValue,
+                secIdentifier: el.attributes['secIdentifier'].nodeValue === "undefined" ? undefined : el.attributes['secIdentifier'].nodeValue
+            }
+        }
+    });
+    try {
+        doc.getElementById('putPrivateAddressMapAcknowledgement').textContent = "Publishing your selected addresses PRIVATELY..."
+        let {success, failures} = await cruxClient.putPrivateAddressMap(cruxID, addressMap)
+        UIResponse = `successfully published: ${JSON.stringify(success)}, \nFailed publishing: ${JSON.stringify(failures, undefined, 4)}`
+    } catch (e) {
+        if (e instanceof CruxClientError) {
+            UIResponse = `${e.errorCode}: ${e}`
+        } else {
+            UIResponse = e
+        }
+    } finally {
+        doc.getElementById('putPrivateAddressMapAcknowledgement').textContent = UIResponse
+    }
+}
 const putEnabledAssetGroups = async () => {
     let UIResponse: string = "Publishing your assetGroups configuration..."
     let assetGroups: string[] = [];
@@ -346,6 +373,7 @@ declare global {
         getAssetMap: Function;
         getAddressMap: Function;
         putAddressMap: Function;
+        putPrivateAddressMap: Function;
         getEnabledAssetGroups: Function;
         putEnabledAssetGroups: Function;
         getCruxIDState: Function;
@@ -360,6 +388,7 @@ window.resolveAssetAddressForCruxID = resolveAssetAddressForCruxID;
 window.getAssetMap = getAssetMap;
 window.getAddressMap = getAddressMap;
 window.putAddressMap = putAddressMap;
+window.putPrivateAddressMap = putPrivateAddressMap;
 window.getEnabledAssetGroups = getEnabledAssetGroups;
 window.putEnabledAssetGroups = putEnabledAssetGroups;
 window.getCruxIDState = getCruxIDState;
