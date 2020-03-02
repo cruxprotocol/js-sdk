@@ -7,7 +7,7 @@ import * as chai from "chai";
 import {CruxWalletClient, ICruxIDState} from "../application/clients/crux-wallet-client";
 import {SubdomainRegistrationStatus} from "../core/entities/crux-user";
 import {BasicKeyManager} from "../infrastructure/implementations/basic-key-manager";
-import {PackageErrorCode} from "../packages/error";
+import {PackageErrorCode, ERROR_STRINGS} from "../packages/error";
 import {
     addDomainToRepo,
     addUserToRepo,
@@ -163,6 +163,81 @@ describe('CruxWalletClient Tests', function() {
             expect(fetchedAddressMap2['bitcoin']['addressHash']).equals(newAddressMap['bitcoin']['addressHash']);
         });
     });
+    describe('Private addresses tests', async function() {
+        
+        beforeEach(function() {
+            // foo123@somewallet.crux
+            this.cc1 = new CruxWalletClient({
+                walletClientName: 'somewallet',
+                privateKey: testPvtKey
+            });
 
+            // bar123@somewallet.crux
+            this.cc2 = new CruxWalletClient({
+                walletClientName: 'somewallet',
+                privateKey: testPvtKey2
+            });
+        });
+        it('New private address addition for self and resolution works properly', async function() {
+            const newAddressMap = {'bitcoin': {'addressHash': 'btcAddressXyz'}};
+            await this.cc2.putPrivateAddressMap(["bar123@somewallet.crux"], newAddressMap)
+            const fetchedAddress = await this.cc2.resolveCurrencyAddressForCruxID("bar123@somewallet.crux", "bitcoin");
+            expect(fetchedAddress['addressHash']).equals(newAddressMap['bitcoin']['addressHash']);
+        });
+
+        it('New private address addition and resolution works properly', async function() {
+            const newAddressMap = {'bitcoin': {'addressHash': 'btcAddressXyz'}};
+            await this.cc1.putPrivateAddressMap(["bar123@somewallet.crux"], newAddressMap)
+            const fetchedAddress = await this.cc2.resolveCurrencyAddressForCruxID("foo123@somewallet.crux", "bitcoin");
+            expect(fetchedAddress['addressHash']).equals(newAddressMap['bitcoin']['addressHash']);
+        });
+
+        it('Resolution fallback to public address when no private address found', async function() {
+            const newAddressMap = {'ethereum': {'addressHash': 'ethAddressXyz'}};
+            await this.cc1.putPrivateAddressMap(["bar123@somewallet.crux"], newAddressMap)
+            const fetchedAddress = await this.cc2.resolveCurrencyAddressForCruxID("foo123@somewallet.crux", "bitcoin");
+            expect(fetchedAddress['addressHash']).equals("foobtcaddress");
+        });
+
+        it('Resolution throws AddressNotAvailable no private or public address found', async function() {
+            const newAddressMap = {'ethereum': {'addressHash': 'ethAddressXyz'}};
+            await this.cc1.putPrivateAddressMap(["bar123@somewallet.crux"], newAddressMap)
+            const promise = this.cc2.resolveCurrencyAddressForCruxID("foo123@somewallet.crux", "tron");
+            expect(promise).to.be.eventually.rejected.with.property('errorCode', PackageErrorCode.AddressNotAvailable);
+        });
+
+        it('Partial publishing of private addresses works', async function() {
+            const fetchedAddressMap1 = await this.cc1.getAddressMap();
+            expect(fetchedAddressMap1['bitcoin']['addressHash']).equals('foobtcaddress2');
+            const barCruxIdString = "bar123@somewallet.crux";
+            const newAddressMap = {'bitcoin': {'addressHash': 'btcAddressAbc'}, 'invalidsymbol': {'addressHash': 'someRandomAddress'}};
+            const putResult = await this.cc1.putPrivateAddressMap([barCruxIdString], newAddressMap);
+            expect(putResult.failures).eql([{
+                errorCode: PackageErrorCode.CurrencyDoesNotExistInClientMapping,
+                errorEntity: "invalidsymbol",
+                errorMessage: ERROR_STRINGS[PackageErrorCode.CurrencyDoesNotExistInClientMapping],
+            }]);
+        });
+
+        it('Partial publishing of private addresses works when some users don\'t exist', async function() {
+            const fetchedAddressMap1 = await this.cc1.getAddressMap();
+            expect(fetchedAddressMap1['bitcoin']['addressHash']).equals('foobtcaddress2');
+            const barCruxIdString = "bar123@somewallet.crux";
+            const nonexistentUser = "nonexistent@somewallet.crux"
+            const newAddressMap = {'bitcoin': {'addressHash': 'btcAddressAbc'}, 'invalidsymbol': {'addressHash': 'someRandomAddress'}};
+            const putResult = await this.cc1.putPrivateAddressMap([barCruxIdString, nonexistentUser], newAddressMap);
+
+            expect(putResult.failures).eql([{
+                errorCode: PackageErrorCode.CurrencyDoesNotExistInClientMapping,
+                errorEntity: "invalidsymbol",
+                errorMessage: ERROR_STRINGS[PackageErrorCode.CurrencyDoesNotExistInClientMapping],
+            }, {
+                errorCode: PackageErrorCode.UserDoesNotExist,
+                errorEntity: "nonexistent@somewallet.crux",
+                errorMessage: ERROR_STRINGS[PackageErrorCode.UserDoesNotExist],
+            }]);
+        });
+    
+    });
 });
 

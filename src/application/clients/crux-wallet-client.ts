@@ -22,18 +22,12 @@ import { CruxDomainId, CruxId } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
 import { StorageService } from "../../packages/storage";
 
-export interface IPutPrivateAddressMapFailures {
-    [fullCruxID: string]: IGenericFailures;
-}
-
-export interface IPutPrivateAddressMapSuccess {
-    [fullCruxID: string]: {
-        success: IPutAddressMapSuccess,
-        failures: IPutAddressMapFailures,
-    };
+export interface IPutPrivateAddressMapResult {
+    failures: IGenericFailures[];
 }
 
 export interface IGenericFailures {
+    errorEntity: string;
     errorCode: number;
     errorMessage: string;
 }
@@ -201,31 +195,38 @@ export class CruxWalletClient {
         return {success, failures};
     }
 
-    public putPrivateAddressMap = async (fullCruxIDs: string[], newAddressMap: IAddressMapping): Promise<{success: IPutPrivateAddressMapSuccess, failures: IPutPrivateAddressMapFailures}> => {
+    public putPrivateAddressMap = async (fullCruxIDs: string[], newAddressMap: IAddressMapping): Promise<IPutPrivateAddressMapResult> => {
         await this.initPromise;
         const cruxUserWithKey = await this.getCruxUserByKey();
         if (!cruxUserWithKey) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
-        const putSuccess: IPutPrivateAddressMapSuccess = {};
-        const putFailures: IPutPrivateAddressMapFailures = {};
+        const putFailures: IGenericFailures[] = [];
         const {assetAddressMap, success, failures} = this.cruxAssetTranslator.symbolAddressMapToAssetIdAddressMap(newAddressMap);
+        for (const currency of Object.keys(failures)) {
+            const currencyFailure: IGenericFailures = {
+                errorCode: PackageErrorCode.CurrencyDoesNotExistInClientMapping,
+                errorEntity: currency,
+                errorMessage: ERROR_STRINGS[PackageErrorCode.CurrencyDoesNotExistInClientMapping],
+            };
+            putFailures.push(currencyFailure);
+        }
         for (const fullCruxID of fullCruxIDs) {
             const cruxUser = await this.getCruxUserByID(fullCruxID.toLowerCase());
             if (!cruxUser) {
                 // throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
                 const userFailure: IGenericFailures = {
                     errorCode: PackageErrorCode.UserDoesNotExist,
+                    errorEntity: fullCruxID,
                     errorMessage: ERROR_STRINGS[PackageErrorCode.UserDoesNotExist],
                 };
-                putFailures[fullCruxID] = userFailure;
+                putFailures.push(userFailure);
             } else {
                 cruxUserWithKey.setPrivateAddressMap(cruxUser, assetAddressMap, this.getKeyManager());
-                putSuccess[fullCruxID] = {success, failures};
             }
         }
         await this.cruxUserRepository.save(cruxUserWithKey, this.getKeyManager());
-        return {success: putSuccess, failures: putFailures};
+        return {failures: putFailures};
     }
 
     @throwCruxClientError
