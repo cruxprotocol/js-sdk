@@ -28,7 +28,7 @@ export class GaiaService {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaEmptyResponse);
         }
         const decodedToken: any = decodeToken(responseBody[0].token);
-        const content = decodedToken.payload.claim;
+        // const content = decodedToken.payload.claim;
         const pubKey = decodedToken.payload.subject.publicKey;
         const addressFromPub = publicKeyToAddress(pubKey);
         // validate the file integrity with the token signature
@@ -42,7 +42,7 @@ export class GaiaService {
         if (addressFromPub !== address) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaRecordIntegrityFailed, filename, address);
         }
-        return content;
+        return decodedToken;
     }
     private cacheStorage?: StorageService;
     private gaiaHub: string;

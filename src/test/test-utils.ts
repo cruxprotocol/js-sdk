@@ -57,7 +57,9 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
         },{
             configuration: {
                 enabledAssetGroups: [],
-        }});
+            },
+            privateAddresses: {}
+        }, await keyManager.getPubKey());
         const addressFromKeyManager = publicKeyToAddress(await keyManager.getPubKey());
         this.userStore.store(newUser, addressFromKeyManager);
         return new Promise((resolve, reject) => resolve(newUser));
@@ -182,7 +184,9 @@ export const getValidCruxUser = () => {
     const validCruxUserData: ICruxUserData = {
         configuration: {
             enabledAssetGroups: [],
-    }}
+        },
+        privateAddresses: {}
+    }
 
     return new CruxUser(testCruxUserSubdomain, getValidCruxDomain() , testValidAddressMap, validUserInformation, validCruxUserData);
 };
@@ -204,7 +208,9 @@ export const getValidCruxUser2 = () => {
     const validCruxUserData: ICruxUserData = {
         configuration: {
             enabledAssetGroups: [],
-    }}
+        },
+        privateAddresses: {}
+    }
 
     return new CruxUser(testCruxUserSubdomain, getValidCruxDomain(), testValidAddressMap, validUserInformation, validCruxUserData);
 };
@@ -221,7 +227,9 @@ export const getValidPendingCruxUser = () => {
     const validCruxUserData: ICruxUserData = {
         configuration: {
             enabledAssetGroups: [],
-    }}
+        },
+        privateAddresses: {}
+    }
     return new CruxUser(testCruxUserSubdomain, getValidCruxDomain(), {}, validUserInformation, validCruxUserData);
 }
 

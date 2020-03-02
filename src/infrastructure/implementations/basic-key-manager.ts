@@ -1,3 +1,4 @@
+import { ec } from "elliptic";
 import { TokenSigner } from "jsontokens";
 import { IKeyManager } from "../../core/interfaces/key-manager";
 import { Encryption } from "../../packages/encryption";
@@ -24,6 +25,14 @@ export class BasicKeyManager implements IKeyManager {
     public getPubKey = async (): Promise<string> => {
         await this.initPromise;
         return this.publicKey;
+    }
+    public deriveSharedSecret = async (publicKey: string): Promise<string> => {
+        let privateKey = await this.getDecryptedPrivateKey();
+        const curve = new ec("secp256k1");
+        const selfKey = curve.keyFromPrivate(privateKey, "hex");
+        const userKey = curve.keyFromPublic(publicKey, "hex");
+        privateKey = "0".repeat(privateKey.length);
+        return selfKey.derive(userKey.getPublic()).toString(16);
     }
     private init = async (privateKey: string, getEncryptionKey?: () => Promise<string>): Promise<void> => {
         let encryptionConstant: string;
