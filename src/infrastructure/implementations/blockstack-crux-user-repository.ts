@@ -69,7 +69,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         return this.blockstackService.isCruxIdAvailable(this.getCruxIdFromSubdomain(cruxIdSubdomain));
     }
     public getByCruxId = async (cruxID: CruxId, tag?: string, onlyRegistered: boolean = false): Promise<CruxUser|undefined> => {
-        const cruxUserInformation = await this.blockstackService.getCruxIdInformation(cruxID, onlyRegistered);
+        const cruxUserInformation = await this.blockstackService.getCruxIdInformation(cruxID, tag, onlyRegistered);
         if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.NONE) {
             return;
         }

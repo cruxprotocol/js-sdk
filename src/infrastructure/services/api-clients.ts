@@ -101,9 +101,9 @@ export class BlockstackNamingServiceApiClient {
         }
         let nameData;
         try {
-            nameData = await cachedFunctionCall(cacheStorage, `${options.baseUrl}${options.url}`, 3600, httpJSONRequest, [options], async (data) => {
+            nameData = await cachedFunctionCall(cacheStorage, `${options.baseUrl}${options.url}?${options.qs ? Object.keys(options.qs).map((key) => `${key}=${options.qs[key]}`).join("&") : ""}`, 3600, httpJSONRequest, [options], async (data) => {
                 let skipCache = true;
-                if (data && data.status && data.status === "registerd_subdomain") {
+                if (data && data.status && data.status === "registered_subdomain") {
                     skipCache = false;
                 }
                 return skipCache;

@@ -218,8 +218,8 @@ export class BlockstackService {
         await registrarApiClient.registerSubdomain(cruxId.components.subdomain, gaiaHub, publicKeyToAddress(await keyManager.getPubKey()));
         return this.getCruxIdInformation(cruxId);
     }
-    public getCruxIdInformation = async (cruxId: CruxId, onlyRegistered?: boolean): Promise<ICruxUserInformation> => {
-        const nameDetails = await this.getNameDetails(cruxId);
+    public getCruxIdInformation = async (cruxId: CruxId, tag?: string, onlyRegistered?: boolean): Promise<ICruxUserInformation> => {
+        const nameDetails = await this.getNameDetails(cruxId, tag);
         let status: SubdomainRegistrationStatus;
         let statusDetail: SubdomainRegistrationStatusDetail;
         let transactionHash: string|undefined;
