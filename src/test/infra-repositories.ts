@@ -170,7 +170,7 @@ describe('Infrastructure Repositories Test', () => {
             expect(cruxUserAvailable).is.eql(true);
         })
         it('Getting registered CruxUser by ID', async ()=>{
-            mockBlockstackService.getCruxIdInformation.withArgs(testUserCruxId, false).resolves({
+            mockBlockstackService.getCruxIdInformation.withArgs(testUserCruxId, undefined, false).resolves({
                 ownerAddress: testUserNameDetails.address,
                 registrationStatus: {
                     status: SubdomainRegistrationStatus.DONE,
@@ -211,10 +211,10 @@ describe('Infrastructure Repositories Test', () => {
                 },
                 transactionHash: testUserNameDetails.last_txid,
             })
-            expect(mockBlockstackService.getCruxIdInformation.calledOnceWithExactly(testUserCruxId, false)).to.be.true;
+            expect(mockBlockstackService.getCruxIdInformation.calledOnceWithExactly(testUserCruxId, undefined, false)).to.be.true;
         })
         it('Getting registered CruxUser by ID with tag', async ()=>{
-            mockBlockstackService.getCruxIdInformation.withArgs(testUserCruxId, false).resolves({
+            mockBlockstackService.getCruxIdInformation.withArgs(testUserCruxId, "testtag", false).resolves({
                 ownerAddress: testUserNameDetails.address,
                 registrationStatus: {
                     status: SubdomainRegistrationStatus.DONE,
@@ -254,7 +254,7 @@ describe('Infrastructure Repositories Test', () => {
                     "addressHash":"1HX4KvtPdg9QUYwQE1kNqTAjmNaDG7w82V",
                 }
             });
-            expect(mockBlockstackService.getCruxIdInformation.calledOnceWithExactly(testUserCruxId, false)).to.be.true;
+            expect(mockBlockstackService.getCruxIdInformation.calledOnceWithExactly(testUserCruxId, "testtag", false)).to.be.true;
         })
         it('Getting unregistered CruxUser by ID', async ()=>{
             mockBlockstackService.getCruxIdInformation.withArgs(unregisteredCruxId).resolves({
