@@ -16,7 +16,6 @@ import {
     BlockstackCruxUserRepository,
     IBlockstackCruxUserRepositoryOptions,
 } from "../../infrastructure/implementations/blockstack-crux-user-repository";
-import { Encryption } from "../../packages/encryption";
 import { CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
@@ -79,7 +78,6 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
     return new BlockstackCruxUserRepository(options);
 };
 export class CruxWalletClient {
-    public e = Encryption;
     public walletClientName: string;
     private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
     private initPromise: Promise<void>;
@@ -116,6 +114,11 @@ export class CruxWalletClient {
         return this.initPromise;
     }
 
+    /**
+     * ```ts
+     *  const cruxIDState: ICruxIDState = await cruxClient.getCruxIDState();
+     * ```
+     */
     @throwCruxClientError
     public getCruxIDState = async (): Promise<ICruxIDState> => {
         await this.initPromise;
@@ -136,6 +139,13 @@ export class CruxWalletClient {
         }
     }
 
+    /**
+     * ```ts
+     *  const sampleCruxID = "alice@cruxdev.crux";
+     *  const sampleWalletCurrencySymbol = "eth"
+     *  const resolvedAddress: IAddress = await cruxClient.resolveCurrencyAddressForCruxID(sampleCruxID, sampleWalletCurrencySymbol);
+     * ```
+     */
     @throwCruxClientError
     public resolveCurrencyAddressForCruxID = async (fullCruxID: string, walletCurrencySymbol: string): Promise<IAddress> => {
         await this.initPromise;
@@ -155,6 +165,14 @@ export class CruxWalletClient {
         return address;
     }
 
+    /**
+     * ```ts
+     *  const sampleCruxID = "alice@cruxdev.crux";
+     *  const sampleAssetMatcher: IAssetMatcher = {assetGroup: "ERC20_eth"}; // with optional assetIdentifierValue which could be the contract address or property id of the asset
+     *  // assetGroups can be constructed in the format "{assetType}_{parentAssetId}";
+     *  const resolvedAddress: IAddress = await cruxClient.resolveAssetAddressForCruxID(sampleCruxID, sampleAssetMatcher);
+     * ```
+     */
     @throwCruxClientError
     public resolveAssetAddressForCruxID = async (fullCruxID: string, assetMatcher: IAssetMatcher): Promise<IAddress> => {
         await this.initPromise;
@@ -171,6 +189,11 @@ export class CruxWalletClient {
         return address;
     }
 
+    /**
+     * ```ts
+     *  const myAddressMap: IAddressMapping = await cruxClient.getAddressMap();
+     * ```
+     */
     @throwCruxClientError
     public getAddressMap = async (): Promise<IAddressMapping> => {
         await this.initPromise;
@@ -182,6 +205,19 @@ export class CruxWalletClient {
         return {};
     }
 
+    /**
+     * ```ts
+     *  const sampleAddressMap: IAddressMapping = {
+     *      'BTC': {
+     *          addressHash: '1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX'
+     *      },
+     *      'ETH': {
+     *          addressHash: '0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8'
+     *      },
+     *  }
+     *  const putPublicAddressResult: {success: IPutAddressMapSuccess, failures: IPutAddressMapFailures} = await cruxClient.putAddressMap(sampleAddressMap);
+     * ```
+     */
     @throwCruxClientError
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {
         await this.initPromise;
@@ -195,6 +231,16 @@ export class CruxWalletClient {
         return {success, failures};
     }
 
+    /**
+     * ```ts
+     *  const sampleCruxIDs = ["alice@cruxdev.crux", "bob123@cruxdev.crux"];
+     *  const sampleAddressMap: IAddressMapping = {
+     *  'BTC': {
+     *      addressHash: '1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX'
+     *  },
+     *  const putPrivateAddressResult: IPutPrivateAddressMapResult = await cruxClient.putPrivateAddressMap(sampleCruxIDs, sampleAddressMap);
+     * ```
+     */
     public putPrivateAddressMap = async (fullCruxIDs: string[], newAddressMap: IAddressMapping): Promise<IPutPrivateAddressMapResult> => {
         await this.initPromise;
         const cruxUserWithKey = await this.getCruxUserByKey();
@@ -303,6 +349,11 @@ export class CruxWalletClient {
         await this.cruxUserRepository.create(cruxIDSubdomain.toLowerCase(), this.getKeyManager());
     }
 
+    /**
+     * ```ts
+     *  const assetMap: IResolvedClientAssetMap = await cruxClient.getAssetMap();
+     * ```
+     */
     @throwCruxClientError
     public getAssetMap = async (): Promise<IResolvedClientAssetMap> => {
         await this.initPromise;
