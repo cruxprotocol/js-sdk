@@ -18,12 +18,12 @@ or include directly as a script -
 
 To initialise the SDK you need a walletClientName.
 
-You can get create and manage your walletClientName at [CRUX Wallet Dashboard](https://cruxpay.com/wallet/dashboard). Please feel free to contact us at contact@cruxpay.com for any registration related queries.
+You can get, create and manage your walletClientName at [CRUX Wallet Dashboard](https://cruxpay.com/wallet/dashboard). Please feel free to contact us at contact@cruxpay.com for any registration related queries.
 
 ```
     import { CruxPay } from "@cruxpay/js-sdk";
 
-    let cruxClient = new CruxPay.CruxClient({
+    let cruxClient = new CruxPay.CruxWalletClient({
         walletClientName: 'testwallet',
         privateKey: "6bd397dc89272e71165a0e7d197b288ed5b1e44e1928c25455506f1968f" 
     });
