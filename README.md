@@ -2,6 +2,7 @@
 
 [https://docs.cruxpay.com](https://docs.cruxpay.com)
 
+[Sample JS fiddle](https://jsfiddle.net/bxu0Le2n/2/)
 
 ## 1. Install
 
