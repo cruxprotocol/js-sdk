@@ -16,7 +16,6 @@ import {
     BlockstackCruxUserRepository,
     IBlockstackCruxUserRepositoryOptions,
 } from "../../infrastructure/implementations/blockstack-crux-user-repository";
-import { Encryption } from "../../packages/encryption";
 import { CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
@@ -79,7 +78,6 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
     return new BlockstackCruxUserRepository(options);
 };
 export class CruxWalletClient {
-    public e = Encryption;
     public walletClientName: string;
     private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
     private initPromise: Promise<void>;
