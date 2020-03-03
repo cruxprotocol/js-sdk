@@ -41,8 +41,8 @@ You can get create and manage your walletClientName at [CRUX Wallet Dashboard](h
     })
 
 
-    // Create a new CRUX ID - foo@testwallet.crux
-    cruxClient.registerCruxID('foo').then((result) => {
+    // Create a new CRUX ID - foo123@testwallet.crux
+    cruxClient.registerCruxID('foo123').then((result) => {
         console.log(result);
         // ID Will be owned by the injected private key
         // New IDs take 6-8 confirmations in the Bitcoin network to confirm.
@@ -68,7 +68,7 @@ You can get create and manage your walletClientName at [CRUX Wallet Dashboard](h
     })
 ```
 
-**Note:** Cruxprotocol JS SDK is case insensetive for cryptocurrency symbols and will always output lowercase symbols.
+**Note:** Cruxprotocol JS SDK is case insensitive for cryptocurrency symbols and will always output lowercase symbols.
 
 # SDK Integration Steps and User Interface:
 
@@ -79,7 +79,7 @@ You can get create and manage your walletClientName at [CRUX Wallet Dashboard](h
 ```bash
 npm run wallet_demo
 ```
-Running the above command will build a [demo page](https://localhost:1234), here you can play around with all method that are exposed by the sdk.
+Running the above command will build a [demo page](https://localhost:1234?key=6bd397dc89272e71165a0e7d197b288ed5b1e44e1928c25455506f1968f), here you can play around with all method that are exposed by the sdk.
 
 
 # SDK Reference
