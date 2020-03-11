@@ -106,7 +106,9 @@ export class CruxUser {
     }
     public setAddressMap(addressMap: IAddressMapping) {
         // addressMap is not validated due to the presence of magic key: "__userData__";
-        this.addressMap = addressMap;
+        const sanitisedAddressMap = Object.assign({}, addressMap);
+        delete sanitisedAddressMap.__userData__;
+        this.addressMap = sanitisedAddressMap;
     }
     public setPrivateAddressMap = async (cruxUser: CruxUser, addressMap: IAddressMapping, keyManager: IKeyManager): Promise<void> => {
         if (keyManager && "deriveSharedSecret" in keyManager && typeof keyManager.deriveSharedSecret === "function") {
