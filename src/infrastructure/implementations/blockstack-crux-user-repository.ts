@@ -1,7 +1,7 @@
 import { publicKeyToAddress } from "blockstack";
 import {CruxDomain} from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
-import { CruxUser, IAddressMapping, ICruxUserConfiguration, ICruxUserData, ICruxUserInformation, ICruxUserPrivateAddresses, SubdomainRegistrationStatus } from "../../core/entities/crux-user";
+import { CruxUser, IAddressMapping, ICruxUserConfiguration, ICruxUserData, ICruxUserInformation, ICruxUserPrivateAddresses, SubdomainRegistrationStatus, IAddress } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxUserRepository, ICruxUserRepositoryOptions} from "../../core/interfaces/crux-user-repository";
 import { IKeyManager } from "../../core/interfaces/key-manager";
@@ -217,11 +217,11 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         return cruxpayObject;
     }
     private dereferenceCruxpayObject = (cruxpayObject: ICruxpayObject): { addressMap: IAddressMapping, cruxUserData?: ICruxUserData } => {
-        const cruxpayObjectClone: ICruxpayObject = cloneValue(cruxpayObject);
-        const cruxUserData = cruxpayObjectClone.__userData__;
+        const cruxpayObjectClone = cloneValue(cruxpayObject);
+        const cruxUserData: ICruxUserData = cruxpayObjectClone.__userData__;
         // after extracting the userData from the cruxpayObject, delete the key from the property and assume the rest is valid addressMap
         delete cruxpayObjectClone.__userData__;
-        const addressMap: IAddressMapping = cloneValue(cruxpayObjectClone);
+        const addressMap: IAddressMapping = cruxpayObjectClone;
         return {
             addressMap,
             cruxUserData,
