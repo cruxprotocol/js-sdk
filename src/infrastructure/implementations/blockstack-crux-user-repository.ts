@@ -1,7 +1,7 @@
 import { publicKeyToAddress } from "blockstack";
 import {CruxDomain} from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
-import { CruxUser, IAddressMapping, ICruxUserConfiguration, ICruxUserData, ICruxUserInformation, ICruxUserPrivateAddresses, SubdomainRegistrationStatus, IAddress } from "../../core/entities/crux-user";
+import { CruxUser, IAddressMapping, ICruxUserConfiguration, ICruxUserData, ICruxUserInformation, ICruxUserPrivateAddresses, SubdomainRegistrationStatus } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxUserRepository, ICruxUserRepositoryOptions} from "../../core/interfaces/crux-user-repository";
 import { IKeyManager } from "../../core/interfaces/key-manager";
