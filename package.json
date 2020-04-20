@@ -1,6 +1,6 @@
 {
   "name": "@cruxpay/js-sdk",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "CruxPay Javascript SDK",
   "unpkg": "dist/cruxpay-sdk-dom.js",
   "main": "lib/index.js",
@@ -19,7 +19,7 @@
     "build-prod:js": "./node_modules/.bin/parcel build src/index.ts -d dist --out-file cruxpay-sdk.js --no-minify",
     "build-prod:dom": "./node_modules/.bin/parcel build src/cruxpay-sdk-dom.ts -d dist --out-file cruxpay-sdk-dom.js --no-minify --no-cache --detailed-report",
     "build-crux-explorer-client-prod:dom": "./node_modules/.bin/parcel build src/dom-exports/crux-explorer-client-dom.ts -d dist --out-file crux-explorer-client-dom.js --no-minify --no-cache --detailed-report",
-    "build-crux-wallet-client-prod:dom": "./node_modules/.bin/parcel build src/dom-exports/crux-wallet-client-dom.ts -d dist --out-file crux-walelt-client-dom.js --no-minify --no-cache --detailed-report",
+    "build-crux-wallet-client-prod:dom": "./node_modules/.bin/parcel build src/dom-exports/crux-wallet-client-dom.ts -d dist --out-file crux-wallet-client-dom.js --no-minify --no-cache --detailed-report",
     "build-crux-onboarding-client-prod:dom": "./node_modules/.bin/parcel build src/dom-exports/crux-onboarding-client-dom.ts -d dist --out-file crux-onboarding-client-dom.js --no-minify --no-cache --detailed-report",
     "build-prod": "npm run build-prod:js && npm run build-prod:dom && npm run build-crux-explorer-client-prod:dom && npm run build-crux-wallet-client-prod:dom && npm run build-crux-onboarding-client-prod:dom",
     "checks": "npm run validate_lockfile && ./node_modules/.bin/tslint 'src/**/*.ts' && npm run typecheck && npm run test",
