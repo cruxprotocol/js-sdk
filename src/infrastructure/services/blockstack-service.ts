@@ -41,8 +41,8 @@ export class BlockstackService {
             try {
                 if (blockstackName.split(".").length === 2) {
                     // compare only address field for domains
-                    if (previousResponse.address != response.address) {
-                        throw new AssertionError({message: "address fields do not match!"})
+                    if (previousResponse.address !== response.address) {
+                        throw new AssertionError({message: "address fields do not match!"});
                     }
                 } else {
                     deepStrictEqual(previousResponse, response);

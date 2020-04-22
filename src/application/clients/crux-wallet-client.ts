@@ -1,4 +1,5 @@
 // Importing packages
+import Logger from "js-logger";
 import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
 import { CruxDomain } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
@@ -20,11 +21,10 @@ import { Encryption } from "../../packages/encryption";
 import { CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
-import { StorageService } from "../../packages/storage";
 import { getLogger } from "../../packages/logger";
-import Logger from "js-logger";
+import { StorageService } from "../../packages/storage";
 
-const cruxWalletClientDebugLoggerName = "CruxWalletClient:DEBUGGING"
+const cruxWalletClientDebugLoggerName = "CruxWalletClient:DEBUGGING";
 
 export interface IPutPrivateAddressMapResult {
     failures: IGenericFailures[];
