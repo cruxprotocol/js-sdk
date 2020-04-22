@@ -23,7 +23,7 @@ const lifeAddress = "0xd26114cd6ee289accf82350c8d8487fedb8a0c07"
 const zrxAddress = "0xd26114cd6ee289accf82350c8d8487fedb8a0c07"
 
 const sampleAddressMaps: {[walletClientName: string]: IAddressMapping} = {
-    "cruxdev": {
+    "cruxdev,guarda": {
         btc: {
             addressHash: btcAddress
         },
@@ -62,7 +62,7 @@ const sampleAddressMaps: {[walletClientName: string]: IAddressMapping} = {
 };
 
 const supportedAssetGroups = {
-    "cruxdev": ["ERC20_eth"],
+    "cruxdev,guarda": ["ERC20_eth"],
     "zel_dev": ["ERC20_ethereum"],
 };
 
@@ -90,6 +90,7 @@ const cruxClientOptions: ICruxWalletClientOptions = {
     walletClientName: walletClientName,
     cacheStorage: new LocalStorage(),
     privateKey: privateKey || undefined,
+    debugLogging: true,
 }
 
 // initialising the cruxClient

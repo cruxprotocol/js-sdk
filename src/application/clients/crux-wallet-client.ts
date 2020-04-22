@@ -21,6 +21,10 @@ import { CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode } from ".
 import { CruxDomainId, CruxId } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
 import { StorageService } from "../../packages/storage";
+import { getLogger } from "../../packages/logger";
+import Logger from "js-logger";
+
+const cruxWalletClientDebugLoggerName = "CruxWalletClient:DEBUGGING"
 
 export interface IPutPrivateAddressMapResult {
     failures: IGenericFailures[];
@@ -47,6 +51,8 @@ export const throwCruxClientError = (target: any, prop: any, descriptor?: { valu
                     try {
                         return await fn.call(this, ...params);
                     } catch (error) {
+                        const log = getLogger(cruxWalletClientDebugLoggerName);
+                        log.error(error);
                         throw CruxClientError.fromError(error);
                     }
                 };
@@ -64,6 +70,7 @@ export interface ICruxWalletClientOptions {
     blockstackInfrastructure?: ICruxBlockstackInfrastructure;
     cacheStorage?: StorageService;
     walletClientName: string;
+    debugLogging?: boolean;
 }
 
 export interface ICruxIDState {
@@ -93,6 +100,7 @@ export class CruxWalletClient {
     private cacheStorage?: StorageService;
 
     constructor(options: ICruxWalletClientOptions) {
+        getLogger(cruxWalletClientDebugLoggerName).setLevel(options.debugLogging ? Logger.DEBUG : Logger.OFF);
         this.cacheStorage = options.cacheStorage || new InMemStorage();
         this.cruxBlockstackInfrastructure = options.blockstackInfrastructure || CruxSpec.blockstack.infrastructure;
         this.walletClientName = options.walletClientName;
