@@ -1,6 +1,6 @@
 {
   "name": "@cruxpay/js-sdk",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "CruxPay Javascript SDK",
   "unpkg": "dist/cruxpay-sdk-dom.js",
   "main": "lib/index.js",
