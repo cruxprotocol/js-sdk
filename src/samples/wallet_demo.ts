@@ -135,16 +135,6 @@ const registerCruxID = async () => {
         try {
             const { success, failures } = await cruxClient.putAddressMap(sampleAddressMap)
             UIResponse += `\nsuccessfully published: ${JSON.stringify(success)}, \nFailed publishing: ${JSON.stringify(failures, undefined, 4)}`
-            try {
-                const enabledAssetGroups = await cruxClient.putEnabledAssetGroups(sampleSupportedAssetGroups);
-                UIResponse += `\nsuccessfully enabled assetGroups: ${enabledAssetGroups}`
-            } catch (e_2) {
-                if (e_2 instanceof CruxClientError) {
-                    UIResponse += `\n${e_2.errorCode}: ${e_2}`
-                } else {
-                    UIResponse += '\n' + e_2
-                }
-            }
         } catch (e_1) {
             if (e_1 instanceof CruxClientError) {
                 UIResponse += `\n${e_1.errorCode}: ${e_1}`
