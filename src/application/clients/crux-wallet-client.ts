@@ -200,6 +200,7 @@ export class CruxWalletClient {
         const {assetAddressMap, success, failures} = this.cruxAssetTranslator.symbolAddressMapToAssetIdAddressMap(newAddressMap);
         cruxUser.setAddressMap(assetAddressMap);
         await this.cruxUserRepository.save(cruxUser, this.getKeyManager());
+        const enabledAssetGroups = await this.putEnabledAssetGroups();
         return {success, failures};
     }
 
@@ -251,22 +252,14 @@ export class CruxWalletClient {
         return enabledAssetGroups;
     }
 
-    /**
-     * ```ts
-     *  const sampleEnabledAssetGroups: string[] = ["ERC20_eth"];
-     *  // assetGroups can be constructed in the format "{assetType}_{parentAssetId}";
-     *  const enabledAssetGroups = await cruxClient.putEnabledAssetGroups(sampleEnabledAssetGroups);
-     * ```
-     */
     @throwCruxClientError
-    public putEnabledAssetGroups = async (symbolAssetGroups: string[]): Promise<string[]> => {
+    public putEnabledAssetGroups = async (): Promise<string[]> => {
         await this.initPromise;
         let cruxUser = await this.getCruxUserByKey();
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
-        const assetIdAssetGroups = symbolAssetGroups.map((assetGroup: string) => this.cruxAssetTranslator.symbolAssetGroupToAssetIdAssetGroup(assetGroup));
-        cruxUser.setSupportedAssetGroups(assetIdAssetGroups);
+        cruxUser.setSupportedAssetGroups();
         cruxUser = await this.cruxUserRepository.save(cruxUser, this.getKeyManager());
         const enabledAssetGroups = cruxUser.config.enabledAssetGroups.map((assetIdAssetGroup: string) => this.cruxAssetTranslator.assetIdAssetGroupToSymbolAssetGroup(assetIdAssetGroup));
         return enabledAssetGroups;
