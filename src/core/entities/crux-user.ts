@@ -91,15 +91,8 @@ export class CruxUser {
     get privateAddresses() {
         return this.cruxUserPrivateAddresses;
     }
-    public setSupportedAssetGroups = (assetIdAssetGroups: string[]) => {
-        // validate the assetIdAssetGroup is supported by the walletClient
-        assetIdAssetGroups.forEach((assetGroup) => {
-            if (!this.cruxDomain.config.supportedAssetGroups.includes(assetGroup)) {
-                throw new BaseError(null, "assetGroup not supported by domain");
-            }
-        });
-        const enabledAssetGroupsSet = new Set(assetIdAssetGroups);
-        this.cruxUserConfig.enabledAssetGroups = [...enabledAssetGroupsSet];
+    public setSupportedAssetGroups = () => {
+        this.cruxUserConfig.enabledAssetGroups = this.cruxDomain.config.supportedAssetGroups;
     }
     public getAddressMap(): IAddressMapping {
         return this.addressMap;

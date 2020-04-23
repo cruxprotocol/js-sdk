@@ -62,8 +62,17 @@ const sampleAddressMaps: {[walletClientName: string]: IAddressMapping} = {
 };
 
 const supportedAssetGroups = {
-    "cruxdev,guarda": ["ERC20_eth"],
-    "zel_dev": ["ERC20_ethereum"],
+    "cruxdev,guarda": [
+        "ERC20_eth",
+        "EOSToken_eos",
+        "NEP5_neo",
+        "TRC10_trx",
+        "VIP180_vet"
+    ],
+    "zel_dev": [
+        "ERC20_ethereum",
+        "TRC10_tron",
+    ],
 };
 
 const url = new URL(window.location.href);
@@ -81,7 +90,6 @@ doc.getElementById('userAddresses').textContent = Object.keys(sampleAddressMap).
 doc.getElementById('publishAddresses').innerHTML = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; let secIdentifier = sampleAddressMap[currency].secIdentifier; return `<input type="checkbox" name="publishAddressOption" currency="${currency.toUpperCase()}" addressHash="${address}" secIdentifier="${secIdentifier}" checked>${currency.toUpperCase()}` }).join('\n')
 doc.getElementById('publishPrivateAddresses').innerHTML = Object.keys(sampleAddressMap).map((currency) => { let address = sampleAddressMap[currency].addressHash; let secIdentifier = sampleAddressMap[currency].secIdentifier; return `<input type="checkbox" name="publishPrivateAddressOption" currency="${currency.toUpperCase()}" addressHash="${address}" secIdentifier="${secIdentifier}" checked>${currency.toUpperCase()}` }).join('\n')
 doc.getElementById('assetMatcher_assetGroups').innerHTML = [...sampleSupportedAssetGroups].map((assetGroup) => `<option value="${assetGroup}">${assetGroup.toUpperCase()}</option>`).join('\n')
-doc.getElementById('putEnabledAssetGroups').innerHTML = [...sampleSupportedAssetGroups].map((assetGroup) => `<input type="checkbox" name="putEnabledAssetGroupsOption" assetGroup="${assetGroup}" checked>${assetGroup.toUpperCase()}`).join('\n')
 
 
 // --- @crux/js-sdk integration --- //
@@ -127,16 +135,6 @@ const registerCruxID = async () => {
         try {
             const { success, failures } = await cruxClient.putAddressMap(sampleAddressMap)
             UIResponse += `\nsuccessfully published: ${JSON.stringify(success)}, \nFailed publishing: ${JSON.stringify(failures, undefined, 4)}`
-            try {
-                const enabledAssetGroups = await cruxClient.putEnabledAssetGroups(sampleSupportedAssetGroups);
-                UIResponse += `\nsuccessfully enabled assetGroups: ${enabledAssetGroups}`
-            } catch (e_2) {
-                if (e_2 instanceof CruxClientError) {
-                    UIResponse += `\n${e_2.errorCode}: ${e_2}`
-                } else {
-                    UIResponse += '\n' + e_2
-                }
-            }
         } catch (e_1) {
             if (e_1 instanceof CruxClientError) {
                 UIResponse += `\n${e_1.errorCode}: ${e_1}`
@@ -296,15 +294,9 @@ const putPrivateAddressMap = async () => {
 }
 const putEnabledAssetGroups = async () => {
     let UIResponse: string = "Publishing your assetGroups configuration..."
-    let assetGroups: string[] = [];
-    [].forEach.call(doc.getElementsByName('putEnabledAssetGroupsOption'), (el: HTMLInputElement) => {
-        if (el.checked) {
-            assetGroups.push(el.attributes['assetGroup'].nodeValue);
-        }
-    });
     doc.getElementById('putEnabledAssetGroupsAcknowledgement').textContent = UIResponse
     try {
-        const enabledAssetGroups = await cruxClient.putEnabledAssetGroups(assetGroups)
+        const enabledAssetGroups = await cruxClient.putEnabledAssetGroups()
         UIResponse = `successfully enabledAssetGroups: [${enabledAssetGroups}]`
     } catch (e) {
         if (e instanceof CruxClientError) {
