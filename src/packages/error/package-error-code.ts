@@ -65,4 +65,5 @@ export enum PackageErrorCode {
     MissingNameOwnerAddress = 5013,
     MissingUserCruxAssetTranslator = 5014,
     Response404 = 5015,
+    Response401 = 5016,
 }

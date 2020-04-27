@@ -62,4 +62,5 @@ export const ERROR_STRINGS = {
     [PackageErrorCode.InsecureNetworkCall]: "Insecure network call",
     [PackageErrorCode.FailedToGetGaiaUrlFromZonefile]: "Failed to get Gaia URL from user's zonefile: '{0}'",
     [PackageErrorCode.Response404]: "404 Response on : '{0}'",
+    [PackageErrorCode.Response401]: "401 Response on : '{0}'",
 };

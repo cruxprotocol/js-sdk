@@ -21,6 +21,9 @@ const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (
             .then((res) => {
                 if (res.status === 404) {
                     reject(ErrorHelper.getPackageError(null, PackageErrorCode.Response404, url));
+                } 
+                else if (res.status === 401) {
+                    reject(ErrorHelper.getPackageError(null, PackageErrorCode.Response401, url));
                 } else {
                     return res.json();
                 }

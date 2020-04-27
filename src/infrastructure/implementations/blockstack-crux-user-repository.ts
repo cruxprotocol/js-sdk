@@ -111,7 +111,19 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         };
         let cruxpayPubKey = await keyManager.getPubKey();
         if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.DONE) {
-            const cruxpayJson = await this.getCruxpayObjectAndPubKey(cruxID);
+            let cruxpayJson: ICruxpayObjectAndPubKey;
+            try {
+                cruxpayJson = await this.getCruxpayObjectAndPubKey(cruxID);
+            } catch (error) {
+                if (error instanceof PackageError && error.errorCode === PackageErrorCode.GaiaEmptyResponse) {
+                    cruxpayJson = {
+                        cruxpayObject: {},
+                        pubKey: cruxpayPubKey,
+                    };
+                } else {
+                    throw error;
+                }
+            }
             const cruxpayObject: ICruxpayObject = cruxpayJson.cruxpayObject;
             cruxpayPubKey = cruxpayJson.pubKey;
             const dereferencedCruxpayObject = this.dereferenceCruxpayObject(cruxpayObject);
@@ -122,12 +134,12 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         } else if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.PENDING) {
             let cruxpayJson: ICruxpayObjectAndPubKey;
             try {
-                cruxpayJson = await this.getCruxpayObjectAndPubKey(cruxID, undefined, publicKeyToAddress(await keyManager.getPubKey()));
+                cruxpayJson = await this.getCruxpayObjectAndPubKey(cruxID, undefined, publicKeyToAddress(cruxpayPubKey));
             } catch (error) {
                 if (error instanceof PackageError && error.errorCode === PackageErrorCode.GaiaEmptyResponse) {
                     cruxpayJson = {
                         cruxpayObject: {},
-                        pubKey: await keyManager.getPubKey(),
+                        pubKey: cruxpayPubKey,
                     };
                 } else {
                     throw error;
