@@ -64,4 +64,5 @@ export enum PackageErrorCode {
     MissingZoneFile = 5012,
     MissingNameOwnerAddress = 5013,
     MissingUserCruxAssetTranslator = 5014,
+    Response404 = 5015
 }

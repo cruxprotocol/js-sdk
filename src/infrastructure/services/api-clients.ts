@@ -1,4 +1,4 @@
-import { BaseError, ErrorHelper, PackageErrorCode } from "../../packages/error";
+import { BaseError, ErrorHelper, PackageErrorCode, PackageError } from "../../packages/error";
 import {BlockstackDomainId} from "../../packages/identity-utils";
 import {getLogger} from "../../packages/logger";
 import { StorageService } from "../../packages/storage";
@@ -56,6 +56,9 @@ export class GaiaServiceApiClient {
                 return Boolean(filename !== UPLOADABLE_JSON_FILES.CLIENT_CONFIG || data.indexOf("BlobNotFound") > 0 || data.indexOf("NoSuchKey") > 0);
             });
         } catch (error) {
+            if (error instanceof PackageError && error.errorCode === PackageErrorCode.Response404) {
+                throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaEmptyResponse);
+            }
             throw ErrorHelper.getPackageError(null, PackageErrorCode.GaiaGetFileFailed, filename);
         }
         return responseBody;
@@ -109,6 +112,12 @@ export class BlockstackNamingServiceApiClient {
                 return skipCache;
             });
         } catch (error) {
+            if (error instanceof PackageError && error.errorCode === PackageErrorCode.Response404) {
+                return {
+                    "more": "failed to find parent domain's resolver",
+                    "status": "available"
+                };
+            }
             throw ErrorHelper.getPackageError(error, PackageErrorCode.BnsResolutionFailed, options.baseUrl, error);
         }
         return nameData;
@@ -147,7 +156,20 @@ export class BlockstackSubdomainRegistrarApiClient {
             url: `/status/${subdomainString}`,
         };
         log.debug("registration query params", options);
-        return httpJSONRequest(options) as any;
+        let statusResponse: {
+            status: string,
+            statusCode?: number
+        }
+        try {
+            statusResponse = await httpJSONRequest(options) as any;
+        } catch (error) {
+            if (error instanceof PackageError && error.errorCode === PackageErrorCode.Response404) {
+                statusResponse = {status: "Not registered!"};
+            } else {
+                throw error;
+            }
+        } 
+        return statusResponse;
     }
     public registerSubdomain = async (name: string, gaiaHubUrl: string, ownerAdderss: string): Promise<void> => {
         await this.initPromise;

@@ -18,7 +18,13 @@ const httpJSONRequest = (options: (request.UriOptions & request.CoreOptions) | (
             throw ErrorHelper.getPackageError(null, PackageErrorCode.InsecureNetworkCall);
         }
         fetch(url, fetchOptions)
-            .then((res) => res.json())
+            .then((res) => {
+                if (res.status === 404) {
+                    reject(ErrorHelper.getPackageError(null, PackageErrorCode.Response404, url));
+                } else {
+                    return res.json();
+                }
+            })
             .then((json) => resolve(json))
             .catch((err) => reject(new BaseError(null, err)));
     });

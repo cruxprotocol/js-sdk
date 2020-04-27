@@ -120,7 +120,19 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
                 cruxUserData = dereferencedCruxpayObject.cruxUserData;
             }
         } else if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.PENDING) {
-            const cruxpayJson = await this.getCruxpayObjectAndPubKey(cruxID, undefined, publicKeyToAddress(await keyManager.getPubKey()));
+            let cruxpayJson: ICruxpayObjectAndPubKey;
+            try {
+                cruxpayJson = await this.getCruxpayObjectAndPubKey(cruxID, undefined, publicKeyToAddress(await keyManager.getPubKey()));
+            } catch (error) {
+                if (error instanceof PackageError && error.errorCode === PackageErrorCode.GaiaEmptyResponse) {
+                    cruxpayJson = {
+                        cruxpayObject: {},
+                        pubKey: await keyManager.getPubKey(),
+                    }
+                } else {
+                    throw error;
+                }
+            }
             const cruxpayObject: ICruxpayObject = cruxpayJson.cruxpayObject;
             cruxpayPubKey = cruxpayJson.pubKey;
             const dereferencedCruxpayObject = this.dereferenceCruxpayObject(cruxpayObject);
