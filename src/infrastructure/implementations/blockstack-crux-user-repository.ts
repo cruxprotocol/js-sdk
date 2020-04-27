@@ -110,41 +110,8 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
             privateAddresses: {},
         };
         let cruxpayPubKey = await keyManager.getPubKey();
-        if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.DONE) {
-            let cruxpayJson: ICruxpayObjectAndPubKey;
-            try {
-                cruxpayJson = await this.getCruxpayObjectAndPubKey(cruxID);
-            } catch (error) {
-                if (error instanceof PackageError && error.errorCode === PackageErrorCode.GaiaEmptyResponse) {
-                    cruxpayJson = {
-                        cruxpayObject: {},
-                        pubKey: cruxpayPubKey,
-                    };
-                } else {
-                    throw error;
-                }
-            }
-            const cruxpayObject: ICruxpayObject = cruxpayJson.cruxpayObject;
-            cruxpayPubKey = cruxpayJson.pubKey;
-            const dereferencedCruxpayObject = this.dereferenceCruxpayObject(cruxpayObject);
-            addressMap = dereferencedCruxpayObject.addressMap;
-            if (dereferencedCruxpayObject.cruxUserData) {
-                cruxUserData = dereferencedCruxpayObject.cruxUserData;
-            }
-        } else if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.PENDING) {
-            let cruxpayJson: ICruxpayObjectAndPubKey;
-            try {
-                cruxpayJson = await this.getCruxpayObjectAndPubKey(cruxID, undefined, publicKeyToAddress(cruxpayPubKey));
-            } catch (error) {
-                if (error instanceof PackageError && error.errorCode === PackageErrorCode.GaiaEmptyResponse) {
-                    cruxpayJson = {
-                        cruxpayObject: {},
-                        pubKey: cruxpayPubKey,
-                    };
-                } else {
-                    throw error;
-                }
-            }
+        if ([SubdomainRegistrationStatus.DONE, SubdomainRegistrationStatus.PENDING].includes(cruxUserInformation.registrationStatus.status)) {
+            const cruxpayJson = await this.getCruxpayObjectAndPubKey(cruxID, undefined, cruxpayPubKey);
             const cruxpayObject: ICruxpayObject = cruxpayJson.cruxpayObject;
             cruxpayPubKey = cruxpayJson.pubKey;
             const dereferencedCruxpayObject = this.dereferenceCruxpayObject(cruxpayObject);
@@ -175,9 +142,22 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
     private getUserCruxDomain = (cruxId: CruxId): Promise<CruxDomain|undefined> => {
         return new BlockstackCruxDomainRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.infrastructure}).get(new CruxDomainId(cruxId.components.domain));
     }
-    private getCruxpayObjectAndPubKey = async (cruxId: CruxId, tag?: string, ownerAddress?: string): Promise<ICruxpayObjectAndPubKey> => {
+    private getCruxpayObjectAndPubKey = async (cruxId: CruxId, tag?: string, publicKey?: string): Promise<ICruxpayObjectAndPubKey> => {
         const cruxPayFileName = CruxSpec.blockstack.getCruxPayFilename(new CruxDomainId(cruxId.components.domain));
-        const cruxpay = await this.getContentByFilename(cruxId, cruxPayFileName, tag, ownerAddress);
+        let cruxpay;
+        try {
+            cruxpay = await this.getContentByFilename(cruxId, cruxPayFileName, tag, publicKey && publicKeyToAddress(publicKey));
+        } catch (error) {
+            if (error instanceof PackageError && error.errorCode === PackageErrorCode.GaiaEmptyResponse && publicKey) {
+                // in case of no cruxpay.json found, assuming empty json and user provided pubkey
+                return {
+                    cruxpayObject: {},
+                    pubKey: publicKey,
+                };
+            } else {
+                throw error;
+            }
+        }
         return {
             cruxpayObject: cruxpay.payload.claim,
             pubKey: cruxpay.payload.subject.publicKey,
