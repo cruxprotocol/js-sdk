@@ -1,4 +1,4 @@
-import { BaseError, ErrorHelper, PackageErrorCode, PackageError } from "../../packages/error";
+import { BaseError, ErrorHelper, PackageError, PackageErrorCode } from "../../packages/error";
 import {BlockstackDomainId} from "../../packages/identity-utils";
 import {getLogger} from "../../packages/logger";
 import { StorageService } from "../../packages/storage";
@@ -114,8 +114,8 @@ export class BlockstackNamingServiceApiClient {
         } catch (error) {
             if (error instanceof PackageError && error.errorCode === PackageErrorCode.Response404) {
                 return {
-                    "more": "failed to find parent domain's resolver",
-                    "status": "available"
+                    more: "failed to find parent domain's resolver",
+                    status: "available",
                 };
             }
             throw ErrorHelper.getPackageError(error, PackageErrorCode.BnsResolutionFailed, options.baseUrl, error);
@@ -158,8 +158,8 @@ export class BlockstackSubdomainRegistrarApiClient {
         log.debug("registration query params", options);
         let statusResponse: {
             status: string,
-            statusCode?: number
-        }
+            statusCode?: number,
+        };
         try {
             statusResponse = await httpJSONRequest(options) as any;
         } catch (error) {
@@ -168,7 +168,7 @@ export class BlockstackSubdomainRegistrarApiClient {
             } else {
                 throw error;
             }
-        } 
+        }
         return statusResponse;
     }
     public registerSubdomain = async (name: string, gaiaHubUrl: string, ownerAdderss: string): Promise<void> => {

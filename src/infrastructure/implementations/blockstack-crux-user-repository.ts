@@ -128,7 +128,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
                     cruxpayJson = {
                         cruxpayObject: {},
                         pubKey: await keyManager.getPubKey(),
-                    }
+                    };
                 } else {
                     throw error;
                 }
