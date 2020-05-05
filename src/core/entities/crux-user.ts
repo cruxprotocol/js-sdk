@@ -163,7 +163,7 @@ export class CruxGateway {
     }
 }
 
-export interface IGatewayPaymentRequestMessage {
+export interface IPaymentRequestMessage {
     amount: string;
     assetId: string;
 }
@@ -213,7 +213,7 @@ export class CruxUser {
     public getAddressMap(): IAddressMapping {
         return this.addressMap;
     }
-    public sendPaymentRequest(message: IGatewayPaymentRequestMessage, sender: IGatewayMessageSender) {
+    public sendPaymentRequest(message: IPaymentRequestMessage, sender: IGatewayMessageSender) {
         this.cruxGateway.sendMessage({
             message,
             messageProtocolName: "PAYMENT_REQUEST",

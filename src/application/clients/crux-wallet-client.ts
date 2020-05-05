@@ -10,7 +10,7 @@ import {
     IAddressMapping,
     IAssetMatcher,
     ICruxUserRegistrationStatus,
-    IGatewayMessageSender, IGatewayPaymentRequestMessage,
+    IGatewayMessageSender, IPaymentRequestMessage,
     SubdomainRegistrationStatus,
     SubdomainRegistrationStatusDetail,
 } from "../../core/entities/crux-user";
@@ -211,30 +211,29 @@ export class CruxWalletClient {
     public sendPaymentRequest = async (paymentRequest: ICruxPaymentRequest): Promise<void> => {
         await this.initPromise;
         const recipientCruxUser = await this.getCruxUserByID(paymentRequest.recipientCruxId.toString());
+        if (!recipientCruxUser) {
+            throw Error("Cannot find recipient user");
+        }
         const assetToRequest = this.cruxAssetTranslator.symbolToAssetId(paymentRequest.walletSymbol);
         if (!assetToRequest) {
             throw Error("Did not find asset to send");
         }
+
         const senderUser = await this.getCruxUserByKey();
-        let sender: IGatewayMessageSender;
+        let sender: IGatewayMessageSender = {};
         if (senderUser) {
             sender = {
                 cruxId: senderUser.cruxID,
                 keyManager: this.keyManager,
             };
-        } else {
-            sender = {};
         }
 
-        if (recipientCruxUser) {
-            const paymentRequestMessage: IGatewayPaymentRequestMessage = {
-                amount: paymentRequest.amount,
-                assetId: assetToRequest,
-            };
-            recipientCruxUser.sendPaymentRequest(paymentRequestMessage, sender);
-        } else {
-            throw Error("Cannot find recipient user");
-        }
+        const paymentRequestMessage: IPaymentRequestMessage = {
+            amount: paymentRequest.amount,
+            assetId: assetToRequest,
+        };
+        recipientCruxUser.sendPaymentRequest(paymentRequestMessage, sender);
+
     }
 
     @throwCruxClientError
