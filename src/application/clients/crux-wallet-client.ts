@@ -1,9 +1,19 @@
 // Importing packages
+import {strict} from "assert";
 import Logger from "js-logger";
 import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
 import { CruxDomain } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
-import { CruxUser, IAddress, IAddressMapping, IAssetMatcher, ICruxUserRegistrationStatus, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
+import {
+    CruxUser,
+    IAddress,
+    IAddressMapping,
+    IAssetMatcher,
+    ICruxUserRegistrationStatus,
+    IGatewayMessageSender,
+    SubdomainRegistrationStatus,
+    SubdomainRegistrationStatusDetail,
+} from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxDomainRepository} from "../../core/interfaces/crux-domain-repository";
 import { ICruxUserRepository } from "../../core/interfaces/crux-user-repository";
@@ -201,8 +211,32 @@ export class CruxWalletClient {
     public sendPaymentRequest = async (paymentRequest: ICruxPaymentRequest): Promise<void> => {
         await this.initPromise;
         const recipientCruxUser = await this.getCruxUserByID(paymentRequest.recipientCruxId.toString());
+        const assetToRequest = this.cruxAssetTranslator.symbolToAssetId(paymentRequest.walletSymbol);
+        const senderUser = await this.getCruxUserByKey();
+        let sender: IGatewayMessageSender;
+        if (senderUser) {
+            sender = {
+                cruxId: senderUser.cruxID,
+                keyManager: this.keyManager,
+            };
+        } else {
+            sender = {};
+        }
+
         if (recipientCruxUser) {
-            recipientCruxUser.sendPaymentRequest(paymentRequest, this.keyManager);
+            recipientCruxUser.sendPaymentRequest({
+                message: {
+                    amount: paymentRequest.amount,
+                    asset: assetToRequest,
+                },
+                messageProtocolName: "PAYMENT_REQUEST",
+                recipient: {
+                    cruxId: recipientCruxUser.cruxID,
+                },
+                sender,
+            });
+        } else {
+            throw Error("Cannot find recipient user");
         }
     }
 

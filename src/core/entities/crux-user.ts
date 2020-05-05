@@ -61,9 +61,20 @@ interface IGatewayProtocolHandler {
     validateMessage(gatewayMessage: ICruxGatewayMessage): boolean;
 }
 
-interface ICruxGatewayMessage {
+export interface IGatewayMessageSender {
+    cruxId?: CruxId;
+    keyManager?: IKeyManager;
+}
+
+export interface IGatewayMessageRecipient {
+    cruxId: CruxId;
+}
+
+export interface ICruxGatewayMessage {
     messageProtocolName: string;
-    message: string;
+    sender: IGatewayMessageSender;
+    recipient: IGatewayMessageRecipient;
+    message: any;
 }
 
 class PlainTextGatewayProtocolHandler implements IGatewayProtocolHandler {
@@ -103,13 +114,13 @@ const getProtocolHandler = (gatewayProtocolName: string): IGatewayProtocolHandle
     return protocolHandlerByName[gatewayProtocolName];
 };
 
-interface IGatewayTransport {
+interface ICruxGatewayTransport {
     listen(messageListener: (message: ICruxGatewayMessage) => void): void;
 
     send(gatewayMessage: ICruxGatewayMessage): void;
 }
 
-class StrongPubsubGatewayTransport implements IGatewayTransport {
+class StrongPubsubGatewayTransport implements ICruxGatewayTransport {
     // tslint:disable-next-line:no-empty
     public listen(messageListener: (message: ICruxGatewayMessage) => void): void {
     }
@@ -119,7 +130,7 @@ class StrongPubsubGatewayTransport implements IGatewayTransport {
     }
 }
 
-const getGatewayTransport = (): IGatewayTransport => {
+const getGatewayTransport = (): ICruxGatewayTransport => {
     // handle error
     return new StrongPubsubGatewayTransport();
 };
@@ -129,7 +140,7 @@ const getGatewayTransport = (): IGatewayTransport => {
 export class CruxGateway {
 
     private protocolHandler: IGatewayProtocolHandler;
-    private transport: IGatewayTransport;
+    private transport: ICruxGatewayTransport;
     private messageListener: (message: ICruxGatewayMessage) => void;
     constructor(gatewayProtocolName: string) {
         const that = this;
@@ -197,9 +208,9 @@ export class CruxUser {
     public getAddressMap(): IAddressMapping {
         return this.addressMap;
     }
-    public sendPaymentRequest(paymentRequest: ICruxPaymentRequest, senderKeyManager: IKeyManager | undefined) {
+    public sendPaymentRequest(gatewayPaymentRequest: ICruxGatewayMessage) {
         // someone is trying to send payment request
-        // this.cruxGateway.sendPaymentRequest(paymentRequest, senderKeyManager);
+        this.cruxGateway.sendMessage(gatewayPaymentRequest);
     }
     public setAddressMap(addressMap: IAddressMapping) {
         // addressMap is not validated due to the presence of magic key: "__userData__";
