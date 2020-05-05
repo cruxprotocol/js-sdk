@@ -85,6 +85,13 @@ export const getCruxDomainRepository = (options: IBlockstackCruxDomainRepository
 export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOptions): ICruxUserRepository => {
     return new BlockstackCruxUserRepository(options);
 };
+
+export interface ICruxPaymentRequest {
+    recipientCruxId: CruxId;
+    walletSymbol: string;
+    amount: string;
+}
+
 export class CruxWalletClient {
     public e = Encryption;
     public walletClientName: string;
@@ -188,6 +195,15 @@ export class CruxWalletClient {
             return this.cruxAssetTranslator.assetIdAddressMapToSymbolAddressMap(assetIdAddressMap);
         }
         return {};
+    }
+
+    @throwCruxClientError
+    public sendPaymentRequest = async (paymentRequest: ICruxPaymentRequest): Promise<void> => {
+        await this.initPromise;
+        const recipientCruxUser = await this.getCruxUserByID(paymentRequest.recipientCruxId.toString());
+        if (recipientCruxUser) {
+            recipientCruxUser.sendPaymentRequest(paymentRequest, this.keyManager);
+        }
     }
 
     @throwCruxClientError
