@@ -163,6 +163,11 @@ export class CruxGateway {
     }
 }
 
+export interface IGatewayPaymentRequestMessage {
+    amount: string;
+    assetId: string;
+}
+
 export class CruxUser {
     private pubKey?: string;
     private cruxUserInformation!: ICruxUserInformation;
@@ -208,9 +213,15 @@ export class CruxUser {
     public getAddressMap(): IAddressMapping {
         return this.addressMap;
     }
-    public sendPaymentRequest(gatewayPaymentRequest: ICruxGatewayMessage) {
-        // someone is trying to send payment request
-        this.cruxGateway.sendMessage(gatewayPaymentRequest);
+    public sendPaymentRequest(message: IGatewayPaymentRequestMessage, sender: IGatewayMessageSender) {
+        this.cruxGateway.sendMessage({
+            message,
+            messageProtocolName: "PAYMENT_REQUEST",
+            recipient: {
+                cruxId: this.cruxID,
+            },
+            sender,
+        });
     }
     public setAddressMap(addressMap: IAddressMapping) {
         // addressMap is not validated due to the presence of magic key: "__userData__";
