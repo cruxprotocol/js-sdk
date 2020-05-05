@@ -58,7 +58,7 @@ export enum SubdomainRegistrationStatusDetail {
 interface IGatewayProtocolHandler {
     getName(): string;
 
-    validateMessage(gatewayMessage: ICruxGatewayMessage): boolean;
+    validateMessage(gatewayMessage: any): boolean;
 }
 
 export interface IGatewayMessageSender {
@@ -66,23 +66,12 @@ export interface IGatewayMessageSender {
     keyManager?: IKeyManager;
 }
 
-export interface IGatewayMessageRecipient {
-    cruxId: CruxId;
-}
-
-export interface ICruxGatewayMessage {
-    messageProtocolName: string;
-    sender: IGatewayMessageSender;
-    recipient: IGatewayMessageRecipient;
-    message: any;
-}
-
 class PlainTextGatewayProtocolHandler implements IGatewayProtocolHandler {
     public getName(): string {
         return "PLAIN_TEXT";
     }
 
-    public validateMessage(gatewayMessage: ICruxGatewayMessage): boolean {
+    public validateMessage(gatewayMessage: any): boolean {
         return true;
     }
 }
@@ -92,7 +81,7 @@ class PaymentRequestGatewayProtocolHandler implements IGatewayProtocolHandler {
         return "PAYMENT_REQUEST";
     }
 
-    public validateMessage(gatewayMessage: ICruxGatewayMessage): boolean {
+    public validateMessage(gatewayMessage: any): boolean {
         return true;
     }
 }
@@ -109,24 +98,24 @@ protocolHandlers.forEach( (protocolHandler: any) => {
     protocolHandlerByName[protocolHandler.getName()] = protocolHandler;
 });
 
-const getProtocolHandler = (gatewayProtocolName: string): IGatewayProtocolHandler => {
+const getProtocolHandler = (gatewayProtocol: string): IGatewayProtocolHandler => {
     // handle error
-    return protocolHandlerByName[gatewayProtocolName];
+    return protocolHandlerByName[gatewayProtocol];
 };
 
 interface ICruxGatewayTransport {
-    listen(messageListener: (message: ICruxGatewayMessage) => void): void;
+    listen(messageListener: (message: any) => void): void;
 
-    send(gatewayMessage: ICruxGatewayMessage): void;
+    send(recipient: CruxId, message: any): void;
 }
 
 class StrongPubsubGatewayTransport implements ICruxGatewayTransport {
     // tslint:disable-next-line:no-empty
-    public listen(messageListener: (message: ICruxGatewayMessage) => void): void {
+    public listen(messageListener: (message: any) => void): void {
     }
 
     // tslint:disable-next-line:no-empty
-    public send(gatewayMessage: ICruxGatewayMessage): void {
+    public send(recipient: CruxId, message: any): void {
     }
 }
 
@@ -141,24 +130,25 @@ export class CruxGateway {
 
     private protocolHandler: IGatewayProtocolHandler;
     private transport: ICruxGatewayTransport;
-    private messageListener: (message: ICruxGatewayMessage) => void;
-    constructor(gatewayProtocolName: string) {
+    private messageListener: (message: any) => void;
+    private sender: IGatewayMessageSender;
+    constructor(gatewayProtocol: string, sender: IGatewayMessageSender) {
         const that = this;
+        this.sender = sender;
         this.messageListener = (message) => undefined;
-        this.protocolHandler = getProtocolHandler(gatewayProtocolName);
+        this.protocolHandler = getProtocolHandler(gatewayProtocol);
         this.transport = getGatewayTransport();
-        this.transport.listen((message: ICruxGatewayMessage) => {
-            that.protocolHandler.validateMessage(message);
-            that.messageListener(message);
+        this.transport.listen((foo: any) => {
+            that.protocolHandler.validateMessage(foo);
+            that.messageListener(foo);
         });
     }
-
-    public sendMessage(gatewayMessage: ICruxGatewayMessage) {
-        this.protocolHandler.validateMessage(gatewayMessage);
-        this.transport.send(gatewayMessage);
+    public sendMessage(recipient: CruxId, message: any) {
+        this.protocolHandler.validateMessage(message);
+        this.transport.send(recipient, message);
     }
 
-    public listen(messageListener: (message: ICruxGatewayMessage) => void) {
+    public listen(messageListener: (message: any) => void) {
         this.messageListener = messageListener;
     }
 }
@@ -176,7 +166,6 @@ export class CruxUser {
     private cruxUserConfig!: ICruxUserConfiguration;
     private cruxUserPrivateAddresses!: ICruxUserPrivateAddresses;
     private cruxDomain!: CruxDomain;
-    private cruxGateway: CruxGateway;
 
     constructor(cruxUserSubdomain: string, cruxDomain: CruxDomain, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation, cruxUserData: ICruxUserData, publicKey?: string) {
         this.setCruxDomain(cruxDomain);
@@ -186,7 +175,6 @@ export class CruxUser {
         this.setCruxUserConfig(cruxUserData.configuration);
         this.setPublicKey(publicKey);
         this.setCruxUserPrivateAddresses(cruxUserData.privateAddresses);
-        this.cruxGateway = new CruxGateway("PAYMENT_REQUEST");
         log.debug("CruxUser initialised");
     }
     get cruxID() {
@@ -214,14 +202,8 @@ export class CruxUser {
         return this.addressMap;
     }
     public sendPaymentRequest(message: IPaymentRequestMessage, sender: IGatewayMessageSender) {
-        this.cruxGateway.sendMessage({
-            message,
-            messageProtocolName: "PAYMENT_REQUEST",
-            recipient: {
-                cruxId: this.cruxID,
-            },
-            sender,
-        });
+        const cruxGateway = new CruxGateway("PAYMENT_REQUEST", sender);
+        cruxGateway.sendMessage(this.cruxID, message);
     }
     public setAddressMap(addressMap: IAddressMapping) {
         // addressMap is not validated due to the presence of magic key: "__userData__";
