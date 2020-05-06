@@ -14,8 +14,7 @@ import {
 import {
     ICruxBlockstackInfrastructure,
     ICruxDomainRepository, ICruxGatewayRepository,
-    ICruxUserRepository,
-    IGatewayMessageSender,
+    ICruxUserRepository, IGatewayIdentityClaim,
     IKeyManager,
     isInstanceOfKeyManager,
 } from "../../core/interfaces";
@@ -223,11 +222,11 @@ export class CruxWalletClient {
             throw Error("Did not find asset to send");
         }
 
-        const senderUser = await this.getCruxUserByKey();
-        let sender: IGatewayMessageSender = {};
-        if (senderUser) {
-            sender = {
-                cruxId: senderUser.cruxID,
+        const selfUser = await this.getCruxUserByKey();
+        let selfClaim: IGatewayIdentityClaim = {};
+        if (selfUser) {
+            selfClaim = {
+                cruxId: selfUser.cruxID,
                 keyManager: this.keyManager,
             };
         }
@@ -236,7 +235,7 @@ export class CruxWalletClient {
             amount,
             assetId: assetToRequest,
         };
-        const gateway: CruxGateway = this.gatewayRepo.get("CRUX.PAYMENTS", recipientCruxUser.cruxID, sender);
+        const gateway: CruxGateway = this.gatewayRepo.get("CRUX.PAYMENTS", recipientCruxUser.cruxID, selfClaim);
         gateway.sendMessage(paymentRequestMessage);
 
     }

@@ -3,7 +3,7 @@ import {CruxGateway} from "../entities";
 import {EventSocketEventNames} from "../entities";
 import {IKeyManager} from "./key-manager";
 
-export interface IGatewayMessageSender {
+export interface IGatewayIdentityClaim {
     cruxId?: CruxId;
     keyManager?: IKeyManager;
 }
@@ -15,7 +15,7 @@ export interface IGatewayProtocolHandler {
 }
 
 export interface ICruxGatewayRepository {
-    get: (protocol: string, recipient: CruxId, sender?: IGatewayMessageSender) => CruxGateway;
+    get: (protocol: string, recipient: CruxId, selfClaim?: IGatewayIdentityClaim) => CruxGateway;
 }
 
 export interface IGatewayEventSocket {

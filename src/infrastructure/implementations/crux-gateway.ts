@@ -9,9 +9,9 @@ import {
 import {
     ICruxGatewayRepository,
     ICruxGatewayTransport,
-    IGatewayEventSocket, IGatewayMessageSender,
+    IGatewayEventSocket, IGatewayIdentityClaim,
     IGatewayProtocolHandler,
-} from "../../core/interfaces/crux-gateway";
+} from "../../core/interfaces";
 import {CruxId} from "../../packages";
 
 // ---------------- SETTING UP PROTOCOL HANDLERS ----------------------------
@@ -133,15 +133,15 @@ export class CruxGatewayRepository implements ICruxGatewayRepository {
     constructor(options: ICruxGatewayRepositoryRepositoryOptions) {
         this.options = options;
     }
-    public get(protocol: string, recipient: CruxId, sender?: IGatewayMessageSender): CruxGateway {
+    public get(protocol: string, recipient: CruxId, selfClaim?: IGatewayIdentityClaim): CruxGateway {
         // TODO: override this.options.cruxBridgeConfig as per receiver's config
-        const senderCruxId = sender ? sender.cruxId : undefined;
-        const transport = new StrongPubSubTransport(this.options.cruxBridgeConfig, senderCruxId);
+        const selfCruxId = selfClaim ? selfClaim.cruxId : undefined;
+        const transport = new StrongPubSubTransport(this.options.cruxBridgeConfig, selfCruxId);
         const protocolHandler = getProtocolHandler(protocol);
         if (!protocolHandler) {
             throw Error("Unsupported protocol");
         }
-        return new CruxGateway(protocolHandler, transport, recipient, sender);
+        return new CruxGateway(protocolHandler, transport, recipient, selfClaim);
     }
 
 }

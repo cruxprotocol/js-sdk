@@ -4,8 +4,7 @@
 import {CruxId} from "../../packages";
 import {
     ICruxGatewayTransport,
-    IGatewayEventSocket,
-    IGatewayMessageSender,
+    IGatewayEventSocket, IGatewayIdentityClaim,
     IGatewayProtocolHandler,
 } from "../interfaces/crux-gateway";
 
@@ -18,13 +17,13 @@ export class CruxGateway {
     private protocolHandler: IGatewayProtocolHandler;
     private transport: ICruxGatewayTransport;
     private messageListener: (message: any) => void;
-    private sender?: IGatewayMessageSender;
+    private selfClaim?: IGatewayIdentityClaim;
     private recipient: CruxId;
     private eventSocket: IGatewayEventSocket;
 
-    constructor(protocolHandler: IGatewayProtocolHandler, transport: ICruxGatewayTransport, recipient: CruxId, sender?: IGatewayMessageSender) {
+    constructor(protocolHandler: IGatewayProtocolHandler, transport: ICruxGatewayTransport, recipient: CruxId, selfClaim?: IGatewayIdentityClaim) {
         // const that = this;
-        this.sender = sender;
+        this.selfClaim = selfClaim;
         this.recipient = recipient;
         this.transport = transport;
         this.messageListener = (message) => undefined;
