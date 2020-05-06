@@ -1,7 +1,7 @@
 // Importing packages
 import Logger from "js-logger";
 import {
-    CruxDomain,
+    CruxDomain, CruxGateway,
     CruxSpec,
     CruxUser,
     IAddress,
@@ -13,7 +13,7 @@ import {
 } from "../../core/entities";
 import {
     ICruxBlockstackInfrastructure,
-    ICruxDomainRepository,
+    ICruxDomainRepository, ICruxGatewayRepository,
     ICruxUserRepository,
     IGatewayMessageSender,
     IKeyManager,
@@ -23,7 +23,7 @@ import {
     BasicKeyManager,
     BlockstackCruxDomainRepository,
     BlockstackCruxUserRepository,
-    CruxGateway,
+    CruxGatewayRepository,
     IBlockstackCruxDomainRepositoryOptions,
     IBlockstackCruxUserRepositoryOptions,
     ICruxGatewayRepositoryRepositoryOptions,
@@ -100,8 +100,8 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
     return new BlockstackCruxUserRepository(options);
 };
 
-export const getCruxGatewayRepository = (options: ICruxGatewayRepositoryRepositoryOptions): CruxGateway => {
-    return new CruxGateway(options);
+export const getCruxGatewayRepository = (options: ICruxGatewayRepositoryRepositoryOptions): ICruxGatewayRepository => {
+    return new CruxGatewayRepository(options);
 };
 
 export class CruxWalletClient {
@@ -117,6 +117,7 @@ export class CruxWalletClient {
     private keyManager?: IKeyManager;
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
     private cacheStorage?: StorageService;
+    private gatewayRepo: ICruxGatewayRepository;
 
     constructor(options: ICruxWalletClientOptions) {
         getLogger(cruxWalletClientDebugLoggerName).setLevel(options.debugLogging ? Logger.DEBUG : Logger.OFF);
@@ -133,6 +134,7 @@ export class CruxWalletClient {
             }
         }
         this.cruxDomainRepo = getCruxDomainRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure});
+        this.gatewayRepo = getCruxGatewayRepository({cruxBridgeConfig: {host: "localhost", port: 4005}});
         this.cruxDomainId = new CruxDomainId(this.walletClientName);
         this.initPromise = this.asyncInit();
     }
@@ -234,10 +236,8 @@ export class CruxWalletClient {
             amount,
             assetId: assetToRequest,
         };
-        const gatewayRepo = getCruxGatewayRepository({cruxBridgeConfig: {host: "localhost", port: 4005}});
-        const gateway = gatewayRepo.get("CRUX.PAYMENTS", recipientCruxUser.cruxID, sender);
+        const gateway: CruxGateway = this.gatewayRepo.get("CRUX.PAYMENTS", recipientCruxUser.cruxID, sender);
         gateway.sendMessage(paymentRequestMessage);
-        // recipientCruxUser.sendPaymentRequest(paymentRequestMessage, sender);
 
     }
 
