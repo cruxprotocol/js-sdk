@@ -6,6 +6,7 @@ import {ICruxGatewayTransport, IGatewayIdentityClaim, IGatewayProtocolHandler} f
 
 export enum EventBusEventNames {
     newMessage = "newMessage",
+    error = "error",
 }
 
 export class CruxGateway {
