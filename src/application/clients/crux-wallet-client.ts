@@ -406,6 +406,9 @@ export class CruxWalletClient {
             selfClaim = undefined;
         }
         this.gateway = this.gatewayRepo.openGateway("CRUX.PAYMENTS", selfClaim);
+        this.gateway.listen((metadata, message) => {
+            console.log("CRUX WALLET CLIENT RECD NEW MESSAGE: ", metadata, message);
+        });
     }
 
 }

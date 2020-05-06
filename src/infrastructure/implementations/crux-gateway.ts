@@ -55,7 +55,7 @@ class Proxy {
         this.eventName = eventName;
         this.eventBus = eventBus;
     }
-    public redirect(msg: any) {
+    public redirect(msg: string) {
         const callbackForEventName = this.eventBus.getRegisteredCallback(this.eventName);
         if (!callbackForEventName) {
             console.log("No Registered callback. Event wasted");
@@ -117,14 +117,14 @@ class StrongPubSubEventBus implements IGatewayEventBus {
         this.recipient = recipient;
     }
 
-    public on(eventName: EventBusEventNames, callback: any): void {
+    public on(eventName: EventBusEventNames, callback: (msg: string) => void): void {
         if (!this.selfId) {
             throw Error("Cannot receive messages as this bus has no selfId");
         }
         this.registeredCallbacks[eventName] = callback;
     }
 
-    public send(data: any): void {
+    public send(data: string): void {
         if (!this.recipient) {
             throw Error("Cannot send in a bus with no recipient");
         }

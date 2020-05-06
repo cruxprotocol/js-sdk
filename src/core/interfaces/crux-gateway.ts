@@ -21,7 +21,7 @@ export interface ICruxGatewayRepository {
 export interface IGatewayEventBus {
     on(eventName: EventBusEventNames, callback: any): void;
 
-    send(data: any): void;
+    send(data: string): void;
 
     getRegisteredCallback(eventName: EventBusEventNames): any;
 }

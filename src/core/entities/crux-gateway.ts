@@ -9,35 +9,65 @@ export enum EventBusEventNames {
     error = "error",
 }
 
+export interface IGatewayPacket {
+    metadata: any;
+    message: any;
+}
+
+class GatewayPacketManager {
+    private protocolHandler: IGatewayProtocolHandler;
+    constructor(protocolHandler: IGatewayProtocolHandler) {
+        this.protocolHandler = protocolHandler;
+    }
+    public createNewPacket(message: any): IGatewayPacket {
+        this.protocolHandler.validateMessage(message);
+        return {
+            message,
+            metadata: {
+                foo: "bar",
+            },
+        };
+    }
+    public parse(packet: IGatewayPacket): IGatewayPacket {
+        this.protocolHandler.validateMessage(packet.message);
+        return {
+            message: packet.message,
+            metadata: packet.metadata,
+        };
+    }
+}
+
 export class CruxGateway {
 
-    private protocolHandler: IGatewayProtocolHandler;
     private transport: ICruxGatewayTransport;
     private messageListener: (message: any) => void;
     private selfClaim?: IGatewayIdentityClaim;
+    private packetManager: GatewayPacketManager;
 
     constructor(protocolHandler: IGatewayProtocolHandler, transport: ICruxGatewayTransport, selfClaim?: IGatewayIdentityClaim) {
         // const that = this;
         this.selfClaim = selfClaim;
         this.transport = transport;
         this.messageListener = (message) => undefined;
-        this.protocolHandler = protocolHandler;
+        this.packetManager = new GatewayPacketManager(protocolHandler);
     }
 
     public sendMessage(recipient: CruxId, message: any) {
-        this.protocolHandler.validateMessage(message);
+        const packet = this.packetManager.createNewPacket(message);
         const eventBus = this.transport.connect(recipient);
-        eventBus.send(message);
+        const serializedPacket = JSON.stringify(packet);
+        eventBus.send(serializedPacket);
     }
 
-    public listen(messageListener: (message: any) => void) {
+    public listen(messageListener: (metadata: any, message: any) => void) {
         if (!this.selfClaim) {
             throw Error("Cannot listen to a gateway with no selfClaim");
         }
         const eventBus = this.transport.connect();
-        eventBus.on(EventBusEventNames.newMessage, (foo: any) => {
-            this.protocolHandler.validateMessage(foo);
-            messageListener(foo);
+        eventBus.on(EventBusEventNames.newMessage, (data: string) => {
+            const deserializedData = JSON.parse(data);
+            const packet = this.packetManager.parse(deserializedData);
+            messageListener(packet.metadata, packet.message);
         });
     }
 }
