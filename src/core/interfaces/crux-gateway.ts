@@ -1,6 +1,6 @@
 import {CruxId} from "../../packages";
 import {CruxGateway} from "../entities";
-import {EventSocketEventNames} from "../entities";
+import {EventBusEventNames} from "../entities";
 import {IKeyManager} from "./key-manager";
 
 export interface IGatewayIdentityClaim {
@@ -18,14 +18,14 @@ export interface ICruxGatewayRepository {
     get: (protocol: string, recipient: CruxId, selfClaim?: IGatewayIdentityClaim) => CruxGateway;
 }
 
-export interface IGatewayEventSocket {
-    on(eventName: EventSocketEventNames, callback: any): void;
+export interface IGatewayEventBus {
+    on(eventName: EventBusEventNames, callback: any): void;
 
     send(data: any): void;
 
-    getRegisteredCallback(eventName: EventSocketEventNames): any;
+    getRegisteredCallback(eventName: EventBusEventNames): any;
 }
 
 export interface ICruxGatewayTransport {
-    connect(recipient?: CruxId): IGatewayEventSocket;
+    connect(recipient?: CruxId): IGatewayEventBus;
 }

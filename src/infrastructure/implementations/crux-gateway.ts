@@ -4,15 +4,15 @@ import * as StrongPubsubClient from "strong-pubsub";
 import * as MqttAdapter from "strong-pubsub-mqtt";
 import {
     CruxGateway,
-    EventSocketEventNames,
+    EventBusEventNames,
     } from "../../core/entities";
 import {
     ICruxGatewayRepository,
     ICruxGatewayTransport,
-    IGatewayEventSocket, IGatewayIdentityClaim,
+    IGatewayEventBus, IGatewayIdentityClaim,
     IGatewayProtocolHandler,
 } from "../../core/interfaces";
-import {CruxId} from "../../packages";
+import {CruxId, getRandomHexString} from "../../packages";
 
 // ---------------- SETTING UP PROTOCOL HANDLERS ----------------------------
 
@@ -29,8 +29,6 @@ export class PaymentRequestGatewayProtocolHandler implements IGatewayProtocolHan
 class IProtocolHandlerMapping {
     [protocolName: string]: IGatewayProtocolHandler;
 }
-
-// ------------------------------------------------------------------------
 
 const getProtocolHandler = (gatewayProtocol: string): IGatewayProtocolHandler => {
     const protocolHandlers = [ PaymentRequestGatewayProtocolHandler];
@@ -51,14 +49,14 @@ export interface ICruxGatewayRepositoryRepositoryOptions {
 }
 
 class Proxy {
-    private eventName: EventSocketEventNames;
-    private eventSocket: IGatewayEventSocket;
-    constructor(eventSocket: IGatewayEventSocket, eventName: EventSocketEventNames) {
+    private eventName: EventBusEventNames;
+    private eventBus: IGatewayEventBus;
+    constructor(eventBus: IGatewayEventBus, eventName: EventBusEventNames) {
         this.eventName = eventName;
-        this.eventSocket = eventSocket;
+        this.eventBus = eventBus;
     }
     public redirect(msg: any) {
-        const callbackForEventName = this.eventSocket.getRegisteredCallback(this.eventName);
+        const callbackForEventName = this.eventBus.getRegisteredCallback(this.eventName);
         if (!callbackForEventName) {
             console.log("No Registered callback. Event wasted");
         } else {
@@ -68,31 +66,32 @@ class Proxy {
 }
 
 export class StrongPubSubTransport implements ICruxGatewayTransport {
-    private config: ICruxBridgeConfig;
     private selfId: CruxId | undefined;
+    private client: StrongPubSubEventBus;
 
     constructor(config: ICruxBridgeConfig, selfId?: CruxId) {
-        this.config = config;
         this.selfId = selfId;
-    }
-
-    public connect(recipient?: CruxId): IGatewayEventSocket {
-        const selfClientId = "client_" + (this.selfId ? this.selfId.toString() : "asdasd");
-        const client = new StrongPubsubClient({
-            host: this.config.host,
-            port: this.config.port,
+        const selfClientId = "client_" + (this.selfId ? this.selfId.toString() : getRandomHexString(8));
+        this.client = new StrongPubsubClient({
+            host: config.host,
+            port: config.port,
             // tslint:disable-next-line:object-literal-sort-keys
             mqtt: {
                 clean: false,
                 clientId: selfClientId,
             },
         }, MqttAdapter);
-        return new StrongPubSubEventSocket(client, recipient, this.selfId);
+    }
+    public connect(recipient?: CruxId): IGatewayEventBus {
+        if (!recipient && !this.selfId) {
+            throw Error("Cannot create which can't receive or send");
+        }
+        return new StrongPubSubEventBus(this.client, recipient, this.selfId);
     }
 
 }
 
-class StrongPubSubEventSocket implements IGatewayEventSocket {
+class StrongPubSubEventBus implements IGatewayEventBus {
     private client: StrongPubsubClient;
     private options: { qos: number };
     private registeredCallbacks: any;
@@ -110,26 +109,26 @@ class StrongPubSubEventSocket implements IGatewayEventSocket {
         }
 
         if (selfId) {
-            const selfTopic = "topic_" + (selfId ? selfId.toString() : "asdasd");
+            const selfTopic = "topic_" + selfId.toString();
             this.client.subscribe(selfTopic, this.options);
-            this.client.on("message", new Proxy(this, EventSocketEventNames.newMessage).redirect);
+            this.client.on("message", new Proxy(this, EventBusEventNames.newMessage).redirect);
         }
         this.selfId = selfId;
         this.recipient = recipient;
     }
 
-    public on(eventName: EventSocketEventNames, callback: any): void {
+    public on(eventName: EventBusEventNames, callback: any): void {
         if (!this.selfId) {
-            throw Error("Cannot receive messages as this socket has no selfId");
+            throw Error("Cannot receive messages as this bus has no selfId");
         }
         this.registeredCallbacks[eventName] = callback;
     }
 
     public send(data: any): void {
         if (!this.recipient) {
-            throw Error("Cannot send in a socket with no recipient");
+            throw Error("Cannot send in a bus with no recipient");
         }
-        const recipientTopic = "topic_" + (this.recipient ? this.recipient.toString() : "asdasd");
+        const recipientTopic = "topic_" + this.recipient.toString();
         this.client.publish(recipientTopic, data);
     }
 
@@ -151,7 +150,7 @@ export class CruxGatewayRepository implements ICruxGatewayRepository {
         if (!protocolHandler) {
             throw Error("Unsupported protocol");
         }
-        return new CruxGateway(protocolHandler, transport, recipient, selfClaim);
+        return new CruxGateway(protocolHandler, transport, selfClaim);
     }
 
 }
