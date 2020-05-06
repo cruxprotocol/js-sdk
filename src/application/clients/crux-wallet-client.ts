@@ -1,11 +1,8 @@
 // Importing packages
-import {strict} from "assert";
 import Logger from "js-logger";
-import {send} from "q";
-import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
-import { CruxDomain } from "../../core/entities/crux-domain";
-import { CruxSpec } from "../../core/entities/crux-spec";
 import {
+    CruxDomain,
+    CruxSpec,
     CruxUser,
     IAddress,
     IAddressMapping,
@@ -13,31 +10,28 @@ import {
     ICruxUserRegistrationStatus,
     SubdomainRegistrationStatus,
     SubdomainRegistrationStatusDetail,
-} from "../../core/entities/crux-user";
-import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
-import {ICruxDomainRepository} from "../../core/interfaces/crux-domain-repository";
-import {IGatewayMessageSender} from "../../core/interfaces/crux-gateway";
-import { ICruxUserRepository } from "../../core/interfaces/crux-user-repository";
-import { IKeyManager, isInstanceOfKeyManager } from "../../core/interfaces/key-manager";
-import { BasicKeyManager } from "../../infrastructure/implementations/basic-key-manager";
+} from "../../core/entities";
 import {
+    ICruxBlockstackInfrastructure,
+    ICruxDomainRepository,
+    ICruxUserRepository,
+    IGatewayMessageSender,
+    IKeyManager,
+    isInstanceOfKeyManager,
+} from "../../core/interfaces";
+import {
+    BasicKeyManager,
     BlockstackCruxDomainRepository,
-    IBlockstackCruxDomainRepositoryOptions,
-} from "../../infrastructure/implementations/blockstack-crux-domain-repository";
-import {
     BlockstackCruxUserRepository,
+    CruxGateway,
+    IBlockstackCruxDomainRepositoryOptions,
     IBlockstackCruxUserRepositoryOptions,
-} from "../../infrastructure/implementations/blockstack-crux-user-repository";
-import {
-    CruxGatewayRepository,
     ICruxGatewayRepositoryRepositoryOptions,
-} from "../../infrastructure/implementations/crux-gateway-repository";
-import { Encryption } from "../../packages/encryption";
-import { CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode } from "../../packages/error";
-import { CruxDomainId, CruxId } from "../../packages/identity-utils";
-import { InMemStorage } from "../../packages/inmem-storage";
-import { getLogger } from "../../packages/logger";
-import { StorageService } from "../../packages/storage";
+} from "../../infrastructure/implementations";
+import {CruxDomainId, CruxId, getLogger, InMemStorage, StorageService} from "../../packages";
+import {Encryption} from "../../packages/encryption";
+import {CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode} from "../../packages/error";
+import {CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap} from "../services";
 
 const cruxWalletClientDebugLoggerName = "CruxWalletClient:DEBUGGING";
 
@@ -106,8 +100,8 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
     return new BlockstackCruxUserRepository(options);
 };
 
-export const getCruxGatewayRepository = (options: ICruxGatewayRepositoryRepositoryOptions): CruxGatewayRepository => {
-    return new CruxGatewayRepository(options);
+export const getCruxGatewayRepository = (options: ICruxGatewayRepositoryRepositoryOptions): CruxGateway => {
+    return new CruxGateway(options);
 };
 
 export class CruxWalletClient {

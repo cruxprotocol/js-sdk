@@ -128,7 +128,7 @@ class StrongPubSubEventSocket implements IGatewayEventSocket {
     }
 }
 
-export class CruxGatewayRepository implements ICruxGatewayRepository {
+export class CruxGateway implements ICruxGatewayRepository {
     private options: ICruxGatewayRepositoryRepositoryOptions;
     constructor(options: ICruxGatewayRepositoryRepositoryOptions) {
         this.options = options;
