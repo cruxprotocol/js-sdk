@@ -71,15 +71,15 @@ class Proxy {
 
 export class StrongPubSubTransport implements ICruxGatewayTransport {
     private config: ICruxBridgeConfig;
-    private self: CruxId | undefined;
+    private selfId: CruxId | undefined;
 
-    constructor(config: ICruxBridgeConfig, self?: CruxId) {
+    constructor(config: ICruxBridgeConfig, selfId?: CruxId) {
         this.config = config;
-        this.self = self;
+        this.selfId = selfId;
     }
 
     public connect(recipient: CruxId): IGatewayEventSocket {
-        const selfClientId = "client_" + (self ? self.toString() : "asdasd");
+        const selfClientId = "client_" + (this.selfId ? this.selfId.toString() : "asdasd");
         const client = new StrongPubsubClient({
             host: this.config.host,
             port: this.config.port,
@@ -89,7 +89,7 @@ export class StrongPubSubTransport implements ICruxGatewayTransport {
                 clientId: selfClientId,
             },
         }, MqttAdapter);
-        return new StrongPubSubEventSocket(client, recipient, this.self);
+        return new StrongPubSubEventSocket(client, recipient, this.selfId);
     }
 
 }
@@ -99,19 +99,31 @@ class StrongPubSubEventSocket implements IGatewayEventSocket {
     private options: { qos: number };
     private registeredCallbacks: any;
     private recipient?: CruxId;
+    private selfId?: CruxId;
 
-    constructor(client: StrongPubsubClient, recipient?: CruxId, self?: CruxId) {
+    constructor(client: StrongPubsubClient, recipient?: CruxId, selfId?: CruxId) {
         this.options = {
             qos: 0,
         };
-        const selfTopic = "topic_" + (self ? self.toString() : "asdasd");
-        this.recipient = recipient;
-        this.client.subscribe(selfTopic, this.options);
-        this.client.on("message", new Proxy(this, EventSocketEventNames.newMessage).redirect);
         this.registeredCallbacks = {};
+
+        if (!recipient && !selfId) {
+            throw Error("Invalid state");
+        }
+
+        if (selfId) {
+            const selfTopic = "topic_" + (selfId ? selfId.toString() : "asdasd");
+            this.client.subscribe(selfTopic, this.options);
+            this.client.on("message", new Proxy(this, EventSocketEventNames.newMessage).redirect);
+        }
+        this.selfId = selfId;
+        this.recipient = recipient;
     }
 
     public on(eventName: EventSocketEventNames, callback: any): void {
+        if (!this.selfId) {
+            throw Error("Cannot receive messages as this socket has no selfId");
+        }
         this.registeredCallbacks[eventName] = callback;
     }
 
