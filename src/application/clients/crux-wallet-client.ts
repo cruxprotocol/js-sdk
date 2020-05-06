@@ -1,8 +1,10 @@
 // Importing packages
 import {strict} from "assert";
 import Logger from "js-logger";
+import {send} from "q";
 import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
 import { CruxDomain } from "../../core/entities/crux-domain";
+import {IGatewayMessageSender} from "../../core/entities/crux-gateway";
 import { CruxSpec } from "../../core/entities/crux-spec";
 import {
     CruxUser,
@@ -10,12 +12,13 @@ import {
     IAddressMapping,
     IAssetMatcher,
     ICruxUserRegistrationStatus,
-    IGatewayMessageSender, IPaymentRequestMessage,
+    IPaymentRequestMessage,
     SubdomainRegistrationStatus,
     SubdomainRegistrationStatusDetail,
 } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxDomainRepository} from "../../core/interfaces/crux-domain-repository";
+import {ICruxGatewayRepositoryRepositoryOptions} from "../../core/interfaces/crux-gateway-repository";
 import { ICruxUserRepository } from "../../core/interfaces/crux-user-repository";
 import { IKeyManager, isInstanceOfKeyManager } from "../../core/interfaces/key-manager";
 import { BasicKeyManager } from "../../infrastructure/implementations/basic-key-manager";
@@ -27,6 +30,7 @@ import {
     BlockstackCruxUserRepository,
     IBlockstackCruxUserRepositoryOptions,
 } from "../../infrastructure/implementations/blockstack-crux-user-repository";
+import {CruxGatewayRepository} from "../../infrastructure/implementations/crux-gateway-repository";
 import { Encryption } from "../../packages/encryption";
 import { CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId } from "../../packages/identity-utils";
@@ -88,6 +92,11 @@ export interface ICruxIDState {
     status: ICruxUserRegistrationStatus;
 }
 
+export interface IPaymentRequestMessage {
+    amount: string;
+    assetId: string;
+}
+
 export const getCruxDomainRepository = (options: IBlockstackCruxDomainRepositoryOptions): ICruxDomainRepository => {
     return new BlockstackCruxDomainRepository(options);
 };
@@ -96,11 +105,9 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
     return new BlockstackCruxUserRepository(options);
 };
 
-export interface ICruxPaymentRequest {
-    recipientCruxId: CruxId;
-    walletSymbol: string;
-    amount: string;
-}
+export const getCruxGatewayRepository = (options: ICruxGatewayRepositoryRepositoryOptions): CruxGatewayRepository => {
+    return new CruxGatewayRepository(options);
+};
 
 export class CruxWalletClient {
     public e = Encryption;
@@ -208,13 +215,13 @@ export class CruxWalletClient {
     }
 
     @throwCruxClientError
-    public sendPaymentRequest = async (paymentRequest: ICruxPaymentRequest): Promise<void> => {
+    public sendPaymentRequest = async (walletSymbol: string, recipientCruxId: string, amount: string): Promise<void> => {
         await this.initPromise;
-        const recipientCruxUser = await this.getCruxUserByID(paymentRequest.recipientCruxId.toString());
+        const recipientCruxUser = await this.getCruxUserByID(recipientCruxId);
         if (!recipientCruxUser) {
             throw Error("Cannot find recipient user");
         }
-        const assetToRequest = this.cruxAssetTranslator.symbolToAssetId(paymentRequest.walletSymbol);
+        const assetToRequest = this.cruxAssetTranslator.symbolToAssetId(walletSymbol);
         if (!assetToRequest) {
             throw Error("Did not find asset to send");
         }
@@ -229,10 +236,13 @@ export class CruxWalletClient {
         }
 
         const paymentRequestMessage: IPaymentRequestMessage = {
-            amount: paymentRequest.amount,
+            amount,
             assetId: assetToRequest,
         };
-        recipientCruxUser.sendPaymentRequest(paymentRequestMessage, sender);
+        const gatewayRepo = getCruxGatewayRepository({messageProtocol: "CRUX:PAYMENTS"});
+        const gateway = gatewayRepo.get(recipientCruxUser.cruxID, sender);
+        gateway.sendMessage(paymentRequestMessage);
+        // recipientCruxUser.sendPaymentRequest(paymentRequestMessage, sender);
 
     }
 
