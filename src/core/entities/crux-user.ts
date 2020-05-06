@@ -8,8 +8,9 @@ import {BaseError} from "../../packages/error";
 import {CruxId} from "../../packages/identity-utils";
 import {getLogger} from "../../packages/logger";
 import {IKeyManager} from "../interfaces";
+import {IGatewayMessageSender, IGatewayProtocolHandler} from "../interfaces/crux-gateway";
 import {CruxDomain, IGlobalAsset, IGlobalAssetList} from "./crux-domain";
-import {CruxGateway, IGatewayMessageSender, IGatewayProtocolHandler} from "./crux-gateway";
+import {CruxGateway} from "./crux-gateway";
 
 const log = getLogger(__filename);
 

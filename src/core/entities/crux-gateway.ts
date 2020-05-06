@@ -1,20 +1,16 @@
+// @ts-ignore
+// @ts-ignore
+
 import {CruxId} from "../../packages";
-import {IKeyManager} from "../interfaces";
+import {
+    ICruxGatewayTransport,
+    IGatewayEventSocket,
+    IGatewayMessageSender,
+    IGatewayProtocolHandler,
+} from "../interfaces/crux-gateway";
 
-export interface IGatewayMessageSender {
-    cruxId?: CruxId;
-    keyManager?: IKeyManager;
-}
-export interface IGatewayProtocolHandler {
-    getName(): string;
-
-    validateMessage(gatewayMessage: any): boolean;
-}
-
-export interface ICruxGatewayTransport {
-    listen(messageListener: (message: any) => void): void;
-
-    send(message: any, recipient: CruxId, sender: ): void;
+export enum EventSocketEventNames {
+    newMessage = "newMessage",
 }
 
 export class CruxGateway {
@@ -24,30 +20,27 @@ export class CruxGateway {
     private messageListener: (message: any) => void;
     private sender?: IGatewayMessageSender;
     private recipient: CruxId;
-    private eventBus: any;
+    private eventSocket: IGatewayEventSocket;
 
     constructor(protocolHandler: IGatewayProtocolHandler, transport: ICruxGatewayTransport, recipient: CruxId, sender?: IGatewayMessageSender) {
-        const that = this;
+        // const that = this;
         this.sender = sender;
         this.recipient = recipient;
+        this.transport = transport;
         this.messageListener = (message) => undefined;
         this.protocolHandler = protocolHandler;
-
-        this.eventBus = transport.getEventBus()
-        this.eventBus.listen((foo: any) => {
-            that.protocolHandler.validateMessage(foo);
-            that.messageListener(foo);
-        });
+        this.eventSocket = this.transport.connect(recipient);
     }
 
     public sendMessage(message: any) {
         this.protocolHandler.validateMessage(message);
-
-        this.transport.send(message, this.recipient, this.sender)
-        this.transport.emit(this.recipient, message);
+        this.eventSocket.send(message);
     }
 
-    public listen(messageListener: (message: any) => void) {
-        this.messageListener = messageListener;
+    public listen(messageListener: (message: any) => void, errorListener?: (message: any) => void) {
+        this.eventSocket.on(EventSocketEventNames.newMessage, (foo: any) => {
+            this.protocolHandler.validateMessage(foo);
+            messageListener(foo);
+        });
     }
 }
