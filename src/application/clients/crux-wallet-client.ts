@@ -240,8 +240,8 @@ export class CruxWalletClient {
             amount,
             assetId: assetToRequest,
         };
-        const gateway: CruxGateway = this.gatewayRepo.get("CRUX.PAYMENTS", recipientCruxUser.cruxID, selfClaim);
-        gateway.sendMessage(paymentRequestMessage);
+        const gateway: CruxGateway = this.gatewayRepo.openGateway("CRUX.PAYMENTS", recipientCruxUser.cruxID, selfClaim);
+        gateway.sendMessage(recipientCruxUser.cruxID, paymentRequestMessage);
 
     }
 

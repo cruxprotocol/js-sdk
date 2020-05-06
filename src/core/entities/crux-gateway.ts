@@ -29,7 +29,7 @@ export class CruxGateway {
         eventBus.send(message);
     }
 
-    public listen(messageListener: (message: any) => void, errorListener?: (message: any) => void) {
+    public listen(messageListener: (message: any) => void) {
         if (!this.selfClaim) {
             throw Error("Cannot listen to a gateway with no selfClaim");
         }
