@@ -16,7 +16,7 @@ export interface IGatewayPacket {
 
 class GatewayPacketManager {
     private protocolHandler: IGatewayProtocolHandler;
-    constructor(protocolHandler: IGatewayProtocolHandler) {
+    constructor(protocolHandler: IGatewayProtocolHandler, selfClaim?: IGatewayIdentityClaim) {
         this.protocolHandler = protocolHandler;
     }
     public createNewPacket(message: any): IGatewayPacket {
@@ -49,12 +49,12 @@ export class CruxGateway {
         this.selfClaim = selfClaim;
         this.transport = transport;
         this.messageListener = (message) => undefined;
-        this.packetManager = new GatewayPacketManager(protocolHandler);
+        this.packetManager = new GatewayPacketManager(protocolHandler, selfClaim);
     }
 
     public sendMessage(recipient: CruxId, message: any) {
         const packet = this.packetManager.createNewPacket(message);
-        const eventBus = this.transport.connect(recipient);
+        const eventBus = this.transport.getEventBus(recipient);
         const serializedPacket = JSON.stringify(packet);
         eventBus.send(serializedPacket);
     }
@@ -63,7 +63,7 @@ export class CruxGateway {
         if (!this.selfClaim) {
             throw Error("Cannot listen to a gateway with no selfClaim");
         }
-        const eventBus = this.transport.connect();
+        const eventBus = this.transport.getEventBus();
         eventBus.on(EventBusEventNames.newMessage, (data: string) => {
             const deserializedData = JSON.parse(data);
             const packet = this.packetManager.parse(deserializedData);

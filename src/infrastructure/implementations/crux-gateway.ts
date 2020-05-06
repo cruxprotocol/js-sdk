@@ -82,7 +82,7 @@ export class StrongPubSubTransport implements ICruxGatewayTransport {
             },
         }, MqttAdapter);
     }
-    public connect(recipient?: CruxId): IGatewayEventBus {
+    public getEventBus(recipient?: CruxId): IGatewayEventBus {
         if (!recipient && !this.selfId) {
             throw Error("Cannot create which can't receive or send");
         }

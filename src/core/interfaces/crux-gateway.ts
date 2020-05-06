@@ -27,5 +27,5 @@ export interface IGatewayEventBus {
 }
 
 export interface ICruxGatewayTransport {
-    connect(recipient?: CruxId): IGatewayEventBus;
+    getEventBus(recipient?: CruxId): IGatewayEventBus;
 }
