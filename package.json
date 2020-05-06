@@ -100,6 +100,7 @@
     "regenerator-runtime": "^0.13.3",
     "url-parse": "^1.4.7",
     "strong-pubsub": "^0.2.0",
-    "strong-pubsub-mqtt": "^0.1.0"
+    "strong-pubsub-mqtt": "^0.1.0",
+    "nanoevents": "5.1.5"
   }
 }
