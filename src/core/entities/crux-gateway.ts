@@ -10,8 +10,13 @@ export enum EventBusEventNames {
 }
 
 export interface IGatewayPacket {
-    metadata: any;
+    metadata: IGatewayPacketMetadata;
     message: any;
+}
+
+export interface IGatewayPacketMetadata {
+    packetCreatedAt: Date;
+    protocol: string;
 }
 
 class GatewayPacketManager {
@@ -19,13 +24,12 @@ class GatewayPacketManager {
     constructor(protocolHandler: IGatewayProtocolHandler, selfClaim?: IGatewayIdentityClaim) {
         this.protocolHandler = protocolHandler;
     }
+
     public createNewPacket(message: any): IGatewayPacket {
         this.protocolHandler.validateMessage(message);
         return {
             message,
-            metadata: {
-                foo: "bar",
-            },
+            metadata: this.getMetadata(),
         };
     }
     public parse(packet: IGatewayPacket): IGatewayPacket {
@@ -33,6 +37,12 @@ class GatewayPacketManager {
         return {
             message: packet.message,
             metadata: packet.metadata,
+        };
+    }
+    private getMetadata(): IGatewayPacketMetadata {
+        return {
+            packetCreatedAt: new Date(),
+            protocol: this.protocolHandler.getName(),
         };
     }
 }
