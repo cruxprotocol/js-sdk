@@ -15,7 +15,7 @@ export interface IGatewayProtocolHandler {
 }
 
 export interface ICruxGatewayRepository {
-    openGateway: (protocol: string, recipient: CruxId, selfClaim?: IGatewayIdentityClaim) => CruxGateway;
+    openGateway: (protocol: string, selfClaim?: IGatewayIdentityClaim) => CruxGateway;
 }
 
 export interface IGatewayEventBus {

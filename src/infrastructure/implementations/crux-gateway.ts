@@ -142,7 +142,7 @@ export class CruxGatewayRepository implements ICruxGatewayRepository {
     constructor(options: ICruxGatewayRepositoryRepositoryOptions) {
         this.options = options;
     }
-    public openGateway(protocol: string, recipient: CruxId, selfClaim?: IGatewayIdentityClaim): CruxGateway {
+    public openGateway(protocol: string, selfClaim?: IGatewayIdentityClaim): CruxGateway {
         // TODO: override this.options.cruxBridgeConfig as per receiver's config
         const selfCruxId = selfClaim ? selfClaim.cruxId : undefined;
         const transport = new StrongPubSubTransport(this.options.cruxBridgeConfig, selfCruxId);

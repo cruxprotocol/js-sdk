@@ -117,6 +117,7 @@ export class CruxWalletClient {
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
     private cacheStorage?: StorageService;
     private gatewayRepo: ICruxGatewayRepository;
+    private gateway?: CruxGateway;
 
     constructor(options: ICruxWalletClientOptions) {
         getLogger(cruxWalletClientDebugLoggerName).setLevel(options.debugLogging ? Logger.DEBUG : Logger.OFF);
@@ -222,26 +223,10 @@ export class CruxWalletClient {
             throw Error("Did not find asset to send");
         }
 
-        let selfClaim: IGatewayIdentityClaim | undefined;
-
-        if (this.keyManager) {
-            const selfUser = await this.getCruxUserByKey();
-            if (selfUser) {
-                selfClaim = {
-                    cruxId: selfUser.cruxID,
-                    keyManager: this.keyManager,
-                };
-            }
-        } else {
-            selfClaim = undefined;
-        }
-
-        const paymentRequestMessage: IPaymentRequestMessage = {
+        this.gateway!.sendMessage(recipientCruxUser.cruxID, {
             amount,
             assetId: assetToRequest,
-        };
-        const gateway: CruxGateway = this.gatewayRepo.openGateway("CRUX.PAYMENTS", recipientCruxUser.cruxID, selfClaim);
-        gateway.sendMessage(recipientCruxUser.cruxID, paymentRequestMessage);
+        });
 
     }
 
@@ -403,5 +388,24 @@ export class CruxWalletClient {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
         this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping, this.cruxDomain.config.assetList);
+        await this.openCruxGateway();
     }
+
+    private openCruxGateway = async () => {
+        let selfClaim: IGatewayIdentityClaim | undefined;
+
+        if (this.keyManager) {
+            const selfUser = await this.getCruxUserByKey();
+            if (selfUser) {
+                selfClaim = {
+                    cruxId: selfUser.cruxID,
+                    keyManager: this.keyManager,
+                };
+            }
+        } else {
+            selfClaim = undefined;
+        }
+        this.gateway = this.gatewayRepo.openGateway("CRUX.PAYMENTS", selfClaim);
+    }
+
 }
