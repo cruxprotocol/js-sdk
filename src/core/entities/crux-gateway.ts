@@ -60,7 +60,7 @@ export class CruxGateway {
     private selfClaim?: IGatewayIdentityClaim;
     private packetManager: GatewayPacketManager;
 
-    constructor(protocolHandler: IGatewayProtocolHandler, transport: ICruxGatewayTransport, selfClaim?: IGatewayIdentityClaim) {
+    constructor(transport: ICruxGatewayTransport, protocolHandler: IGatewayProtocolHandler, selfClaim?: IGatewayIdentityClaim) {
         // const that = this;
         this.selfClaim = selfClaim;
         this.transport = transport;

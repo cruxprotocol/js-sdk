@@ -26,12 +26,22 @@ export class PaymentRequestGatewayProtocolHandler implements IGatewayProtocolHan
     }
 }
 
+export class BasicGatewayProtocolHandler implements IGatewayProtocolHandler {
+    public getName(): string {
+        return "BASIC";
+    }
+
+    public validateMessage(gatewayMessage: any): boolean {
+        return true;
+    }
+}
+
 class IProtocolHandlerMapping {
     [protocolName: string]: IGatewayProtocolHandler;
 }
 
 const getProtocolHandler = (gatewayProtocol: string): IGatewayProtocolHandler => {
-    const protocolHandlers = [ PaymentRequestGatewayProtocolHandler];
+    const protocolHandlers = [ PaymentRequestGatewayProtocolHandler, BasicGatewayProtocolHandler ];
     const protocolHandlerByName: IProtocolHandlerMapping = {};
     protocolHandlers.forEach( (protocolHandler: any) => {
         protocolHandlerByName[protocolHandler.getName()] = protocolHandler;
