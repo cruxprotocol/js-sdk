@@ -160,7 +160,7 @@ export class CruxGatewayRepository implements ICruxGatewayRepository {
         if (!protocolHandler) {
             throw Error("Unsupported protocol");
         }
-        return new CruxGateway(protocolHandler, transport, selfClaim);
+        return new CruxGateway(transport, protocolHandler, selfClaim);
     }
 
 }
