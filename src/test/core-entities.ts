@@ -95,5 +95,7 @@ describe('Core Entities Tests', () => {
         });
 
     });
+    describe('Testing Entity CruxGateway', () => {
 
+    });
 });

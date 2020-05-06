@@ -37,7 +37,7 @@ class IProtocolHandlerMapping {
     [protocolName: string]: IGatewayProtocolHandler;
 }
 
-const getProtocolHandler = (gatewayProtocol: string): IGatewayProtocolHandler => {
+export const getProtocolHandler = (gatewayProtocol: string): IGatewayProtocolHandler => {
     const protocolHandlers = [ PaymentRequestGatewayProtocolHandler, BasicGatewayProtocolHandler ];
     const protocolHandlerByName: IProtocolHandlerMapping = {};
     protocolHandlers.forEach( (protocolHandler: any) => {
