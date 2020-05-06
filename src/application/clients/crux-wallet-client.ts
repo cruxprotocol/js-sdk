@@ -222,13 +222,18 @@ export class CruxWalletClient {
             throw Error("Did not find asset to send");
         }
 
-        const selfUser = await this.getCruxUserByKey();
-        let selfClaim: IGatewayIdentityClaim = {};
-        if (selfUser) {
-            selfClaim = {
-                cruxId: selfUser.cruxID,
-                keyManager: this.keyManager,
-            };
+        let selfClaim: IGatewayIdentityClaim | undefined;
+
+        if (this.keyManager) {
+            const selfUser = await this.getCruxUserByKey();
+            if (selfUser) {
+                selfClaim = {
+                    cruxId: selfUser.cruxID,
+                    keyManager: this.keyManager,
+                };
+            }
+        } else {
+            selfClaim = undefined;
         }
 
         const paymentRequestMessage: IPaymentRequestMessage = {

@@ -76,7 +76,7 @@ export class StrongPubSubTransport implements ICruxGatewayTransport {
         this.selfId = selfId;
     }
 
-    public connect(recipient: CruxId): IGatewayEventSocket {
+    public connect(recipient?: CruxId): IGatewayEventSocket {
         const selfClientId = "client_" + (this.selfId ? this.selfId.toString() : "asdasd");
         const client = new StrongPubsubClient({
             host: this.config.host,
@@ -106,7 +106,7 @@ class StrongPubSubEventSocket implements IGatewayEventSocket {
         this.registeredCallbacks = {};
 
         if (!recipient && !selfId) {
-            throw Error("Invalid state");
+            throw Error("Invalid state. One of recipient or selfId must be present");
         }
 
         if (selfId) {
