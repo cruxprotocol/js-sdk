@@ -18,7 +18,7 @@ import {CruxId} from "../../packages";
 
 export class PaymentRequestGatewayProtocolHandler implements IGatewayProtocolHandler {
     public getName(): string {
-        return "PAYMENT_REQUEST";
+        return "CRUX.PAYMENT";
     }
 
     public validateMessage(gatewayMessage: any): boolean {
@@ -26,20 +26,18 @@ export class PaymentRequestGatewayProtocolHandler implements IGatewayProtocolHan
     }
 }
 
-const protocolHandlers = [ PaymentRequestGatewayProtocolHandler];
-
 class IProtocolHandlerMapping {
     [protocolName: string]: IGatewayProtocolHandler;
 }
 
-const protocolHandlerByName: IProtocolHandlerMapping = {};
-protocolHandlers.forEach( (protocolHandler: any) => {
-    protocolHandlerByName[protocolHandler.getName()] = protocolHandler;
-});
-
 // ------------------------------------------------------------------------
 
 const getProtocolHandler = (gatewayProtocol: string): IGatewayProtocolHandler => {
+    const protocolHandlers = [ PaymentRequestGatewayProtocolHandler];
+    const protocolHandlerByName: IProtocolHandlerMapping = {};
+    protocolHandlers.forEach( (protocolHandler: any) => {
+        protocolHandlerByName[protocolHandler.getName()] = protocolHandler;
+    });
     return protocolHandlerByName[gatewayProtocol];
 };
 
