@@ -1,16 +1,9 @@
-import {
-    PaymentRequestGatewayProtocolHandler,
-    PlainTextGatewayProtocolHandler,
-    StrongPubsubGatewayTransport
-} from "../../infrastructure/implementations/crux-gateway-repository";
-import {Encryption} from "../../packages/encryption";
-import {BaseError} from "../../packages/error";
-import {CruxId} from "../../packages/identity-utils";
-import {getLogger} from "../../packages/logger";
-import {IKeyManager} from "../interfaces";
-import {IGatewayMessageSender, IGatewayProtocolHandler} from "../interfaces/crux-gateway";
-import {CruxDomain, IGlobalAsset, IGlobalAssetList} from "./crux-domain";
-import {CruxGateway} from "./crux-gateway";
+import { Encryption } from "../../packages/encryption";
+import { BaseError } from "../../packages/error";
+import { CruxId } from "../../packages/identity-utils";
+import { getLogger } from "../../packages/logger";
+import { IKeyManager } from "../interfaces";
+import { CruxDomain, IGlobalAsset, IGlobalAssetList } from "./crux-domain";
 
 const log = getLogger(__filename);
 
@@ -60,7 +53,6 @@ export enum SubdomainRegistrationStatusDetail {
     PENDING_BLOCKCHAIN = "Subdomain registration pending on blockchain.",
     DONE = "Subdomain propagated.",
 }
-
 
 export class CruxUser {
     private pubKey?: string;
@@ -197,7 +189,6 @@ export class CruxUser {
             this.cruxUserPrivateAddresses = cruxUserPrivateAddresses;
         }
     }
-
 }
 
 export interface IAssetMatcher {
