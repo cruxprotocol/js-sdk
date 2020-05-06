@@ -27,9 +27,11 @@ class GatewayPacketManager {
 
     public createNewPacket(message: any): IGatewayPacket {
         this.protocolHandler.validateMessage(message);
+        const metadata = this.makePacketMetadata();
+        this.validateMetadata(metadata);
         return {
             message,
-            metadata: this.getMetadata(),
+            metadata,
         };
     }
     public parse(packet: IGatewayPacket): IGatewayPacket {
@@ -39,11 +41,15 @@ class GatewayPacketManager {
             metadata: packet.metadata,
         };
     }
-    private getMetadata(): IGatewayPacketMetadata {
+    private makePacketMetadata(): IGatewayPacketMetadata {
         return {
             packetCreatedAt: new Date(),
             protocol: this.protocolHandler.getName(),
         };
+    }
+    private validateMetadata(metadata: IGatewayPacketMetadata) {
+        // TODO: Validate Metadata
+        return metadata;
     }
 }
 
