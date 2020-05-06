@@ -1,6 +1,5 @@
 import {CruxId} from "../../packages";
 import {CruxGateway} from "../entities";
-import {EventBusEventNames} from "../entities";
 import {IKeyManager} from "./key-manager";
 
 export interface IGatewayIdentityClaim {
@@ -18,14 +17,7 @@ export interface ICruxGatewayRepository {
     openGateway: (protocol: string, selfClaim?: IGatewayIdentityClaim) => CruxGateway;
 }
 
-export interface IGatewayEventBus {
-    on(eventName: EventBusEventNames, callback: any): void;
-
-    send(data: string): void;
-
-    getRegisteredCallback(eventName: EventBusEventNames): any;
-}
-
-export interface ICruxGatewayTransport {
-    getEventBus(recipient?: CruxId): IGatewayEventBus;
+export interface IPubSubProvider {
+    subscribe: (topic: string, callback: any) => void;
+    publish: (topic: string, data: any) => void;
 }
