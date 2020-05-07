@@ -29,10 +29,15 @@ core
 * Any 2 `CruxGateways` created from the same `ICruxGatewayRepository` can talk to each other
 * `CruxGateway`s talk to each other with `IGatewayPacket`s
 * `IGatewayPacket` contains `message: any` and `metadata: IGatewayPacketMetadata`
-* `IGatewayPacketMetadata` may contain `senderCertificate` to prove identity of sender
+* `IGatewayPacketMetadata` may contain `IGatewayIdentityCertificate` to prove identity of sender
 
 
+##### `CruxGateway` Entity Dive Deep
 
+* constructor needs `IPubSubProvider`, `IGatewayProtocolHandler`, `IGatewayIdentityClaim`
+* `IPubSubProvider` helps send & receive messages 
+* `IGatewayProtocolHandler` helps enforce rules on message content for validation
+* `IGatewayIdentityClaim` helps the sender prove her identity. A valid `IGatewayIdentityClaim` will produce a valid `IGatewayIdentityCertificate`
 
 
 ### Infrastructure
