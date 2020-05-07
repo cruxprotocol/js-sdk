@@ -6,7 +6,6 @@ import * as chai from "chai";
 
 import {CruxWalletClient, ICruxIDState} from "../application/clients/crux-wallet-client";
 import {SubdomainRegistrationStatus} from "../core/entities/crux-user";
-import {BasicKeyManager} from "../infrastructure/implementations/basic-key-manager";
 import {PackageErrorCode, ERROR_STRINGS} from "../packages/error";
 import {
     addDomainToRepo,
@@ -16,6 +15,7 @@ import {
     InMemoryCruxDomainRepository,
     InMemoryCruxUserRepository,
     getValidPendingCruxUser, patchMissingDependencies,
+    testPrivateKeys,
 } from "./test-utils";
 
 patchMissingDependencies()
@@ -37,9 +37,9 @@ describe('CruxWalletClient Tests', function() {
     beforeEach(async function() {
         this.inmemUserRepo = new InMemoryCruxUserRepository(getValidCruxDomain());
         this.inmemDomainRepo = new InMemoryCruxDomainRepository();
-        this.inmemUserRepo = await addUserToRepo(testCruxUser, this.inmemUserRepo, new BasicKeyManager(testPvtKey));
-        this.inmemUserRepo = await addUserToRepo(testCruxUser2, this.inmemUserRepo, new BasicKeyManager(testPvtKey2));
-        this.inmemUserRepo = await addUserToRepo(testPendingCruxUser, this.inmemUserRepo, new BasicKeyManager(testPvtKey3));
+        this.inmemUserRepo = await addUserToRepo(testCruxUser, this.inmemUserRepo);
+        this.inmemUserRepo = await addUserToRepo(testCruxUser2, this.inmemUserRepo);
+        this.inmemUserRepo = await addUserToRepo(testPendingCruxUser, this.inmemUserRepo);
         this.inmemDomainRepo = await addDomainToRepo(testCruxDomain, this.inmemDomainRepo);
         this.stubGetCruxDomainRepository = sinon.stub(cwc, 'getCruxDomainRepository').callsFake(() => this.inmemDomainRepo as any);
         this.stubGetCruxUserRepository = sinon.stub(cwc, 'getCruxUserRepository').callsFake(() => this.inmemUserRepo as any);
@@ -102,7 +102,7 @@ describe('CruxWalletClient Tests', function() {
     it('New ID Registration works properly', async function() {
         let cc = new CruxWalletClient({
             walletClientName: 'somewallet',
-            privateKey: testPvtKey4
+            privateKey: testPrivateKeys.testPvtKey4
         });
         const initIdState = await cc.getCruxIDState();
         expect(initIdState.cruxID).to.equals(null);
@@ -116,7 +116,7 @@ describe('CruxWalletClient Tests', function() {
         beforeEach(function() {
             this.cc = new CruxWalletClient({
                 walletClientName: 'somewallet',
-                privateKey: testPvtKey3
+                privateKey: testPrivateKeys.testPvtKey3
             });
         });
         it('Cannot register because user is already registered', async function() {
@@ -129,7 +129,7 @@ describe('CruxWalletClient Tests', function() {
         beforeEach(function() {
             this.cc = new CruxWalletClient({
                 walletClientName: 'somewallet',
-                privateKey: testPvtKey2
+                privateKey: testPrivateKeys.testPvtKey2
             });
         });
 
@@ -171,13 +171,13 @@ describe('CruxWalletClient Tests', function() {
             // foo123@somewallet.crux
             this.cc1 = new CruxWalletClient({
                 walletClientName: 'somewallet',
-                privateKey: testPvtKey
+                privateKey: testPrivateKeys.testPvtKey
             });
 
             // bar123@somewallet.crux
             this.cc2 = new CruxWalletClient({
                 walletClientName: 'somewallet',
-                privateKey: testPvtKey2
+                privateKey: testPrivateKeys.testPvtKey2
             });
         });
         it('New private address addition for self and resolution works properly', async function() {
