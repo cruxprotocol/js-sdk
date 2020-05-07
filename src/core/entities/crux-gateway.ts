@@ -1,11 +1,6 @@
 import {EventBusEventNames, GatewayEventBus, GatewayPacketManager} from "../domain-services";
-import {ICruxIdPubSubChannel, IGatewayPacket, IGatewayProtocolHandler} from "../interfaces";
+import {ICruxGatewayParams, ICruxIdPubSubChannel, IGatewayPacket} from "../interfaces";
 
-export interface ICruxGatewayParams {
-    protocolHandler: IGatewayProtocolHandler;
-    selfChannel?: ICruxIdPubSubChannel;
-    recipientChannel?: ICruxIdPubSubChannel;
-}
 export class CruxGateway {
 
     private messageListener: (message: any) => void;

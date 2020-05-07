@@ -53,3 +53,9 @@ export interface IGatewayIdentityCertificate {
     claim: string;
     proof: string;
 }
+
+export interface ICruxGatewayParams {
+    protocolHandler: IGatewayProtocolHandler;
+    selfChannel?: ICruxIdPubSubChannel;
+    recipientChannel?: ICruxIdPubSubChannel;
+}
