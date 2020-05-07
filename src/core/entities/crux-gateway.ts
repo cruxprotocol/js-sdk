@@ -1,4 +1,3 @@
-import {CruxId} from "../../packages";
 import {EventBusEventNames, GatewayEventBus, GatewayPacketManager} from "../domain-services";
 import {ICruxIdPubSubChannel, IGatewayPacket, IGatewayProtocolHandler} from "../interfaces";
 

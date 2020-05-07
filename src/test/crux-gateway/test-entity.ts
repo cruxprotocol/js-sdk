@@ -1,5 +1,6 @@
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
+import {ICruxGatewayRepository} from "../../core/interfaces";
 import {getIdClaimForUser, getValidCruxUser, getValidCruxUser2, patchMissingDependencies} from "../test-utils";
 import {InMemoryCruxGatewayRepository} from "./inmemory-infrastructure";
 

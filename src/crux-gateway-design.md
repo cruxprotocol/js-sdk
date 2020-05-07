@@ -1,4 +1,6 @@
-# CRUX Gateway Design
+# ---- OUTDATED  ----
+
+## CRUX Gateway Design
 
 ### Overview
 
