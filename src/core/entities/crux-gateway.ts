@@ -15,8 +15,8 @@ export class CruxGateway {
 
     constructor(params: ICruxGatewayParams) {
         // const that = this;
-        if ((!params.selfChannel && !params.recipientChannel) || (params.selfChannel && params.recipientChannel)) {
-            throw Error("Only one of selfChannel or recipientChannel must be present");
+        if ((!params.selfChannel && !params.recipientChannel)) {
+            throw Error("At least one of selfChannel or recipientChannel must be present");
         }
         if (params.selfChannel && !params.selfChannel.keyManager) {
             throw Error("selfChannel must have keyManager");
