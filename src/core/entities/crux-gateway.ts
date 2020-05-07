@@ -41,8 +41,11 @@ export class CruxGateway {
     }
 
     public listen(messageListener: (message: any, metadata: any) => void) {
-        if (!this.selfChannel) {
+        if (!this.selfChannel || this.recepientChannel) {
             throw Error("Cannot listen to a gateway with no selfChannel");
+        }
+        if (this.recepientChannel) {
+            throw Error("Cannot listen to gateway with recipientChannel");
         }
         const eventBus = new GatewayEventBus(this.selfChannel.pubsubClient, undefined, this.selfChannel.cruxId);
         eventBus.on(EventBusEventNames.newMessage, (data: string) => {
