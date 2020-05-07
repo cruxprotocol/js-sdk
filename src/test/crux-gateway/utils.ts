@@ -1,7 +1,7 @@
 import {createNanoEvents} from "nanoevents";
-import {CruxGateway} from "../core/entities";
-import {ICruxGatewayRepository, IGatewayIdentityClaim, IPubSubProvider} from "../core/interfaces";
-import {getProtocolHandler} from "../infrastructure/implementations";
+import {CruxGateway} from "../../core/entities";
+import {ICruxGatewayRepository, IGatewayIdentityClaim, IPubSubProvider} from "../../core/interfaces";
+import {getProtocolHandler} from "../../infrastructure/implementations";
 
 export class InMemoryPubSubProvider implements IPubSubProvider {
     private emitterByTopic: any;

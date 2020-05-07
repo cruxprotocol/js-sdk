@@ -1,7 +1,7 @@
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import {InMemoryCruxGatewayRepository} from "./crux-gateway-utils";
-import {getIdClaimForUser, getValidCruxUser, getValidCruxUser2, patchMissingDependencies} from "./test-utils";
+import {getIdClaimForUser, getValidCruxUser, getValidCruxUser2, patchMissingDependencies} from "../test-utils";
+import {InMemoryCruxGatewayRepository} from "./utils";
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -26,7 +26,7 @@ describe('CRUX Gateway Entity Tests', async function() {
 
         const testmsg = "TESTING123"
 
-        this.user2Gateway.listen((md: any, msg: any)=>{
+        this.user2Gateway.listen((msg: any, md: any)=>{
             expect(msg).equals(testmsg)
             done()
         });

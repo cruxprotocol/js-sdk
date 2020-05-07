@@ -137,7 +137,7 @@ export class CruxGateway {
         eventBus.send(serializedPacket);
     }
 
-    public listen(messageListener: (metadata: any, message: any) => void) {
+    public listen(messageListener: (message: any, metadata: any) => void) {
         if (!this.selfClaim) {
             throw Error("Cannot listen to a gateway with no selfClaim");
         }
@@ -145,7 +145,7 @@ export class CruxGateway {
         eventBus.on(EventBusEventNames.newMessage, (data: string) => {
             const deserializedData = JSON.parse(data);
             const packet = this.packetManager.parse(deserializedData);
-            messageListener(packet.metadata, packet.message);
+            messageListener(packet.message, packet.metadata);
         });
     }
 }
