@@ -1,19 +1,17 @@
 # CRUX Gateway Design
 
-### Core
+### Overview
 
-##### Overview
+**Main Entity**
 ```
 core
     entities
         CruxGateway
     interfaces
-        IPubSubProvider
         ICruxGatewayRepository
 ```
 
-
-##### Data Objects
+**Interfaces**
 ```
 core
     interfaces
@@ -21,11 +19,12 @@ core
         IGatewayPacketMetadata
         IGatewayIdentityCertificate
         IGatewayIdentityClaim
+        IPubSubProvider
 ```
 
 ##### Explanation
-
 * `ICruxGatewayRepository` helps us to open a `CruxGateway`
+* `IPubSubProvider` powers `ICruxGatewayRepository`
 * Any 2 `CruxGateways` created from the same `ICruxGatewayRepository` can talk to each other
 * `CruxGateway`s talk to each other with `IGatewayPacket`s
 * `IGatewayPacket` contains `message: any` and `metadata: IGatewayPacketMetadata`
