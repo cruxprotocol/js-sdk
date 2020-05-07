@@ -86,32 +86,32 @@ export class StrongPubSubProvider implements IPubSubProvider {
 export class CruxLinkGatewayRepository implements ICruxGatewayRepository {
     private options: ICruxGatewayRepositoryRepositoryOptions;
     private supportedProtocols: any;
-    private pubsubProvider: StrongPubSubProvider;
     private selfCruxId?: CruxId;
+    private selfClientId: string;
     constructor(options: ICruxGatewayRepositoryRepositoryOptions) {
         this.options = options;
         this.selfCruxId = options.selfIdClaim ? options.selfIdClaim.cruxId : undefined;
-        const selfClientId = "client_" + (this.selfCruxId ? this.selfCruxId.toString() : getRandomHexString(8));
-        this.pubsubProvider = new StrongPubSubProvider({
+        this.selfClientId = "client_" + (this.selfCruxId ? this.selfCruxId.toString() : getRandomHexString(8));
+        this.supportedProtocols = [ CruxGatewayPaymentsProtocolHandler ];
+    }
+    public openGateway(protocol: string): CruxGateway {
+        // TODO: override this.options.cruxBridgeConfig as per receiver's config
+        const pubsubProvider = new StrongPubSubProvider({
             clientOptions: {
-                host: options.defaultLinkServer.host,
-                port: options.defaultLinkServer.port,
+                host: this.options.defaultLinkServer.host,
+                port: this.options.defaultLinkServer.port,
                 // tslint:disable-next-line:object-literal-sort-keys
                 mqtt: {
                     clean: false,
-                    clientId: selfClientId,
+                    clientId: this.selfClientId,
                 },
             },
             subscribeOptions: {
                 qos: 0,
             },
         });
-        this.supportedProtocols = [ CruxGatewayPaymentsProtocolHandler ];
-    }
-    public openGateway(protocol: string): CruxGateway {
-        // TODO: override this.options.cruxBridgeConfig as per receiver's config
         const protocolHandler = getProtocolHandler(this.supportedProtocols, protocol);
-        return new CruxGateway(this.pubsubProvider, protocolHandler, this.options.selfIdClaim);
+        return new CruxGateway(pubsubProvider, protocolHandler, this.options.selfIdClaim);
     }
 
 }
