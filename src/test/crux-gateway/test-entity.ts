@@ -27,8 +27,8 @@ describe('CRUX Gateway Entity Tests', function() {
     describe('BASIC Protocol send receive', function() {
 
         beforeEach(function() {
-            this.user1Gateway = this.inmemoryGatewayRepo.openGateway('BASIC', this.user1IDClaim);
-            this.user2Gateway = this.inmemoryGatewayRepo.openGateway('BASIC', this.user2IDClaim);
+            this.user1Gateway = this.inmemoryGatewayRepo.openGateway('BASIC');
+            this.user2Gateway = this.inmemoryGatewayRepo.openGateway('BASIC');
         });
         it('Test string send receive', function(done) {
 

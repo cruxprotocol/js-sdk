@@ -47,13 +47,15 @@ export class InMemoryPubSubProvider implements IPubSubProvider {
 export class InMemoryCruxGatewayRepository implements ICruxGatewayRepository {
     private pubsubProvider: InMemoryPubSubProvider;
     private supportedProtocols: any;
-    constructor(){
+    private selfIdClaim: IGatewayIdentityClaim | undefined;
+    constructor(selfIdClaim?: IGatewayIdentityClaim){
         this.pubsubProvider = new InMemoryPubSubProvider();
+        this.selfIdClaim = selfIdClaim;
         this.supportedProtocols = [ BasicGatewayProtocolHandler, CruxGatewayPaymentsProtocolHandler ];
     }
-    public openGateway(protocol: string, selfClaim?: IGatewayIdentityClaim): CruxGateway {
+    public openGateway(protocol: string): CruxGateway {
         const protocolHandler = getProtocolHandler(this.supportedProtocols, protocol);
-        return new CruxGateway(this.pubsubProvider, protocolHandler, selfClaim);
+        return new CruxGateway(this.pubsubProvider, protocolHandler, this.selfIdClaim);
     }
 
 }
