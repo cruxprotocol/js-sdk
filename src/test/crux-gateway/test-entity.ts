@@ -1,7 +1,7 @@
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {getIdClaimForUser, getValidCruxUser, getValidCruxUser2, patchMissingDependencies} from "../test-utils";
-import {InMemoryCruxGatewayRepository} from "./utils";
+import {InMemoryCruxGatewayRepository} from "./inmemory-infrastructure";
 
 chai.use(chaiAsPromised);
 chai.should();

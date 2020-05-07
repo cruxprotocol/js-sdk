@@ -1,6 +1,6 @@
 import {CruxId} from "../../packages";
 import {EventBusEventNames, GatewayEventBus, GatewayPacketManager} from "../domain-services";
-import {IGatewayIdentityClaim, IGatewayProtocolHandler, IPubSubProvider} from "../interfaces";
+import {IGatewayIdentityClaim, IGatewayPacket, IGatewayProtocolHandler, IPubSubProvider} from "../interfaces";
 
 export class CruxGateway {
 
@@ -19,7 +19,7 @@ export class CruxGateway {
 
     public sendMessage(recipient: CruxId, message: any) {
         const eventBus = new GatewayEventBus(this.pubsubProvider, recipient, this.selfClaim!.cruxId);
-        const packet = this.packetManager.createNewPacket(message);
+        const packet: IGatewayPacket = this.packetManager.createNewPacket(message);
         const serializedPacket = JSON.stringify(packet);
         eventBus.send(serializedPacket);
     }
@@ -31,7 +31,7 @@ export class CruxGateway {
         const eventBus = new GatewayEventBus(this.pubsubProvider, undefined, this.selfClaim!.cruxId);
         eventBus.on(EventBusEventNames.newMessage, (data: string) => {
             const deserializedData = JSON.parse(data);
-            const packet = this.packetManager.parse(deserializedData);
+            const packet: IGatewayPacket = this.packetManager.parse(deserializedData);
             messageListener(packet.message, packet.metadata);
         });
     }
