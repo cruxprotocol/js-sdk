@@ -1,6 +1,11 @@
 import {EventBusEventNames, GatewayEventBus, GatewayPacketManager} from "../domain-services";
 import {ICruxIdPubSubChannel, IGatewayPacket, IGatewayProtocolHandler} from "../interfaces";
 
+export interface ICruxGatewayParams {
+    protocolHandler: IGatewayProtocolHandler;
+    selfChannel?: ICruxIdPubSubChannel;
+    recipientChannel?: ICruxIdPubSubChannel;
+}
 export class CruxGateway {
 
     private messageListener: (message: any) => void;
@@ -8,20 +13,20 @@ export class CruxGateway {
     private selfChannel: ICruxIdPubSubChannel | undefined;
     private recepientChannel: ICruxIdPubSubChannel | undefined;
 
-    constructor(protocolHandler: IGatewayProtocolHandler, selfChannel?: ICruxIdPubSubChannel, recipientChannel?: ICruxIdPubSubChannel) {
+    constructor(params: ICruxGatewayParams) {
         // const that = this;
-        if (!selfChannel && !recipientChannel) {
-            throw Error("At least one of selfChannel or recipientChannel must be present");
+        if ((!params.selfChannel && !params.recipientChannel) || (params.selfChannel && params.recipientChannel)) {
+            throw Error("Only one of selfChannel or recipientChannel must be present");
         }
-        if (selfChannel && !selfChannel.keyManager) {
+        if (params.selfChannel && !params.selfChannel.keyManager) {
             throw Error("selfChannel must have keyManager");
         }
-        this.selfChannel = selfChannel;
-        this.recepientChannel = recipientChannel;
+        this.selfChannel = params.selfChannel;
+        this.recepientChannel = params.recipientChannel;
         this.messageListener = (message) => undefined;
-        this.packetManager = new GatewayPacketManager(protocolHandler, selfChannel ? {
-            cruxId: selfChannel.cruxId,
-            keyManager: selfChannel.keyManager!,
+        this.packetManager = new GatewayPacketManager(params.protocolHandler, params.selfChannel ? {
+            cruxId: params.selfChannel.cruxId,
+            keyManager: params.selfChannel.keyManager!,
         } : undefined);
     }
 

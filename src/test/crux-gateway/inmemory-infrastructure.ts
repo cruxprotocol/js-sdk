@@ -52,7 +52,6 @@ export class InMemoryCruxGatewayRepository implements ICruxGatewayRepository {
         this.supportedProtocols = [ BasicGatewayProtocolHandler, CruxGatewayPaymentsProtocolHandler ];
     }
     public get(params: IGatewayRepositoryGetParams): CruxGateway {
-        const protocolHandler = getProtocolHandler(this.supportedProtocols, params.protocol? params.protocol : "BASIC");
         let receiverPubSubChannel: ICruxIdPubSubChannel | undefined;
         if (params.receiverId) {
             receiverPubSubChannel = {
@@ -60,7 +59,10 @@ export class InMemoryCruxGatewayRepository implements ICruxGatewayRepository {
                 pubsubClient: this.commonPubsubClient,
             };
         }
-        return new CruxGateway(protocolHandler, this.getChannel(params.selfIdClaim), receiverPubSubChannel);
+        return new CruxGateway({
+            protocolHandler: getProtocolHandler(this.supportedProtocols, params.protocol? params.protocol : "BASIC"),
+            recipientChannel: receiverPubSubChannel,
+            selfChannel: this.getChannel(params.selfIdClaim)});
     }
     private getChannel(selfIdClaim?: IGatewayIdentityClaim): ICruxIdPubSubChannel | undefined {
         if (selfIdClaim) {

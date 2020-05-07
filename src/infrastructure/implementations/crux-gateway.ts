@@ -96,19 +96,19 @@ export class CruxLinkGatewayRepository implements ICruxGatewayRepository {
     }
     public get(params: IGatewayRepositoryGetParams): CruxGateway {
         const protocolHandler = getProtocolHandler(this.supportedProtocols, params.protocol ? params.protocol : this.defaultProtocol);
-        let receiverPubSubChannel: ICruxIdPubSubChannel | undefined;
+        let recipientChannel: ICruxIdPubSubChannel | undefined;
         const selfChannel = this.getSelfChannel(params.selfIdClaim);
         if (params.receiverId) {
             const receiverPubSubClient = this.getPubsubClientFor(params.receiverId);
             if (!receiverPubSubClient) {
                 throw Error("Cannot find pubsub client for receiver");
             }
-            receiverPubSubChannel = {
+            recipientChannel = {
                 cruxId: params.receiverId,
                 pubsubClient: receiverPubSubClient,
             };
         }
-        return new CruxGateway(protocolHandler, selfChannel, receiverPubSubChannel);
+        return new CruxGateway({protocolHandler, selfChannel, recipientChannel});
     }
     private getSelfChannel(selfIdClaim?: IGatewayIdentityClaim): ICruxIdPubSubChannel | undefined {
         const selfPubsubClient = selfIdClaim ? this.getPubsubClientFor(selfIdClaim.cruxId) : undefined;

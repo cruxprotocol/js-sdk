@@ -67,18 +67,18 @@ export class GatewayEventBus {
     private registeredCallbacks: any;
     private recipient?: CruxId;
     private selfId?: CruxId;
-    private pubsubProvider: IPubSubClient;
+    private pubsubClient: IPubSubClient;
 
-    constructor(pubsubProvider: IPubSubClient, recipient?: CruxId, selfId?: CruxId) {
+    constructor(pubsubClient: IPubSubClient, recipient?: CruxId, selfId?: CruxId) {
         this.registeredCallbacks = {};
-        this.pubsubProvider = pubsubProvider;
+        this.pubsubClient = pubsubClient;
         if (!recipient && !selfId) {
-            throw Error("Invalid state. One of recipient or selfId must be present");
+            throw Error("Invalid state. At least one of recipient or selfId must be present");
         }
 
         if (selfId) {
             const selfTopic = "topic_" + selfId.toString();
-            pubsubProvider.subscribe(selfTopic, new EventBusProxy(this, EventBusEventNames.newMessage).redirect);
+            pubsubClient.subscribe(selfTopic, new EventBusProxy(this, EventBusEventNames.newMessage).redirect);
         }
         this.selfId = selfId;
         this.recipient = recipient;
@@ -96,7 +96,7 @@ export class GatewayEventBus {
             throw Error("Cannot send in a bus with no recipient");
         }
         const recipientTopic = "topic_" + this.recipient.toString();
-        this.pubsubProvider.publish(recipientTopic, data);
+        this.pubsubClient.publish(recipientTopic, data);
     }
 
     public getRegisteredCallback(eventName: string) {

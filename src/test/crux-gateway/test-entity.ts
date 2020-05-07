@@ -16,8 +16,6 @@ describe('CRUX Gateway Entity Tests', function() {
 
     });
 
-    it("Gateway without selfIdClaim cannot listen", function(done) {
-    });
     describe('BASIC Protocol send receive', function() {
 
         beforeEach(function() {
