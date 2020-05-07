@@ -43,7 +43,7 @@ core
 ```
 infrastructure
     implementations
-        CruxGatewayRepository
+        CruxLinkGatewayRepository
         StrongPubSubProvider
 test
     crux-gateway/inmemory-infrastructrure

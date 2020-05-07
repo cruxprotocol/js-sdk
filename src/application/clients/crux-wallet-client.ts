@@ -22,7 +22,7 @@ import {
     BasicKeyManager,
     BlockstackCruxDomainRepository,
     BlockstackCruxUserRepository,
-    CruxGatewayRepository,
+    CruxLinkGatewayRepository,
     IBlockstackCruxDomainRepositoryOptions,
     IBlockstackCruxUserRepositoryOptions,
     ICruxGatewayRepositoryRepositoryOptions,
@@ -100,7 +100,7 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
 };
 
 export const getCruxGatewayRepository = (options: ICruxGatewayRepositoryRepositoryOptions): ICruxGatewayRepository => {
-    return new CruxGatewayRepository(options);
+    return new CruxLinkGatewayRepository(options);
 };
 
 export class CruxWalletClient {
@@ -116,8 +116,9 @@ export class CruxWalletClient {
     private keyManager?: IKeyManager;
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
     private cacheStorage?: StorageService;
-    private gatewayRepo: ICruxGatewayRepository;
+    private gatewayRepo?: ICruxGatewayRepository;
     private gateway?: CruxGateway;
+    private selfCruxUser: CruxUser | undefined;
 
     constructor(options: ICruxWalletClientOptions) {
         getLogger(cruxWalletClientDebugLoggerName).setLevel(options.debugLogging ? Logger.DEBUG : Logger.OFF);
@@ -134,7 +135,6 @@ export class CruxWalletClient {
             }
         }
         this.cruxDomainRepo = getCruxDomainRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure});
-        this.gatewayRepo = getCruxGatewayRepository({cruxBridgeConfig: {host: "localhost", port: 4005}});
         this.cruxDomainId = new CruxDomainId(this.walletClientName);
         this.initPromise = this.asyncInit();
     }
@@ -360,8 +360,11 @@ export class CruxWalletClient {
     }
 
     private getCruxUserByKey = async (): Promise<CruxUser|undefined> => {
-        const cruxUser = await this.cruxUserRepository.getWithKey(this.getKeyManager());
-        return cruxUser;
+        if (this.selfCruxUser) {
+            return this.selfCruxUser;
+        }
+        this.selfCruxUser = await this.cruxUserRepository.getWithKey(this.getKeyManager());
+        return this.selfCruxUser;
     }
 
     private getKeyManager = (): IKeyManager => {
@@ -391,7 +394,7 @@ export class CruxWalletClient {
         await this.openCruxGateway();
     }
 
-    private openCruxGateway = async () => {
+    private getSelfClaim = async (): Promise<IGatewayIdentityClaim | undefined> => {
         let selfClaim: IGatewayIdentityClaim | undefined;
 
         if (this.keyManager) {
@@ -405,7 +408,18 @@ export class CruxWalletClient {
         } else {
             selfClaim = undefined;
         }
-        this.gateway = this.gatewayRepo.openGateway("BASIC", selfClaim);
+        return selfClaim;
+    }
+    private openCruxGateway = async () => {
+        const selfIdClaim = await this.getSelfClaim();
+        this.gatewayRepo = getCruxGatewayRepository({
+            defaultLinkServer: {
+                host: "localhost",
+                port: 4005,
+            },
+            selfIdClaim,
+        });
+        this.gateway = this.gatewayRepo.openGateway("BASIC");
         this.gateway.listen((message, metadata) => {
             console.log("CRUX WALLET CLIENT RECD NEW MESSAGE: ", message, metadata);
         });

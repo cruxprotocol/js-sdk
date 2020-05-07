@@ -37,11 +37,11 @@ export const getProtocolHandler = (protocolHandlers: any, gatewayProtocol: strin
 };
 
 export interface ICruxGatewayRepositoryRepositoryOptions {
-    linkServer: {
+    defaultLinkServer: {
         host: string,
         port: number,
     };
-    selfIdClaim: IGatewayIdentityClaim;
+    selfIdClaim?: IGatewayIdentityClaim;
 }
 
 export interface IStrongPubSubProviderConfig {
@@ -83,7 +83,7 @@ export class StrongPubSubProvider implements IPubSubProvider {
     }
 }
 
-export class CruxGatewayRepository implements ICruxGatewayRepository {
+export class CruxLinkGatewayRepository implements ICruxGatewayRepository {
     private options: ICruxGatewayRepositoryRepositoryOptions;
     private supportedProtocols: any;
     private pubsubProvider: StrongPubSubProvider;
@@ -94,8 +94,8 @@ export class CruxGatewayRepository implements ICruxGatewayRepository {
         const selfClientId = "client_" + (this.selfCruxId ? this.selfCruxId.toString() : getRandomHexString(8));
         this.pubsubProvider = new StrongPubSubProvider({
             clientOptions: {
-                host: options.linkServer.host,
-                port: options.linkServer.port,
+                host: options.defaultLinkServer.host,
+                port: options.defaultLinkServer.port,
                 // tslint:disable-next-line:object-literal-sort-keys
                 mqtt: {
                     clean: false,
