@@ -8,7 +8,7 @@ chai.should();
 const expect = require('chai').expect;
 
 patchMissingDependencies()
-describe('CRUX Gateway Entity Tests', async function() {
+describe('CRUX Gateway Entity Tests', function() {
 
     beforeEach(function() {
         this.inmemoryGatewayRepo = new InMemoryCruxGatewayRepository();
@@ -20,16 +20,33 @@ describe('CRUX Gateway Entity Tests', async function() {
         this.user2IDClaim = getIdClaimForUser(this.user2)
 
     });
-    it('Test basic message send receive', function(done) {
-        this.user1Gateway = this.inmemoryGatewayRepo.openGateway('BASIC', this.user1IDClaim);
-        this.user2Gateway = this.inmemoryGatewayRepo.openGateway('BASIC', this.user2IDClaim);
 
-        const testmsg = "TESTING123"
+    describe('BASIC Protocol send receive', function() {
 
-        this.user2Gateway.listen((msg: any, md: any)=>{
-            expect(msg).equals(testmsg)
-            done()
+        beforeEach(function() {
+            this.user1Gateway = this.inmemoryGatewayRepo.openGateway('BASIC', this.user1IDClaim);
+            this.user2Gateway = this.inmemoryGatewayRepo.openGateway('BASIC', this.user2IDClaim);
         });
-        this.user1Gateway.sendMessage(this.user2.cruxID, testmsg);
+        it('Test string send receive', function(done) {
+
+            const testmsg = "TESTING123"
+
+            this.user2Gateway.listen((msg: any, md: any)=>{
+                expect(msg).equals(testmsg)
+                done()
+            });
+            this.user1Gateway.sendMessage(this.user2.cruxID, testmsg);
+        });
+        it('Test object send receive', function(done) {
+
+            const testmsg = {foo:'bar'};
+
+            this.user2Gateway.listen((msg: any, md: any)=>{
+                expect(msg.foo).equals(testmsg.foo)
+                done()
+            });
+            this.user1Gateway.sendMessage(this.user2.cruxID, testmsg);
+        });
+
     });
 });
