@@ -15,8 +15,10 @@ import {
     getValidCruxUser, getValidCruxUser2,
     InMemoryCruxDomainRepository,
     InMemoryCruxUserRepository,
-    getValidPendingCruxUser,
+    getValidPendingCruxUser, patchMissingDependencies,
 } from "./test-utils";
+
+patchMissingDependencies()
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -164,7 +166,7 @@ describe('CruxWalletClient Tests', function() {
         });
     });
     describe('Private addresses tests', async function() {
-        
+
         beforeEach(function() {
             // foo123@somewallet.crux
             this.cc1 = new CruxWalletClient({
@@ -237,7 +239,7 @@ describe('CruxWalletClient Tests', function() {
                 errorMessage: ERROR_STRINGS[PackageErrorCode.UserDoesNotExist],
             }]);
         });
-    
+
     });
 });
 

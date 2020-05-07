@@ -14,6 +14,21 @@ import {ICruxDomainRepository} from "../core/interfaces/crux-domain-repository";
 import {ICruxUserRepository} from "../core/interfaces/crux-user-repository";
 import {IKeyManager} from "../core/interfaces/key-manager";
 import {CruxDomainId, CruxId} from "../packages/identity-utils";
+import WebCrypto from "node-webcrypto-ossl";
+interface Global {
+    crypto: any;
+    TextEncoder: any;
+    TextDecoder: any;
+}
+declare const global: Global;
+
+export const patchMissingDependencies = ()=>{
+    const crypto = new WebCrypto();
+    let util = require('util')
+    global.crypto = crypto
+    global.TextEncoder = util.TextEncoder
+    global.TextDecoder = util.TextDecoder
+}
 
 class MockUserStore {
     private userById: any;
