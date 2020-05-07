@@ -19,12 +19,27 @@ export interface IGatewayPacket {
 export interface IGatewayPacketMetadata {
     packetCreatedAt: Date;
     protocol: string;
+    senderCertificate?: IGatewayIdentityCertificate;
 }
+
+export interface IGatewayIdentityCertificate {
+    claim: string;
+    proof: string;
+}
+
+const getCertificate = (idClaim: IGatewayIdentityClaim): IGatewayIdentityCertificate => {
+    return {
+        claim: idClaim.cruxId.toString(),
+        proof: "PROOF",
+    };
+};
 
 class GatewayPacketManager {
     private protocolHandler: IGatewayProtocolHandler;
+    private selfClaim: IGatewayIdentityClaim | undefined;
     constructor(protocolHandler: IGatewayProtocolHandler, selfClaim?: IGatewayIdentityClaim) {
         this.protocolHandler = protocolHandler;
+        this.selfClaim = selfClaim;
     }
 
     public createNewPacket(message: any): IGatewayPacket {
@@ -44,14 +59,18 @@ class GatewayPacketManager {
         };
     }
     private makePacketMetadata(): IGatewayPacketMetadata {
+        let senderCertificate: IGatewayIdentityCertificate | undefined;
+        if (this.selfClaim) {
+            senderCertificate = getCertificate(this.selfClaim);
+        }
         return {
             packetCreatedAt: new Date(),
             protocol: this.protocolHandler.getName(),
+            senderCertificate,
         };
     }
     private validateMetadata(metadata: IGatewayPacketMetadata) {
         // TODO: Validate Metadata
-        return metadata;
     }
 }
 

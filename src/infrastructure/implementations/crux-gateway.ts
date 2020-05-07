@@ -59,7 +59,7 @@ export interface ICruxGatewayRepositoryRepositoryOptions {
 export class StrongPubSubProvider implements IPubSubProvider {
     private client: StrongPubsubClient;
     private options: { qos: number };
-    constructor(config: any, selfId?: CruxId) {
+    constructor(config: ICruxBridgeConfig, selfId?: CruxId) {
         this.options = {
             qos: 0,
         };

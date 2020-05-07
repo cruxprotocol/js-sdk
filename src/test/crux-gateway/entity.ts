@@ -7,7 +7,8 @@ chai.use(chaiAsPromised);
 chai.should();
 const expect = require('chai').expect;
 
-patchMissingDependencies()
+patchMissingDependencies();
+
 describe('CRUX Gateway Entity Tests', function() {
 
     beforeEach(function() {
@@ -21,6 +22,8 @@ describe('CRUX Gateway Entity Tests', function() {
 
     });
 
+    it("Gateway without selfIdClaim cannot listen", function(done) {
+    });
     describe('BASIC Protocol send receive', function() {
 
         beforeEach(function() {
@@ -29,10 +32,11 @@ describe('CRUX Gateway Entity Tests', function() {
         });
         it('Test string send receive', function(done) {
 
-            const testmsg = "TESTING123"
+            const testmsg = "TESTING123";
 
             this.user2Gateway.listen((msg: any, md: any)=>{
-                expect(msg).equals(testmsg)
+                expect(msg).equals(testmsg);
+                expect(md.senderCertificate.claim).equals(this.user1.cruxID.toString());
                 done()
             });
             this.user1Gateway.sendMessage(this.user2.cruxID, testmsg);
@@ -42,11 +46,10 @@ describe('CRUX Gateway Entity Tests', function() {
             const testmsg = {foo:'bar'};
 
             this.user2Gateway.listen((msg: any, md: any)=>{
-                expect(msg.foo).equals(testmsg.foo)
+                expect(msg.foo).equals(testmsg.foo);
                 done()
             });
             this.user1Gateway.sendMessage(this.user2.cruxID, testmsg);
         });
-
     });
 });
