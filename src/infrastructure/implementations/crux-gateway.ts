@@ -41,7 +41,8 @@ export const getProtocolHandler = (gatewayProtocol: string): IGatewayProtocolHan
     const protocolHandlers = [ PaymentRequestGatewayProtocolHandler, BasicGatewayProtocolHandler ];
     const protocolHandlerByName: IProtocolHandlerMapping = {};
     protocolHandlers.forEach( (protocolHandler: any) => {
-        protocolHandlerByName[protocolHandler.getName()] = protocolHandler;
+        const protocolHandlerObj = new protocolHandler()
+        protocolHandlerByName[protocolHandlerObj.getName()] = protocolHandlerObj;
     });
     return protocolHandlerByName[gatewayProtocol];
 };

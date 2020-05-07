@@ -64,7 +64,7 @@ export class EventBusProxy {
         this.eventBus = eventBus;
     }
 
-    public redirect(msg: string) {
+    public redirect = (msg: string) => {
         const callbackForEventName = this.eventBus.getRegisteredCallback(this.eventName);
         if (!callbackForEventName) {
             console.log("No Registered callback. Event wasted");

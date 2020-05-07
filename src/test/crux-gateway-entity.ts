@@ -1,10 +1,11 @@
 import {CruxGateway} from "../core/entities";
 import {InMemoryCruxGatewayRepository} from "./crux-gateway-utils";
-import {getIdClaimForUser, getValidCruxUser, getValidCruxUser2} from "./test-utils";
-
+import {getIdClaimForUser, getValidCruxUser, getValidCruxUser2, patchMissingDependencies} from "./test-utils";
+patchMissingDependencies()
 describe('CRUX Gateway Entity Tests', async function() {
 
     beforeEach(function() {
+        this.timeout(1000)
         this.inmemoryGatewayRepo = new InMemoryCruxGatewayRepository();
 
         const user1 = getValidCruxUser();
