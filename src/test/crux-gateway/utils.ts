@@ -1,7 +1,11 @@
 import {createNanoEvents} from "nanoevents";
 import {CruxGateway} from "../../core/entities";
 import {ICruxGatewayRepository, IGatewayIdentityClaim, IPubSubProvider} from "../../core/interfaces";
-import {getProtocolHandler} from "../../infrastructure/implementations";
+import {
+    BasicGatewayProtocolHandler,
+    CruxGatewayPaymentsProtocolHandler,
+    getProtocolHandler
+} from "../../infrastructure/implementations";
 
 export class InMemoryPubSubProvider implements IPubSubProvider {
     private emitterByTopic: any;
@@ -28,14 +32,13 @@ export class InMemoryPubSubProvider implements IPubSubProvider {
 
 export class InMemoryCruxGatewayRepository implements ICruxGatewayRepository {
     private pubsubProvider: InMemoryPubSubProvider;
+    private supportedProtocols: any;
     constructor(){
         this.pubsubProvider = new InMemoryPubSubProvider();
+        this.supportedProtocols = [ BasicGatewayProtocolHandler, CruxGatewayPaymentsProtocolHandler ];
     }
     public openGateway(protocol: string, selfClaim?: IGatewayIdentityClaim): CruxGateway {
-        const protocolHandler = getProtocolHandler(protocol);
-        if (!protocolHandler) {
-            throw Error("Unsupported protocol");
-        }
+        const protocolHandler = getProtocolHandler(this.supportedProtocols, protocol);
         return new CruxGateway(this.pubsubProvider, protocolHandler, selfClaim);
     }
 

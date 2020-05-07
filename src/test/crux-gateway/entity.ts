@@ -47,6 +47,7 @@ describe('CRUX Gateway Entity Tests', function() {
 
             this.user2Gateway.listen((msg: any, md: any)=>{
                 expect(msg.foo).equals(testmsg.foo);
+                expect(md.senderCertificate.claim).equals(this.user1.cruxID.toString());
                 done()
             });
             this.user1Gateway.sendMessage(this.user2.cruxID, testmsg);
