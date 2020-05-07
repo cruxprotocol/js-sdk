@@ -4,7 +4,7 @@ import {
     IGatewayIdentityCertificate,
     IGatewayIdentityClaim, IGatewayPacket, IGatewayPacketMetadata,
     IGatewayProtocolHandler,
-    IPubSubProvider,
+    IPubSubClient,
 } from "../interfaces";
 
 const getCertificate = (idClaim: IGatewayIdentityClaim): IGatewayIdentityCertificate => {
@@ -67,9 +67,9 @@ export class GatewayEventBus {
     private registeredCallbacks: any;
     private recipient?: CruxId;
     private selfId?: CruxId;
-    private pubsubProvider: IPubSubProvider;
+    private pubsubProvider: IPubSubClient;
 
-    constructor(pubsubProvider: IPubSubProvider, recipient?: CruxId, selfId?: CruxId) {
+    constructor(pubsubProvider: IPubSubClient, recipient?: CruxId, selfId?: CruxId) {
         this.registeredCallbacks = {};
         this.pubsubProvider = pubsubProvider;
         if (!recipient && !selfId) {

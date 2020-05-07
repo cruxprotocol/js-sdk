@@ -1,6 +1,6 @@
-import {StrongPubSubProvider} from "../../infrastructure/implementations";
+import {StrongPubSubClient} from "../../infrastructure/implementations";
 import {InMemoryPubSubProvider} from "./inmemory-infrastructure";
 
-const pubsubImplementations = [StrongPubSubProvider, InMemoryPubSubProvider];
+const pubsubImplementations = [StrongPubSubClient, InMemoryPubSubProvider];
 
 // TODO

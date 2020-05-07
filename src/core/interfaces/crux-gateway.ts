@@ -18,11 +18,17 @@ export interface IGatewayProtocolHandler {
     validateMessage(gatewayMessage: any): boolean;
 }
 
+export interface ICruxIdPubSubChannel {
+    cruxId: CruxId;
+    pubsubClient: IPubSubClient;
+    keyManager?: IKeyManager;
+}
+
 export interface ICruxGatewayRepository {
     openGateway: (protocol: string) => CruxGateway;
 }
 
-export interface IPubSubProvider {
+export interface IPubSubClient {
     subscribe: (topic: string, callback: any) => void;
     publish: (topic: string, data: any) => void;
 }

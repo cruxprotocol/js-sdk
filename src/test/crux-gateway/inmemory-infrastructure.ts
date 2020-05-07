@@ -4,7 +4,7 @@ import {
     ICruxGatewayRepository,
     IGatewayIdentityClaim,
     IGatewayProtocolHandler,
-    IPubSubProvider
+    IPubSubClient
 } from "../../core/interfaces";
 import {
     CruxGatewayPaymentsProtocolHandler,
@@ -21,7 +21,7 @@ export class BasicGatewayProtocolHandler implements IGatewayProtocolHandler {
     }
 }
 
-export class InMemoryPubSubProvider implements IPubSubProvider {
+export class InMemoryPubSubProvider implements IPubSubClient {
     private emitterByTopic: any;
     constructor(){
         this.emitterByTopic = {}
