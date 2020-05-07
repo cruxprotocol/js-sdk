@@ -41,6 +41,8 @@ describe('CRUX Gateway Entity Tests', function() {
             });
             user1GatewayForUser2.sendMessage(testmsg);
         });
-
+        // TODO: Test Certificate validation failed
+        // TODO: Allow Only Certified Messages
+        // TODO: Encrypted Messages only
     });
 });
