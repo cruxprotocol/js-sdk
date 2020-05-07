@@ -24,8 +24,13 @@ export interface ICruxIdPubSubChannel {
     keyManager?: IKeyManager;
 }
 
+export interface IGatewayRepositoryGetParams {
+    protocol?: string;
+    selfIdClaim?: IGatewayIdentityClaim;
+    receiverId?: CruxId;
+}
 export interface ICruxGatewayRepository {
-    openGateway: (protocol: string) => CruxGateway;
+    get: (options: IGatewayRepositoryGetParams) => CruxGateway;
 }
 
 export interface IPubSubClient {

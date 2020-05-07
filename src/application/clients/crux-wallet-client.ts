@@ -117,8 +117,9 @@ export class CruxWalletClient {
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
     private cacheStorage?: StorageService;
     private gatewayRepo?: ICruxGatewayRepository;
-    private gateway?: CruxGateway;
-    private selfCruxUser: CruxUser | undefined;
+    private selfCruxUser?: CruxUser;
+    private selfGateway?: CruxGateway;
+    private selfIdClaim?: IGatewayIdentityClaim;
 
     constructor(options: ICruxWalletClientOptions) {
         getLogger(cruxWalletClientDebugLoggerName).setLevel(options.debugLogging ? Logger.DEBUG : Logger.OFF);
@@ -222,8 +223,8 @@ export class CruxWalletClient {
         if (!assetToRequest) {
             throw Error("Did not find asset to send");
         }
-
-        this.gateway!.sendMessage(recipientCruxUser.cruxID, {
+        const recipientGateway = this.gatewayRepo!.get({selfIdClaim: this.selfIdClaim, receiverId: recipientCruxUser.cruxID});
+        recipientGateway.sendMessage({
             amount,
             assetId: assetToRequest,
         });
@@ -411,18 +412,19 @@ export class CruxWalletClient {
         return selfClaim;
     }
     private openCruxGateway = async () => {
-        const selfIdClaim = await this.getSelfClaim();
+        this.selfIdClaim = await this.getSelfClaim();
         this.gatewayRepo = getCruxGatewayRepository({
             defaultLinkServer: {
                 host: "localhost",
                 port: 4005,
             },
-            selfIdClaim,
         });
-        this.gateway = this.gatewayRepo.openGateway("BASIC");
-        this.gateway.listen((message, metadata) => {
-            console.log("CRUX WALLET CLIENT RECD NEW MESSAGE: ", message, metadata);
-        });
+        if (this.selfIdClaim) {
+            this.selfGateway = this.gatewayRepo.get({selfIdClaim: this.selfIdClaim});
+            this.selfGateway.listen((message, metadata) => {
+                console.log("CRUX WALLET CLIENT RECD NEW MESSAGE: ", message, metadata);
+            });
+        }
     }
 
 }

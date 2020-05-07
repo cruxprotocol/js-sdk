@@ -8,7 +8,7 @@ import {CruxGateway} from "../../core/entities";
 import {
     ICruxGatewayRepository, ICruxIdPubSubChannel,
     IGatewayIdentityClaim,
-    IGatewayProtocolHandler,
+    IGatewayProtocolHandler, IGatewayRepositoryGetParams,
     IPubSubClient,
 } from "../../core/interfaces";
 import {CruxId, getRandomHexString} from "../../packages";
@@ -44,7 +44,6 @@ export interface ICruxGatewayRepositoryRepositoryOptions {
         host: string,
         port: number,
     };
-    selfIdClaim?: IGatewayIdentityClaim;
 }
 
 export interface IStrongPubSubProviderConfig {
@@ -89,30 +88,35 @@ export class StrongPubSubClient implements IPubSubClient {
 export class CruxLinkGatewayRepository implements ICruxGatewayRepository {
     private options: ICruxGatewayRepositoryRepositoryOptions;
     private supportedProtocols: any;
-    private selfPubSubChannel?: ICruxIdPubSubChannel;
+    private defaultProtocol: string;
     constructor(options: ICruxGatewayRepositoryRepositoryOptions) {
+        this.defaultProtocol = "BASIC";
         this.options = options;
         this.supportedProtocols = [ CruxGatewayPaymentsProtocolHandler ];
-        const selfPubsubClient = options.selfIdClaim ? this.getPubsubClientFor(options.selfIdClaim.cruxId) : undefined;
-        if (selfPubsubClient && options.selfIdClaim) {
-            this.selfPubSubChannel = {
-                ...options.selfIdClaim,
-                pubsubClient: selfPubsubClient,
-            };
-        }
     }
-    public openGateway(protocol: string, receiverId?: CruxId): CruxGateway {
-        const protocolHandler = getProtocolHandler(this.supportedProtocols, protocol);
-        const receiverPubSubClient = receiverId ? this.getPubsubClientFor(receiverId) : undefined;
+    public get(params: IGatewayRepositoryGetParams): CruxGateway {
+        const protocolHandler = getProtocolHandler(this.supportedProtocols, params.protocol ? params.protocol : this.defaultProtocol);
         let receiverPubSubChannel: ICruxIdPubSubChannel | undefined;
-        if (receiverId && receiverPubSubClient) {
+        const selfChannel = this.getSelfChannel(params.selfIdClaim);
+        if (params.receiverId) {
+            const receiverPubSubClient = this.getPubsubClientFor(params.receiverId);
+            if (!receiverPubSubClient) {
+                throw Error("Cannot find pubsub client for receiver");
+            }
             receiverPubSubChannel = {
-                cruxId: receiverId,
+                cruxId: params.receiverId,
                 pubsubClient: receiverPubSubClient,
             };
-            return new CruxGateway(protocolHandler, this.selfPubSubChannel, receiverPubSubChannel);
-        } else {
-            throw Error("Receiver does not exist or client not found");
+        }
+        return new CruxGateway(protocolHandler, selfChannel, receiverPubSubChannel);
+    }
+    private getSelfChannel(selfIdClaim?: IGatewayIdentityClaim): ICruxIdPubSubChannel | undefined {
+        const selfPubsubClient = selfIdClaim ? this.getPubsubClientFor(selfIdClaim.cruxId) : undefined;
+        if (selfPubsubClient && selfIdClaim) {
+            return  {
+                ...selfIdClaim,
+                pubsubClient: selfPubsubClient,
+            };
         }
     }
     private getPubsubClientFor(cruxId?: CruxId): IPubSubClient | undefined {
