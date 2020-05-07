@@ -7,12 +7,17 @@ import {
     IPubSubClient,
 } from "../interfaces";
 
-const getCertificate = (idClaim: IGatewayIdentityClaim): IGatewayIdentityCertificate => {
-    return {
-        claim: idClaim.cruxId.toString(),
-        proof: "PROOF",
-    };
-};
+export class CertificateManager {
+    public static make = (idClaim: IGatewayIdentityClaim): IGatewayIdentityCertificate => {
+        return {
+            claim: idClaim.cruxId.toString(),
+            proof: "PROOF",
+        };
+    }
+    public static verify = (certificate: IGatewayIdentityCertificate) => {
+        return true;
+    }
+}
 
 export class GatewayPacketManager {
     private protocolHandler: IGatewayProtocolHandler;
@@ -35,6 +40,11 @@ export class GatewayPacketManager {
 
     public parse(packet: IGatewayPacket): IGatewayPacket {
         this.protocolHandler.validateMessage(packet.message);
+        if (packet.metadata.senderCertificate) {
+            if (!CertificateManager.verify(packet.metadata.senderCertificate)) {
+                throw Error("Count not verify sender certificate");
+            }
+        }
         return {
             message: packet.message,
             metadata: packet.metadata,
@@ -44,7 +54,7 @@ export class GatewayPacketManager {
     private makePacketMetadata(): IGatewayPacketMetadata {
         let senderCertificate: IGatewayIdentityCertificate | undefined;
         if (this.selfClaim) {
-            senderCertificate = getCertificate(this.selfClaim);
+            senderCertificate = CertificateManager.make(this.selfClaim);
         }
         return {
             packetCreatedAt: new Date(),
