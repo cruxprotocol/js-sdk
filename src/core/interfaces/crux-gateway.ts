@@ -30,7 +30,7 @@ export interface IGatewayRepositoryGetParams {
     receiverId?: CruxId;
 }
 export interface ICruxGatewayRepository {
-    get: (options: IGatewayRepositoryGetParams) => CruxGateway;
+    get: (params: IGatewayRepositoryGetParams) => CruxGateway;
 }
 
 export interface IPubSubClient {

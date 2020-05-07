@@ -1,9 +1,9 @@
 import {createNanoEvents} from "nanoevents";
 import {CruxGateway} from "../../core/entities";
 import {
-    ICruxGatewayRepository,
+    ICruxGatewayRepository, ICruxIdPubSubChannel,
     IGatewayIdentityClaim,
-    IGatewayProtocolHandler,
+    IGatewayProtocolHandler, IGatewayRepositoryGetParams,
     IPubSubClient
 } from "../../core/interfaces";
 import {
@@ -21,7 +21,7 @@ export class BasicGatewayProtocolHandler implements IGatewayProtocolHandler {
     }
 }
 
-export class InMemoryPubSubProvider implements IPubSubClient {
+export class InMemoryPubSubClient implements IPubSubClient {
     private emitterByTopic: any;
     constructor(){
         this.emitterByTopic = {}
@@ -45,17 +45,29 @@ export class InMemoryPubSubProvider implements IPubSubClient {
 }
 
 export class InMemoryCruxGatewayRepository implements ICruxGatewayRepository {
-    private pubsubProvider: InMemoryPubSubProvider;
+    private commonPubsubClient: InMemoryPubSubClient;
     private supportedProtocols: any;
-    private selfIdClaim: IGatewayIdentityClaim | undefined;
-    constructor(selfIdClaim?: IGatewayIdentityClaim){
-        this.pubsubProvider = new InMemoryPubSubProvider();
-        this.selfIdClaim = selfIdClaim;
+    constructor(){
+        this.commonPubsubClient = new InMemoryPubSubClient();
         this.supportedProtocols = [ BasicGatewayProtocolHandler, CruxGatewayPaymentsProtocolHandler ];
     }
-    public openGateway(protocol: string): CruxGateway {
-        const protocolHandler = getProtocolHandler(this.supportedProtocols, protocol);
-        return new CruxGateway(this.pubsubProvider, protocolHandler, this.selfIdClaim);
+    public get(params: IGatewayRepositoryGetParams): CruxGateway {
+        const protocolHandler = getProtocolHandler(this.supportedProtocols, params.protocol? params.protocol : "BASIC");
+        let receiverPubSubChannel: ICruxIdPubSubChannel | undefined;
+        if (params.receiverId) {
+            receiverPubSubChannel = {
+                cruxId: params.receiverId,
+                pubsubClient: this.commonPubsubClient,
+            };
+        }
+        return new CruxGateway(protocolHandler, this.getSelfChannel(), receiverPubSubChannel);
     }
-
+    private getSelfChannel(selfIdClaim?: IGatewayIdentityClaim): ICruxIdPubSubChannel | undefined {
+        if (selfIdClaim) {
+            return  {
+                ...selfIdClaim,
+                pubsubClient: this.commonPubsubClient,
+            };
+        }
+    }
 }
