@@ -1,11 +1,25 @@
 import {createNanoEvents} from "nanoevents";
 import {CruxGateway} from "../../core/entities";
-import {ICruxGatewayRepository, IGatewayIdentityClaim, IPubSubProvider} from "../../core/interfaces";
 import {
-    BasicGatewayProtocolHandler,
+    ICruxGatewayRepository,
+    IGatewayIdentityClaim,
+    IGatewayProtocolHandler,
+    IPubSubProvider
+} from "../../core/interfaces";
+import {
     CruxGatewayPaymentsProtocolHandler,
     getProtocolHandler
 } from "../../infrastructure/implementations";
+
+export class BasicGatewayProtocolHandler implements IGatewayProtocolHandler {
+    public getName(): string {
+        return "BASIC";
+    }
+
+    public validateMessage(gatewayMessage: any): boolean {
+        return true;
+    }
+}
 
 export class InMemoryPubSubProvider implements IPubSubProvider {
     private emitterByTopic: any;

@@ -23,15 +23,6 @@ export class CruxGatewayPaymentsProtocolHandler implements IGatewayProtocolHandl
     }
 }
 
-export class BasicGatewayProtocolHandler implements IGatewayProtocolHandler {
-    public getName(): string {
-        return "BASIC";
-    }
-
-    public validateMessage(gatewayMessage: any): boolean {
-        return true;
-    }
-}
 export const getProtocolHandler = (protocolHandlers: any, gatewayProtocol: string): IGatewayProtocolHandler => {
     const protocolHandlerByName: any = {};
     protocolHandlers.forEach( (protocolHandlerClass: any) => {
