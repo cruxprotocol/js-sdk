@@ -6,7 +6,6 @@ export class CruxGateway {
 
     private messageListener: (message: any) => void;
     private packetManager: GatewayPacketManager;
-    private recipientId?: CruxId;
     private selfChannel: ICruxIdPubSubChannel | undefined;
     private recepientChannel: ICruxIdPubSubChannel | undefined;
 
@@ -31,7 +30,7 @@ export class CruxGateway {
         if (!this.recepientChannel) {
             throw Error("Cannot send in gateway with no recipientChannel");
         }
-        const eventBus = new GatewayEventBus(this.recepientChannel.pubsubClient, this.recipientId, this.recepientChannel.cruxId);
+        const eventBus = new GatewayEventBus(this.recepientChannel.pubsubClient, this.recepientChannel.cruxId, this.selfChannel ? this.selfChannel.cruxId : undefined);
         const packet: IGatewayPacket = this.packetManager.createNewPacket(message);
         const serializedPacket = JSON.stringify(packet);
         eventBus.send(serializedPacket);
