@@ -60,9 +60,9 @@ export class InMemoryCruxGatewayRepository implements ICruxGatewayRepository {
                 pubsubClient: this.commonPubsubClient,
             };
         }
-        return new CruxGateway(protocolHandler, this.getSelfChannel(), receiverPubSubChannel);
+        return new CruxGateway(protocolHandler, this.getChannel(params.selfIdClaim), receiverPubSubChannel);
     }
-    private getSelfChannel(selfIdClaim?: IGatewayIdentityClaim): ICruxIdPubSubChannel | undefined {
+    private getChannel(selfIdClaim?: IGatewayIdentityClaim): ICruxIdPubSubChannel | undefined {
         if (selfIdClaim) {
             return  {
                 ...selfIdClaim,
