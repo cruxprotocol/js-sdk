@@ -16,21 +16,22 @@ export class CruxGateway {
         if (params.selfChannel && !params.selfChannel.keyManager) {
             throw Error("selfChannel must have keyManager");
         }
+        const messageId = "123e4567-e89b-12d3-a456-426614174000"; // generate
         this.selfChannel = params.selfChannel;
         this.recepientChannel = params.recipientChannel;
         this.messageListener = (message) => undefined;
-        this.packetManager = new GatewayPacketManager(params.protocolHandler, params.selfChannel ? {
+        this.packetManager = new GatewayPacketManager(messageId, params.protocolHandler, params.selfChannel ? {
             cruxId: params.selfChannel.cruxId,
             keyManager: params.selfChannel.keyManager!,
         } : undefined);
     }
 
-    public sendMessage(message: any) {
+    public async sendMessage(message: any) {
         if (!this.recepientChannel) {
             throw Error("Cannot send in gateway with no recipientChannel");
         }
         const eventBus = new GatewayEventBus(this.recepientChannel.pubsubClient, this.recepientChannel.cruxId, this.selfChannel ? this.selfChannel.cruxId : undefined);
-        const packet: IGatewayPacket = this.packetManager.createNewPacket(message);
+        const packet: IGatewayPacket = await this.packetManager.createNewPacket(message);
         const serializedPacket = JSON.stringify(packet);
         eventBus.send(serializedPacket);
     }

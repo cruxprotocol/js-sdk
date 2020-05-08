@@ -3,6 +3,8 @@ import chaiAsPromised from "chai-as-promised";
 import {ICruxGatewayRepository} from "../../core/interfaces";
 import {getIdClaimForUser, getValidCruxUser, getValidCruxUser2, patchMissingDependencies} from "../test-utils";
 import {InMemoryCruxGatewayRepository} from "./inmemory-infrastructure";
+import {CertificateManager} from "../../core/domain-services/index";
+import { assert } from 'chai';
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -40,6 +42,30 @@ describe('CRUX Gateway Entity Tests', function() {
                 done()
             });
             user1GatewayForUser2.sendMessage(testmsg);
+        });
+
+        it('Test Certificate Creation', async function() {
+                    
+            const testCeritficate = {
+                claim: this.user1.cruxID.toString(),
+                messageId : "123e4567-e89b-12d3-a456-426614174000"
+            };
+            const certificate = await CertificateManager.make(this.user1IDClaim,testCeritficate.messageId);
+            expect(certificate.claim).to.equals(testCeritficate.claim);
+            expect(certificate.messageId).to.equals(testCeritficate.messageId);
+            await Promise.resolve();
+            assert.ok(true);
+        });
+
+        it('Test Certificate Verification', async function() {
+                    
+            const testValidation = true;
+            const messageId = "123e4567-e89b-12d3-a456-426614174000";
+            const certificate = await CertificateManager.make(this.user1IDClaim, messageId);
+            const validation = CertificateManager.verify(certificate);
+            expect(validation).to.equals(testValidation);
+            await Promise.resolve();
+            assert.ok(true);
         });
         // TODO: Test Certificate validation failed
         // TODO: Allow Only Certified Messages

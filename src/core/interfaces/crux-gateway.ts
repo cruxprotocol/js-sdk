@@ -44,6 +44,7 @@ export interface IGatewayPacket {
 }
 
 export interface IGatewayPacketMetadata {
+    messageId: string;
     packetCreatedAt: Date;
     protocol: string;
     senderCertificate?: IGatewayIdentityCertificate;
@@ -51,6 +52,7 @@ export interface IGatewayPacketMetadata {
 
 export interface IGatewayIdentityCertificate {
     claim: string;
+    messageId: string;
     proof: string;
 }
 

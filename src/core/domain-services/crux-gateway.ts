@@ -1,3 +1,4 @@
+import {decodeToken} from "blockstack";
 import {CruxId} from "../../packages";
 
 import {
@@ -8,29 +9,41 @@ import {
 } from "../interfaces";
 
 export class CertificateManager {
-    public static make = (idClaim: IGatewayIdentityClaim): IGatewayIdentityCertificate => {
+    public static make = async (idClaim: IGatewayIdentityClaim, messageId: string): Promise<IGatewayIdentityCertificate> => {
+        const payload = {
+            messageId,
+        };
+        const signedProof = await idClaim.keyManager.signWebToken(payload);
         return {
-            claim: idClaim.cruxId.toString(),
-            proof: "PROOF",
+                claim: idClaim.cruxId.toString(),
+                messageId,
+                proof: signedProof,
         };
     }
     public static verify = (certificate: IGatewayIdentityCertificate) => {
-        return true;
+        const proof: any = decodeToken(certificate.proof).payload;
+        // tslint:disable-next-line: tsr-detect-possible-timing-attacks
+        if (proof.messageId === certificate.messageId) {
+            return true;
+        }
+        return false;
     }
 }
 
 export class GatewayPacketManager {
     private protocolHandler: IGatewayProtocolHandler;
     private selfClaim: IGatewayIdentityClaim | undefined;
+    private messageId: string;
 
-    constructor(protocolHandler: IGatewayProtocolHandler, selfClaim?: IGatewayIdentityClaim) {
+    constructor(messageId: string, protocolHandler: IGatewayProtocolHandler, selfClaim?: IGatewayIdentityClaim) {
         this.protocolHandler = protocolHandler;
         this.selfClaim = selfClaim;
+        this.messageId = messageId;
     }
 
-    public createNewPacket(message: any): IGatewayPacket {
+    public async createNewPacket(message: any): Promise<IGatewayPacket> {
         this.protocolHandler.validateMessage(message);
-        const metadata = this.makePacketMetadata();
+        const metadata = await this.makePacketMetadata();
         this.validateMetadata(metadata);
         return {
             message,
@@ -51,12 +64,14 @@ export class GatewayPacketManager {
         };
     }
 
-    private makePacketMetadata(): IGatewayPacketMetadata {
+    private async makePacketMetadata(): Promise<IGatewayPacketMetadata> {
+        const messageId = "123e4567-e89b-12d3-a456-426614174000";
         let senderCertificate: IGatewayIdentityCertificate | undefined;
         if (this.selfClaim) {
-            senderCertificate = CertificateManager.make(this.selfClaim);
+            senderCertificate = await CertificateManager.make(this.selfClaim, messageId);
         }
         return {
+            messageId,
             packetCreatedAt: new Date(),
             protocol: this.protocolHandler.getName(),
             senderCertificate,
