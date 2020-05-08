@@ -194,8 +194,8 @@ export class CruxUser {
             this.cruxUserPrivateAddresses = cruxUserPrivateAddresses;
         }
     }
-    private setblacklistedCruxIDs = (whitelistedCruxIDs: string[]) => {
-        this.blacklistedCruxIDs = whitelistedCruxIDs;
+    private setblacklistedCruxIDs = (blacklistedCruxIDs: string[]) => {
+        this.blacklistedCruxIDs = blacklistedCruxIDs;
     }
 }
 

@@ -186,11 +186,11 @@ const topicVerification = (auth: { username: any; }, cruxId: any) => {
     return true;
 };
 
-const checkPublisherAccess = (whitelistedCruxIDs: string | any[], cruxId: any) => {
-    if (whitelistedCruxIDs.includes(cruxId)) {
-        return true;
+const checkPublisherAccess = (blacklistedCruxIDs: string | any[], cruxId: any) => {
+    if (blacklistedCruxIDs.includes(cruxId)) {
+        return false;
     }
-    return false;
+    return true;
 };
 
 export {

@@ -46,7 +46,7 @@ tcpServer.on("connection", (socket) => {
             // @ts-ignore
             const cruxUserById = await new CruxExplorerClient().getCruxUserById(socket.auth.username);
             const cruxId = ctx.topic.split("|").pop();
-            // const isValidPublisher = checkPublisherAccess(cruxUserById!.whitelist, "yadu007@cruxdev.crux");
+            // const isValidPublisher = checkPublisherAccess(cruxUserById!.blacklist, "yadu007@cruxdev.crux");
             const isValidPublisher = checkPublisherAccess(cruxUserById!.blacklist, cruxId);
             console.log(cruxUserById!.blacklist);
             console.log(cruxId);
