@@ -264,7 +264,6 @@ export class CruxWalletClient {
         }
         cruxUserWithKey.setBlacklistedCruxIDs(registeredCruxUsers);
         await this.cruxUserRepository.save(cruxUserWithKey, this.getKeyManager());
-        const enabledAssetGroups = await this.putEnabledAssetGroups();
         return {success: registeredCruxUsers, failures};
     }
 
