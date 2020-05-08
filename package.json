@@ -14,7 +14,7 @@
     "wallet_demo": "./node_modules/.bin/parcel src/samples/wallet_demo.html --https --no-cache",
     "onboarding_demo": "./node_modules/.bin/parcel src/samples/onboarding_demo.html --https --no-cache",
     "typecheck": "./node_modules/.bin/tsc --noEmit",
-    "validate_lockfile": "./node_modules/.bin/lockfile-lint --type npm --path package-lock.json --validate-https --allowed-hosts npm",
+    "validate_lockfile": "./node_modules/.bin/lockfile-lint --type npm --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \"https:\" \"git+https:\"",
     "transpile": "./node_modules/.bin/tsc || true",
     "build-prod:js": "./node_modules/.bin/parcel build src/index.ts -d dist --out-file cruxpay-sdk.js --no-minify",
     "build-prod:dom": "./node_modules/.bin/parcel build src/cruxpay-sdk-dom.ts -d dist --out-file cruxpay-sdk-dom.js --no-minify --no-cache --detailed-report",
