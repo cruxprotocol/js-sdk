@@ -272,7 +272,7 @@ export class CruxWalletClient {
                 };
                 putFailures.push(userFailure);
             } else {
-                cruxUserWithKey.setPrivateAddressMap(cruxUser, assetAddressMap, this.getKeyManager());
+                await cruxUserWithKey.setPrivateAddressMap(cruxUser, assetAddressMap, this.getKeyManager());
             }
         }
         await this.cruxUserRepository.save(cruxUserWithKey, this.getKeyManager());
