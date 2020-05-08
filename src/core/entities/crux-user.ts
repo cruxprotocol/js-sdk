@@ -93,9 +93,6 @@ export class CruxUser {
     get privateAddresses() {
         return this.cruxUserPrivateAddresses;
     }
-    get blacklistedCruxUsers() {
-        return this.cruxUserConfig.blacklistedCruxUsers;
-    }
     public setSupportedAssetGroups = () => {
         this.cruxUserConfig.enabledAssetGroups = this.cruxDomain.config.supportedAssetGroups;
     }
