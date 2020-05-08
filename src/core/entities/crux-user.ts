@@ -62,6 +62,7 @@ export class CruxUser {
     private cruxUserConfig!: ICruxUserConfiguration;
     private cruxUserPrivateAddresses!: ICruxUserPrivateAddresses;
     private cruxDomain!: CruxDomain;
+    private blacklistedCruxIDs!: string[];
 
     constructor(cruxUserSubdomain: string, cruxDomain: CruxDomain, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation, cruxUserData: ICruxUserData, publicKey?: string) {
         this.setCruxDomain(cruxDomain);
@@ -71,6 +72,7 @@ export class CruxUser {
         this.setCruxUserConfig(cruxUserData.configuration);
         this.setPublicKey(publicKey);
         this.setCruxUserPrivateAddresses(cruxUserData.privateAddresses);
+        this.setblacklistedCruxIDs(["mascot6699@cruxdev.crux"]);
         log.debug("CruxUser initialised");
     }
     get cruxID() {
@@ -90,6 +92,9 @@ export class CruxUser {
     }
     get privateAddresses() {
         return this.cruxUserPrivateAddresses;
+    }
+    get blacklist() {
+        return this.blacklistedCruxIDs;
     }
     public setSupportedAssetGroups = () => {
         this.cruxUserConfig.enabledAssetGroups = this.cruxDomain.config.supportedAssetGroups;
@@ -188,6 +193,9 @@ export class CruxUser {
         } else {
             this.cruxUserPrivateAddresses = cruxUserPrivateAddresses;
         }
+    }
+    private setblacklistedCruxIDs = (whitelistedCruxIDs: string[]) => {
+        this.blacklistedCruxIDs = whitelistedCruxIDs;
     }
 }
 

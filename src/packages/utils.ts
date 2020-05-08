@@ -6,6 +6,10 @@ import { BaseError, ErrorHelper, PackageErrorCode } from "./error";
 import { getLogger } from "./logger";
 import { StorageService } from "./storage";
 
+import * as ncrypto from "crypto";
+import { ec as EC } from "elliptic";
+
+const ec = new EC("secp256k1");
 const log = getLogger(__filename);
 const httpsPrefixRegex = new RegExp(`^https:\/\/.+$`);
 
@@ -162,6 +166,33 @@ const getKeyPairFromPrivKey = (privKey: string): {
     };
 };
 
+const generateHash = (value: string) => {
+    const valueUtf8 = Buffer.from(value, "UTF-8");
+    const hash = ncrypto.createHash("sha256");
+    hash.update(valueUtf8);
+    return hash.digest("hex");
+};
+
+const verifySignature = (msgHash: any, publicKey: any, derSign: any) => {
+    const key = ec.keyFromPublic(publicKey, "hex");
+    return key.verify(msgHash, derSign);
+};
+
+const topicVerification = (auth: { username: any; }, cruxId: any) => {
+    // tslint:disable-next-line: tsr-detect-possible-timing-attacks
+    if (auth.username !== cruxId) {
+        return false;
+    }
+    return true;
+};
+
+const checkPublisherAccess = (whitelistedCruxIDs: string | any[], cruxId: any) => {
+    if (whitelistedCruxIDs.includes(cruxId)) {
+        return true;
+    }
+    return false;
+};
+
 export {
     httpJSONRequest,
     sanitizePrivKey,
@@ -171,4 +202,8 @@ export {
     getRandomHexString,
     cloneValue,
     trimTrailingSlash,
+    generateHash,
+    verifySignature,
+    topicVerification,
+    checkPublisherAccess,
 };
