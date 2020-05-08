@@ -245,6 +245,30 @@ export class CruxWalletClient {
         return {success, failures};
     }
 
+    @throwCruxClientError
+    public addToBlacklist = async (fullCruxIDs: string[]): Promise<{success: string[], failures: string[]}> => {
+        await this.initPromise;
+        const cruxUserWithKey = await this.getCruxUserByKey();
+        if (!cruxUserWithKey) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
+        }
+        const failures: string[] = [];
+        const registeredCruxUsers: string[] = [];
+        for (const fullCruxID of fullCruxIDs) {
+            const cruxUser = await this.getCruxUserByID(fullCruxID);
+            if (!cruxUser) {
+                failures.push(fullCruxID);
+            } else {
+                registeredCruxUsers.push(fullCruxID);
+            }
+        }
+        cruxUserWithKey.setBlacklistedCruxIDs(registeredCruxUsers);
+        await this.cruxUserRepository.save(cruxUserWithKey, this.getKeyManager());
+        const enabledAssetGroups = await this.putEnabledAssetGroups();
+        return {success: registeredCruxUsers, failures};
+    }
+
+    @throwCruxClientError
     public putPrivateAddressMap = async (fullCruxIDs: string[], newAddressMap: IAddressMapping): Promise<IPutPrivateAddressMapResult> => {
         await this.initPromise;
         const cruxUserWithKey = await this.getCruxUserByKey();
@@ -392,7 +416,7 @@ export class CruxWalletClient {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
         this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping, this.cruxDomain.config.assetList);
-        await this.openCruxGateway();
+        // await this.openCruxGateway();
     }
 
     private getSelfClaim = async (): Promise<IGatewayIdentityClaim | undefined> => {

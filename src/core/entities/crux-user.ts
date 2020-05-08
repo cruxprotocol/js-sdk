@@ -73,7 +73,7 @@ export class CruxUser {
         this.setCruxUserConfig(cruxUserData.configuration);
         this.setPublicKey(publicKey);
         this.setCruxUserPrivateAddresses(cruxUserData.privateAddresses);
-        this.setblacklistedCruxIDs(cruxUserData.blacklistAddresses);
+        this.setBlacklistedCruxIDs(cruxUserData.blacklistAddresses);
         log.debug("CruxUser initialised");
     }
     get cruxID() {
@@ -116,6 +116,9 @@ export class CruxUser {
         } else {
             throw new BaseError(null, "Not supported by the keyManager in use");
         }
+    }
+    public setBlacklistedCruxIDs = (blacklistedCruxIDs: string[]) => {
+        this.blacklistedCruxIDs = blacklistedCruxIDs;
     }
     public getAddressFromAsset = async (asset: IGlobalAsset, keyManager?: IKeyManager): Promise<IAddress|undefined> => {
         let address: IAddress|undefined;
@@ -194,9 +197,6 @@ export class CruxUser {
         } else {
             this.cruxUserPrivateAddresses = cruxUserPrivateAddresses;
         }
-    }
-    private setblacklistedCruxIDs = (blacklistedCruxIDs: string[]) => {
-        this.blacklistedCruxIDs = blacklistedCruxIDs;
     }
 }
 

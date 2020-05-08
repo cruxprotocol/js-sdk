@@ -327,6 +327,10 @@ const getCruxIDState = async (): Promise<ICruxIDState> => {
     return cruxIDStatus
 }
 
+const addToBlacklist = async (fullCruxIDs: string[]):Promise< {success: string[], failures: string[]}> => {
+    return cruxClient.addToBlacklist(fullCruxIDs);
+}
+
 function handleCruxIDStatus(cruxIDStatus) {
     if (cruxIDStatus.status && ["DONE", "PENDING"].includes(cruxIDStatus.status.status)) {
         [].forEach.call(doc.getElementsByClassName('unregistered'), (el: HTMLElement) => {
@@ -370,6 +374,7 @@ declare global {
         getEnabledAssetGroups: Function;
         putEnabledAssetGroups: Function;
         getCruxIDState: Function;
+        addToBlacklist: Function;
     }
 }
 
@@ -385,3 +390,4 @@ window.putPrivateAddressMap = putPrivateAddressMap;
 window.getEnabledAssetGroups = getEnabledAssetGroups;
 window.putEnabledAssetGroups = putEnabledAssetGroups;
 window.getCruxIDState = getCruxIDState;
+window.addToBlacklist = addToBlacklist;
