@@ -76,6 +76,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         }
         let addressMap = {};
         let cruxUserData: ICruxUserData = {
+            blacklistAddresses: [],
             configuration: {
                 enabledAssetGroups: [],
             },
