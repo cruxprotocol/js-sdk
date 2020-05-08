@@ -268,7 +268,7 @@ export class CruxWalletClient {
         return {success: registeredCruxUsers, failures};
     }
 
-    @throwCruxClientError
+    // @throwCruxClientError
     public putPrivateAddressMap = async (fullCruxIDs: string[], newAddressMap: IAddressMapping): Promise<IPutPrivateAddressMapResult> => {
         await this.initPromise;
         const cruxUserWithKey = await this.getCruxUserByKey();
