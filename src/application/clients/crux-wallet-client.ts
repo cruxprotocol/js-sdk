@@ -224,7 +224,7 @@ export class CruxWalletClient {
             throw Error("Did not find asset to send");
         }
         const recipientGateway = this.gatewayRepo!.get({selfIdClaim: this.selfIdClaim, receiverId: recipientCruxUser.cruxID});
-        recipientGateway.sendMessage({
+        await recipientGateway.sendMessage({
             amount,
             assetId: assetToRequest,
         });

@@ -1,32 +1,43 @@
-import {decodeToken} from "blockstack";
+import {decodeToken, TokenSigner, TokenVerifier} from "jsontokens";
 import {CruxId} from "../../packages";
 
 import {
     IGatewayIdentityCertificate,
     IGatewayIdentityClaim, IGatewayPacket, IGatewayPacketMetadata,
     IGatewayProtocolHandler,
+    IKeyManager,
     IPubSubClient,
 } from "../interfaces";
 
 export class CertificateManager {
     public static make = async (idClaim: IGatewayIdentityClaim, messageId: string): Promise<IGatewayIdentityCertificate> => {
+        const privateKey = "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f"; // foo@123
         const payload = {
             messageId,
         };
-        const signedProof = await idClaim.keyManager.signWebToken(payload);
+        const signedProof = new TokenSigner("ES256K", privateKey).sign(payload);
         return {
                 claim: idClaim.cruxId.toString(),
                 messageId,
                 proof: signedProof,
         };
     }
-    public static verify = (certificate: IGatewayIdentityCertificate) => {
-        const proof: any = decodeToken(certificate.proof).payload;
-        // tslint:disable-next-line: tsr-detect-possible-timing-attacks
-        if (proof.messageId === certificate.messageId) {
-            return true;
+    public static verify = (idClaim: any, certificate: IGatewayIdentityCertificate) => {
+        try {
+            if (!idClaim || !certificate.proof || !certificate.messageId) {
+                return false;
+            }
+            const proof: any = decodeToken(certificate.proof).payload;
+            const publicKey = idClaim.keyManager.publicKey;
+            const verified = new TokenVerifier("ES256K", publicKey).verify(certificate.proof);
+            // tslint:disable-next-line: tsr-detect-possible-timing-attacks
+            if (idClaim.cruxId.toString() === certificate.claim && proof.messageId === certificate.messageId && verified) {
+                return true;
+            }
+            return false;
+        } catch (err) {
+            return false;
         }
-        return false;
     }
 }
 
@@ -54,7 +65,7 @@ export class GatewayPacketManager {
     public parse(packet: IGatewayPacket): IGatewayPacket {
         this.protocolHandler.validateMessage(packet.message);
         if (packet.metadata.senderCertificate) {
-            if (!CertificateManager.verify(packet.metadata.senderCertificate)) {
+            if (!CertificateManager.verify(this.selfClaim, packet.metadata.senderCertificate)) {
                 throw Error("Count not verify sender certificate");
             }
         }
