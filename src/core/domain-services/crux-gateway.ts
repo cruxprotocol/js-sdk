@@ -11,7 +11,7 @@ import {
 
 export class CertificateManager {
     public static make = async (idClaim: IGatewayIdentityClaim, messageId: string): Promise<IGatewayIdentityCertificate> => {
-        const privateKey = "6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f"; // foo@123
+        const privateKey = "12381ab829318742938647283cd462738462873642ef34abefcd123501827193"; // foo@123
         const payload = {
             messageId,
         };
