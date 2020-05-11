@@ -27,22 +27,24 @@ describe('Test Secure PUbsub Client Tests', function() {
         this.pubsubClientFactory = new InMemoryPubSubClientFactory();
     });
 
-    it('Nonexistent wallet name raises error', function(done) {
-        const user1Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
-            cruxId: this.user1Data.cruxUser.cruxID,
-            keyManager: new BasicKeyManager(this.user1Data.pvtKey)
-        });
+    it('Nonexistent wallet name raises error', async function() {
+        return new Promise(async (resolve, reject) => {
+            const user1Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                cruxId: this.user1Data.cruxUser.cruxID,
+                keyManager: new BasicKeyManager(this.user1Data.pvtKey)
+            });
 
-        const user2Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
-            cruxId: this.user2Data.cruxUser.cruxID,
-            keyManager: new BasicKeyManager(this.user2Data.pvtKey)
+            const user2Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                cruxId: this.user2Data.cruxUser.cruxID,
+                keyManager: new BasicKeyManager(this.user2Data.pvtKey)
+            });
+            const testmsg = 'HelloWorld';
+            user2Messenger.listen((msg) => {
+                expect(msg).equals(testmsg);
+                resolve()
+            });
+            await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
         });
-        const testmsg = 'HelloWorld';
-        user2Messenger.listen( (msg)=>{
-            expect(msg).equals(testmsg);
-            done()
-        });
-        user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
 
     });
 
