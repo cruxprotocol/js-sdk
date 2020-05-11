@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import 'mocha';
 import { BasicKeyManager } from '../../infrastructure/implementations/basic-key-manager';
-import { Encryption } from "../../packages/encryption";
+import { EncryptionManager } from '../../core/domain-services/crux-messenger';
 
 describe("Asymmetric encryption tests", () => {
     let basicKeyManager: BasicKeyManager;
@@ -13,8 +13,8 @@ describe("Asymmetric encryption tests", () => {
             basicKeyManager = new BasicKeyManager(testPrivateKey);
         })
         it("encrypt and decrypt test", async () => {
-            const encrypted = await Encryption.encryptMessage(sampleMessage, testPublicKey);
-            const decrypted = await basicKeyManager.decryptMessage(encrypted);
+            const encrypted = await EncryptionManager.encrypt(sampleMessage, testPublicKey);
+            const decrypted = await EncryptionManager.decrypt(encrypted, basicKeyManager);
             expect(decrypted).to.be.eql(sampleMessage);
         })
     })
