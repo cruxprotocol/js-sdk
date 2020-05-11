@@ -21,16 +21,12 @@ export class CertificateManager {
         };
     }
     public static verify = (senderPubKey: any, certificate: IGatewayIdentityCertificate) => {
-        try {
-            const proof: any = decodeToken(certificate.proof).payload;
-            const verified = new TokenVerifier("ES256K", senderPubKey).verify(certificate.proof);
-            if (verified) {
-                return proof.messageId;
-            }
-            return "Could not verify sender certificate";
-        } catch (err) {
-            return "Could not verify sender certificate";
+        const proof: any = decodeToken(certificate.proof).payload;
+        const verified = new TokenVerifier("ES256K", senderPubKey).verify(certificate.proof);
+        if (proof && proof.messageId && verified) {
+            return proof.messageId;
         }
+        throw Error("Could not verify sender certificate");
     }
 }
 
