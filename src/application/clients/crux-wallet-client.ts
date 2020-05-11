@@ -1,6 +1,6 @@
 // Importing packages
 import Logger from "js-logger";
-import {CruxNetPubSubClientFactory, SecureCruxIdMessenger} from "../../core/domain-services/crux-messenger";
+import {SecureCruxIdMessenger} from "../../core/domain-services";
 import {
     CruxDomain,
     CruxSpec,
@@ -18,11 +18,12 @@ import {
     IKeyManager,
     isInstanceOfKeyManager,
 } from "../../core/interfaces";
-import {ICruxIdClaim} from "../../core/interfaces/crux-messenger";
+import {ICruxIdClaim} from "../../core/interfaces";
 import {
     BasicKeyManager,
     BlockstackCruxDomainRepository,
     BlockstackCruxUserRepository,
+    CruxNetPubSubClientFactory,
     IBlockstackCruxDomainRepositoryOptions,
     IBlockstackCruxUserRepositoryOptions,
 } from "../../infrastructure/implementations";
