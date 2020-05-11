@@ -118,7 +118,7 @@ export class CruxUser {
         }
     }
     public setBlacklistedCruxIDs = (blacklistedCruxIDs: string[]) => {
-        this.cruxUserConfig.blacklistedCruxUsers.concat(blacklistedCruxIDs);
+        this.cruxUserConfig.blacklistedCruxUsers = blacklistedCruxIDs;
     }
     public getAddressFromAsset = async (asset: IGlobalAsset, keyManager?: IKeyManager): Promise<IAddress|undefined> => {
         let address: IAddress|undefined;
