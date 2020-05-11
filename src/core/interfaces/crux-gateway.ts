@@ -54,6 +54,7 @@ export interface IGatewayIdentityCertificate {
     claim: string;
     messageId: string;
     proof: string;
+    senderPubKey: string;
 }
 
 export interface ICruxGatewayParams {

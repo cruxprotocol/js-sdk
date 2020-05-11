@@ -43,65 +43,175 @@ describe('CRUX Gateway Entity Tests', function() {
             await user2GatewayForUser1.sendMessage(testmsg);
         });
 
-        it('Test Certificate Creation', async function() {
-                    
-            const testCeritficate = {
-                claim: this.user2.cruxID.toString(),
-                messageId : "123e4567-e89b-12d3-a456-426614174000"
-            };
-            const certificate = await CertificateManager.make(this.user2IDClaim,"123e4567-e89b-12d3-a456-426614174000");
-            expect(certificate.claim).to.equals(testCeritficate.claim);
-            expect(certificate.messageId).to.equals(testCeritficate.messageId);
+        describe('Certificate Creation', function() {
+
+            it('Test Certificate Creation', async function() {
+                        
+                const testCeritficate = {
+                    claim: this.user2.cruxID.toString(),
+                    messageId : "123e4567-e89b-12d3-a456-426614174000",
+                    proof: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJtZXNzYWdlSWQiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAifQ.SjDx_vGQuqLDXtP38nWrzlx5PKbOgUsKhbF6HOtAQVDdGw4RiieRqNQ6kVii5to-cqBYrY6gisSQ7jltWmuKIA",
+                    senderPubKey: "03e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318"
+                };
+                const certificate = await CertificateManager.make(this.user2IDClaim,"123e4567-e89b-12d3-a456-426614174000");
+                expect(certificate.claim).to.equals(testCeritficate.claim);
+                expect(certificate.messageId).to.equals(testCeritficate.messageId);
+                expect(certificate.proof).to.equals(testCeritficate.proof);
+                expect(certificate.senderPubKey).to.equals(testCeritficate.senderPubKey);
+            });
+
+            it('Test Certificate Creation and checking with wrong messageId check', async function() {
+                        
+                const testCeritficate = {
+                    claim: this.user2.cruxID.toString(),
+                    messageId : "223e4567-e89b-12d3-a456-426614174000",
+                    proof: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJtZXNzYWdlSWQiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAifQ.SjDx_vGQuqLDXtP38nWrzlx5PKbOgUsKhbF6HOtAQVDdGw4RiieRqNQ6kVii5to-cqBYrY6gisSQ7jltWmuKIA",
+                    senderPubKey: "03e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318"
+                };
+                const certificate = await CertificateManager.make(this.user2IDClaim,"123e4567-e89b-12d3-a456-426614174000");
+                expect(certificate.claim).to.equals(testCeritficate.claim);
+                expect(certificate.messageId).to.not.equals(testCeritficate.messageId);
+                expect(certificate.proof).to.equals(testCeritficate.proof);
+                expect(certificate.senderPubKey).to.equals(testCeritficate.senderPubKey);
+            });
+
+            it('Test Certificate Creation with wrong claim check', async function() {
+                        
+                const testCeritficate = {
+                    claim: this.user1.cruxID.toString(),
+                    messageId : "123e4567-e89b-12d3-a456-426614174000",
+                    proof: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJtZXNzYWdlSWQiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAifQ.SjDx_vGQuqLDXtP38nWrzlx5PKbOgUsKhbF6HOtAQVDdGw4RiieRqNQ6kVii5to-cqBYrY6gisSQ7jltWmuKIA",
+                    senderPubKey: "03e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318"
+                };
+                const certificate = await CertificateManager.make(this.user2IDClaim,"123e4567-e89b-12d3-a456-426614174000");
+                expect(certificate.claim).to.not.equals(testCeritficate.claim);
+                expect(certificate.messageId).to.equals(testCeritficate.messageId);
+                expect(certificate.proof).to.equals(testCeritficate.proof);
+                expect(certificate.senderPubKey).to.equals(testCeritficate.senderPubKey);
+            });
+
+            it('Test Certificate Creation with wrong proof check', async function() {
+                        
+                const testCeritficate = {
+                    claim: this.user2.cruxID.toString(),
+                    messageId : "123e4567-e89b-12d3-a456-426614174000",
+                    proof: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJtZXNzYWdlSWQiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAifQ.iaa0Y9mPDBv8V_fVMRrJuqRyYcVvHYqbZcTGWFrDSwezJt6R7NQbHoA36fq0av51Q2LKJsQJHAwMfc-ph806fA",
+                    senderPubKey: "02e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318"
+                };
+                const certificate = await CertificateManager.make(this.user2IDClaim,"123e4567-e89b-12d3-a456-426614174000");
+                expect(certificate.claim).to.equals(testCeritficate.claim);
+                expect(certificate.messageId).to.equals(testCeritficate.messageId);
+                expect(certificate.proof).to.not.equals(testCeritficate.proof);
+                expect(certificate.senderPubKey).to.not.equals(testCeritficate.senderPubKey);
+            });
+
+            it('Test Certificate Creation with wrong public key check', async function() {
+                        
+                const testCeritficate = {
+                    claim: this.user2.cruxID.toString(),
+                    messageId : "123e4567-e89b-12d3-a456-426614174000",
+                    proof: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJtZXNzYWdlSWQiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAifQ.SjDx_vGQuqLDXtP38nWrzlx5PKbOgUsKhbF6HOtAQVDdGw4RiieRqNQ6kVii5to-cqBYrY6gisSQ7jltWmuKIA",
+                    senderPubKey: "02e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318"
+                };
+                const certificate = await CertificateManager.make(this.user2IDClaim,"123e4567-e89b-12d3-a456-426614174000");
+                expect(certificate.claim).to.equals(testCeritficate.claim);
+                expect(certificate.messageId).to.equals(testCeritficate.messageId);
+                expect(certificate.proof).to.equals(testCeritficate.proof);
+                expect(certificate.senderPubKey).to.not.equals(testCeritficate.senderPubKey);
+            });
         });
 
-        it('Test Certificate Creation with wrong messageId', async function() {
-                    
-            const testCeritficate = {
-                claim: this.user2.cruxID.toString(),
-                messageId : "223e4567-e89b-12d3-a456-426614174000"
-            };
-            const certificate = await CertificateManager.make(this.user2IDClaim,"123e4567-e89b-12d3-a456-426614174000");
-            expect(certificate.claim).to.equals(testCeritficate.claim);
-            expect(certificate.messageId).to.not.equals(testCeritficate.messageId);
+        describe('Certificate Verification', function() {
+            it('Test Certificate Verification', async function() {
+                
+                const testCeritficate = {
+                    claim: this.user2.cruxID.toString(),
+                    messageId : "123e4567-e89b-12d3-a456-426614174000",
+                    proof: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJtZXNzYWdlSWQiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAifQ.SjDx_vGQuqLDXtP38nWrzlx5PKbOgUsKhbF6HOtAQVDdGw4RiieRqNQ6kVii5to-cqBYrY6gisSQ7jltWmuKIA",
+                    senderPubKey: "03e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318"
+                };
+                const testValidation = true;
+                const validation = CertificateManager.verify(this.user2IDClaim, testCeritficate);
+                expect(validation).to.equals(testValidation);
+            });
+
+            it('Test Certificate Verification without claim', async function() {
+                  
+                const testCeritficate = {
+                    claim: undefined,
+                    messageId : "123e4567-e89b-12d3-a456-426614174000",
+                    proof: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJtZXNzYWdlSWQiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAifQ.SjDx_vGQuqLDXtP38nWrzlx5PKbOgUsKhbF6HOtAQVDdGw4RiieRqNQ6kVii5to-cqBYrY6gisSQ7jltWmuKIA",
+                    senderPubKey: "03e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318"
+                };
+                const testValidation = false;
+                const validation = CertificateManager.verify(undefined, testCeritficate);
+                expect(validation).to.equals(testValidation);
+            });
+
+            it('Test Certificate Verification with wrong public key', async function() {
+                
+                const testCeritficate = {
+                    claim: this.user2.cruxID.toString(),
+                    messageId : "123e4567-e89b-12d3-a456-426614174000",
+                    proof: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJtZXNzYWdlSWQiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAifQ.SjDx_vGQuqLDXtP38nWrzlx5PKbOgUsKhbF6HOtAQVDdGw4RiieRqNQ6kVii5to-cqBYrY6gisSQ7jltWmuKIA",
+                    senderPubKey: "02e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318"
+                };
+                const testValidation = false;
+                const validation = CertificateManager.verify(this.user1IDClaim, testCeritficate);
+                expect(validation).to.equals(testValidation);
+            });
+
+            it('Test Certificate Verification with wrong messageId', async function() {
+                
+                const testCeritficate = {
+                    claim: this.user2.cruxID.toString(),
+                    messageId : "223e4567-e89b-12d3-a456-426614174000",
+                    proof: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJtZXNzYWdlSWQiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAifQ.SjDx_vGQuqLDXtP38nWrzlx5PKbOgUsKhbF6HOtAQVDdGw4RiieRqNQ6kVii5to-cqBYrY6gisSQ7jltWmuKIA",
+                    senderPubKey: "03e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318"
+                };
+                const testValidation = false;
+                const validation = CertificateManager.verify(this.user1IDClaim, testCeritficate);
+                expect(validation).to.equals(testValidation);
+            });
+
+            it('Test Certificate Verification with wrong proof', async function() {
+                
+                const testCeritficate = {
+                    claim: this.user2.cruxID.toString(),
+                    messageId : "123e4567-e89b-12d3-a456-426614174000",
+                    proof: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJtZXNzYWdlSWQiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAifQ.iaa0Y9mPDBv8V_fVMRrJuqRyYcVvHYqbZcTGWFrDSwezJt6R7NQbHoA36fq0av51Q2LKJsQJHAwMfc-ph806fA",
+                    senderPubKey: "03e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318"
+                };
+                const testValidation = false;
+                const validation = CertificateManager.verify(this.user1IDClaim, testCeritficate);
+                expect(validation).to.equals(testValidation);
+            });
         });
 
-        it('Test Certificate Creation with wrong claim', async function() {
-                    
-            const testCeritficate = {
-                claim: this.user1.cruxID.toString(),
-                messageId : "123e4567-e89b-12d3-a456-426614174000"
-            };
-            const certificate = await CertificateManager.make(this.user2IDClaim,"123e4567-e89b-12d3-a456-426614174000");
-            expect(certificate.claim).to.not.equals(testCeritficate.claim);
-            expect(certificate.messageId).to.equals(testCeritficate.messageId);
+        describe('Certificate Creation and Verification', function() {
+
+            it('Test Certificate Creation and Verification', async function() {
+                
+                const testCeritficate = {
+                    claim: this.user2.cruxID.toString(),
+                    messageId : "123e4567-e89b-12d3-a456-426614174000",
+                    proof: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJtZXNzYWdlSWQiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAifQ.SjDx_vGQuqLDXtP38nWrzlx5PKbOgUsKhbF6HOtAQVDdGw4RiieRqNQ6kVii5to-cqBYrY6gisSQ7jltWmuKIA",
+                    senderPubKey: "03e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318"
+                };
+                const testMessageId = "123e4567-e89b-12d3-a456-426614174000";
+                const testValidation = true;
+                const certificate = await CertificateManager.make(this.user2IDClaim, testMessageId);
+                expect(certificate.claim).to.equals(testCeritficate.claim);
+                expect(certificate.messageId).to.equals(testCeritficate.messageId);
+                expect(certificate.proof).to.equals(testCeritficate.proof);
+                expect(certificate.senderPubKey).to.equals(testCeritficate.senderPubKey);
+                const validation = CertificateManager.verify(this.user1IDClaim, certificate);
+                expect(validation).to.equals(testValidation);
+            });
+
         });
 
-        it('Test Certificate Verification', async function() {
-                    
-            const testValidation = true;
-            const messageId = "123e4567-e89b-12d3-a456-426614174000";
-            const certificate = await CertificateManager.make(this.user2IDClaim, messageId);
-            const validation = CertificateManager.verify(this.user2IDClaim, certificate);
-            expect(validation).to.equals(testValidation);
-        });
 
-        it('Test Certificate Verification without idclaim', async function() {
-                    
-            const testValidation = false;
-            const messageId = "123e4567-e89b-12d3-a456-42661417000";
-            const certificate = await CertificateManager.make(this.user2IDClaim, messageId);
-            const validation = CertificateManager.verify(undefined, certificate);
-            expect(validation).to.equals(testValidation);
-        });
-
-        it('Test Certificate Verification with wrong ID claim', async function() {
-                    
-            const testValidation = false;
-            const messageId = "123e4567-e89b-12d3-a456-42661417000";
-            const certificate = await CertificateManager.make(this.user2IDClaim, messageId);
-            const validation = CertificateManager.verify(this.user1IDClaim, certificate);
-            expect(validation).to.equals(testValidation);
-        });
         // TODO: Test Certificate validation failed
         // TODO: Allow Only Certified Messages
         // TODO: Encrypted Messages only

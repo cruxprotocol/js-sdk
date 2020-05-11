@@ -1,4 +1,4 @@
-import {decodeToken, TokenSigner, TokenVerifier} from "jsontokens";
+import {decodeToken, TokenVerifier} from "jsontokens";
 import {CruxId} from "../../packages";
 
 import {
@@ -11,27 +11,26 @@ import {
 
 export class CertificateManager {
     public static make = async (idClaim: IGatewayIdentityClaim, messageId: string): Promise<IGatewayIdentityCertificate> => {
-        const privateKey = "12381ab829318742938647283cd462738462873642ef34abefcd123501827193"; // foo@123
         const payload = {
             messageId,
         };
-        const signedProof = new TokenSigner("ES256K", privateKey).sign(payload);
+        const signedProof = await idClaim.keyManager.signWebToken(payload);
         return {
                 claim: idClaim.cruxId.toString(),
                 messageId,
                 proof: signedProof,
+                senderPubKey: await idClaim.keyManager.getPubKey(),
         };
     }
     public static verify = (idClaim: any, certificate: IGatewayIdentityCertificate) => {
         try {
-            if (!idClaim || !certificate.proof || !certificate.messageId) {
+            if (!idClaim) {
                 return false;
             }
             const proof: any = decodeToken(certificate.proof).payload;
-            const publicKey = idClaim.keyManager.publicKey;
-            const verified = new TokenVerifier("ES256K", publicKey).verify(certificate.proof);
+            const verified = new TokenVerifier("ES256K", certificate.senderPubKey).verify(certificate.proof);
             // tslint:disable-next-line: tsr-detect-possible-timing-attacks
-            if (idClaim.cruxId.toString() === certificate.claim && proof.messageId === certificate.messageId && verified) {
+            if (proof.messageId === certificate.messageId && verified) {
                 return true;
             }
             return false;
@@ -76,7 +75,7 @@ export class GatewayPacketManager {
     }
 
     private async makePacketMetadata(): Promise<IGatewayPacketMetadata> {
-        const messageId = "123e4567-e89b-12d3-a456-426614174000";
+        const messageId = this.messageId;
         let senderCertificate: IGatewayIdentityCertificate | undefined;
         if (this.selfClaim) {
             senderCertificate = await CertificateManager.make(this.selfClaim, messageId);
