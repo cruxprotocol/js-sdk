@@ -22,7 +22,7 @@ import {
     BasicKeyManager,
     BlockstackCruxDomainRepository,
     BlockstackCruxUserRepository,
-    CruxLinkGatewayRepository,
+    CruxNetworkGatewayRepository,
     IBlockstackCruxDomainRepositoryOptions,
     IBlockstackCruxUserRepositoryOptions,
     ICruxGatewayRepositoryRepositoryOptions,
@@ -100,7 +100,7 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
 };
 
 export const getCruxGatewayRepository = (options: ICruxGatewayRepositoryRepositoryOptions): ICruxGatewayRepository => {
-    return new CruxLinkGatewayRepository(options);
+    return new CruxNetworkGatewayRepository(options);
 };
 
 export class CruxWalletClient {

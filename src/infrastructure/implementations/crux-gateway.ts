@@ -85,7 +85,7 @@ export class StrongPubSubClient implements IPubSubClient {
     }
 }
 
-export class CruxLinkGatewayRepository implements ICruxGatewayRepository {
+export class CruxNetworkGatewayRepository implements ICruxGatewayRepository {
     private options: ICruxGatewayRepositoryRepositoryOptions;
     private supportedProtocols: any;
     private defaultProtocol: string;
