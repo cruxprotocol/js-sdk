@@ -1,3 +1,5 @@
+// @ts-ignore
+import * as eccrypto from "eccrypto";
 import {CruxId} from "../../packages";
 import {CruxUser} from "../entities";
 
@@ -23,11 +25,14 @@ export class CertificateManager {
 
 export class EncryptionManager {
     // Use ECIES to encrypt & decrypt
-    public static encrypt = (content: string, pubKeyOfRecipient: string): string => {
-        return content;
+    public static encrypt = async (content: string, pubKeyOfRecipient: string): Promise<string> => {
+        const toEncrypt = Buffer.from(content, "utf8");
+        const encrypted = await eccrypto.encrypt(Buffer.from(pubKeyOfRecipient, "hex"), toEncrypt);
+        return encrypted;
     }
-    public static decrypt = (encryptedContent: string, keyManager: IKeyManager): string => {
-        return encryptedContent;
+    public static decrypt = async (encryptedContent: string, keyManager: IKeyManager): Promise<string> => {
+        const decryptedContent = await keyManager.decryptMessage(encryptedContent);
+        return decryptedContent;
     }
 }
 
