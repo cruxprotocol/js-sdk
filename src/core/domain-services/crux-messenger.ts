@@ -1,8 +1,7 @@
-// @ts-ignore
-import * as eccrypto from "eccrypto";
 import {CruxId} from "../../packages";
 import {CruxUser} from "../entities";
 
+import { ECIESEncryption } from "../../packages/encryption";
 import {ICruxIdClaim, ICruxUserRepository, IKeyManager} from "../interfaces";
 import {
     ICruxIdCertificate,
@@ -10,6 +9,7 @@ import {
     IPubSubClientFactory,
     ISecurePacket,
 } from "../interfaces";
+import { encryptContent } from "blockstack";
 
 export class CertificateManager {
     public static make = (idClaim: ICruxIdClaim): ICruxIdCertificate => {
@@ -26,19 +26,10 @@ export class CertificateManager {
 export class EncryptionManager {
     // Use ECIES to encrypt & decrypt
     public static encrypt = async (content: string, pubKeyOfRecipient: string): Promise<string> => {
-        const toEncrypt = Buffer.from(content, "utf8");
-        const encrypted = await eccrypto.encrypt(Buffer.from(pubKeyOfRecipient, "hex"), toEncrypt);
-        const encryptedStringObj = {
-            ciphertext: encrypted.ciphertext.toString("hex"),
-            ephemPublicKey: encrypted.ephemPublicKey.toString("hex"),
-            iv: encrypted.iv.toString("hex"),
-            mac: encrypted.mac.toString("hex"),
-        };
-        return JSON.stringify(encryptedStringObj);
+        return ECIESEncryption.encrypt(content, pubKeyOfRecipient);
     }
     public static decrypt = async (encryptedContent: string, keyManager: IKeyManager): Promise<string> => {
-        const decryptedContent = await keyManager.decryptMessage!(encryptedContent);
-        return decryptedContent;
+        return ECIESEncryption.decrypt(encryptedContent, keyManager);
     }
 }
 

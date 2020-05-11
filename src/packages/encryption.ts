@@ -1,4 +1,7 @@
 import * as ncrypto from "crypto";
+// @ts-ignore
+import * as eccrypto from "eccrypto";
+import {IKeyManager} from "../core/interfaces";
 import {ErrorHelper, PackageErrorCode} from "./error";
 
 const typedArrayToBuffer = (array: Uint8Array): ArrayBuffer => {
@@ -64,5 +67,23 @@ export class Encryption {
             throw err;
         }
         return ptBuffer.toString();
+    }
+}
+
+export class ECIESEncryption {
+    public static encrypt = async (content: string, publicKey: string): Promise<string> => {
+        const toEncrypt = Buffer.from(content, "utf8");
+        const encrypted = await eccrypto.encrypt(Buffer.from(publicKey, "hex"), toEncrypt);
+        const encryptedStringObj = {
+            ciphertext: encrypted.ciphertext.toString("hex"),
+            ephemPublicKey: encrypted.ephemPublicKey.toString("hex"),
+            iv: encrypted.iv.toString("hex"),
+            mac: encrypted.mac.toString("hex"),
+        };
+        return JSON.stringify(encryptedStringObj);
+    }
+    public static decrypt = async (encryptedContent: string, keyManager: IKeyManager): Promise<string> => {
+        const decryptedContent = await keyManager.decryptMessage!(encryptedContent);
+        return decryptedContent;
     }
 }
