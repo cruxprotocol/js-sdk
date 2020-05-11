@@ -14,7 +14,7 @@ chai.should();
 const expect = require('chai').expect;
 
 
-describe('Test Secure Pubsub Client Tests', function() {
+describe('Test Secure Crux Messenger', function() {
     beforeEach(async function() {
         const userStore = new MockUserStore();
         const user1Data = getMockUserFoo123CSTestWallet();
