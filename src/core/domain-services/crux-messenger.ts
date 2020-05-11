@@ -37,57 +37,6 @@ export enum EventBusEventNames {
     error = "error",
 }
 
-interface ICruxNetClientFactoryOptions {
-    defaultLinkServer: {
-        host: string,
-        port: number,
-    };
-}
-
-export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
-    private options: ICruxNetClientFactoryOptions;
-    private defaultSubscribeOptions: { qos: number };
-    private defaultClientMqttOptions: { clean: boolean };
-    constructor(options: ICruxNetClientFactoryOptions) {
-        this.options = options;
-        this.defaultSubscribeOptions = {
-            qos: 0,
-        };
-        this.defaultClientMqttOptions = {
-            clean: false,
-        };
-    }
-    public getSelfClient = (idClaim: ICruxIdClaim): IPubSubClient => {
-        const overrideOpts = this.getDomainLevelClientOptions(idClaim.cruxId);
-        return new StrongPubSubClient({
-            clientOptions: {
-                host: overrideOpts ? overrideOpts.host : this.options.defaultLinkServer.host,
-                port: overrideOpts ? overrideOpts.port : this.options.defaultLinkServer.port,
-                // tslint:disable-next-line:object-literal-sort-keys
-                mqtt: { ...this.defaultClientMqttOptions, clientId: "client_" + idClaim.cruxId.toString() },
-            },
-            subscribeOptions: this.defaultSubscribeOptions,
-        });
-    }
-    public getRecipientClient = (selfCruxId: CruxId, recipientCruxId: CruxId): IPubSubClient => {
-        const overrideOpts = this.getDomainLevelClientOptions(recipientCruxId);
-        return new StrongPubSubClient({
-            clientOptions: {
-                host: overrideOpts ? overrideOpts.host : this.options.defaultLinkServer.host,
-                port: overrideOpts ? overrideOpts.port : this.options.defaultLinkServer.port,
-                // tslint:disable-next-line:object-literal-sort-keys
-                mqtt: { ...this.defaultClientMqttOptions, clientId: "client_" + selfCruxId.toString() },
-            },
-            subscribeOptions: this.defaultSubscribeOptions,
-        });
-
-    }
-    private getDomainLevelClientOptions = (cruxId: CruxId): {host: string, port: number} | undefined => {
-        // TODO Implement
-        return;
-    }
-}
-
 export class SecureCruxIdMessenger {
     private selfIdClaim: ICruxIdClaim;
     private cruxUserRepo: ICruxUserRepository;
