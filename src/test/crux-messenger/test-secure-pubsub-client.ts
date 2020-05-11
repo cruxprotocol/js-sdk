@@ -14,7 +14,7 @@ chai.should();
 const expect = require('chai').expect;
 
 
-describe('Test Secure PUbsub Client Tests', function() {
+describe('Test Secure Pubsub Client Tests', function() {
     beforeEach(async function() {
         const userStore = new MockUserStore();
         const user1Data = getMockUserFoo123CSTestWallet();
@@ -27,7 +27,7 @@ describe('Test Secure PUbsub Client Tests', function() {
         this.pubsubClientFactory = new InMemoryPubSubClientFactory();
     });
 
-    it('Nonexistent wallet name raises error', async function() {
+    it('Basic Send Receive Test', async function() {
         return new Promise(async (resolve, reject) => {
             const user1Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
                 cruxId: this.user1Data.cruxUser.cruxID,
