@@ -246,7 +246,7 @@ export class CruxWalletClient {
     }
 
     @throwCruxClientError
-    public addToBlacklist = async (fullCruxIDs: string[]): Promise<{success: string[], failures: string[]}> => {
+    public blacklistUsers = async (fullCruxIDs: string[]): Promise<{success: string[], failures: string[]}> => {
         await this.initPromise;
         const cruxUserWithKey = await this.getCruxUserByKey();
         if (!cruxUserWithKey) {
