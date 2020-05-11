@@ -28,8 +28,6 @@ export class EncryptionManager {
     public static encrypt = async (content: string, pubKeyOfRecipient: string): Promise<string> => {
         const toEncrypt = Buffer.from(content, "utf8");
         const encrypted = await eccrypto.encrypt(Buffer.from(pubKeyOfRecipient, "hex"), toEncrypt);
-        console.log(encrypted);
-        console.log(encrypted.iv === Buffer.from(encrypted.iv.toString("hex"), "hex"));
         const encryptedStringObj = {
             ciphertext: encrypted.ciphertext.toString("hex"),
             ephemPublicKey: encrypted.ephemPublicKey.toString("hex"),
@@ -39,7 +37,7 @@ export class EncryptionManager {
         return JSON.stringify(encryptedStringObj);
     }
     public static decrypt = async (encryptedContent: string, keyManager: IKeyManager): Promise<string> => {
-        const decryptedContent = await keyManager.decryptMessage(encryptedContent);
+        const decryptedContent = await keyManager.decryptMessage!(encryptedContent);
         return decryptedContent;
     }
 }
