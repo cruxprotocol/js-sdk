@@ -23,10 +23,10 @@ import {
     BasicKeyManager,
     BlockstackCruxDomainRepository,
     BlockstackCruxUserRepository,
+    CruxNetPubSubClientFactory,
     IBlockstackCruxDomainRepositoryOptions,
     IBlockstackCruxUserRepositoryOptions,
 } from "../../infrastructure/implementations";
-import {CruxNetPubSubClientFactory} from "../../infrastructure/implementations/crux-messenger";
 import {CruxDomainId, CruxId, getLogger, InMemStorage, StorageService} from "../../packages";
 import {Encryption} from "../../packages/encryption";
 import {CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode} from "../../packages/error";
