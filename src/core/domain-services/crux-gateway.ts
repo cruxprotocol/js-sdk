@@ -3,7 +3,7 @@ import {CruxId} from "../../packages";
 import {
     IGatewayIdentityCertificate,
     IGatewayIdentityClaim, IGatewayPacket, IGatewayPacketMetadata,
-    IGatewayProtocolHandler,
+    IGatewayProtocolHandler, IKeyManager,
     IPubSubClient,
 } from "../interfaces";
 
@@ -16,6 +16,16 @@ export class CertificateManager {
     }
     public static verify = (certificate: IGatewayIdentityCertificate) => {
         return true;
+    }
+}
+
+export class EncryptionManager {
+    // Use ECIES to encrypt & decrypt
+    public static encrypt = (content: string, pubKey: string): string => {
+        return content;
+    }
+    public static decrypt = (encryptedContent: string, keyManager: IKeyManager): string => {
+        return encryptedContent;
     }
 }
 
