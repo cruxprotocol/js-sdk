@@ -28,7 +28,15 @@ export class EncryptionManager {
     public static encrypt = async (content: string, pubKeyOfRecipient: string): Promise<string> => {
         const toEncrypt = Buffer.from(content, "utf8");
         const encrypted = await eccrypto.encrypt(Buffer.from(pubKeyOfRecipient, "hex"), toEncrypt);
-        return encrypted;
+        console.log(encrypted);
+        console.log(encrypted.iv === Buffer.from(encrypted.iv.toString("hex"), "hex"));
+        const encryptedStringObj = {
+            ciphertext: encrypted.ciphertext.toString("hex"),
+            ephemPublicKey: encrypted.ephemPublicKey.toString("hex"),
+            iv: encrypted.iv.toString("hex"),
+            mac: encrypted.mac.toString("hex"),
+        };
+        return JSON.stringify(encryptedStringObj);
     }
     public static decrypt = async (encryptedContent: string, keyManager: IKeyManager): Promise<string> => {
         const decryptedContent = await keyManager.decryptMessage(encryptedContent);
@@ -65,7 +73,7 @@ export class SecureCruxIdMessenger {
             data,
         };
         const serializedSecurePacket = JSON.stringify(securePacket);
-        const encryptedSecurePacket = EncryptionManager.encrypt(serializedSecurePacket, recipientCruxUser.publicKey!);
+        const encryptedSecurePacket = await EncryptionManager.encrypt(serializedSecurePacket, recipientCruxUser.publicKey!);
         const pubSubClient = this.pubsubClientFactory.getRecipientClient(this.selfIdClaim.cruxId, recipientCruxId);
         const messenger = new CruxIdMessenger(pubSubClient, this.selfIdClaim.cruxId);
         messenger.send(encryptedSecurePacket, recipientCruxId);
@@ -73,7 +81,7 @@ export class SecureCruxIdMessenger {
 
     public listen = (newMessageCallback: (msg: any) => void): void => {
         this.selfMessenger.on(EventBusEventNames.newMessage, async (encryptedString: string) => {
-            const serializedSecurePacket: string = EncryptionManager.decrypt(encryptedString, this.selfIdClaim.keyManager);
+            const serializedSecurePacket: string = await EncryptionManager.decrypt(encryptedString, this.selfIdClaim.keyManager);
             const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
             const senderUser: CruxUser | undefined = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
             if (!senderUser) {

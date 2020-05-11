@@ -38,8 +38,15 @@ export class BasicKeyManager implements IKeyManager {
     }
 
     public decryptMessage = async (encryptedMessage: string): Promise<string> => {
+        const encryptedStringObj = JSON.parse(encryptedMessage);
+        const toDecrypt = {
+            ciphertext: Buffer.from(encryptedStringObj.ciphertext, "hex"),
+            ephemPublicKey: Uint8Array.from(Buffer.from(encryptedStringObj.ephemPublicKey, "hex")),
+            iv: Buffer.from(encryptedStringObj.iv, "hex"),
+            mac: Buffer.from(encryptedStringObj.mac, "hex"),
+        };
         const privateKey = await this.getDecryptedPrivateKey();
-        const decrypted = await eccrypto.decrypt(Buffer.from(privateKey, "hex"), encryptedMessage);
+        const decrypted = await eccrypto.decrypt(Buffer.from(privateKey, "hex"), toDecrypt);
         return decrypted.toString();
     }
     private init = async (privateKey: string, getEncryptionKey?: () => Promise<string>): Promise<void> => {

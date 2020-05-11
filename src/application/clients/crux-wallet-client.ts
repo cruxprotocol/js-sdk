@@ -377,7 +377,7 @@ export class CruxWalletClient {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
         this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping, this.cruxDomain.config.assetList);
-        await this.setupCruxMessenger();
+        // await this.setupCruxMessenger();
     }
 
     private getSelfClaim = async (): Promise<ICruxIdClaim | undefined> => {
