@@ -22,7 +22,7 @@ import {
     BasicKeyManager,
     BlockstackCruxDomainRepository,
     BlockstackCruxUserRepository,
-    CruxGatewayRepository,
+    CruxLinkGatewayRepository,
     IBlockstackCruxDomainRepositoryOptions,
     IBlockstackCruxUserRepositoryOptions,
     ICruxGatewayRepositoryRepositoryOptions,
@@ -100,7 +100,7 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
 };
 
 export const getCruxGatewayRepository = (options: ICruxGatewayRepositoryRepositoryOptions): ICruxGatewayRepository => {
-    return new CruxGatewayRepository(options);
+    return new CruxLinkGatewayRepository(options);
 };
 
 export class CruxWalletClient {
@@ -116,8 +116,10 @@ export class CruxWalletClient {
     private keyManager?: IKeyManager;
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
     private cacheStorage?: StorageService;
-    private gatewayRepo: ICruxGatewayRepository;
-    private gateway?: CruxGateway;
+    private gatewayRepo?: ICruxGatewayRepository;
+    private selfCruxUser?: CruxUser;
+    private selfGateway?: CruxGateway;
+    private selfIdClaim?: IGatewayIdentityClaim;
 
     constructor(options: ICruxWalletClientOptions) {
         getLogger(cruxWalletClientDebugLoggerName).setLevel(options.debugLogging ? Logger.DEBUG : Logger.OFF);
@@ -134,7 +136,6 @@ export class CruxWalletClient {
             }
         }
         this.cruxDomainRepo = getCruxDomainRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure});
-        this.gatewayRepo = getCruxGatewayRepository({cruxBridgeConfig: {host: "localhost", port: 4005}});
         this.cruxDomainId = new CruxDomainId(this.walletClientName);
         this.initPromise = this.asyncInit();
     }
@@ -222,8 +223,8 @@ export class CruxWalletClient {
         if (!assetToRequest) {
             throw Error("Did not find asset to send");
         }
-
-        this.gateway!.sendMessage(recipientCruxUser.cruxID, {
+        const recipientGateway = this.gatewayRepo!.get({selfIdClaim: this.selfIdClaim, receiverId: recipientCruxUser.cruxID});
+        recipientGateway.sendMessage({
             amount,
             assetId: assetToRequest,
         });
@@ -244,6 +245,29 @@ export class CruxWalletClient {
         return {success, failures};
     }
 
+    @throwCruxClientError
+    public addToBlacklist = async (fullCruxIDs: string[]): Promise<{success: string[], failures: string[]}> => {
+        await this.initPromise;
+        const cruxUserWithKey = await this.getCruxUserByKey();
+        if (!cruxUserWithKey) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
+        }
+        const failures: string[] = [];
+        const registeredCruxUsers: string[] = [];
+        for (const fullCruxID of fullCruxIDs) {
+            const cruxUser = await this.getCruxUserByID(fullCruxID);
+            if (!cruxUser) {
+                failures.push(fullCruxID);
+            } else {
+                registeredCruxUsers.push(fullCruxID);
+            }
+        }
+        cruxUserWithKey.setBlacklistedCruxIDs(registeredCruxUsers);
+        await this.cruxUserRepository.save(cruxUserWithKey, this.getKeyManager());
+        return {success: registeredCruxUsers, failures};
+    }
+
+    // @throwCruxClientError
     public putPrivateAddressMap = async (fullCruxIDs: string[], newAddressMap: IAddressMapping): Promise<IPutPrivateAddressMapResult> => {
         await this.initPromise;
         const cruxUserWithKey = await this.getCruxUserByKey();
@@ -360,8 +384,11 @@ export class CruxWalletClient {
     }
 
     private getCruxUserByKey = async (): Promise<CruxUser|undefined> => {
-        const cruxUser = await this.cruxUserRepository.getWithKey(this.getKeyManager());
-        return cruxUser;
+        if (this.selfCruxUser) {
+            return this.selfCruxUser;
+        }
+        this.selfCruxUser = await this.cruxUserRepository.getWithKey(this.getKeyManager());
+        return this.selfCruxUser;
     }
 
     private getKeyManager = (): IKeyManager => {
@@ -391,7 +418,7 @@ export class CruxWalletClient {
         // await this.openCruxGateway();
     }
 
-    private openCruxGateway = async () => {
+    private getSelfClaim = async (): Promise<IGatewayIdentityClaim | undefined> => {
         let selfClaim: IGatewayIdentityClaim | undefined;
 
         if (this.keyManager) {
@@ -405,10 +432,22 @@ export class CruxWalletClient {
         } else {
             selfClaim = undefined;
         }
-        this.gateway = this.gatewayRepo.openGateway("BASIC", selfClaim);
-        this.gateway.listen((message, metadata) => {
-            console.log("CRUX WALLET CLIENT RECD NEW MESSAGE: ", message, metadata);
+        return selfClaim;
+    }
+    private openCruxGateway = async () => {
+        this.selfIdClaim = await this.getSelfClaim();
+        this.gatewayRepo = getCruxGatewayRepository({
+            defaultLinkServer: {
+                host: "localhost",
+                port: 4005,
+            },
         });
+        if (this.selfIdClaim) {
+            this.selfGateway = this.gatewayRepo.get({selfIdClaim: this.selfIdClaim});
+            this.selfGateway.listen((message, metadata) => {
+                console.log("CRUX WALLET CLIENT RECD NEW MESSAGE: ", message, metadata);
+            });
+        }
     }
 
 }

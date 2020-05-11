@@ -1,37 +1,51 @@
-import {CruxId} from "../../packages";
 import {EventBusEventNames, GatewayEventBus, GatewayPacketManager} from "../domain-services";
-import {IGatewayIdentityClaim, IGatewayProtocolHandler, IPubSubProvider} from "../interfaces";
+import {ICruxGatewayParams, ICruxIdPubSubChannel, IGatewayPacket} from "../interfaces";
 
 export class CruxGateway {
 
-    private pubsubProvider: IPubSubProvider;
     private messageListener: (message: any) => void;
-    private selfClaim?: IGatewayIdentityClaim;
     private packetManager: GatewayPacketManager;
+    private selfChannel: ICruxIdPubSubChannel | undefined;
+    private recepientChannel: ICruxIdPubSubChannel | undefined;
 
-    constructor(pubsubProvider: IPubSubProvider, protocolHandler: IGatewayProtocolHandler, selfClaim?: IGatewayIdentityClaim) {
+    constructor(params: ICruxGatewayParams) {
         // const that = this;
-        this.selfClaim = selfClaim;
-        this.pubsubProvider = pubsubProvider;
+        if ((!params.selfChannel && !params.recipientChannel)) {
+            throw Error("At least one of selfChannel or recipientChannel must be present");
+        }
+        if (params.selfChannel && !params.selfChannel.keyManager) {
+            throw Error("selfChannel must have keyManager");
+        }
+        this.selfChannel = params.selfChannel;
+        this.recepientChannel = params.recipientChannel;
         this.messageListener = (message) => undefined;
-        this.packetManager = new GatewayPacketManager(protocolHandler, selfClaim);
+        this.packetManager = new GatewayPacketManager(params.protocolHandler, params.selfChannel ? {
+            cruxId: params.selfChannel.cruxId,
+            keyManager: params.selfChannel.keyManager!,
+        } : undefined);
     }
 
-    public sendMessage(recipient: CruxId, message: any) {
-        const eventBus = new GatewayEventBus(this.pubsubProvider, recipient, this.selfClaim!.cruxId);
-        const packet = this.packetManager.createNewPacket(message);
+    public sendMessage(message: any) {
+        if (!this.recepientChannel) {
+            throw Error("Cannot send in gateway with no recipientChannel");
+        }
+        const eventBus = new GatewayEventBus(this.recepientChannel.pubsubClient, this.recepientChannel.cruxId, this.selfChannel ? this.selfChannel.cruxId : undefined);
+        const packet: IGatewayPacket = this.packetManager.createNewPacket(message);
         const serializedPacket = JSON.stringify(packet);
         eventBus.send(serializedPacket);
     }
 
     public listen(messageListener: (message: any, metadata: any) => void) {
-        if (!this.selfClaim) {
-            throw Error("Cannot listen to a gateway with no selfClaim");
+        if (!this.selfChannel || this.recepientChannel) {
+            throw Error("Cannot listen to a gateway with no selfChannel");
         }
-        const eventBus = new GatewayEventBus(this.pubsubProvider, undefined, this.selfClaim!.cruxId);
+        if (this.recepientChannel) {
+            throw Error("Cannot listen to gateway with recipientChannel");
+        }
+        const eventBus = new GatewayEventBus(this.selfChannel.pubsubClient, undefined, this.selfChannel.cruxId);
         eventBus.on(EventBusEventNames.newMessage, (data: string) => {
             const deserializedData = JSON.parse(data);
-            const packet = this.packetManager.parse(deserializedData);
+            const packet: IGatewayPacket = this.packetManager.parse(deserializedData);
             messageListener(packet.message, packet.metadata);
         });
     }

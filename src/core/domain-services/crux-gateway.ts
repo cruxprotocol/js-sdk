@@ -4,15 +4,20 @@ import {
     IGatewayIdentityCertificate,
     IGatewayIdentityClaim, IGatewayPacket, IGatewayPacketMetadata,
     IGatewayProtocolHandler,
-    IPubSubProvider,
+    IPubSubClient,
 } from "../interfaces";
 
-const getCertificate = (idClaim: IGatewayIdentityClaim): IGatewayIdentityCertificate => {
-    return {
-        claim: idClaim.cruxId.toString(),
-        proof: "PROOF",
-    };
-};
+export class CertificateManager {
+    public static make = (idClaim: IGatewayIdentityClaim): IGatewayIdentityCertificate => {
+        return {
+            claim: idClaim.cruxId.toString(),
+            proof: "PROOF",
+        };
+    }
+    public static verify = (certificate: IGatewayIdentityCertificate) => {
+        return true;
+    }
+}
 
 export class GatewayPacketManager {
     private protocolHandler: IGatewayProtocolHandler;
@@ -35,6 +40,11 @@ export class GatewayPacketManager {
 
     public parse(packet: IGatewayPacket): IGatewayPacket {
         this.protocolHandler.validateMessage(packet.message);
+        if (packet.metadata.senderCertificate) {
+            if (!CertificateManager.verify(packet.metadata.senderCertificate)) {
+                throw Error("Count not verify sender certificate");
+            }
+        }
         return {
             message: packet.message,
             metadata: packet.metadata,
@@ -44,7 +54,7 @@ export class GatewayPacketManager {
     private makePacketMetadata(): IGatewayPacketMetadata {
         let senderCertificate: IGatewayIdentityCertificate | undefined;
         if (this.selfClaim) {
-            senderCertificate = getCertificate(this.selfClaim);
+            senderCertificate = CertificateManager.make(this.selfClaim);
         }
         return {
             packetCreatedAt: new Date(),
@@ -67,18 +77,18 @@ export class GatewayEventBus {
     private registeredCallbacks: any;
     private recipient?: CruxId;
     private selfId?: CruxId;
-    private pubsubProvider: IPubSubProvider;
+    private pubsubClient: IPubSubClient;
 
-    constructor(pubsubProvider: IPubSubProvider, recipient?: CruxId, selfId?: CruxId) {
+    constructor(pubsubClient: IPubSubClient, recipient?: CruxId, selfId?: CruxId) {
         this.registeredCallbacks = {};
-        this.pubsubProvider = pubsubProvider;
+        this.pubsubClient = pubsubClient;
         if (!recipient && !selfId) {
-            throw Error("Invalid state. One of recipient or selfId must be present");
+            throw Error("Invalid state. At least one of recipient or selfId must be present");
         }
 
         if (selfId) {
             const selfTopic = "topic_" + selfId.toString();
-            pubsubProvider.subscribe(selfTopic, new EventBusProxy(this, EventBusEventNames.newMessage).redirect);
+            pubsubClient.subscribe(selfTopic, new EventBusProxy(this, EventBusEventNames.newMessage).redirect);
         }
         this.selfId = selfId;
         this.recipient = recipient;
@@ -96,7 +106,7 @@ export class GatewayEventBus {
             throw Error("Cannot send in a bus with no recipient");
         }
         const recipientTopic = "topic_" + this.recipient.toString();
-        this.pubsubProvider.publish(recipientTopic, data);
+        this.pubsubClient.publish(recipientTopic, data);
     }
 
     public getRegisteredCallback(eventName: string) {

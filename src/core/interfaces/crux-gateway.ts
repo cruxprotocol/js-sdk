@@ -18,11 +18,22 @@ export interface IGatewayProtocolHandler {
     validateMessage(gatewayMessage: any): boolean;
 }
 
-export interface ICruxGatewayRepository {
-    openGateway: (protocol: string, selfClaim?: IGatewayIdentityClaim) => CruxGateway;
+export interface ICruxIdPubSubChannel {
+    cruxId: CruxId;
+    pubsubClient: IPubSubClient;
+    keyManager?: IKeyManager;
 }
 
-export interface IPubSubProvider {
+export interface IGatewayRepositoryGetParams {
+    protocol?: string;
+    selfIdClaim?: IGatewayIdentityClaim;
+    receiverId?: CruxId;
+}
+export interface ICruxGatewayRepository {
+    get: (params: IGatewayRepositoryGetParams) => CruxGateway;
+}
+
+export interface IPubSubClient {
     subscribe: (topic: string, callback: any) => void;
     publish: (topic: string, data: any) => void;
 }
@@ -41,4 +52,10 @@ export interface IGatewayPacketMetadata {
 export interface IGatewayIdentityCertificate {
     claim: string;
     proof: string;
+}
+
+export interface ICruxGatewayParams {
+    protocolHandler: IGatewayProtocolHandler;
+    selfChannel?: ICruxIdPubSubChannel;
+    recipientChannel?: ICruxIdPubSubChannel;
 }

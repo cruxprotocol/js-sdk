@@ -282,6 +282,7 @@ export const getValidPendingCruxUser = () => {
         }
     };
     const validCruxUserData: ICruxUserData = {
+        blacklistAddresses: [],
         configuration: {
             enabledAssetGroups: [],
         },

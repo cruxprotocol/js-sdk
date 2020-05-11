@@ -1,10 +1,10 @@
 import {createNanoEvents} from "nanoevents";
 import {CruxGateway} from "../../core/entities";
 import {
-    ICruxGatewayRepository,
+    ICruxGatewayRepository, ICruxIdPubSubChannel,
     IGatewayIdentityClaim,
-    IGatewayProtocolHandler,
-    IPubSubProvider
+    IGatewayProtocolHandler, IGatewayRepositoryGetParams,
+    IPubSubClient
 } from "../../core/interfaces";
 import {
     CruxGatewayPaymentsProtocolHandler,
@@ -21,7 +21,7 @@ export class BasicGatewayProtocolHandler implements IGatewayProtocolHandler {
     }
 }
 
-export class InMemoryPubSubProvider implements IPubSubProvider {
+export class InMemoryPubSubClient implements IPubSubClient {
     private emitterByTopic: any;
     constructor(){
         this.emitterByTopic = {}
@@ -45,15 +45,31 @@ export class InMemoryPubSubProvider implements IPubSubProvider {
 }
 
 export class InMemoryCruxGatewayRepository implements ICruxGatewayRepository {
-    private pubsubProvider: InMemoryPubSubProvider;
+    private commonPubsubClient: InMemoryPubSubClient;
     private supportedProtocols: any;
     constructor(){
-        this.pubsubProvider = new InMemoryPubSubProvider();
+        this.commonPubsubClient = new InMemoryPubSubClient();
         this.supportedProtocols = [ BasicGatewayProtocolHandler, CruxGatewayPaymentsProtocolHandler ];
     }
-    public openGateway(protocol: string, selfClaim?: IGatewayIdentityClaim): CruxGateway {
-        const protocolHandler = getProtocolHandler(this.supportedProtocols, protocol);
-        return new CruxGateway(this.pubsubProvider, protocolHandler, selfClaim);
+    public get(params: IGatewayRepositoryGetParams): CruxGateway {
+        let receiverPubSubChannel: ICruxIdPubSubChannel | undefined;
+        if (params.receiverId) {
+            receiverPubSubChannel = {
+                cruxId: params.receiverId,
+                pubsubClient: this.commonPubsubClient,
+            };
+        }
+        return new CruxGateway({
+            protocolHandler: getProtocolHandler(this.supportedProtocols, params.protocol? params.protocol : "BASIC"),
+            recipientChannel: receiverPubSubChannel,
+            selfChannel: this.getChannel(params.selfIdClaim)});
     }
-
+    private getChannel(selfIdClaim?: IGatewayIdentityClaim): ICruxIdPubSubChannel | undefined {
+        if (selfIdClaim) {
+            return  {
+                ...selfIdClaim,
+                pubsubClient: this.commonPubsubClient,
+            };
+        }
+    }
 }
