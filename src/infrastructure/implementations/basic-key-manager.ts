@@ -1,3 +1,5 @@
+// @ts-ignore
+import * as eccrypto from "eccrypto";
 import { ec } from "elliptic";
 import { TokenSigner } from "jsontokens";
 import { IKeyManager } from "../../core/interfaces/key-manager";
@@ -33,6 +35,12 @@ export class BasicKeyManager implements IKeyManager {
         const userKey = curve.keyFromPublic(publicKey, "hex");
         privateKey = "0".repeat(privateKey.length);
         return selfKey.derive(userKey.getPublic()).toString(16);
+    }
+
+    public decryptMessage = async (encryptedMessage: string): Promise<string> => {
+        const privateKey = await this.getDecryptedPrivateKey();
+        const decrypted = await eccrypto.decrypt(Buffer.from(privateKey, "hex"), encryptedMessage);
+        return decrypted.toString();
     }
     private init = async (privateKey: string, getEncryptionKey?: () => Promise<string>): Promise<void> => {
         let encryptionConstant: string;

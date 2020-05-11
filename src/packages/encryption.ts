@@ -1,4 +1,6 @@
 import * as ncrypto from "crypto";
+// @ts-ignore
+import * as eccrypto from "eccrypto";
 import {ErrorHelper, PackageErrorCode} from "./error";
 
 const typedArrayToBuffer = (array: Uint8Array): ArrayBuffer => {
@@ -22,6 +24,12 @@ export class Encryption {
     public static decryptJSON = async (ctBufferBase64: string, ivBase64: string, password: string): Promise<object> => {
         const JSONString = await Encryption.decryptText(ctBufferBase64, ivBase64, password);
         return JSON.parse(JSONString);
+    }
+
+    public static encryptMessage = async (message: string, publicKey: string): Promise<string> => {
+        const toEncrypt = Buffer.from(message, "utf8");
+        const encrypted = await eccrypto.encrypt(Buffer.from(publicKey, "hex"), toEncrypt);
+        return encrypted;
     }
 ​
     public static encryptText = async (plainText: string, password: string): Promise<{ encBuffer: string; iv: string }> => {

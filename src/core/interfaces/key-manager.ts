@@ -2,6 +2,7 @@ export interface IKeyManager {
     signWebToken: (payload: any) => Promise<string>;
     getPubKey: () => Promise<string>;
     deriveSharedSecret?: (publicKey: string) => Promise<string>;
+    decryptMessage: (encryptedMessage: string) => Promise<string>;
 }
 
 export const isInstanceOfKeyManager = (object: any) => {
