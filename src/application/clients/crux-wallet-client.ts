@@ -1,6 +1,6 @@
 // Importing packages
 import Logger from "js-logger";
-import {SecureCruxIdMessenger} from "../../core/domain-services/crux-messenger";
+import {SecureCruxIdMessenger} from "../../core/domain-services";
 import {
     CruxDomain,
     CruxSpec,

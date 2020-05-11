@@ -1,4 +1,3 @@
-import {StrongPubSubClient} from "../../infrastructure/implementations";
 import {CruxId} from "../../packages";
 import {CruxUser} from "../entities";
 
