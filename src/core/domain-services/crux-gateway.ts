@@ -17,25 +17,19 @@ export class CertificateManager {
         const signedProof = await idClaim.keyManager.signWebToken(payload);
         return {
                 claim: idClaim.cruxId.toString(),
-                messageId,
                 proof: signedProof,
-                senderPubKey: await idClaim.keyManager.getPubKey(),
         };
     }
-    public static verify = (idClaim: any, certificate: IGatewayIdentityCertificate) => {
+    public static verify = (senderPubKey: any, certificate: IGatewayIdentityCertificate) => {
         try {
-            if (!idClaim) {
-                return false;
-            }
             const proof: any = decodeToken(certificate.proof).payload;
-            const verified = new TokenVerifier("ES256K", certificate.senderPubKey).verify(certificate.proof);
-            // tslint:disable-next-line: tsr-detect-possible-timing-attacks
-            if (proof.messageId === certificate.messageId && verified) {
-                return true;
+            const verified = new TokenVerifier("ES256K", senderPubKey).verify(certificate.proof);
+            if (verified) {
+                return proof.messageId;
             }
-            return false;
+            return "Could not verify sender certificate";
         } catch (err) {
-            return false;
+            return "Could not verify sender certificate";
         }
     }
 }
