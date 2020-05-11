@@ -27,7 +27,7 @@ export class InMemoryPubSubClient implements IPubSubClient {
     }
 }
 
-class InMemoryPubSubClientFactory implements IPubSubClientFactory {
+export class InMemoryPubSubClientFactory implements IPubSubClientFactory {
     private pubsubClient: InMemoryPubSubClient;
     constructor() {
         this.pubsubClient = new InMemoryPubSubClient()
