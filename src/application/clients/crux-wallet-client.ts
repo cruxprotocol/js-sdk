@@ -1,7 +1,8 @@
 // Importing packages
 import Logger from "js-logger";
+import {CruxNetPubSubClientFactory, SecureCruxIdMessenger} from "../../core/domain-services/crux-messenger";
 import {
-    CruxDomain, CruxGateway,
+    CruxDomain,
     CruxSpec,
     CruxUser,
     IAddress,
@@ -13,19 +14,17 @@ import {
 } from "../../core/entities";
 import {
     ICruxBlockstackInfrastructure,
-    ICruxDomainRepository, ICruxGatewayRepository,
-    ICruxUserRepository, IGatewayIdentityClaim,
+    ICruxDomainRepository, ICruxUserRepository,
     IKeyManager,
     isInstanceOfKeyManager,
 } from "../../core/interfaces";
+import {ICruxIdClaim} from "../../core/interfaces/crux-messenger";
 import {
     BasicKeyManager,
     BlockstackCruxDomainRepository,
     BlockstackCruxUserRepository,
-    CruxNetworkGatewayRepository,
     IBlockstackCruxDomainRepositoryOptions,
     IBlockstackCruxUserRepositoryOptions,
-    ICruxGatewayRepositoryRepositoryOptions,
 } from "../../infrastructure/implementations";
 import {CruxDomainId, CruxId, getLogger, InMemStorage, StorageService} from "../../packages";
 import {Encryption} from "../../packages/encryption";
@@ -99,10 +98,6 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
     return new BlockstackCruxUserRepository(options);
 };
 
-export const getCruxGatewayRepository = (options: ICruxGatewayRepositoryRepositoryOptions): ICruxGatewayRepository => {
-    return new CruxNetworkGatewayRepository(options);
-};
-
 export class CruxWalletClient {
     public e = Encryption;
     public walletClientName: string;
@@ -116,10 +111,9 @@ export class CruxWalletClient {
     private keyManager?: IKeyManager;
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
     private cacheStorage?: StorageService;
-    private gatewayRepo?: ICruxGatewayRepository;
     private selfCruxUser?: CruxUser;
-    private selfGateway?: CruxGateway;
-    private selfIdClaim?: IGatewayIdentityClaim;
+    private selfIdClaim?: ICruxIdClaim;
+    private secureCruxMessenger?: SecureCruxIdMessenger;
 
     constructor(options: ICruxWalletClientOptions) {
         getLogger(cruxWalletClientDebugLoggerName).setLevel(options.debugLogging ? Logger.DEBUG : Logger.OFF);
@@ -215,20 +209,10 @@ export class CruxWalletClient {
     @throwCruxClientError
     public sendPaymentRequest = async (walletSymbol: string, recipientCruxId: string, amount: string): Promise<void> => {
         await this.initPromise;
-        const recipientCruxUser = await this.getCruxUserByID(recipientCruxId);
-        if (!recipientCruxUser) {
-            throw Error("Cannot find recipient user");
+        if (!this.secureCruxMessenger) {
+            throw Error("Cannot use this method");
         }
-        const assetToRequest = this.cruxAssetTranslator.symbolToAssetId(walletSymbol);
-        if (!assetToRequest) {
-            throw Error("Did not find asset to send");
-        }
-        const recipientGateway = this.gatewayRepo!.get({selfIdClaim: this.selfIdClaim, receiverId: recipientCruxUser.cruxID});
-        recipientGateway.sendMessage({
-            amount,
-            assetId: assetToRequest,
-        });
-
+        await this.secureCruxMessenger.send({currency: walletSymbol, amount }, CruxId.fromString(recipientCruxId));
     }
 
     @throwCruxClientError
@@ -392,11 +376,11 @@ export class CruxWalletClient {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
         this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping, this.cruxDomain.config.assetList);
-        // await this.openCruxGateway();
+        await this.setupCruxMessenger();
     }
 
-    private getSelfClaim = async (): Promise<IGatewayIdentityClaim | undefined> => {
-        let selfClaim: IGatewayIdentityClaim | undefined;
+    private getSelfClaim = async (): Promise<ICruxIdClaim | undefined> => {
+        let selfClaim: ICruxIdClaim | undefined;
 
         if (this.keyManager) {
             const selfUser = await this.getCruxUserByKey();
@@ -411,20 +395,16 @@ export class CruxWalletClient {
         }
         return selfClaim;
     }
-    private openCruxGateway = async () => {
-        this.selfIdClaim = await this.getSelfClaim();
-        this.gatewayRepo = getCruxGatewayRepository({
-            defaultLinkServer: {
+    private setupCruxMessenger = async () => {
+        const selfIdClaim = await this.getSelfClaim();
+        if (!selfIdClaim) {
+            throw Error("Self ID Claim is required to setup messenger");
+        }
+        const pubsubClientFactory = new CruxNetPubSubClientFactory({defaultLinkServer: {
                 host: "localhost",
                 port: 4005,
-            },
-        });
-        if (this.selfIdClaim) {
-            this.selfGateway = this.gatewayRepo.get({selfIdClaim: this.selfIdClaim});
-            this.selfGateway.listen((message, metadata) => {
-                console.log("CRUX WALLET CLIENT RECD NEW MESSAGE: ", message, metadata);
-            });
-        }
+            }});
+        this.secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
     }
 
 }
