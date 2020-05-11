@@ -10,7 +10,7 @@ import {
     ICruxUserInformation,
     ICruxUserData
 } from "../core/entities/crux-user";
-import {IGatewayIdentityClaim} from "../core/interfaces";
+import {ICruxIdClaim} from "../core/interfaces";
 import {ICruxDomainRepository} from "../core/interfaces/crux-domain-repository";
 import {ICruxUserRepository} from "../core/interfaces/crux-user-repository";
 import {IKeyManager} from "../core/interfaces/key-manager";
@@ -55,7 +55,7 @@ export const testPrivateKeyByAddress = {
 }
 
 
-export const getIdClaimForUser = (user: CruxUser): IGatewayIdentityClaim  => {
+export const getIdClaimForUser = (user: CruxUser): ICruxIdClaim  => {
 
     const address = publicKeyToAddress(user.publicKey!);
     // @ts-ignore
