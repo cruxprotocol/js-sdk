@@ -1,3 +1,4 @@
+import {decodeToken, TokenVerifier} from "jsontokens";
 import {CruxId} from "../../packages";
 import {CruxUser} from "../entities";
 
@@ -10,14 +11,23 @@ import {
 } from "../interfaces";
 
 export class CertificateManager {
-    public static make = (idClaim: ICruxIdClaim): ICruxIdCertificate => {
+    public static make = async (idClaim: ICruxIdClaim): Promise<ICruxIdCertificate> => {
+        const payload = {
+            messageId : "123", // update this
+        };
+        const signedProof = await idClaim.keyManager.signWebToken(payload);
         return {
-            claim: idClaim.cruxId.toString(),
-            proof: "PROOF",
+                claim: idClaim.cruxId.toString(),
+                proof: signedProof,
         };
     }
-    public static verify = (certificate: ICruxIdCertificate, publicKey: string) => {
-        return true;
+    public static verify = (certificate: ICruxIdCertificate, senderPubKey: any) => {
+        const proof: any = decodeToken(certificate.proof).payload;
+        const verified = new TokenVerifier("ES256K", senderPubKey).verify(certificate.proof);
+        if (proof && proof.messageId && verified) {
+            return true;
+        }
+        return false;
     }
 }
 
@@ -54,7 +64,7 @@ export class SecureCruxIdMessenger {
         if (!recipientCruxUser) {
             throw Error("No Such CRUX User Found");
         }
-        const certificate = CertificateManager.make(this.selfIdClaim);
+        const certificate = await CertificateManager.make(this.selfIdClaim);
         const securePacket: ISecurePacket = {
             certificate,
             data,
