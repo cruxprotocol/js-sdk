@@ -71,19 +71,10 @@ export class Encryption {
 }
 
 export class ECIESEncryption {
-    public static encrypt = async (content: string, publicKey: string): Promise<string> => {
-        const toEncrypt = Buffer.from(content, "utf8");
-        const encrypted = await eccrypto.encrypt(Buffer.from(publicKey, "hex"), toEncrypt);
-        const encryptedStringObj = {
-            ciphertext: encrypted.ciphertext.toString("hex"),
-            ephemPublicKey: encrypted.ephemPublicKey.toString("hex"),
-            iv: encrypted.iv.toString("hex"),
-            mac: encrypted.mac.toString("hex"),
-        };
-        return JSON.stringify(encryptedStringObj);
+    public static encrypt = async (content: ArrayBuffer, publicKey: string): Promise<object> => {
+        return eccrypto.encrypt(Buffer.from(publicKey, "hex"), content);
     }
-    public static decrypt = async (encryptedContent: string, keyManager: IKeyManager): Promise<string> => {
-        const decryptedContent = await keyManager.decryptMessage!(encryptedContent);
-        return decryptedContent;
+    public static decrypt = async (encryptedContent: object, privateKey: string): Promise<string> => {
+        return eccrypto.decrypt(Buffer.from(privateKey, "hex"), encryptedContent);
     }
 }

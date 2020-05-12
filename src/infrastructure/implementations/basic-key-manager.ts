@@ -3,9 +3,9 @@ import * as eccrypto from "eccrypto";
 import { ec } from "elliptic";
 import { TokenSigner } from "jsontokens";
 import { IKeyManager } from "../../core/interfaces/key-manager";
-import { Encryption } from "../../packages/encryption";
+import { ECIESEncryption, Encryption } from "../../packages/encryption";
 import { getLogger } from "../../packages/logger";
-import { getKeyPairFromPrivKey, getRandomHexString } from "../../packages/utils";
+import { BufferJSONSerializer, getKeyPairFromPrivKey, getRandomHexString } from "../../packages/utils";
 const log = getLogger(__filename);
 export class BasicKeyManager implements IKeyManager {
     private getEncryptionKey?: () => Promise<string>;
@@ -38,15 +38,9 @@ export class BasicKeyManager implements IKeyManager {
     }
 
     public decryptMessage = async (encryptedMessage: string): Promise<string> => {
-        const encryptedStringObj = JSON.parse(encryptedMessage);
-        const toDecrypt = {
-            ciphertext: Buffer.from(encryptedStringObj.ciphertext, "hex"),
-            ephemPublicKey: Uint8Array.from(Buffer.from(encryptedStringObj.ephemPublicKey, "hex")),
-            iv: Buffer.from(encryptedStringObj.iv, "hex"),
-            mac: Buffer.from(encryptedStringObj.mac, "hex"),
-        };
+        const toDecrypt = BufferJSONSerializer.JSONStringToBufferObject(encryptedMessage);
         const privateKey = await this.getDecryptedPrivateKey();
-        const decrypted = await eccrypto.decrypt(Buffer.from(privateKey, "hex"), toDecrypt);
+        const decrypted = await ECIESEncryption.decrypt(toDecrypt, privateKey);
         return decrypted.toString();
     }
     private init = async (privateKey: string, getEncryptionKey?: () => Promise<string>): Promise<void> => {

@@ -1,4 +1,4 @@
-import {CruxId} from "../../packages";
+import {BufferJSONSerializer, CruxId} from "../../packages";
 import {CruxUser} from "../entities";
 
 import { ECIESEncryption } from "../../packages/encryption";
@@ -25,10 +25,20 @@ export class CertificateManager {
 export class EncryptionManager {
     // Use ECIES to encrypt & decrypt
     public static encrypt = async (content: string, pubKeyOfRecipient: string): Promise<string> => {
-        return ECIESEncryption.encrypt(content, pubKeyOfRecipient);
+        const toEncrypt = Buffer.from(content, "utf8");
+        const encrypted = await ECIESEncryption.encrypt(toEncrypt, pubKeyOfRecipient);
+        return BufferJSONSerializer.bufferObjectToJSONString(encrypted);
     }
     public static decrypt = async (encryptedContent: string, keyManager: IKeyManager): Promise<string> => {
-        return ECIESEncryption.decrypt(encryptedContent, keyManager);
+        try {
+            const decryptedContent = await keyManager.decryptMessage!(encryptedContent);
+            return decryptedContent;
+        } catch (e) {
+            if (e.message === "Bad MAC") {
+                throw new Error("Decryption failed");
+            }
+            throw e;
+        }
     }
 }
 
