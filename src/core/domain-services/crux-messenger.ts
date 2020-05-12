@@ -9,7 +9,6 @@ import {
     IPubSubClientFactory,
     ISecurePacket,
 } from "../interfaces";
-import { encryptContent } from "blockstack";
 
 export class CertificateManager {
     public static make = (idClaim: ICruxIdClaim): ICruxIdCertificate => {
