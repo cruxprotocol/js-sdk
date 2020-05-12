@@ -40,7 +40,7 @@ export enum EventBusEventNames {
     error = "error",
 }
 
-export class CruxGatewayProtocolMessenger {
+export class CruxConnectProtocolMessenger {
     private secureMessenger: SecureCruxIdMessenger;
     private schemaByMessageType: any;
 
@@ -59,6 +59,10 @@ export class CruxGatewayProtocolMessenger {
             newMessageCallback(msg);
         });
     }
+    public validateMessage = (message: IProtocolMessage): void => {
+        const schema = this.getSchema(message.type);
+        this.validateContent(message.content, schema);
+    }
 
     private getSchema = (messageType: string): any => {
         const schema = this.schemaByMessageType[messageType];
@@ -73,10 +77,6 @@ export class CruxGatewayProtocolMessenger {
         } catch (e) {
             throw Error("Message content does not match schema for");
         }
-    }
-    private validateMessage = (message: IProtocolMessage): void => {
-        const schema = this.getSchema(message.type);
-        this.validateContent(message.content, schema);
     }
 }
 
