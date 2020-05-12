@@ -76,20 +76,22 @@ export class SecureCruxIdMessenger {
         messenger.send(encryptedSecurePacket, recipientCruxId);
     }
 
-    public listen = (newMessageCallback: (msg: any) => void): void => {
-        this.selfMessenger.on(EventBusEventNames.newMessage, async (encryptedString: string) => {
-            const serializedSecurePacket: string = EncryptionManager.decrypt(encryptedString, this.selfIdClaim.keyManager);
-            const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
-            const senderUser: CruxUser | undefined = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
-            if (!senderUser) {
-                throw Error("Sender user does not exist");
-            }
-            const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
-            if (!isVerified) {
-                throw Error("Could not validate identity");
-            }
-            newMessageCallback(securePacket.data);
-        });
+    public listen = (newMessageCallback: (msg: any) => any, errorCallback: (err: any) => any): void => {
+            this.selfMessenger.on(EventBusEventNames.newMessage, async (encryptedString: string) => {
+                const serializedSecurePacket: string = EncryptionManager.decrypt(encryptedString, this.selfIdClaim.keyManager);
+                const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
+                const senderUser: CruxUser | undefined = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
+                if (!senderUser) {
+                    errorCallback(new Error("Sender user does not exist"));
+                    return;
+                }
+                const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
+                if (!isVerified) {
+                    errorCallback(new Error("Could not validate identity"));
+                    return;
+                }
+                newMessageCallback(securePacket.data);
+            });
     }
 }
 
