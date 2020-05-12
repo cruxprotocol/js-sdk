@@ -7,7 +7,7 @@ export interface ICruxIdClaim {
 }
 
 export interface IPubSubClient {
-    subscribe: (topic: string, callback: any) => void;
+    subscribe: (topic: string, callback: any, errorCallback: any) => void;
     publish: (topic: string, data: any) => void;
 }
 

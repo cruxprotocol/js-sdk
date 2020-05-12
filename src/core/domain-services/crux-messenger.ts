@@ -12,9 +12,7 @@ import {
 
 export class CertificateManager {
     public static make = async (idClaim: ICruxIdClaim): Promise<ICruxIdCertificate> => {
-        const payload = {
-            messageId : "123", // update this
-        };
+        const payload = idClaim.cruxId.toString();
         const signedProof = await idClaim.keyManager.signWebToken(payload);
         return {
                 claim: idClaim.cruxId.toString(),
@@ -24,7 +22,7 @@ export class CertificateManager {
     public static verify = (certificate: ICruxIdCertificate, senderPubKey: any) => {
         const proof: any = decodeToken(certificate.proof).payload;
         const verified = new TokenVerifier("ES256K", senderPubKey).verify(certificate.proof);
-        if (proof && proof.messageId && verified) {
+        if (proof && proof === certificate.claim && verified) {
             return true;
         }
         return false;
@@ -92,6 +90,10 @@ export class SecureCruxIdMessenger {
                 }
                 newMessageCallback(securePacket.data);
             });
+            this.selfMessenger.on(EventBusEventNames.error, async () => {
+                errorCallback(new Error("Error Received while processing event"));
+                return;
+            });
     }
 }
 
@@ -104,7 +106,7 @@ export class CruxIdMessenger {
         this.registeredCallbacks = {};
         this.pubsubClient = pubsubClient;
         const selfTopic = "topic_" + selfId.toString();
-        pubsubClient.subscribe(selfTopic, new MessengerEventProxy(this, EventBusEventNames.newMessage).redirect);
+        pubsubClient.subscribe(selfTopic, new MessengerEventProxy(this, EventBusEventNames.newMessage).redirect, new MessengerEventProxy(this, EventBusEventNames.error).redirect);
         this.selfId = selfId;
     }
 
