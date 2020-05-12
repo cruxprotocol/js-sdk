@@ -87,7 +87,7 @@ export class SecureCruxIdMessenger {
             }
             const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
             if (!isVerified) {
-                throw Error("Could not validate");
+                throw Error("Could not validate identity");
             }
             newMessageCallback(securePacket.data);
         });

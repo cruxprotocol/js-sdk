@@ -71,7 +71,7 @@ export const getIdClaimForUser = (user: CruxUser): ICruxIdClaim  => {
 
 
 
-class MockUserStore {
+export class MockUserStore {
     private userById: any;
     private userByKeyAndDomain: any;
 
@@ -80,7 +80,8 @@ class MockUserStore {
         this.userByKeyAndDomain = {};
     }
 
-    public store = (cruxUser: CruxUser, address: string) => {
+    public store = (cruxUser: CruxUser) => {
+        const address = publicKeyToAddress(cruxUser.publicKey!);
         this.userById[cruxUser.cruxID.toString()] = cruxUser;
         this.userByKeyAndDomain[String([address, cruxUser.cruxID.components.domain])] = cruxUser;
     };
@@ -94,10 +95,10 @@ class MockUserStore {
 
 export class InMemoryCruxUserRepository implements ICruxUserRepository {
     private userStore: MockUserStore;
-    private domain: CruxDomain;
+    private domain?: CruxDomain;
 
-    constructor(domain: CruxDomain) {
-        this.userStore = new MockUserStore();
+    constructor(userStore: MockUserStore, domain?: CruxDomain) {
+        this.userStore = userStore;
         this.domain = domain;
     }
 
@@ -105,7 +106,7 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
         if (!(await this.isCruxIdAvailable(cruxIdSubdomain))) {
             throw Error("Already Exists");
         }
-        const newUser = new CruxUser(cruxIdSubdomain, this.domain, {}, {
+        const newUser = new CruxUser(cruxIdSubdomain, this.domain!, {}, {
             registrationStatus: {
                 status: SubdomainRegistrationStatus.PENDING,
                 statusDetail: SubdomainRegistrationStatusDetail.PENDING_REGISTRAR,
@@ -116,12 +117,11 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
             },
             privateAddresses: {}
         }, await keyManager.getPubKey());
-        const addressFromKeyManager = publicKeyToAddress(await keyManager.getPubKey());
-        this.userStore.store(newUser, addressFromKeyManager);
-        return new Promise((resolve, reject) => resolve(newUser));
+        this.userStore.store(newUser);
+        return newUser;
     };
     isCruxIdAvailable = (cruxIdSubdomain: string): Promise<boolean> => {
-        const cruxID = new CruxId({domain: this.domain.id.components.domain, subdomain: cruxIdSubdomain})
+        const cruxID = new CruxId({domain: this.domain!.id.components.domain, subdomain: cruxIdSubdomain})
         const result = this.userStore.getById(cruxID) === undefined;
         return new Promise((resolve, reject) => resolve(result));
     };
@@ -131,7 +131,7 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
     };
     getWithKey = async (keyManager: IKeyManager): Promise<CruxUser | undefined> => {
         const addressFromKeyManager = publicKeyToAddress(await keyManager.getPubKey());
-        const result = this.userStore.getByOwnerAddressAndDomain(addressFromKeyManager, this.domain.id);
+        const result = this.userStore.getByOwnerAddressAndDomain(addressFromKeyManager, this.domain!.id);
         return new Promise((resolve, reject) => resolve(result));
     };
     save = async (cruxUser: CruxUser, keyManager: IKeyManager): Promise<CruxUser> => {
@@ -143,7 +143,7 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
             throw Error("User exists but provided Key is wrong");
         }
         this.userStore.store(cruxUser, addressFromKeyManager);
-        return new Promise((resolve, reject) => resolve(cruxUser));
+        return cruxUser;
     };
 
 }
@@ -196,7 +196,7 @@ export const addDomainToRepo = async (cruxDomain: CruxDomain, repo: ICruxDomainR
     return repo;
 };
 
-export const getValidCruxDomain = () => {
+export const getSomewalletDomain = () => {
     const testCruxDomainId = CruxDomainId.fromString('somewallet.crux');
     const domainStatus: DomainRegistrationStatus = DomainRegistrationStatus.REGISTERED;
     const testValidDomainAssetMapping = {
@@ -224,7 +224,7 @@ export const getCruxdevCruxDomain = () => {
     };
     return new CruxDomain(testCruxDomainId, domainStatus, testValidDomainConfig);
 };
-export const getValidCruxUser = () => {
+export const getFoo123SomewalletUser = () => {
     const testCruxUserSubdomain = "foo123";
     const testCruxId = CruxId.fromString('foo123@somewallet.crux');
     const testAddress: IAddress = {
@@ -245,10 +245,10 @@ export const getValidCruxUser = () => {
         privateAddresses: {}
     }
     const keyData = getKeyPairFromPrivKey(testPvtKey)
-    return new CruxUser(testCruxUserSubdomain, getValidCruxDomain() , testValidAddressMap, validUserInformation, validCruxUserData, keyData.pubKey);
+    return new CruxUser(testCruxUserSubdomain, getSomewalletDomain() , testValidAddressMap, validUserInformation, validCruxUserData, keyData.pubKey);
 };
 
-export const getValidCruxUser2 = () => {
+export const getBar123SomewalletUser = () => {
     const testCruxUserSubdomain = "bar123";
     const testCruxId = CruxId.fromString('bar123@somewallet.crux');
     const testAddress: IAddress = {
@@ -269,7 +269,7 @@ export const getValidCruxUser2 = () => {
         privateAddresses: {}
     }
     const keyData = getKeyPairFromPrivKey(testPvtKey2)
-    return new CruxUser(testCruxUserSubdomain, getValidCruxDomain(), testValidAddressMap, validUserInformation, validCruxUserData, keyData.pubKey);
+    return new CruxUser(testCruxUserSubdomain, getSomewalletDomain(), testValidAddressMap, validUserInformation, validCruxUserData, keyData.pubKey);
 };
 
 export const getValidPendingCruxUser = () => {
@@ -288,7 +288,7 @@ export const getValidPendingCruxUser = () => {
         privateAddresses: {}
     }
     const keyData = getKeyPairFromPrivKey(testPvtKey3)
-    return new CruxUser(testCruxUserSubdomain, getValidCruxDomain(), {}, validUserInformation, validCruxUserData, keyData.pubKey);
+    return new CruxUser(testCruxUserSubdomain, getSomewalletDomain(), {}, validUserInformation, validCruxUserData, keyData.pubKey);
 }
 
 export const CustomMatcher = {
