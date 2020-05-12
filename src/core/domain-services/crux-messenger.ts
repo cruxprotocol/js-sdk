@@ -1,9 +1,13 @@
 import {CruxId} from "../../packages";
 import {CruxUser} from "../entities";
 
-import {ICruxIdClaim, ICruxUserRepository, IKeyManager} from "../interfaces";
 import {
     ICruxIdCertificate,
+    ICruxIdClaim,
+    ICruxUserRepository,
+    IKeyManager,
+    IMessageSchema,
+    IProtocolMessage,
     IPubSubClient,
     IPubSubClientFactory,
     ISecurePacket,
@@ -34,6 +38,46 @@ export class EncryptionManager {
 export enum EventBusEventNames {
     newMessage = "newMessage",
     error = "error",
+}
+
+export class CruxGatewayProtocolMessenger {
+    private secureMessenger: SecureCruxIdMessenger;
+    private schemaByMessageType: any;
+
+    constructor(secureMessenger: SecureCruxIdMessenger, protocol: IMessageSchema[]) {
+        this.secureMessenger = secureMessenger;
+        this.schemaByMessageType = protocol.reduce((newObj, x) => Object.assign(newObj, {[x.messageType]: x.schema}), {});
+    }
+    public send = async (message: IProtocolMessage, recipientCruxId: CruxId): Promise<void> => {
+        this.validateMessage(message);
+        this.secureMessenger.send(message, recipientCruxId);
+    }
+
+    public listen = (newMessageCallback: (msg: any) => void): void => {
+        this.secureMessenger.listen((msg: IProtocolMessage) => {
+            this.validateMessage(msg);
+            newMessageCallback(msg);
+        });
+    }
+
+    private getSchema = (messageType: string): any => {
+        const schema = this.schemaByMessageType[messageType];
+        if (!schema) {
+            throw Error("Did not recognize message type");
+        }
+    }
+    private validateContent = (content: any, schema: any): void => {
+        try {
+            // @ts-ignore
+            schema.validate(content);
+        } catch (e) {
+            throw Error("Message content does not match schema for");
+        }
+    }
+    private validateMessage = (message: IProtocolMessage): void => {
+        const schema = this.getSchema(message.type);
+        this.validateContent(message.content, schema);
+    }
 }
 
 export class SecureCruxIdMessenger {

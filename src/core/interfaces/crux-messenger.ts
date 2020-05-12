@@ -1,6 +1,7 @@
+// @ts-ignore
+import {JoiObject} from "joi";
 import {CruxId} from "../../packages";
 import {IKeyManager} from "./key-manager";
-
 export interface ICruxIdClaim {
     cruxId: CruxId;
     keyManager: IKeyManager;
@@ -19,6 +20,15 @@ export interface ICruxIdCertificate {
 export interface ISecurePacket {
     certificate: ICruxIdCertificate;
     data: any;
+}
+export interface IProtocolMessage {
+    type: string;
+    content: any;
+}
+
+export interface IMessageSchema {
+    messageType: string;
+    schema: JoiObject;
 }
 
 export interface IPubSubClientFactory {
