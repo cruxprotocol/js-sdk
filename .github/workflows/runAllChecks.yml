@@ -1,0 +1,19 @@
+name: All Package Checks
+
+on: [push]
+
+jobs:
+  npm-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm run checks
+      - run: npm run validate_lockfile
+      - run: npm ./node_modules/.bin/tslint 'src/**/*.ts'
+      - run: npm run typecheck
+      - run: npm run test
