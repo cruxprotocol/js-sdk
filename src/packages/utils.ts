@@ -192,6 +192,23 @@ const checkPublisherAccess = (blacklistedCruxIDs: string | any[], cruxId: any) =
     }
     return true;
 };
+export class BufferJSONSerializer {
+    public static bufferObjectToJSONString = (payload: { [key: string]: any }): string => {
+        const objWithStringValues: { [key: string]: string } = {};
+        for (const key of Object.keys(payload)) {
+            objWithStringValues[key] = payload[key].toString("hex");
+        }
+        return JSON.stringify(objWithStringValues);
+    }
+    public static JSONStringToBufferObject = (stringifiedObj: string): { [key: string]: any } => {
+        const objWithStringValues = JSON.parse(stringifiedObj);
+        const bufferObj: { [key: string]: any } = {};
+        for (const key of Object.keys(objWithStringValues)) {
+            bufferObj[key] = Buffer.from(objWithStringValues[key], "hex");
+        }
+        return bufferObj;
+    }
+}
 
 export {
     httpJSONRequest,

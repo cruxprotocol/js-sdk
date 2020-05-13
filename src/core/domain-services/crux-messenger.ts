@@ -1,5 +1,6 @@
 import {decodeToken, TokenVerifier} from "jsontokens";
-import {CruxId} from "../../packages";
+import {BufferJSONSerializer, CruxId} from "../../packages";
+import { ECIESEncryption } from "../../packages/encryption";
 import {CruxUser} from "../entities";
 
 import {
@@ -35,11 +36,22 @@ export class CertificateManager {
 
 export class EncryptionManager {
     // Use ECIES to encrypt & decrypt
-    public static encrypt = (content: string, pubKeyOfRecipient: string): string => {
-        return content;
+    public static encrypt = async (content: string, pubKeyOfRecipient: string): Promise<string> => {
+        // TODO: Handle encoding properly (UTF-8 might not work in all scenarios)
+        const toEncrypt = Buffer.from(content, "utf8");
+        const encrypted = await ECIESEncryption.encrypt(toEncrypt, pubKeyOfRecipient);
+        return BufferJSONSerializer.bufferObjectToJSONString(encrypted);
     }
-    public static decrypt = (encryptedContent: string, keyManager: IKeyManager): string => {
-        return encryptedContent;
+    public static decrypt = async (encryptedContent: string, keyManager: IKeyManager): Promise<string> => {
+        try {
+            const decryptedContent = await keyManager.decryptMessage!(encryptedContent);
+            return decryptedContent;
+        } catch (e) {
+            if (e.message === "Bad MAC") {
+                throw new Error("Decryption failed");
+            }
+            throw e;
+        }
     }
 }
 
@@ -61,12 +73,12 @@ export class CruxConnectProtocolMessenger {
         this.secureMessenger.send(message, recipientCruxId);
     }
 
-    public listen = (newMessageCallback: (msg: any) => void): void => {
+    public listen = (newMessageCallback: (msg: any) => void, errorCallback: (msg: any) => void): void => {
         this.secureMessenger.listen((msg: IProtocolMessage) => {
             this.validateMessage(msg);
             newMessageCallback(msg);
-        }, (err) => {
-            newMessageCallback(err);
+        }, (err: Error) => {
+            errorCallback(err);
         });
     }
     public validateMessage = (message: IProtocolMessage): void => {
@@ -114,7 +126,7 @@ export class SecureCruxIdMessenger {
             data,
         };
         const serializedSecurePacket = JSON.stringify(securePacket);
-        const encryptedSecurePacket = EncryptionManager.encrypt(serializedSecurePacket, recipientCruxUser.publicKey!);
+        const encryptedSecurePacket = await EncryptionManager.encrypt(serializedSecurePacket, recipientCruxUser.publicKey!);
         const pubSubClient = this.pubsubClientFactory.getRecipientClient(this.selfIdClaim.cruxId, recipientCruxId);
         const messenger = new CruxIdMessenger(pubSubClient, this.selfIdClaim.cruxId);
         messenger.send(encryptedSecurePacket, recipientCruxId);
@@ -122,19 +134,24 @@ export class SecureCruxIdMessenger {
 
     public listen = (newMessageCallback: (msg: any) => any, errorCallback: (err: any) => any): void => {
             this.selfMessenger.on(EventBusEventNames.newMessage, async (encryptedString: string) => {
-                const serializedSecurePacket: string = EncryptionManager.decrypt(encryptedString, this.selfIdClaim.keyManager);
-                const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
-                const senderUser: CruxUser | undefined = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
-                if (!senderUser) {
-                    errorCallback(new Error("Sender user does not exist"));
+                try {
+                    const serializedSecurePacket: string = await EncryptionManager.decrypt(encryptedString, this.selfIdClaim.keyManager);
+                    const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
+                    const senderUser: CruxUser | undefined = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
+                    if (!senderUser) {
+                        errorCallback(new Error("Sender user does not exist"));
+                        return;
+                    }
+                    const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
+                    if (!isVerified) {
+                        errorCallback(new Error("Could not validate identity"));
+                        return;
+                    }
+                    newMessageCallback(securePacket.data);
+                } catch (error) {
+                    errorCallback(error);
                     return;
                 }
-                const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
-                if (!isVerified) {
-                    errorCallback(new Error("Could not validate identity"));
-                    return;
-                }
-                newMessageCallback(securePacket.data);
             });
             this.selfMessenger.on(EventBusEventNames.error, async () => {
                 errorCallback(new Error("Error Received while processing event"));
