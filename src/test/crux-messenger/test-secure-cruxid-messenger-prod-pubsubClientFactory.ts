@@ -14,7 +14,7 @@ chai.should();
 const expect = require('chai').expect;
 
 
-describe('Test Secure Crux Messenger - PROD', function() {
+describe('Test Secure Crux Messenger - Prod pubsubClientFactory', function() {
     beforeEach(async function() {
         const HOST = "127.0.0.1";
         const PORT = 1883;
@@ -34,7 +34,7 @@ describe('Test Secure Crux Messenger - PROD', function() {
         });
     });
 
-    it('Basic Send Receive Test', function() {
+    it('Basic Send Receive Test - Prod pubsubClientFactory', function() {
         const testmsg = 'HelloWorld';
         return new Promise(async (resolve, reject) => {
             const user1Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
