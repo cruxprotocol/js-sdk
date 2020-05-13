@@ -107,8 +107,10 @@ export const cruxPaymentProtocol: IMessageSchema[] = [{
         amount: Joi.string()
             .required(),
 
-        toAddress: Joi.string()
-            .required(),
+        toAddress: Joi.object({
+            addressHash: Joi.string().required(),
+            secIdentifier: Joi.string(),
+        }).required(),
 
         assetId: Joi.string()
             .required().min(36).max(36),

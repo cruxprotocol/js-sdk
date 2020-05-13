@@ -48,7 +48,7 @@ describe('Test Crux Connect Protocol Messenger - Payment Request', function() {
             const validPaymentRequest = {
                 amount: '1',
                 assetId: '7c3baa3c-f5e8-490a-88a1-e0a052b7caa4',
-                toAddress: 'randomAddress'
+                toAddress: { addressHash: 'randomAddress' }
             }
             const testMessage: IProtocolMessage = {
                 type: "PAYMENT_REQUEST",
