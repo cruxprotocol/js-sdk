@@ -75,7 +75,12 @@ export class CruxConnectProtocolMessenger {
 
     public listen = (newMessageCallback: (msg: any) => void, errorCallback: (msg: any) => void): void => {
         this.secureMessenger.listen((msg: IProtocolMessage) => {
-            this.validateMessage(msg);
+            try {
+                this.validateMessage(msg);
+            } catch (e) {
+                errorCallback(e);
+                return;
+            }
             newMessageCallback(msg);
         }, (err: Error) => {
             errorCallback(err);
@@ -91,13 +96,13 @@ export class CruxConnectProtocolMessenger {
         if (!schema) {
             throw Error("Did not recognize message type");
         }
+        return schema;
     }
     private validateContent = (content: any, schema: any): void => {
-        try {
-            // @ts-ignore
-            schema.validate(content);
-        } catch (e) {
-            throw Error("Message content does not match schema for");
+        // @ts-ignore
+        const result = schema.validate(content);
+        if (result.error) {
+            throw new Error("Could not validate message as per schema- " + result.error.message);
         }
     }
 }
@@ -133,30 +138,30 @@ export class SecureCruxIdMessenger {
     }
 
     public listen = (newMessageCallback: (msg: any) => any, errorCallback: (err: any) => any): void => {
-            this.selfMessenger.on(EventBusEventNames.newMessage, async (encryptedString: string) => {
-                try {
-                    const serializedSecurePacket: string = await EncryptionManager.decrypt(encryptedString, this.selfIdClaim.keyManager);
-                    const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
-                    const senderUser: CruxUser | undefined = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
-                    if (!senderUser) {
-                        errorCallback(new Error("Sender user does not exist"));
-                        return;
-                    }
-                    const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
-                    if (!isVerified) {
-                        errorCallback(new Error("Could not validate identity"));
-                        return;
-                    }
-                    newMessageCallback(securePacket.data);
-                } catch (error) {
-                    errorCallback(error);
+        this.selfMessenger.on(EventBusEventNames.newMessage, async (encryptedString: string) => {
+            try {
+                const serializedSecurePacket: string = await EncryptionManager.decrypt(encryptedString, this.selfIdClaim.keyManager);
+                const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
+                const senderUser: CruxUser | undefined = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
+                if (!senderUser) {
+                    errorCallback(new Error("Sender user does not exist"));
                     return;
                 }
-            });
-            this.selfMessenger.on(EventBusEventNames.error, async () => {
-                errorCallback(new Error("Error Received while processing event"));
+                const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
+                if (!isVerified) {
+                    errorCallback(new Error("Could not validate identity"));
+                    return;
+                }
+                newMessageCallback(securePacket.data);
+            } catch (error) {
+                errorCallback(error);
                 return;
-            });
+            }
+        });
+        this.selfMessenger.on(EventBusEventNames.error, async () => {
+            errorCallback(new Error("Error Received while processing event"));
+            return;
+        });
     }
 }
 
