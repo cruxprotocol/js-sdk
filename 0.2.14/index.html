@@ -1,0 +1,625 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>@cruxpay/js-sdk</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.js" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">@cruxpay/js-sdk</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="globals.html">Globals</a>
+				</li>
+			</ul>
+			<h1> @cruxpay/js-sdk</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#cruxpay-official-documentation" id="cruxpay-official-documentation" style="color: inherit; text-decoration: none;">
+					<h3>CruxPay Official Documentation</h3>
+				</a>
+				<p><a href="https://docs.cruxpay.com">https://docs.cruxpay.com</a></p>
+				<a href="#what-is-cruxpay" id="what-is-cruxpay" style="color: inherit; text-decoration: none;">
+					<h3>What is CruxPay?</h3>
+				</a>
+				<p><a href="https://cruxpay.com/">CruxPay</a> is a protocol which aims to link any blockchain address to a human-readable name, and let users interact with each other and dApps with ease.</p>
+				<a href="#adding-cruxpay-sdkjs" id="adding-cruxpay-sdkjs" style="color: inherit; text-decoration: none;">
+					<h3>Adding cruxpay-sdk.js</h3>
+				</a>
+				<p>First you need to get cruxpay sdk into your project. This can be done using the following methods:</p>
+				<ul>
+					<li>npm: <code>npm install @cruxpay/js-sdk</code></li>
+					<li>pure js: link the <a href="https://unpkg.com/@cruxpay/js-sdk/dist/cruxpay-sdk-dom.js">cruxpay-sdk-dom.js</a></li>
+				</ul>
+				<a href="#sdk-initialisation" id="sdk-initialisation" style="color: inherit; text-decoration: none;">
+					<h3>SDK Initialisation:</h3>
+				</a>
+				<p>To initialize the sdk, you need to minimally pass a javascript object with following details:-</p>
+				<ol>
+					<li><strong>walletClientName</strong><ul>
+							<li>walletClientName is the key which identifies the wallet specific configurations stored in gaiaHub like <ol>
+									<li>Subdomain Registrar Information</li>
+									<li>BNS(BlockStack Name Service) Node</li>
+									<li>Currency symbol map of your wallet</li>
+								</ol>
+							</li>
+							<li>To help you get started, you can use <code>cruxdev</code> as the value which is already configured for our dev test users. It has 5 pre-registered crypto symbols for a fast start. You can contact us at <a href="https://t.me/cruxpay_integration">telegram</a> channel for registration of your own walletClientName.</li>
+						</ul>
+					</li>
+					<li><strong>privateKey (optional)</strong><ul>
+							<li>Required to re-initialise the CruxClient with same user across different devices.</li>
+							<li>For clients using HD derivation paths, recommended to use the path (<code>m/889&#39;/0&#39;/0&#39;</code>) for CruxPay keypair node derivation with respect to account indices.</li>
+						</ul>
+					</li>
+				</ol>
+				<p><code>**Note:** Cruxprotocol JS SDK is case insensetive for cryptocurrency symbols and will always output lowercase symbols.</code></p>
+				<p>Example below shows how to a cruxClient instance. These are the <a href="#sdk-operation">SDK Operation</a> exposed.   </p>
+				<pre><code class="language-javascript"><span class="hljs-keyword">let</span> cruxClientOptions = {
+    <span class="hljs-attr">walletClientName</span>: <span class="hljs-string">'cruxdev'</span>,
+    <span class="hljs-attr">privateKey</span>: <span class="hljs-string">"6bd397dc89272e71165a0e7d197b280c7a88ed5b1e44e1928c25455506f1968f"</span>  <span class="hljs-comment">// (optional parameter)</span>
+}
+
+<span class="hljs-keyword">let</span> cruxClient = <span class="hljs-keyword">new</span> CruxClient(cruxClientOptions);</code></pre>
+				<p>That&#39;s it! now you can use the cruxClient object to perform operations defined in <a href="#sdk-operation">SDK Operation</a>.</p>
+				<pre><code class="language-javascript">cruxClient.getCruxIDState().then(<span class="hljs-function">(<span class="hljs-params">cruxIDState</span>) =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(cruxIDState);
+})</code></pre>
+				<p>Wallet clients are encouraged to surface the respective <code>ERROR_CODE</code> of the <code>CruxClientError</code> to their Users with any custom error messages. This will help in debugging any issues with the functionality.</p>
+				<p>Refer <a href="https://github.com/cruxprotocol/js-sdk/blob/master/error-handling.md">error-handling.md</a> for more information on Error handling.</p>
+				<a href="#sdk-operation" id="sdk-operation" style="color: inherit; text-decoration: none;">
+					<h3>SDK Operation</h3>
+				</a>
+				<ol>
+					<li>
+						<a href="#iscruxidavailablecruxidonlysubdomain" id="iscruxidavailablecruxidonlysubdomain" style="color: inherit; text-decoration: none;">
+							<h5>isCruxIDAvailable(cruxID<onlySubdomain>)</h5>
+						</a>
+						<ul>
+							<li>Description: Helps to check if a particular CruxID is available to be registered.</li>
+							<li>Params:<ul>
+									<li>subdomain part of <a href="#cruxid">CruxID</a></li>
+								</ul>
+							</li>
+							<li>Returns: Promise resolving to a <em>boolean</em> indicating whether a particular Crux ID is available for registration.</li>
+						</ul>
+					</li>
+					<li>
+						<a href="#getassetmap" id="getassetmap" style="color: inherit; text-decoration: none;">
+							<h5>getAssetMap()</h5>
+						</a>
+						<ul>
+							<li>Description: Get Wallet&#39;s asset map with currency symbols as the keys and asset object as the value.</li>
+							<li>Params: None</li>
+							<li>Returns: Promise resolving to <a href="#iresolvedclientassetmapping">IResolvedClientAssetMapping</a> which has symbols and asset objects.</li>
+						</ul>
+					</li>
+					<li>
+						<a href="#registercruxidcruxidonlysubdomain" id="registercruxidcruxidonlysubdomain" style="color: inherit; text-decoration: none;">
+							<h5>registerCruxID(cruxID<onlySubdomain>)</h5>
+						</a>
+						<ul>
+							<li><p>Description: Reserves/registers the cruxID for the user. The user can link any blockchain address to his CruxID immediately after registration using <a href="#putaddressmap">putAddressMap</a>.</p>
+							</li>
+							<li><p>Params:</p>
+								<ul>
+									<li>subdomain part of <a href="#cruxid">CruxID</a></li>
+								</ul>
+							</li>
+							<li><p>Returns: Promise resolving on successful call to the registrar.</p>
+								<pre><code class="language-javascript"><span class="hljs-keyword">const</span> sampleAddressMap: IAddressMapping = {
+  <span class="hljs-string">'BTC'</span>: {
+      <span class="hljs-attr">addressHash</span>: <span class="hljs-string">'1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX'</span>
+  },
+  <span class="hljs-string">'ETH'</span>: {
+      <span class="hljs-attr">addressHash</span>: <span class="hljs-string">'0x7cB57B5A97eAbe94205C07890BE4c1aD31E486A8'</span>
+  },
+}
+
+<span class="hljs-comment">// Advised to pipe the method putAddressMap to registerCruxID call</span>
+
+<span class="hljs-keyword">await</span> cruxClient.registerCruxID(<span class="hljs-string">"bob"</span>)
+  .then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      <span class="hljs-keyword">return</span> cruxClient.putAddressMap(sampleAddressMap)
+          .catch(<span class="hljs-function">(<span class="hljs-params">addressUpdationError</span>) =&gt;</span> {
+              <span class="hljs-comment">// Handling addressUpdation error</span>
+          })
+  })
+  .catch(<span class="hljs-function">(<span class="hljs-params">registrationError</span>) =&gt;</span> {
+      <span class="hljs-comment">// Handling registration error</span>
+  })</code></pre>
+							</li>
+						</ul>
+					</li>
+					<li>
+						<a href="#resolvecurrencyaddressforcruxidcruxid-walletcurrencysymbol" id="resolvecurrencyaddressforcruxidcruxid-walletcurrencysymbol" style="color: inherit; text-decoration: none;">
+							<h5>resolveCurrencyAddressForCruxID(cruxID, walletCurrencySymbol)</h5>
+						</a>
+						<ul>
+							<li>Description: Helps to lookup a mapped address for a currency of any CruxID if its marked publically accessible.</li>
+							<li>Params:<ul>
+									<li>complete <a href="#cruxid">CruxID</a> of a user whose address you want to fetch</li>
+									<li><a href="#walletcurrencysymbol">walletCurrencySymbol</a> wallet symbol of currency whose address you want to fetch.</li>
+								</ul>
+							</li>
+							<li>Returns: Promise resolving to <a href="#iaddress">IAddress</a> for that symbol of currency if available.</li>
+						</ul>
+					</li>
+					<li>
+						<a href="#getaddressmap" id="getaddressmap" style="color: inherit; text-decoration: none;">
+							<h5>getAddressMap()</h5>
+						</a>
+						<ul>
+							<li>Description: Get back the current publicly registered address json </li>
+							<li>Params: None</li>
+							<li>Returns: Promise resolving to <a href="#iaddressmapping">IAddressMapping</a></li>
+						</ul>
+					</li>
+					<li>
+						<a href="#putaddressmapnewaddressmap" id="putaddressmapnewaddressmap" style="color: inherit; text-decoration: none;">
+							<h5>putAddressMap(newAddressMap)</h5>
+						</a>
+						<ul>
+							<li>Description: Helps to update 2 things:-<ul>
+									<li>publish/change list of publicly accessible currency addresses.</li>
+									<li>change the value of addressHash and/or secIdentifier to another one.</li>
+								</ul>
+							</li>
+							<li>Note: The addresses are now publicly linked and can be resolved. To get which currencies can be part of newAddressMap please call <code>getAssetMap()</code>.</li>
+							<li>Params:<ul>
+									<li>newAddressMap of type <a href="#iaddressmapping">IAddressMapping</a> has modified map has symbols and addresses a user wants to publically expose with CruxID.</li>
+								</ul>
+							</li>
+							<li>Returns: Promise resolving to {success: <a href="#iputaddressmapSuccess">IPutAddressMapSuccess</a>, failures: <a href="#iputaddressmapfailures">IPutAddressMapFailures</a>}</li>
+						</ul>
+					</li>
+					<li>
+						<a href="#getcruxidstate" id="getcruxidstate" style="color: inherit; text-decoration: none;">
+							<h5>getCruxIDState()</h5>
+						</a>
+						<ul>
+							<li>Description: Returns details of the current registered CruxID(if any) for this instance of the user wallet and its registration status</li>
+							<li>Params: None</li>
+							<li>Returns: Promise resolving to <a href="#cruxidstate">CruxIDState</a></li>
+						</ul>
+					</li>
+				</ol>
+				<a href="#building" id="building" style="color: inherit; text-decoration: none;">
+					<h3>Building</h3>
+				</a>
+				<a href="#requirements" id="requirements" style="color: inherit; text-decoration: none;">
+					<h4>Requirements</h4>
+				</a>
+				<ul>
+					<li><a href="https://nodejs.org">Node.js</a></li>
+					<li>npm</li>
+				</ul>
+				<a href="#building-from-source" id="building-from-source" style="color: inherit; text-decoration: none;">
+					<h4>Building From Source</h4>
+				</a>
+				<pre><code class="language-bash">npm run-script build</code></pre>
+				<p>Build the cruxpay-sdk.js package and put all the browser build files into the <code>dist</code> folder.</p>
+				<a href="#testing-mocha" id="testing-mocha" style="color: inherit; text-decoration: none;">
+					<h4>Testing (mocha)</h4>
+				</a>
+				<pre><code class="language-bash">npm run-script <span class="hljs-built_in">test</span></code></pre>
+				<a href="#sample-wallet-integration" id="sample-wallet-integration" style="color: inherit; text-decoration: none;">
+					<h3>Sample Wallet Integration</h3>
+				</a>
+				<pre><code class="language-bash">npm run-script wallet_demo</code></pre>
+				<p>Running the above command will build a <a href="https://localhost:1234">demo page</a>, here you can play around with all method that are exposed by the sdk.</p>
+				<a href="#references" id="references" style="color: inherit; text-decoration: none;">
+					<h3>References</h3>
+				</a>
+				<p>Find references to all available methods at <a href="https://cruxprotocol.github.io/js-sdk">https://cruxprotocol.github.io/js-sdk</a>.</p>
+				<a href="#how-can-i-contribute" id="how-can-i-contribute" style="color: inherit; text-decoration: none;">
+					<h3>How can I contribute?</h3>
+				</a>
+				<p>See <a href="CONTRIBUTING.md">CONTRIBUTING.md</a> file.</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="globals.html"><em>Globals</em></a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-enum tsd-is-external">
+						<a href="enums/domainregistrationstatus.html" class="tsd-kind-icon">Domain<wbr>Registration<wbr>Status</a>
+					</li>
+					<li class=" tsd-kind-enum tsd-is-external">
+						<a href="enums/packageerrorcode.html" class="tsd-kind-icon">Package<wbr>Error<wbr>Code</a>
+					</li>
+					<li class=" tsd-kind-enum tsd-is-external">
+						<a href="enums/subdomainregistrationstatus.html" class="tsd-kind-icon">Subdomain<wbr>Registration<wbr>Status</a>
+					</li>
+					<li class=" tsd-kind-enum tsd-is-external">
+						<a href="enums/subdomainregistrationstatusdetail.html" class="tsd-kind-icon">Subdomain<wbr>Registration<wbr>Status<wbr>Detail</a>
+					</li>
+					<li class=" tsd-kind-enum tsd-is-external">
+						<a href="enums/uploadable_json_files.html" class="tsd-kind-icon">UPLOADABLE_<wbr>JSON_<wbr>FILES</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/baseerror.html" class="tsd-kind-icon">Base<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/basickeymanager.html" class="tsd-kind-icon">Basic<wbr>Key<wbr>Manager</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/blockstackcruxdomainrepository.html" class="tsd-kind-icon">Blockstack<wbr>Crux<wbr>Domain<wbr>Repository</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/blockstackcruxuserrepository.html" class="tsd-kind-icon">Blockstack<wbr>Crux<wbr>User<wbr>Repository</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/blockstackdomainid.html" class="tsd-kind-icon">Blockstack<wbr>Domain<wbr>Id</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/blockstackid.html" class="tsd-kind-icon">Blockstack<wbr>Id</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/blockstacknamingserviceapiclient.html" class="tsd-kind-icon">Blockstack<wbr>Naming<wbr>Service<wbr>Api<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/blockstackservice.html" class="tsd-kind-icon">Blockstack<wbr>Service</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/blockstacksubdomainregistrarapiclient.html" class="tsd-kind-icon">Blockstack<wbr>Subdomain<wbr>Registrar<wbr>Api<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/clienterror.html" class="tsd-kind-icon">Client<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/cruxassettranslator.html" class="tsd-kind-icon">Crux<wbr>Asset<wbr>Translator</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/cruxclienterror.html" class="tsd-kind-icon">Crux<wbr>Client<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/cruxdomain.html" class="tsd-kind-icon">Crux<wbr>Domain</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/cruxdomainid.html" class="tsd-kind-icon">Crux<wbr>Domain<wbr>Id</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/cruxexplorerclient.html" class="tsd-kind-icon">Crux<wbr>Explorer<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/cruxid.html" class="tsd-kind-icon">Crux<wbr>Id</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/cruxonboardingclient.html" class="tsd-kind-icon">Crux<wbr>OnBoarding<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/cruxonboardingclienterror.html" class="tsd-kind-icon">Crux<wbr>OnBoarding<wbr>Client<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/cruxuser.html" class="tsd-kind-icon">Crux<wbr>User</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/cruxuseraddressresolver.html" class="tsd-kind-icon">Crux<wbr>User<wbr>Address<wbr>Resolver</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/cruxwalletclient.html" class="tsd-kind-icon">Crux<wbr>Wallet<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/encryption.html" class="tsd-kind-icon">Encryption</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/errorhelper.html" class="tsd-kind-icon">Error<wbr>Helper</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/gaiaservice.html" class="tsd-kind-icon">Gaia<wbr>Service</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/gaiaserviceapiclient.html" class="tsd-kind-icon">Gaia<wbr>Service<wbr>Api<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/idtranslator.html" class="tsd-kind-icon">Id<wbr>Translator</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/inmemstorage.html" class="tsd-kind-icon">In<wbr>Mem<wbr>Storage</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/localstorage.html" class="tsd-kind-icon">Local<wbr>Storage</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/manualkeymanager.html" class="tsd-kind-icon">Manual<wbr>Key<wbr>Manager</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/packageerror.html" class="tsd-kind-icon">Package<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/storageservice.html" class="tsd-kind-icon">Storage<wbr>Service</a>
+					</li>
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/validations.html" class="tsd-kind-icon">Validations</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/genericdomaincomponents.html" class="tsd-kind-icon">Generic<wbr>Domain<wbr>Components</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/genericidcomponents.html" class="tsd-kind-icon">GenericIDComponents</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iaddress.html" class="tsd-kind-icon">IAddress</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iaddressmapping.html" class="tsd-kind-icon">IAddress<wbr>Mapping</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iassetmatcher.html" class="tsd-kind-icon">IAsset<wbr>Matcher</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iblockstackcruxdomainrepositoryoptions.html" class="tsd-kind-icon">IBlockstack<wbr>Crux<wbr>Domain<wbr>Repository<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iblockstackcruxuserrepositoryoptions.html" class="tsd-kind-icon">IBlockstack<wbr>Crux<wbr>User<wbr>Repository<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iblockstackserviceinputoptions.html" class="tsd-kind-icon">IBlockstack<wbr>Service<wbr>Input<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iclientassetmapping.html" class="tsd-kind-icon">IClient<wbr>Asset<wbr>Mapping</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iclientconfig.html" class="tsd-kind-icon">IClient<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxblockstackinfrastructure.html" class="tsd-kind-icon">ICrux<wbr>Blockstack<wbr>Infrastructure</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxdomainrepository.html" class="tsd-kind-icon">ICrux<wbr>Domain<wbr>Repository</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxdomainrepositoryoptions.html" class="tsd-kind-icon">ICrux<wbr>Domain<wbr>Repository<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxidstate.html" class="tsd-kind-icon">ICruxIDState</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxonboardingclientoptions.html" class="tsd-kind-icon">ICrux<wbr>OnBoarding<wbr>Client<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxuserconfiguration.html" class="tsd-kind-icon">ICrux<wbr>User<wbr>Configuration</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxuserdata.html" class="tsd-kind-icon">ICrux<wbr>User<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxuserinformation.html" class="tsd-kind-icon">ICrux<wbr>User<wbr>Information</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxuserprivateaddresses.html" class="tsd-kind-icon">ICrux<wbr>User<wbr>Private<wbr>Addresses</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxuserregistrationstatus.html" class="tsd-kind-icon">ICrux<wbr>User<wbr>Registration<wbr>Status</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxuserrepository.html" class="tsd-kind-icon">ICrux<wbr>User<wbr>Repository</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxuserrepositoryoptions.html" class="tsd-kind-icon">ICrux<wbr>User<wbr>Repository<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxwalletclientoptions.html" class="tsd-kind-icon">ICrux<wbr>Wallet<wbr>Client<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxpayobject.html" class="tsd-kind-icon">ICruxpay<wbr>Object</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/icruxpayobjectandpubkey.html" class="tsd-kind-icon">ICruxpay<wbr>Object<wbr>And<wbr>Pub<wbr>Key</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/igaiadetails.html" class="tsd-kind-icon">IGaia<wbr>Details</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/igenericfailures.html" class="tsd-kind-icon">IGeneric<wbr>Failures</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iglobalasset.html" class="tsd-kind-icon">IGlobal<wbr>Asset</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iglobalassetlist.html" class="tsd-kind-icon">IGlobal<wbr>Asset<wbr>List</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/ihubconfig.html" class="tsd-kind-icon">IHub<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/ihubinfo.html" class="tsd-kind-icon">IHub<wbr>Info</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/ikeymanager.html" class="tsd-kind-icon">IKey<wbr>Manager</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/inamedetails.html" class="tsd-kind-icon">IName<wbr>Details</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/inameserviceconfigurationoverrides.html" class="tsd-kind-icon">IName<wbr>Service<wbr>Configuration<wbr>Overrides</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iputaddressmapfailures.html" class="tsd-kind-icon">IPut<wbr>Address<wbr>Map<wbr>Failures</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iputaddressmapsuccess.html" class="tsd-kind-icon">IPut<wbr>Address<wbr>Map<wbr>Success</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iputprivateaddressmapresult.html" class="tsd-kind-icon">IPut<wbr>Private<wbr>Address<wbr>Map<wbr>Result</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/iresolvedclientassetmap.html" class="tsd-kind-icon">IResolved<wbr>Client<wbr>Asset<wbr>Map</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/ireverseclientassetmapping.html" class="tsd-kind-icon">IReverse<wbr>Client<wbr>Asset<wbr>Mapping</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/isubdomainregistrarentry.html" class="tsd-kind-icon">ISubdomain<wbr>Registrar<wbr>Entry</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-external">
+						<a href="interfaces/inputidcomponents.html" class="tsd-kind-icon">InputIDComponents</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#icruxdomainrepositoryconstructor" class="tsd-kind-icon">ICrux<wbr>Domain<wbr>Repository<wbr>Constructor</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-external">
+						<a href="globals.html#icruxuserrepositoryconstructor" class="tsd-kind-icon">ICrux<wbr>User<wbr>Repository<wbr>Constructor</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#crux_domain_suffix" class="tsd-kind-icon">CRUX_<wbr>DOMAIN_<wbr>SUFFIX</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#default_blockstack_namespace" class="tsd-kind-icon">DEFAULT_<wbr>BLOCKSTACK_<wbr>NAMESPACE</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-external">
+						<a href="globals.html#default_crux_namespace" class="tsd-kind-icon">DEFAULT_<wbr>CRUX_<wbr>NAMESPACE</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#getcruxdomainrepository" class="tsd-kind-icon">get<wbr>Crux<wbr>Domain<wbr>Repository</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#getcruxuserrepository" class="tsd-kind-icon">get<wbr>Crux<wbr>User<wbr>Repository</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#getlogger" class="tsd-kind-icon">get<wbr>Logger</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#isinstanceofkeymanager" class="tsd-kind-icon">is<wbr>Instance<wbr>OfKey<wbr>Manager</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#throwcruxclienterror" class="tsd-kind-icon">throw<wbr>Crux<wbr>Client<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#throwcruxonboardingclienterror" class="tsd-kind-icon">throw<wbr>Crux<wbr>OnBoarding<wbr>Client<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-external">
+						<a href="globals.html#validatesubdomain" class="tsd-kind-icon">validate<wbr>Subdomain</a>
+					</li>
+					<li class=" tsd-kind-object-literal tsd-is-external">
+						<a href="globals.html#cruxspec" class="tsd-kind-icon">Crux<wbr>Spec</a>
+					</li>
+					<li class=" tsd-kind-object-literal tsd-is-external">
+						<a href="globals.html#error_strings" class="tsd-kind-icon">ERROR_<wbr>STRINGS</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>
