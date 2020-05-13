@@ -17,7 +17,7 @@ const expect = require('chai').expect;
 
 
 
-describe('Test Secure Crux Messenger', function() {
+describe('Test Crux Connect Protocol Messenger - Payment Request', function() {
     beforeEach(async function() {
         const userStore = new MockUserStore();
         const user1Data = getMockUserFoo123CSTestWallet();
