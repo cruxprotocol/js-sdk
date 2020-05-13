@@ -43,7 +43,7 @@ describe('Test Crux Connect Protocol Messenger - Payment Request', function() {
 
     });
 
-    it('Can Send Valid Payment Request', async function() {
+    it('Can Send & Receive Valid Payment Request', async function() {
         return new Promise(async (res, rej) => {
             const validPaymentRequest = {
                 amount: '1',
