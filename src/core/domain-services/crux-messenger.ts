@@ -40,7 +40,7 @@ export enum EventBusEventNames {
     error = "error",
 }
 
-export class CruxConnectProtocolMessenger {
+export class CruxProtocolMessenger {
     private secureMessenger: SecureCruxIdMessenger;
     private schemaByMessageType: any;
 
