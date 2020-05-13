@@ -1,6 +1,6 @@
 // Importing packages
 import Logger from "js-logger";
-import {SecureCruxIdMessenger} from "../../core/domain-services";
+import {CruxConnectProtocolMessenger, SecureCruxIdMessenger} from "../../core/domain-services";
 import {
     CruxDomain,
     CruxSpec,
@@ -23,7 +23,7 @@ import {
     BasicKeyManager,
     BlockstackCruxDomainRepository,
     BlockstackCruxUserRepository,
-    CruxNetPubSubClientFactory,
+    CruxNetPubSubClientFactory, cruxPaymentProtocol,
     IBlockstackCruxDomainRepositoryOptions,
     IBlockstackCruxUserRepositoryOptions,
 } from "../../infrastructure/implementations";
@@ -113,8 +113,7 @@ export class CruxWalletClient {
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
     private cacheStorage?: StorageService;
     private selfCruxUser?: CruxUser;
-    private selfIdClaim?: ICruxIdClaim;
-    private secureCruxMessenger?: SecureCruxIdMessenger;
+    private paymentProtocolMessenger?: CruxConnectProtocolMessenger;
 
     constructor(options: ICruxWalletClientOptions) {
         getLogger(cruxWalletClientDebugLoggerName).setLevel(options.debugLogging ? Logger.DEBUG : Logger.OFF);
@@ -208,12 +207,15 @@ export class CruxWalletClient {
     }
 
     @throwCruxClientError
-    public sendPaymentRequest = async (walletSymbol: string, recipientCruxId: string, amount: string): Promise<void> => {
+    public sendPaymentRequest = async (walletSymbol: string, recipientCruxId: string, amount: string, toAddress: IAddress): Promise<void> => {
         await this.initPromise;
-        if (!this.secureCruxMessenger) {
+        if (!this.paymentProtocolMessenger) {
             throw Error("Cannot use this method");
         }
-        await this.secureCruxMessenger.send({currency: walletSymbol, amount }, CruxId.fromString(recipientCruxId));
+        await this.paymentProtocolMessenger.send({
+            content: {currency: walletSymbol, toAddress, amount },
+            type: "PAYMENT_REQUEST",
+        }, CruxId.fromString(recipientCruxId));
     }
 
     @throwCruxClientError
@@ -428,7 +430,8 @@ export class CruxWalletClient {
                 host: "localhost",
                 port: 4005,
             }});
-        this.secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
+        const secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
+        this.paymentProtocolMessenger = new CruxConnectProtocolMessenger(secureCruxMessenger, cruxPaymentProtocol);
     }
 
 }
