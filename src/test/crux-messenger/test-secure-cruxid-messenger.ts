@@ -5,8 +5,8 @@ import 'mocha';
 import {SecureCruxIdMessenger, CertificateManager} from "../../core/domain-services";
 import {BasicKeyManager} from "../../infrastructure/implementations";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../test-utils";
-import {InMemoryPubSubClientFactory} from "./inmemory-implementations";
-import {getMockUserBar123CSTestWallet, getMockUserFoo123CSTestWallet} from "./utils";
+import {InMemoryPubSubClientFactory, InMemoryMaliciousPubSubClientFactory} from "./inmemory-implementations";
+import {getMockUserBar123CSTestWallet, getMockUserFoo123CSTestWallet, getMockUserFooBar123CSTestWallet} from "./utils";
 
 patchMissingDependencies();
 
@@ -20,8 +20,10 @@ describe('Test Secure Crux Messenger', function() {
         const userStore = new MockUserStore();
         const user1Data = getMockUserFoo123CSTestWallet();
         const user2Data = getMockUserBar123CSTestWallet();
+        const user3Data = getMockUserFooBar123CSTestWallet();
         this.user1Data = user1Data;
         this.user2Data = user2Data;
+        this.user3Data = user3Data;
         userStore.store(user1Data.cruxUser);
         userStore.store(user2Data.cruxUser);
         this.inmemUserRepo = new InMemoryCruxUserRepository(userStore);
@@ -49,6 +51,36 @@ describe('Test Secure Crux Messenger', function() {
         }).then(msg => 
             expect(msg).equals(testmsg)
         );
+
+    });
+
+    it('Basic Send Receive Negative Test (man in the middle attack)', async function() {
+        return new Promise(async (resolve, reject) => {
+            const maliciousUser = this.user3Data.cruxUser.cruxID;
+            const maliciousPubSubClientFactory = new InMemoryMaliciousPubSubClientFactory(maliciousUser);
+            const user1Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
+                cruxId: this.user1Data.cruxUser.cruxID,
+                keyManager: new BasicKeyManager(this.user1Data.pvtKey)
+            });
+
+            const user2Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
+                cruxId: this.user2Data.cruxUser.cruxID,
+                keyManager: new BasicKeyManager(this.user2Data.pvtKey)
+            });
+            const user3Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
+                cruxId: this.user3Data.cruxUser.cruxID,
+                keyManager: new BasicKeyManager(this.user3Data.pvtKey)
+            });
+            const testmsg = 'HelloWorld';
+            user3Messenger.listen((msg) => {
+                reject()
+            },
+            (err) => {
+                expect(err.message).equals("Decryption failed")
+                resolve()
+            });
+            await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
+        });
 
     });
 
