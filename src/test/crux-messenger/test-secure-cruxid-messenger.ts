@@ -6,7 +6,7 @@ import {SecureCruxIdMessenger, CertificateManager} from "../../core/domain-servi
 import {BasicKeyManager} from "../../infrastructure/implementations";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../test-utils";
 import {InMemoryPubSubClientFactory, InMemoryMaliciousPubSubClientFactory} from "./inmemory-implementations";
-import {getMockUserBar123CSTestWallet, getMockUserFoo123CSTestWallet} from "./utils";
+import {getMockUserBar123CSTestWallet, getMockUserFoo123CSTestWallet, getMockUserFooBar123CSTestWallet} from "./utils";
 
 patchMissingDependencies();
 
@@ -20,8 +20,10 @@ describe('Test Secure Crux Messenger', function() {
         const userStore = new MockUserStore();
         const user1Data = getMockUserFoo123CSTestWallet();
         const user2Data = getMockUserBar123CSTestWallet();
+        const user3Data = getMockUserFooBar123CSTestWallet();
         this.user1Data = user1Data;
         this.user2Data = user2Data;
+        this.user3Data = user3Data;
         userStore.store(user1Data.cruxUser);
         userStore.store(user2Data.cruxUser);
         this.inmemUserRepo = new InMemoryCruxUserRepository(userStore);
