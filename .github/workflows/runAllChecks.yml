@@ -12,7 +12,6 @@ jobs:
           node-version: 12
           registry-url: https://registry.npmjs.org/
       - run: npm ci
-      - run: npm run checks
       - run: npm run validate_lockfile
       - run: ./node_modules/.bin/tslint 'src/**/*.ts'
       - run: npm run typecheck
