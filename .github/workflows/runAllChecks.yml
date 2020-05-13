@@ -3,7 +3,7 @@ name: All Package Checks
 on: [push]
 
 jobs:
-  npm-checks:
+  runAllChecks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -14,6 +14,6 @@ jobs:
       - run: npm ci
       - run: npm run checks
       - run: npm run validate_lockfile
-      - run: npm ./node_modules/.bin/tslint 'src/**/*.ts'
+      - run: ./node_modules/.bin/tslint 'src/**/*.ts'
       - run: npm run typecheck
       - run: npm run test
