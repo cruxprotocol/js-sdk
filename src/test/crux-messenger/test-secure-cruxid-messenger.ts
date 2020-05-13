@@ -5,7 +5,7 @@ import 'mocha';
 import {SecureCruxIdMessenger, CertificateManager} from "../../core/domain-services";
 import {BasicKeyManager} from "../../infrastructure/implementations";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../test-utils";
-import {InMemoryPubSubClientFactory} from "./inmemory-implementations";
+import {InMemoryPubSubClientFactory, InMemoryMaliciousPubSubClientFactory} from "./inmemory-implementations";
 import {getMockUserBar123CSTestWallet, getMockUserFoo123CSTestWallet} from "./utils";
 
 patchMissingDependencies();
@@ -49,6 +49,36 @@ describe('Test Secure Crux Messenger', function() {
         }).then(msg => 
             expect(msg).equals(testmsg)
         );
+
+    });
+
+    it('Basic Send Receive Negative Test (man in the middle attack)', async function() {
+        return new Promise(async (resolve, reject) => {
+            const maliciousUser = this.user3Data.cruxUser.cruxID;
+            const maliciousPubSubClientFactory = new InMemoryMaliciousPubSubClientFactory(maliciousUser);
+            const user1Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
+                cruxId: this.user1Data.cruxUser.cruxID,
+                keyManager: new BasicKeyManager(this.user1Data.pvtKey)
+            });
+
+            const user2Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
+                cruxId: this.user2Data.cruxUser.cruxID,
+                keyManager: new BasicKeyManager(this.user2Data.pvtKey)
+            });
+            const user3Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
+                cruxId: this.user3Data.cruxUser.cruxID,
+                keyManager: new BasicKeyManager(this.user3Data.pvtKey)
+            });
+            const testmsg = 'HelloWorld';
+            user3Messenger.listen((msg) => {
+                reject()
+            },
+            (err) => {
+                expect(err.message === "Decryption failed")
+                resolve()
+            });
+            await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
+        });
 
     });
 
