@@ -1,3 +1,4 @@
+import {decodeToken, TokenVerifier} from "jsontokens";
 import {CruxId} from "../../packages";
 import {CruxUser} from "../entities";
 
@@ -14,14 +15,21 @@ import {
 } from "../interfaces";
 
 export class CertificateManager {
-    public static make = (idClaim: ICruxIdClaim): ICruxIdCertificate => {
+    public static make = async (idClaim: ICruxIdClaim): Promise<ICruxIdCertificate> => {
+        const payload = idClaim.cruxId.toString();
+        const signedProof = await idClaim.keyManager.signWebToken(payload);
         return {
-            claim: idClaim.cruxId.toString(),
-            proof: "PROOF",
+                claim: idClaim.cruxId.toString(),
+                proof: signedProof,
         };
     }
-    public static verify = (certificate: ICruxIdCertificate, publicKey: string) => {
-        return true;
+    public static verify = (certificate: ICruxIdCertificate, senderPubKey: any) => {
+        const proof: any = decodeToken(certificate.proof).payload;
+        const verified = new TokenVerifier("ES256K", senderPubKey).verify(certificate.proof);
+        if (proof && proof === certificate.claim && verified) {
+            return true;
+        }
+        return false;
     }
 }
 
@@ -98,7 +106,7 @@ export class SecureCruxIdMessenger {
         if (!recipientCruxUser) {
             throw Error("No Such CRUX User Found");
         }
-        const certificate = CertificateManager.make(this.selfIdClaim);
+        const certificate = await CertificateManager.make(this.selfIdClaim);
         const securePacket: ISecurePacket = {
             certificate,
             data,
@@ -110,20 +118,26 @@ export class SecureCruxIdMessenger {
         messenger.send(encryptedSecurePacket, recipientCruxId);
     }
 
-    public listen = (newMessageCallback: (msg: any) => void): void => {
-        this.selfMessenger.on(EventBusEventNames.newMessage, async (encryptedString: string) => {
-            const serializedSecurePacket: string = EncryptionManager.decrypt(encryptedString, this.selfIdClaim.keyManager);
-            const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
-            const senderUser: CruxUser | undefined = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
-            if (!senderUser) {
-                throw Error("Sender user does not exist");
-            }
-            const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
-            if (!isVerified) {
-                throw Error("Could not validate identity");
-            }
-            newMessageCallback(securePacket.data);
-        });
+    public listen = (newMessageCallback: (msg: any) => any, errorCallback: (err: any) => any): void => {
+            this.selfMessenger.on(EventBusEventNames.newMessage, async (encryptedString: string) => {
+                const serializedSecurePacket: string = EncryptionManager.decrypt(encryptedString, this.selfIdClaim.keyManager);
+                const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
+                const senderUser: CruxUser | undefined = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
+                if (!senderUser) {
+                    errorCallback(new Error("Sender user does not exist"));
+                    return;
+                }
+                const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
+                if (!isVerified) {
+                    errorCallback(new Error("Could not validate identity"));
+                    return;
+                }
+                newMessageCallback(securePacket.data);
+            });
+            this.selfMessenger.on(EventBusEventNames.error, async () => {
+                errorCallback(new Error("Error Received while processing event"));
+                return;
+            });
     }
 }
 
@@ -136,7 +150,7 @@ export class CruxIdMessenger {
         this.registeredCallbacks = {};
         this.pubsubClient = pubsubClient;
         const selfTopic = "topic_" + selfId.toString();
-        pubsubClient.subscribe(selfTopic, new MessengerEventProxy(this, EventBusEventNames.newMessage).redirect);
+        pubsubClient.subscribe(selfTopic, new MessengerEventProxy(this, EventBusEventNames.newMessage).redirect, new MessengerEventProxy(this, EventBusEventNames.error).redirect);
         this.selfId = selfId;
     }
 
