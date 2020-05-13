@@ -68,6 +68,7 @@
     "@types/request": "^2.48.3",
     "@types/sinon": "^7.0.13",
     "@types/url-parse": "^1.4.3",
+    "@types/joi": "14.3.4",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "git-branch-is": "^3.0.0",
@@ -102,6 +103,7 @@
     "url-parse": "^1.4.7",
     "strong-pubsub": "^0.2.0",
     "strong-pubsub-mqtt": "^0.1.0",
+    "@hapi/joi": "17.1.1",
     "nanoevents": "5.1.5"
   }
 }

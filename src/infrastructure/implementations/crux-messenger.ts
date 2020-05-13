@@ -1,8 +1,14 @@
 // @ts-ignore
+import * as Joi from "@hapi/joi";
+// @ts-ignore
 import Client from "strong-pubsub";
 // @ts-ignore
 import MqttAdapter from "strong-pubsub-mqtt";
-import {ICruxIdClaim, IPubSubClient, IPubSubClientFactory} from "../../core/interfaces";
+import {
+    ICruxIdClaim, IMessageSchema,
+    IPubSubClient,
+    IPubSubClientFactory,
+} from "../../core/interfaces";
 import {CruxId} from "../../packages";
 
 interface ICruxNetClientFactoryOptions {
@@ -94,3 +100,17 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
         return;
     }
 }
+
+export const cruxPaymentProtocol: IMessageSchema[] = [{
+    messageType: "PAYMENT_REQUEST",
+    schema: Joi.object({
+        amount: Joi.number()
+            .required(),
+
+        toAddress: Joi.string()
+            .required(),
+
+        assetId: Joi.string()
+            .required(),
+    }),
+}];
