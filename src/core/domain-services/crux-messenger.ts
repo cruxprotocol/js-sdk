@@ -65,6 +65,8 @@ export class CruxConnectProtocolMessenger {
         this.secureMessenger.listen((msg: IProtocolMessage) => {
             this.validateMessage(msg);
             newMessageCallback(msg);
+        }, (err) => {
+            newMessageCallback(err);
         });
     }
     public validateMessage = (message: IProtocolMessage): void => {

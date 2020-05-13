@@ -15,6 +15,7 @@ import { CruxExplorerClient } from "./crux-explorer-client";
 import * as config from "./crux-gateway-bridge-config.json";
 
 const TCP_PORT = config.PORTS.TCP_PORT;
+let count = 1;
 const tcpServer = net.createServer();
 tcpServer.on("connection", (socket) => {
     // upgrade the tcp socket into a strong-pubsub-connection
@@ -24,7 +25,9 @@ tcpServer.on("connection", (socket) => {
     );
     bridge.before("connect", async (ctx: { auth: { username: any; password: { toString: () => string; }; }; reject: boolean; }, next: () => void) => {
         try {
-            console.log("Connected: ");
+            console.log(count);
+            count++;
+            console.log("Connected: ", ctx);
             next();
         } catch (err) {
             console.log(err);
