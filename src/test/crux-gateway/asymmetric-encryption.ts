@@ -26,8 +26,13 @@ describe("Asymmetric encryption tests", () => {
         it("decrypt with wrong key test", async () => {
             const encryptedMessage = '{"ciphertext":"dfc1e678decbdd5e2b8a23f4963540a0","ephemPublicKey":"040cc480a70e6673cc96338463803cca329aba6cd9441e5cbb468fa580abfbea908f1e923c0eec29994f248122bb1bf2e4ddeb4014f79bc033dd6c1335c64cfdbf","iv":"0d5ff081568891d14135a48e56233da3","mac":"73f69c129fcc53dfaa716ad464e2bb73bffe2119bc2df2e98de6132c01a20db1"}';
             const testKeyManager = new BasicKeyManager(testPrivateKey2);
+            let raisedError;
+        try {
             const decrypted = await EncryptionManager.decrypt(encryptedMessage, testKeyManager);
-            expect(decrypted).to.be.eql(sampleMessage);
+        } catch (e) {
+            raisedError = e;
+        }
+        expect(raisedError.message).to.be.eql("Decryption failed");
         })
     })
 })
