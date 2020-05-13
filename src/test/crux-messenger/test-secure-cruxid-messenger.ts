@@ -76,7 +76,7 @@ describe('Test Secure Crux Messenger', function() {
                 reject()
             },
             (err) => {
-                expect(err.message === "Decryption failed")
+                expect(err.message).equals("Decryption failed")
                 resolve()
             });
             await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
