@@ -72,13 +72,12 @@ export class CruxConnectProtocolMessenger {
         this.secureMessenger.send(message, recipientCruxId);
     }
 
-    public listen = (newMessageCallback: (msg: any) => void): void => {
+    public listen = (newMessageCallback: (msg: any) => void, errorCallback: (msg: any) => void): void => {
         this.secureMessenger.listen((msg: IProtocolMessage) => {
             this.validateMessage(msg);
             newMessageCallback(msg);
-        },
-        (err) => {
-            throw err;
+        }, (err: Error) => {
+            errorCallback(err);
         });
     }
     public validateMessage = (message: IProtocolMessage): void => {

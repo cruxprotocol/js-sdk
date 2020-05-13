@@ -113,6 +113,7 @@ export class InMemoryCruxUserRepository implements ICruxUserRepository {
             }
         },{
             configuration: {
+                blacklistedCruxUsers: [],
                 enabledAssetGroups: [],
             },
             privateAddresses: {}
@@ -240,6 +241,7 @@ export const getFoo123SomewalletUser = () => {
     };
     const validCruxUserData: ICruxUserData = {
         configuration: {
+            blacklistedCruxUsers: [],
             enabledAssetGroups: [],
         },
         privateAddresses: {}
@@ -264,6 +266,7 @@ export const getBar123SomewalletUser = () => {
     };
     const validCruxUserData: ICruxUserData = {
         configuration: {
+            blacklistedCruxUsers: [],
             enabledAssetGroups: [],
         },
         privateAddresses: {}
@@ -283,6 +286,7 @@ export const getValidPendingCruxUser = () => {
     };
     const validCruxUserData: ICruxUserData = {
         configuration: {
+            blacklistedCruxUsers: [],
             enabledAssetGroups: [],
         },
         privateAddresses: {}

@@ -230,6 +230,29 @@ export class CruxWalletClient {
         return {success, failures};
     }
 
+    @throwCruxClientError
+    public blacklistUsers = async (fullCruxIDs: string[]): Promise<{success: string[], failures: string[]}> => {
+        await this.initPromise;
+        const cruxUserWithKey = await this.getCruxUserByKey();
+        if (!cruxUserWithKey) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
+        }
+        const failures: string[] = [];
+        const registeredCruxUsers: string[] = [];
+        for (const fullCruxID of fullCruxIDs) {
+            const cruxUser = await this.getCruxUserByID(fullCruxID);
+            if (!cruxUser) {
+                failures.push(fullCruxID);
+            } else {
+                registeredCruxUsers.push(fullCruxID);
+            }
+        }
+        cruxUserWithKey.setBlacklistedCruxIDs(registeredCruxUsers);
+        await this.cruxUserRepository.save(cruxUserWithKey, this.getKeyManager());
+        return {success: registeredCruxUsers, failures};
+    }
+
+    // @throwCruxClientError
     public putPrivateAddressMap = async (fullCruxIDs: string[], newAddressMap: IAddressMapping): Promise<IPutPrivateAddressMapResult> => {
         await this.initPromise;
         const cruxUserWithKey = await this.getCruxUserByKey();
