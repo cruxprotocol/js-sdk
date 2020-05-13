@@ -34,7 +34,7 @@ describe('Test Secure Crux Messenger - PROD', function() {
         });
     });
 
-    it('Basic Send Receive Test', async function() {
+    it('Basic Send Receive Test', function() {
         const testmsg = 'HelloWorld';
         return new Promise(async (resolve, reject) => {
             const user1Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
