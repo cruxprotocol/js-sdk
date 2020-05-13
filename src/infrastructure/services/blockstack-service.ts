@@ -39,7 +39,14 @@ export class BlockstackService {
         log.debug(`BNS resolved JSON array:`, responsesArr);
         const nameDetails: INameDetails = responsesArr.reduce((previousResponse, response) => {
             try {
-                deepStrictEqual(previousResponse, response);
+                if (blockstackName.split(".").length === 2) {
+                    // compare only address field for domains
+                    if (previousResponse.address !== response.address) {
+                        throw new AssertionError({message: "address fields do not match!"});
+                    }
+                } else {
+                    deepStrictEqual(previousResponse, response);
+                }
             } catch (e) {
                 if (e instanceof AssertionError) {
                     throw ErrorHelper.getPackageError(e, PackageErrorCode.NameIntegrityCheckFailed);

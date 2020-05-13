@@ -1,4 +1,5 @@
 // Importing packages
+import Logger from "js-logger";
 import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
 import { CruxDomain } from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
@@ -19,7 +20,10 @@ import {
 import { CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode } from "../../packages/error";
 import { CruxDomainId, CruxId } from "../../packages/identity-utils";
 import { InMemStorage } from "../../packages/inmem-storage";
+import { getLogger } from "../../packages/logger";
 import { StorageService } from "../../packages/storage";
+
+const cruxWalletClientDebugLoggerName = "CruxWalletClient:DEBUGGING";
 
 export interface IPutPrivateAddressMapResult {
     failures: IGenericFailures[];
@@ -46,6 +50,8 @@ export const throwCruxClientError = (target: any, prop: any, descriptor?: { valu
                     try {
                         return await fn.call(this, ...params);
                     } catch (error) {
+                        const log = getLogger(cruxWalletClientDebugLoggerName);
+                        log.error(error);
                         throw CruxClientError.fromError(error);
                     }
                 };
@@ -63,6 +69,7 @@ export interface ICruxWalletClientOptions {
     blockstackInfrastructure?: ICruxBlockstackInfrastructure;
     cacheStorage?: StorageService;
     walletClientName: string;
+    debugLogging?: boolean;
 }
 
 export interface ICruxIDState {
@@ -91,6 +98,7 @@ export class CruxWalletClient {
     private cacheStorage?: StorageService;
 
     constructor(options: ICruxWalletClientOptions) {
+        getLogger(cruxWalletClientDebugLoggerName).setLevel(options.debugLogging ? Logger.DEBUG : Logger.OFF);
         this.cacheStorage = options.cacheStorage || new InMemStorage();
         this.cruxBlockstackInfrastructure = options.blockstackInfrastructure || CruxSpec.blockstack.infrastructure;
         this.walletClientName = options.walletClientName;
@@ -228,6 +236,7 @@ export class CruxWalletClient {
         const {assetAddressMap, success, failures} = this.cruxAssetTranslator.symbolAddressMapToAssetIdAddressMap(newAddressMap);
         cruxUser.setAddressMap(assetAddressMap);
         await this.cruxUserRepository.save(cruxUser, this.getKeyManager());
+        const enabledAssetGroups = await this.putEnabledAssetGroups();
         return {success, failures};
     }
 
@@ -289,22 +298,14 @@ export class CruxWalletClient {
         return enabledAssetGroups;
     }
 
-    /**
-     * ```ts
-     *  const sampleEnabledAssetGroups: string[] = ["ERC20_eth"];
-     *  // assetGroups can be constructed in the format "{assetType}_{parentAssetId}";
-     *  const enabledAssetGroups = await cruxClient.putEnabledAssetGroups(sampleEnabledAssetGroups);
-     * ```
-     */
     @throwCruxClientError
-    public putEnabledAssetGroups = async (symbolAssetGroups: string[]): Promise<string[]> => {
+    public putEnabledAssetGroups = async (): Promise<string[]> => {
         await this.initPromise;
         let cruxUser = await this.getCruxUserByKey();
         if (!cruxUser) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
         }
-        const assetIdAssetGroups = symbolAssetGroups.map((assetGroup: string) => this.cruxAssetTranslator.symbolAssetGroupToAssetIdAssetGroup(assetGroup));
-        cruxUser.setSupportedAssetGroups(assetIdAssetGroups);
+        cruxUser.setSupportedAssetGroups();
         cruxUser = await this.cruxUserRepository.save(cruxUser, this.getKeyManager());
         const enabledAssetGroups = cruxUser.config.enabledAssetGroups.map((assetIdAssetGroup: string) => this.cruxAssetTranslator.assetIdAssetGroupToSymbolAssetGroup(assetIdAssetGroup));
         return enabledAssetGroups;
