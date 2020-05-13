@@ -47,14 +47,13 @@ describe('Test Secure Crux Messenger - PROD', function() {
                 keyManager: new BasicKeyManager(this.user2Data.pvtKey)
             });
             user2Messenger.listen((msg) => {
+                expect(msg).equals(testmsg)
                 resolve(msg)
             },(err) => {
                 reject(err)
             });
             await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
-        }).then(msg => 
-            expect(msg).equals(testmsg)
-        );
+        });
 
     });
 })
