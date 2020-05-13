@@ -134,7 +134,7 @@ export class SecureCruxIdMessenger {
         const serializedSecurePacket = JSON.stringify(securePacket);
         const encryptedSecurePacket = await EncryptionManager.encrypt(serializedSecurePacket, recipientCruxUser.publicKey!);
         const pubSubClient = this.pubsubClientFactory.getRecipientClient(recipientCruxId, this.selfIdClaim ? this.selfIdClaim.cruxId : undefined);
-        const messenger = new CruxIdMessenger(pubSubClient, this.selfIdClaim ? this.selfIdClaim.cruxId: undefined);
+        const messenger = new CruxIdMessenger(pubSubClient, this.selfIdClaim ? this.selfIdClaim.cruxId : undefined);
         messenger.send(encryptedSecurePacket, recipientCruxId);
     }
 
