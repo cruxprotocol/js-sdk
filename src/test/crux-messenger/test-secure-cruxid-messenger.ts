@@ -4,6 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import 'mocha';
 import {SecureCruxIdMessenger, CertificateManager} from "../../core/domain-services";
 import {BasicKeyManager} from "../../infrastructure/implementations";
+import {CruxId} from "../../packages";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../test-utils";
 import {InMemoryPubSubClientFactory, InMemoryMaliciousPubSubClientFactory} from "./inmemory-implementations";
 import {getMockUserBar123CSTestWallet, getMockUserFoo123CSTestWallet, getMockUserFooBar123CSTestWallet} from "./utils";
@@ -42,13 +43,13 @@ describe('Test Secure Crux Messenger', function() {
                 cruxId: this.user2Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user2Data.pvtKey)
             });
-            user2Messenger.listen((msg) => {
+            user2Messenger.listen((msg, senderId) => {
                 resolve(msg)
             },(err) => {
                 reject(err)
             });
             await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
-        }).then(msg => 
+        }).then(msg =>
             expect(msg).equals(testmsg)
         );
 
@@ -72,10 +73,10 @@ describe('Test Secure Crux Messenger', function() {
                 keyManager: new BasicKeyManager(this.user3Data.pvtKey)
             });
             const testmsg = 'HelloWorld';
-            user3Messenger.listen((msg) => {
+            user3Messenger.listen((msg: any, senderId?: CruxId) => {
                 reject()
             },
-            (err) => {
+            (err: any) => {
                 expect(err.message).equals("Decryption failed")
                 resolve()
             });

@@ -5,6 +5,7 @@ import 'mocha';
 import {SecureCruxIdMessenger, CertificateManager, CruxConnectProtocolMessenger} from "../../core/domain-services";
 import {ICruxUserRepository, IProtocolMessage, IPubSubClientFactory} from "../../core/interfaces";
 import {BasicKeyManager, cruxPaymentProtocol} from "../../infrastructure/implementations";
+import {CruxId} from "../../packages";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../test-utils";
 import {InMemoryPubSubClientFactory, InMemoryMaliciousPubSubClientFactory} from "./inmemory-implementations";
 import {getMockUserBar123CSTestWallet, getMockUserFoo123CSTestWallet, getMockUserFooBar123CSTestWallet} from "./utils";
@@ -54,8 +55,10 @@ describe('Test Crux Connect Protocol Messenger - Payment Request', function() {
                 type: "PAYMENT_REQUEST",
                 content: validPaymentRequest
             }
-            this.user2PaymentProtocolMessenger.listen((msg: any)=>{
+            const that = this;
+            this.user2PaymentProtocolMessenger.listen((msg: any, senderId?: CruxId)=>{
                 expect(msg).to.deep.equal(testMessage);
+                expect(senderId!.toString()).equals(that.user1Data.cruxUser.cruxID.toString());
                 res()
             }, (err: any)=>{
                 rej(err)
@@ -74,7 +77,6 @@ describe('Test Crux Connect Protocol Messenger - Payment Request', function() {
         };
         const promise = this.user1PaymentProtocolMessenger.send(invalidPaymentRequest, this.user2Data.cruxUser.cruxID)
         return expect(promise).to.be.eventually.rejected;
-
     });
 
 

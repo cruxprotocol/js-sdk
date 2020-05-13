@@ -23,19 +23,19 @@ export class InMemoryPubSubClient implements IPubSubClient {
             topicEmitter = createNanoEvents();
             this.emitterByTopic[topic] = topicEmitter;
         }
-        return topicEmitter
+        return topicEmitter;
     }
 }
 
 export class InMemoryMaliciousPubSubClient implements IPubSubClient {
     private emitterByTopic: any;
-    private topic;
-    constructor(cruxID){
+    private maliciousCruxIdTopic: string;
+    constructor(mitmCruxId: CruxId){
         this.emitterByTopic = {};
-        this.topic = "topic_" + cruxID.toString();
+        this.maliciousCruxIdTopic = "topic_" + mitmCruxId.toString();
     }
     public publish(topic: string, data: any): void {
-        let topicEmitter = this.getEmitter(this.topic);
+        let topicEmitter = this.getEmitter(this.maliciousCruxIdTopic);
         topicEmitter.emit('message', data)
     };
     public subscribe(topic: string, callback: any): void {
@@ -57,7 +57,7 @@ export class InMemoryPubSubClientFactory implements IPubSubClientFactory {
     constructor() {
         this.pubsubClient = new InMemoryPubSubClient()
     }
-    public getRecipientClient =  (selfCruxId: CruxId, recipientCruxId: CruxId): IPubSubClient => {
+    public getRecipientClient =  (recipientCruxId: CruxId, selfCruxId?: CruxId): IPubSubClient => {
         return this.pubsubClient
     };
     public getSelfClient = (idClaim: ICruxIdClaim): IPubSubClient => {
@@ -69,11 +69,11 @@ export class InMemoryPubSubClientFactory implements IPubSubClientFactory {
 export class InMemoryMaliciousPubSubClientFactory implements IPubSubClientFactory {
     // private pubsubClient: InMemoryPubSubClient;
     private maliciousPubsubClient: InMemoryMaliciousPubSubClient;
-    constructor(cruxID) {
-        this.maliciousPubsubClient = new InMemoryMaliciousPubSubClient(cruxID);
+    constructor(mitmCruxId: CruxId) {
+        this.maliciousPubsubClient = new InMemoryMaliciousPubSubClient(mitmCruxId);
         // this.pubsubClient = new InMemoryPubSubClient()
     }
-    public getRecipientClient =  (selfCruxId: CruxId, recipientCruxId: CruxId): IPubSubClient => {
+    public getRecipientClient =  (recipientCruxId: CruxId, selfCruxId?: CruxId): IPubSubClient => {
         return this.maliciousPubsubClient
     };
     public getSelfClient = (idClaim: ICruxIdClaim): IPubSubClient => {
