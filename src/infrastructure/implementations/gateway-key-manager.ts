@@ -49,7 +49,7 @@ export class ApiSecretKeyManager {
         this.authTokenService = authTokenService;
         this.keyStore = keyStore;
     }
-    public execute = (apiKey: string, authToken: any, cruxId: CruxId, method: string, args: any) => {
+    public execute = async (apiKey: string, authToken: any, cruxId: CruxId, method: string, args: any) => {
         this.authTokenService.verify(apiKey, authToken);
         const key = this.getKey(cruxId);
         return basicKeyManagerExecutor(key, method, args);
@@ -60,7 +60,6 @@ export class ApiSecretKeyManager {
             throw Error("Unsupported CruxID");
         }
         return key;
-
     }
 }
 
