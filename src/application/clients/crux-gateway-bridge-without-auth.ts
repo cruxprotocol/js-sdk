@@ -10,7 +10,6 @@ import MqttConnection from "strong-pubsub-connection-mqtt";
 // @ts-ignore
 import Adapter from "strong-pubsub-mqtt";
 
-import { checkPublisherAccess, generateHash, topicVerification, verifySignature } from "../../packages/utils";
 import { CruxExplorerClient } from "./crux-explorer-client";
 import * as config from "./crux-gateway-bridge-config.json";
 

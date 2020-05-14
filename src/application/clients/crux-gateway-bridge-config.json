@@ -1,21 +1,9 @@
 {
     "HOST_URL": {
-        "BROKER_HOST": "127.0.0.1",
-        "TCP_HOST": "127.0.0.1"
+        "BROKER_HOST": "127.0.0.1"
     },
     "PORTS": {
         "BROKER_PORT": 1883,
-        "TCP_PORT": 4005,
-        "PUB_SUB_CLIENT_1_PORT": 3000,
-        "PUB_SUB_CLIENT_2_PORT": 3001,
-        "PUB_SUB_CLIENT_3_PORT": 3002
-    },
-    "QOS": {
-        "SUB_1_QOS": 0,
-        "SUB_2_QOS": 0,
-        "SUB_3_QOS": 0,
-        "PUB_1_QOS": 0,
-        "PUB_2_QOS": 0,
-        "PUB_3_QOS": 0
+        "TCP_PORT": 4005
     }
 }

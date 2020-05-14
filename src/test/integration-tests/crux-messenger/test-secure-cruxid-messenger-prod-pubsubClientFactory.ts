@@ -2,10 +2,10 @@ import * as chai from "chai";
 import sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import 'mocha';
-import {SecureCruxIdMessenger, CertificateManager} from "../../core/domain-services";
-import {BasicKeyManager, CruxNetPubSubClientFactory} from "../../infrastructure/implementations";
-import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../test-utils";
-import {getMockUserBar123CSTestWallet, getMockUserFoo123CSTestWallet} from "./utils";
+import {SecureCruxIdMessenger, CertificateManager} from "../../../core/domain-services";
+import {BasicKeyManager, CruxNetPubSubClientFactory} from "../../../infrastructure/implementations";
+import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../../test-utils";
+import {getMockUserBar123CSTestWallet, getMockUserFoo123CSTestWallet} from "../../crux-messenger/utils";
 
 patchMissingDependencies();
 

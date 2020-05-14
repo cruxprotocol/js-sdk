@@ -1,8 +1,8 @@
-import {StrongPubSubClient} from "../../infrastructure/implementations/crux-messenger";
+import {StrongPubSubClient} from "../../../infrastructure/implementations/crux-messenger";
 import 'mocha';
 import chaiAsPromised from "chai-as-promised";
 import * as chai from "chai";
-import {patchMissingDependencies} from "../test-utils";
+import {patchMissingDependencies} from "../../test-utils";
 // var exec = require('child_process').exec;
 
 patchMissingDependencies()

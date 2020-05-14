@@ -7,6 +7,7 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "test": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 5000 src/test/*.ts src/test/crux-messenger/*.ts",
+    "integration-test": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 50000  src/test/integration-tests/crux-messenger/*.ts",
     "copy-latest-docs": "cp -a docs/$npm_package_version/. docs/",
     "version-docs": "./node_modules/.bin/typedoc --out docs/$npm_package_version src/index.ts",
     "coverage": "./node_modules/.bin/nyc npm run test",
