@@ -225,7 +225,7 @@ export class MessengerEventProxy {
         this.messenger = eventBus;
     }
 
-    public redirect = (msg: string) => {
+    public redirect = (topic: string, msg: string) => {
         const callbackForEventName = this.messenger.getRegisteredCallback(this.eventName);
         if (!callbackForEventName) {
             console.log("No Registered callback. Event wasted");

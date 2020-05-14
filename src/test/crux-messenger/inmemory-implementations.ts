@@ -15,7 +15,9 @@ export class InMemoryPubSubClient implements IPubSubClient {
     };
     public subscribe(topic: string, callback: any): void {
         let topicEmitter = this.getEmitter(topic);
-        topicEmitter.on('message', callback)
+        topicEmitter.on('message', (msg: any) => {
+            callback(topic, msg)
+        });
     };
     private getEmitter(topic: string) {
         let topicEmitter = this.emitterByTopic[topic];
@@ -40,7 +42,9 @@ export class InMemoryMaliciousPubSubClient implements IPubSubClient {
     };
     public subscribe(topic: string, callback: any): void {
         let topicEmitter = this.getEmitter(topic);
-        topicEmitter.on('message', callback)
+        topicEmitter.on('message', (msg: any) => {
+            callback(topic, msg)
+        });
     };
     private getEmitter(topic: string) {
         let topicEmitter = this.emitterByTopic[topic];
