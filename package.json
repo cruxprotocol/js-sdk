@@ -103,7 +103,7 @@
     "url-parse": "^1.4.7",
     "strong-pubsub": "^0.2.0",
     "strong-pubsub-mqtt": "^0.1.0",
-    "strong-pubsub-bridge": "^0.2.1",
+    "strong-pubsub-bridge": "git+https://github.com/eisaqasemi/strong-pubsub-bridge.git",
     "strong-pubsub-connection-mqtt": "^0.1.2",
     "@hapi/joi": "17.1.1",
     "nanoevents": "5.1.5"
