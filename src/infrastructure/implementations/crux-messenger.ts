@@ -1,5 +1,6 @@
 // @ts-ignore
 import * as Joi from "@hapi/joi";
+import {makeUUID4} from "blockstack/lib";
 // @ts-ignore
 import Client from "strong-pubsub";
 // @ts-ignore
@@ -82,14 +83,14 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
             subscribeOptions: this.defaultSubscribeOptions,
         });
     }
-    public getRecipientClient = (selfCruxId: CruxId, recipientCruxId: CruxId): IPubSubClient => {
+    public getRecipientClient = (recipientCruxId: CruxId, selfCruxId?: CruxId): IPubSubClient => {
         const overrideOpts = this.getDomainLevelClientOptions(recipientCruxId);
         return new StrongPubSubClient({
             clientOptions: {
                 host: overrideOpts ? overrideOpts.host : this.options.defaultLinkServer.host,
                 port: overrideOpts ? overrideOpts.port : this.options.defaultLinkServer.port,
                 // tslint:disable-next-line:object-literal-sort-keys
-                mqtt: { ...this.defaultClientMqttOptions, clientId: "client_" + selfCruxId.toString() },
+                mqtt: { ...this.defaultClientMqttOptions, clientId: "client_" + selfCruxId ? selfCruxId!.toString() : makeUUID4()  },
             },
             subscribeOptions: this.defaultSubscribeOptions,
         });

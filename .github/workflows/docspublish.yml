@@ -1,7 +1,7 @@
-name: Build and Deploy
+name: Documentation Publish
 on:
-  push:	
-    branches:	
+  push:
+    branches:
       - master
 jobs:
   build-and-deploy:

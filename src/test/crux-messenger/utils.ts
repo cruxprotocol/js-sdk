@@ -42,6 +42,7 @@ export const getMockUserFoo123CSTestWallet = () => {
     const validCruxUserData: ICruxUserData = {
         configuration: {
             enabledAssetGroups: [],
+            blacklistedCruxUsers: []
         },
         privateAddresses: {}
     }
@@ -71,6 +72,7 @@ export const getMockUserBar123CSTestWallet = () => {
     const validCruxUserData: ICruxUserData = {
         configuration: {
             enabledAssetGroups: [],
+            blacklistedCruxUsers: []
         },
         privateAddresses: {}
     }
@@ -80,3 +82,32 @@ export const getMockUserBar123CSTestWallet = () => {
         pvtKey: testPvtKey
     };
 };
+
+export const getMockUserFooBar123CSTestWallet = () => {
+    const testPvtKey = '2982735d0b69751e1d13fcb045757e372c1d85b8bdc66995a5a073be648e5f26';
+    const cstestwalletDomain = getCstestwalletCruxDomain();
+    const testCruxId = CruxId.fromString('foobar123@cstestwallet.crux');
+    const testAddress: IAddress = {
+        'addressHash': 'FOOBAR123_MOCK_BTC_ADDRESS'
+    };
+    const BTC_ASSET_ID: string = 'd78c26f8-7c13-4909-bf62-57d7623f8ee8';
+    const testValidAddressMap: IAddressMapping = {[BTC_ASSET_ID]: testAddress};
+    const validUserInformation: ICruxUserInformation = {
+        registrationStatus: {
+            'status': SubdomainRegistrationStatus.DONE,
+            'statusDetail': SubdomainRegistrationStatusDetail.DONE,
+        }
+    };
+    const validCruxUserData: ICruxUserData = {
+        configuration: {
+            enabledAssetGroups: [],
+            blacklistedCruxUsers: []
+        },
+        privateAddresses: {}
+    }
+    const keyData = getKeyPairFromPrivKey(testPvtKey)
+    return {
+        cruxUser: new CruxUser(testCruxId.components.subdomain, cstestwalletDomain , testValidAddressMap, validUserInformation, validCruxUserData, keyData.pubKey),
+        pvtKey: testPvtKey
+    };
+}

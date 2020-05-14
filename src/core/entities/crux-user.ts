@@ -34,6 +34,7 @@ export interface ICruxUserData {
 
 export interface ICruxUserConfiguration {
     enabledAssetGroups: string[];
+    blacklistedCruxUsers: string[];
 }
 
 export interface ICruxUserPrivateAddresses {
@@ -111,6 +112,9 @@ export class CruxUser {
             throw new BaseError(null, "Not supported by the keyManager in use");
         }
     }
+    public setBlacklistedCruxIDs = (blacklistedCruxIDs: string[]) => {
+        this.cruxUserConfig.blacklistedCruxUsers = blacklistedCruxIDs;
+    }
     public getAddressFromAsset = async (asset: IGlobalAsset, keyManager?: IKeyManager): Promise<IAddress|undefined> => {
         let address: IAddress|undefined;
         if (keyManager) {
@@ -174,6 +178,7 @@ export class CruxUser {
     private setCruxUserConfig = (cruxUserConfiguration: ICruxUserConfiguration) => {
         // TODO: validation of the configurations
         this.cruxUserConfig = {
+            blacklistedCruxUsers: cruxUserConfiguration.blacklistedCruxUsers,
             enabledAssetGroups: cruxUserConfiguration.enabledAssetGroups || [],
         };
     }

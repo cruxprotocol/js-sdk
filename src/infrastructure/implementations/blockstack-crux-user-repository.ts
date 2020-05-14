@@ -58,7 +58,10 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
     public create = async (cruxIdSubdomain: string, keyManager: IKeyManager): Promise<CruxUser> => {
         // Publishing an empty addressMap while registering the name to be fail safe
         const cruxUserData: ICruxUserData = {
-            configuration: {enabledAssetGroups: []},
+            configuration: {
+                blacklistedCruxUsers: [],
+                enabledAssetGroups: [],
+            },
             privateAddresses: {},
         };
         await this.putCruxpayObject(this.getCruxDomain().id, {}, keyManager);
@@ -76,6 +79,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         let addressMap = {};
         let cruxUserData: ICruxUserData = {
             configuration: {
+                blacklistedCruxUsers: [],
                 enabledAssetGroups: [],
             },
             privateAddresses: {},
@@ -105,6 +109,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         let addressMap = {};
         let cruxUserData: ICruxUserData = {
             configuration: {
+                blacklistedCruxUsers: [],
                 enabledAssetGroups: [],
             },
             privateAddresses: {},
