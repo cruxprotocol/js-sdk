@@ -18,6 +18,6 @@ HEADERS
 4. Return output to caller 
 
 
-API Key access should be configurable for clients and their functions.
+API Key access should be configurable for various scopes
 
 Some endpoints can be public and require no API key
