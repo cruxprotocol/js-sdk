@@ -1,3 +1,4 @@
+process.title = "crux-gateway-bridge-server-without-auth";
 import * as net from "net";
 
 // @ts-ignore

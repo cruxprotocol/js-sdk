@@ -17,7 +17,7 @@ const expect = require('chai').expect;
 describe('Test Secure Crux Messenger - Prod pubsubClientFactory', function() {
     beforeEach(async function() {
         const HOST = "127.0.0.1";
-        const PORT = 1883;
+        const PORT = 4005;
         const userStore = new MockUserStore();
         const user1Data = getMockUserFoo123CSTestWallet();
         const user2Data = getMockUserBar123CSTestWallet();

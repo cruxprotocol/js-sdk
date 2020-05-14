@@ -45,16 +45,11 @@ const publisherConfig = {
     }
 };
 
-const subscriber = new StrongPubSubClient(subscriberConfig);
-const publisher = new StrongPubSubClient(publisherConfig);
-
 
 describe('Basic Auth PubSub Client Tests', function() {
     beforeEach(async function() {
-        // var cmd1 = "./node_modules/.bin/parcel build ./src/application/clients/crux-gateway-bridge-without-auth.ts -d dist --out-file crux-gateway-bridge-without-auth.js --no-minify --no-cache --detailed-report --target node --bundle-node-modules";
-        // var cmd2 = "node dist/crux-gateway-bridge-without-auth.js";
-        // exec(cmd1, function(error: any, stdout: any, stderr: any) {});
-        // exec(cmd2, function(error: any, stdout: any, stderr: any) {});
+        this.subscriber = new StrongPubSubClient(subscriberConfig);
+        this.publisher = new StrongPubSubClient(publisherConfig);
     });
     it('Direct PubSub Client Test', async function() {
 
@@ -62,13 +57,13 @@ describe('Basic Auth PubSub Client Tests', function() {
 
         // Initiate clients
 
-        subscriber.subscribe("release020@cruxdev.crux", function(topic: string, msg: { toString: () => string; }) {
+        this.subscriber.subscribe("release020@cruxdev.crux", function(topic: string, msg: { toString: () => string; }) {
             expect(topic).to.equals(subscriberUserName);
             expect(msg.toString()).to.equals(testMsg);
             console.log("subscriber3: " + topic + " " +  msg.toString());
         });
 
-        publisher.publish("release020@cruxdev.crux", testMsg);
+        this.publisher.publish("release020@cruxdev.crux", testMsg);
     });
 });
 
