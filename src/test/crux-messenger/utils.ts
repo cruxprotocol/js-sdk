@@ -42,6 +42,7 @@ export const getMockUserFoo123CSTestWallet = () => {
     const validCruxUserData: ICruxUserData = {
         configuration: {
             enabledAssetGroups: [],
+            blacklistedCruxUsers: []
         },
         privateAddresses: {}
     }
@@ -71,6 +72,7 @@ export const getMockUserBar123CSTestWallet = () => {
     const validCruxUserData: ICruxUserData = {
         configuration: {
             enabledAssetGroups: [],
+            blacklistedCruxUsers: []
         },
         privateAddresses: {}
     }
@@ -99,6 +101,7 @@ export const getMockUserFooBar123CSTestWallet = () => {
     const validCruxUserData: ICruxUserData = {
         configuration: {
             enabledAssetGroups: [],
+            blacklistedCruxUsers: []
         },
         privateAddresses: {}
     }

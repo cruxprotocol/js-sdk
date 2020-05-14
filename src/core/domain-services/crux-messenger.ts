@@ -64,32 +64,49 @@ export enum EventBusEventNames {
 export class CruxConnectProtocolMessenger {
     private secureMessenger: SecureCruxIdMessenger;
     private schemaByMessageType: any;
+    private errorHandler: (error: any) => void;
+    private messageHandlerByType: {[type: string]: (data: any, senderId?: CruxId) => void};
 
     constructor(secureMessenger: SecureCruxIdMessenger, protocol: IMessageSchema[]) {
         this.secureMessenger = secureMessenger;
         this.schemaByMessageType = protocol.reduce((newObj, x) => Object.assign(newObj, {[x.messageType]: x.schema}), {});
+        // tslint:disable-next-line:no-empty
+        this.errorHandler = (error) => {};
+        this.messageHandlerByType = {};
+        this.secureMessenger.listen((msg: IProtocolMessage, senderId?: CruxId) => {
+            this.handleNewMessage(msg, senderId);
+        }, (e: Error) => {
+            this.handleNewError(e);
+        });
     }
     public send = async (message: IProtocolMessage, recipientCruxId: CruxId): Promise<void> => {
         this.validateMessage(message);
         this.secureMessenger.send(message, recipientCruxId);
     }
-
-    public listen = (newMessageCallback: (msg: any, senderId?: CruxId) => void, errorCallback: (msg: any) => void): void => {
-        this.secureMessenger.listen((msg: IProtocolMessage, senderId?: CruxId) => {
-            try {
-                this.validateMessage(msg);
-            } catch (e) {
-                errorCallback(e);
-                return;
-            }
-            newMessageCallback(msg, senderId);
-        }, (err: Error) => {
-            errorCallback(err);
-        });
+    public on = (messageType: string, callback: (data: any, senderId?: CruxId) => void) => {
+        this.getSchema(messageType);
+        this.messageHandlerByType[messageType] = callback;
     }
     public validateMessage = (message: IProtocolMessage): void => {
         const schema = this.getSchema(message.type);
         this.validateContent(message.content, schema);
+    }
+
+    private handleNewMessage = (message: IProtocolMessage, senderId?: CruxId) => {
+        try {
+            this.validateMessage(message);
+        } catch (e) {
+            this.handleNewError(e);
+            return;
+        }
+        const callback = this.messageHandlerByType[message.type];
+        if (callback) {
+            callback(message.content, senderId);
+        }
+
+    }
+    private handleNewError = (error: any) => {
+        this.errorHandler(error);
     }
 
     private getSchema = (messageType: string): any => {
