@@ -1,12 +1,8 @@
-import {createNanoEvents, DefaultEvents, Emitter} from "nanoevents";
-import {CruxProtocolMessenger, SecureCruxIdMessenger} from "../../core/domain-services";
-import {IKeyManager, IProtocolMessage} from "../../core/interfaces";
+import {makeUUID4} from "blockstack/lib";
+import * as https from "https";
+import {IKeyManager} from "../../core/interfaces";
 import {CruxId} from "../../packages";
-import {remoteMethodInvocationProtocol} from "./crux-messenger";
-
-// export const getGatewayKeyManager = () => {
-//     const gcm = new GatewayKeyManager(CruxId.fromString("binance@merchant.crux"), CruxId.fromString("keymanager@cruxpay.crux"), messenger);
-// }
+import {BasicKeyManager} from "./basic-key-manager";
 
 function uuidv4() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -16,60 +12,123 @@ function uuidv4() {
     });
 }
 
-export class GatewayKeyManager implements IKeyManager {
-    private static getInternalEventName(invocationId: string) {
-        return "RETURN_" + invocationId;
+// export const getServiceKeyManager = (httpClient: ICruxKeyManagerProxyHTTPClient) => {
+//     return ServiceKeyManager(httpClient);
+// }
+export const cruxDefaultRequester = (payload: string) => {
+    // make http request to
+};
+
+export interface IAuthToken {
+    apiKey: string;
+    messageHash: string;
+    signedMessageHash: string;
+    validTill: number;
+}
+
+interface IKeyStore {
+    get(cruxId: CruxId): any;
+}
+
+interface IAuthTokenService {
+    verify(apiKey: string, authToken: any): void;
+}
+const basicKeyManagerExecutor = (key: string, method: string, args: any) => {
+    const keyManager = new BasicKeyManager(key);
+    // @ts-ignore
+    // tslint:disable-next-line:tsr-detect-unsafe-properties-access
+    return keyManager[method](args);
+    // TODO: Invoke method in keymanager as per args and send result
+};
+
+// This will run on CruxPay.com server
+export class ApiSecretKeyManager {
+    private authTokenService: IAuthTokenService;
+    private keyStore: IKeyStore;
+    constructor(authTokenService: IAuthTokenService, keyStore: IKeyStore) {
+        this.authTokenService = authTokenService;
+        this.keyStore = keyStore;
     }
-    private selfId: CruxId;
-    private proxyCruxId: CruxId;
-    private rmiMessenger: CruxProtocolMessenger;
-    private eventBus: Emitter<DefaultEvents>;
-    constructor(selfId: CruxId, proxyCruxId: CruxId, messenger: SecureCruxIdMessenger) {
-        this.rmiMessenger = new CruxProtocolMessenger(messenger, remoteMethodInvocationProtocol);
-        this.selfId = selfId;
-        this.proxyCruxId = proxyCruxId;
-        this.eventBus = createNanoEvents();
-        this.rmiMessenger.listen((message: IProtocolMessage) => {
-            if (message.type === "RETURN") {
-                this.eventBus.emit(GatewayKeyManager.getInternalEventName(message.content.invocationId), message);
-            } else {
-                console.log("Did not recognize this message type");
-            }
+    public execute = (apiKey: string, authToken: any, cruxId: CruxId, method: string, args: any) => {
+        this.authTokenService.verify(apiKey, authToken);
+        const key = this.getKey(cruxId);
+        return basicKeyManagerExecutor(key, method, args);
+    }
+    private getKey = (cruxId: CruxId) => {
+        const key = this.keyStore.get(cruxId);
+        if (!key) {
+            throw Error("Unsupported CruxID");
+        }
+        return key;
+
+    }
+}
+
+export interface IKeyManagerProxy {
+    invoke(requestPayloadObj: { invocation: any; claimedId: CruxId; invocationId: string }): Promise<any>;
+}
+
+export class HTTPKeyManagerProxy implements IKeyManagerProxy {
+    private keyManagerUrl: string;
+    private apiKey: string;
+    constructor(keyManagerUrl: string, apiKey: string) {
+        this.keyManagerUrl = keyManagerUrl;
+        this.apiKey = apiKey;
+    }
+    public invoke = (requestPayloadObj: { invocation: any; claimedId: CruxId; invocationId: string }): Promise<any> => {
+        return new Promise((resolve, reject) => {
+            const res =  https.request(this.keyManagerUrl, {
+                method: "POST",
+                // tslint:disable-next-line:object-literal-sort-keys
+                path: "/execute",
+                // tslint:disable-next-line:object-literal-sort-keys
+                headers: {
+                    "x-api-key": this.apiKey,
+                },
+            });
+            res.on("data", (d) => {
+                resolve(d);
+            });
         });
     }
+}
+
+export class ProxyKeyManager implements IKeyManager {
+    private apiKey: string;
+    private claimedId: CruxId;
+    private proxy: IKeyManagerProxy;
+    constructor(claimedId: CruxId, apiKey: string, proxy: IKeyManagerProxy) {
+        this.apiKey = apiKey;
+        this.claimedId = claimedId;
+        this.proxy = proxy;
+    }
     public deriveSharedSecret = async (publicKey: string): Promise<string> => {
-        return this.newInvocation({
+        return this.makeRequest({
             args: [publicKey],
-            invocationId: "uuid",
             method: "deriveSharedSecret",
         });
     }
     public getPubKey = async (): Promise<string> => {
-        return this.newInvocation({
+        return this.makeRequest({
             args: [],
-            invocationId: "uuid",
-            method: "deriveSharedSecret",
+            method: "getPubKey",
         });
+
     }
     public signWebToken = async (payload: any): Promise<string> => {
-        return this.newInvocation({
+        return this.makeRequest({
             args: [payload],
-            invocationId: "uuid",
-            method: "deriveSharedSecret",
+            method: "signWebToken",
         });
     }
-    private newInvocation = (messageContent: any): Promise<any> => {
-        return new Promise(async (reject, resolve) => {
-            const invocationId = uuidv4();
-            await this.rmiMessenger.send({
-                content: messageContent,
-                type: "INVOKE",
-            }, this.proxyCruxId);
-
-            const unbind = this.eventBus.on(GatewayKeyManager.getInternalEventName(invocationId), (message: IProtocolMessage) => {
-                unbind();
-                resolve(message.content.result);
-            });
-        });
+    private makeRequest = (invocation: any): any => {
+        const invocationId = makeUUID4();
+        const requestPayloadObj = {
+            apiKey: this.apiKey,
+            claimedId: this.claimedId,
+            invocation,
+            invocationId,
+        };
+        return this.proxy.invoke(requestPayloadObj);
     }
 }

@@ -2,7 +2,7 @@ import * as chai from "chai";
 import sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import 'mocha';
-import {SecureCruxIdMessenger, CertificateManager, CruxConnectProtocolMessenger} from "../../core/domain-services";
+import {SecureCruxIdMessenger, CertificateManager, CruxProtocolMessenger} from "../../core/domain-services";
 import {ICruxUserRepository, IProtocolMessage, IPubSubClientFactory} from "../../core/interfaces";
 import {BasicKeyManager, cruxPaymentProtocol} from "../../infrastructure/implementations";
 import {CruxId} from "../../packages";
@@ -39,8 +39,8 @@ describe('Test Crux Connect Protocol Messenger - Payment Request', function() {
             cruxId: this.user2Data.cruxUser.cruxID,
             keyManager: new BasicKeyManager(this.user2Data.pvtKey)
         });
-        this.user1PaymentProtocolMessenger = new CruxConnectProtocolMessenger(user1Messenger, cruxPaymentProtocol);
-        this.user2PaymentProtocolMessenger = new CruxConnectProtocolMessenger(user2Messenger, cruxPaymentProtocol);
+        this.user1PaymentProtocolMessenger = new CruxProtocolMessenger(user1Messenger, cruxPaymentProtocol);
+        this.user2PaymentProtocolMessenger = new CruxProtocolMessenger(user2Messenger, cruxPaymentProtocol);
 
     });
 
