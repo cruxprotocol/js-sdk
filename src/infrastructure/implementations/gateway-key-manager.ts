@@ -94,11 +94,9 @@ export class HTTPKeyManagerProxy implements IKeyManagerProxy {
 }
 
 export class ProxyKeyManager implements IKeyManager {
-    private apiKey: string;
     private claimedId: CruxId;
     private proxy: IKeyManagerProxy;
-    constructor(claimedId: CruxId, apiKey: string, proxy: IKeyManagerProxy) {
-        this.apiKey = apiKey;
+    constructor(claimedId: CruxId, proxy: IKeyManagerProxy) {
         this.claimedId = claimedId;
         this.proxy = proxy;
     }
@@ -124,7 +122,6 @@ export class ProxyKeyManager implements IKeyManager {
     private makeRequest = (invocation: any): any => {
         const invocationId = makeUUID4();
         const requestPayloadObj = {
-            apiKey: this.apiKey,
             claimedId: this.claimedId,
             invocation,
             invocationId,
