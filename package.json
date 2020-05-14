@@ -18,6 +18,7 @@
     "transpile": "./node_modules/.bin/tsc || true",
     "build-prod:js": "./node_modules/.bin/parcel build src/index.ts -d dist --out-file cruxpay-sdk.js --no-minify",
     "build-prod:dom": "./node_modules/.bin/parcel build src/cruxpay-sdk-dom.ts -d dist --out-file cruxpay-sdk-dom.js --no-minify --no-cache --detailed-report",
+    "build-crux-gateway-server": "./node_modules/.bin/parcel build ./src/application/clients/crux-gateway-bridge.ts -d dist --out-file crux-gateway-bridge.js --no-minify --no-cache --detailed-report --target node --bundle-node-modules",
     "build-crux-explorer-client-prod:dom": "./node_modules/.bin/parcel build src/dom-exports/crux-explorer-client-dom.ts -d dist --out-file crux-explorer-client-dom.js --no-minify --no-cache --detailed-report",
     "build-crux-wallet-client-prod:dom": "./node_modules/.bin/parcel build src/dom-exports/crux-wallet-client-dom.ts -d dist --out-file crux-wallet-client-dom.js --no-minify --no-cache --detailed-report",
     "build-crux-onboarding-client-prod:dom": "./node_modules/.bin/parcel build src/dom-exports/crux-onboarding-client-dom.ts -d dist --out-file crux-onboarding-client-dom.js --no-minify --no-cache --detailed-report",

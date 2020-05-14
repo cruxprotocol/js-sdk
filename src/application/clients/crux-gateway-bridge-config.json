@@ -1,6 +1,6 @@
 {
     "HOST_URL": {
-        "BROKER_HOST": "127.0.0.1",
+        "BROKER_HOST": "mosquitto",
         "TCP_HOST": "127.0.0.1"
     },
     "PORTS": {

@@ -1,0 +1,11 @@
+# package-lock.json
+node_modules
+lib
+.cache/
+.DS_Store
+.idea/
+.editorconfig
+coverage
+.nyc_output
+#.vscode
+src
