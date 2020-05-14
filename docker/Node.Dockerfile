@@ -14,6 +14,10 @@ EXPOSE 4005
 
 RUN npm install && npm cache clean --force --loglevel=error
 
+COPY --chown=node:node ./src ./src
+
+RUN npm run build-crux-gateway-server
+
 COPY --chown=node:node ./dist/crux-gateway-bridge.js .
 # COPY --chown=node:node lib ./lib/
 

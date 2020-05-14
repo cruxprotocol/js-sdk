@@ -20,7 +20,7 @@ tcpServer.on("connection", (socket) => {
     // upgrade the tcp socket into a strong-pubsub-connection
     const bridge = new Proxy(
       new MqttConnection(socket),
-      new Client({host: config.HOST_URL.BROKER_HOST, port: config.PORTS.BROKER_PORT}, Adapter),
+      new Client({host: process.env.BROKER_HOST, port: config.PORTS.BROKER_PORT}, Adapter),
     );
     bridge.before("connect", async (ctx: { auth: { username: any; password: { toString: () => string; }; }; reject: boolean; }, next: () => void) => {
         try {
