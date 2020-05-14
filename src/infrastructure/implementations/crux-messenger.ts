@@ -105,9 +105,16 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
 export const cruxPaymentProtocol: IMessageSchema[] = [{
     messageType: "PAYMENT_REQUEST",
     schema: Joi.object({
-        amount: Joi.number().required(),
-        assetId: Joi.string().required(),
-        toAddress: Joi.string().required(),
+        amount: Joi.string()
+            .required(),
+
+        toAddress: Joi.object({
+            addressHash: Joi.string().required(),
+            secIdentifier: Joi.string(),
+        }).required(),
+
+        assetId: Joi.string()
+            .required().min(36).max(36),
     }),
 }];
 
