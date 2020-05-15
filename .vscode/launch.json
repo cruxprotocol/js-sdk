@@ -14,6 +14,7 @@
                 "TS_NODE_TRANSPILE_ONLY": "true"
             },
             "args": [
+                "--exit",
                 "--require",
                 "ts-node/register",
                 "--require",
@@ -22,7 +23,7 @@
                 "jsdom-global/register",
                 "--allow-uncaught",
                 "--colors",
-                "--timeout 5000",
+                "--timeout 50000",
                 // "--reporter",
                 // "mocha-reporter",
                 "${workspaceFolder}/src/test/*.ts"

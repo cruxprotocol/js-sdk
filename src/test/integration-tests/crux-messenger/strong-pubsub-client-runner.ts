@@ -23,6 +23,9 @@ const subscriberConfig = {
             clean: false,
             clientId: subscriberUserName,
         },
+        primus: {
+            transformer: 'websockets'
+        }
     },
     subscribeOptions: {
         qos: 0,
@@ -39,6 +42,9 @@ const publisherConfig = {
             clean: false,
             clientId: publisherUserName,
         },
+        primus: {
+            transformer: 'websockets'
+        }
     },
     subscribeOptions: {
         qos: 0,

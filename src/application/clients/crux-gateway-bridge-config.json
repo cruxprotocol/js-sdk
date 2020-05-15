@@ -4,6 +4,7 @@
     },
     "PORTS": {
         "BROKER_PORT": 1883,
-        "TCP_PORT": 4005
+        "TCP_PORT": 4005,
+        "PRIMUS_PORT": 4005
     }
 }

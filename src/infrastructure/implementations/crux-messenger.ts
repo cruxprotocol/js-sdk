@@ -5,6 +5,8 @@ import {makeUUID4} from "blockstack/lib";
 import Client from "strong-pubsub";
 // @ts-ignore
 import MqttAdapter from "strong-pubsub-mqtt";
+// @ts-ignore
+import PrimusTransport from "strong-pubsub-primus";
 import {
     ICruxIdClaim, IMessageSchema,
     IPubSubClient,
@@ -27,6 +29,7 @@ export interface IStrongPubSubProviderConfig {
             clean: boolean,
             clientId: string,
         },
+        primus: any,
     };
     subscribeOptions: {
         qos: number,
@@ -49,7 +52,7 @@ export class StrongPubSubClient implements IPubSubClient {
         this.client.on("message", callback);
     }
     private connect() {
-        this.client = new Client(this.config.clientOptions, MqttAdapter);
+        this.client = new Client(this.config.clientOptions, MqttAdapter, PrimusTransport);
     }
     private ensureClient() {
         if (!this.client) {
@@ -79,6 +82,9 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
                 port: overrideOpts ? overrideOpts.port : this.options.defaultLinkServer.port,
                 // tslint:disable-next-line:object-literal-sort-keys
                 mqtt: { ...this.defaultClientMqttOptions, clientId: "client_" + idClaim.cruxId.toString() },
+                primus: {
+                    transformer: "websockets",
+                },
             },
             subscribeOptions: this.defaultSubscribeOptions,
         });
@@ -91,6 +97,9 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
                 port: overrideOpts ? overrideOpts.port : this.options.defaultLinkServer.port,
                 // tslint:disable-next-line:object-literal-sort-keys
                 mqtt: { ...this.defaultClientMqttOptions, clientId: "client_" + selfCruxId ? selfCruxId!.toString() : makeUUID4()  },
+                primus: {
+                    transformer: "websockets",
+                },
             },
             subscribeOptions: this.defaultSubscribeOptions,
         });
