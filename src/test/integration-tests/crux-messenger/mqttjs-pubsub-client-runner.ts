@@ -1,73 +1,56 @@
-import {MqttJsClient} from "../../../infrastructure/implementations/crux-messenger";
+import { MqttJsClient, PahoClient} from "../../../infrastructure/implementations/crux-messenger";
 import 'mocha';
 import chaiAsPromised from "chai-as-promised";
 import * as chai from "chai";
+// @ts-ignore
+import * as paho from "paho-mqtt"
 import {patchMissingDependencies} from "../../test-utils";
+import { resolveZoneFileToPerson } from "blockstack";
 // var exec = require('child_process').exec;
-
 patchMissingDependencies()
-
 chai.use(chaiAsPromised);
 chai.should();
 const expect = require('chai').expect;
-const BROKER_HOST = "127.0.0.1";
-const BROKER_PORT = 1883;
+const BROKER_HOST = "broker.hivemq.com";
+const BROKER_PORT = 8000;
 
 // Subscriber config
 const subscriberUserName = "release020@cruxdev.crux";
 const subscriberConfig = {
-    clientOptions: {
         host: BROKER_HOST,
         port: BROKER_PORT,
-        mqtt: {
-            clean: false,
-            clientId: subscriberUserName,
-        },
-    },
-    subscribeOptions: {
-        qos: 0,
-    }
+        clientId: subscriberUserName
 };
 
 // Publisher config
 const publisherUserName = "mascot6699@cruxdev.crux";
 const publisherConfig = {
-    clientOptions: {
-        host: BROKER_HOST,
-        port: BROKER_PORT,
-        mqtt: {
-            clean: false,
-            clientId: publisherUserName,
-        },
-    },
-    subscribeOptions: {
-        qos: 0,
-    }
+    host: BROKER_HOST,
+    port: BROKER_PORT,
+    clientId: publisherUserName
 };
 
 
-describe('Basic Auth PubSub Client Tests - MQTT', function() {
+
+describe('Basic Auth PubSub Client Tests- Paho', function() {
     beforeEach(async function() {
-        this.subscriber = new MqttJsClient(subscriberConfig);
-        this.publisher = new MqttJsClient(publisherConfig);
+        this.subscriber = new PahoClient(subscriberConfig);
+        this.publisher = new PahoClient(publisherConfig);
     });
-    
     it('Direct PubSub Client Test', async function() {
 
         const testMsg = "Hello Brother!!!"
 
         // Initiate clients
-        return new Promise(async (resolve, reject) => {
-            this.subscriber.subscribe("release020@cruxdev.crux", function(topic: string, msg: { toString: () => string; }) {
+        return new Promise(async (res,rej)=>{
+            await this.subscriber.subscribe("release020@cruxdev.crux", function(topic: string, msg: { toString: () => string; }) {
                 expect(topic).to.equals(subscriberUserName);
                 expect(msg.toString()).to.equals(testMsg);
-                resolve(msg);
                 console.log("subscriber3: " + topic + " " +  msg.toString());
+                res(msg);
             });
 
             this.publisher.publish("release020@cruxdev.crux", testMsg);
         });
     });
 });
-
-

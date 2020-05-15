@@ -107,6 +107,7 @@
     "jsontokens": "^2.0.2",
     "mqtt": "^4.0.1",
     "nanoevents": "5.1.5",
+    "paho-mqtt": "^1.1.0",
     "regenerator-runtime": "^0.13.3",
     "strong-pubsub": "^0.2.0",
     "strong-pubsub-bridge": "git+https://github.com/cruxprotocol/strong-pubsub-bridge.git",
