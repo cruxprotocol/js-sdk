@@ -1,6 +1,7 @@
 // @ts-ignore
 import * as Joi from "@hapi/joi";
 import {makeUUID4} from "blockstack/lib";
+import mqtt from "mqtt";
 // @ts-ignore
 import Client from "strong-pubsub";
 // @ts-ignore
@@ -58,6 +59,31 @@ export class StrongPubSubClient implements IPubSubClient {
     }
 }
 
+export class MqttJsClient implements IPubSubClient {
+    private client: any;
+    private config: IStrongPubSubProviderConfig;
+    constructor(config: IStrongPubSubProviderConfig) {
+        this.config = config;
+    }
+    public publish(topic: string, data: any): void {
+        this.ensureClient();
+        this.client.publish(topic, data);
+    }
+    public subscribe(topic: string, callback: any): void {
+        this.ensureClient();
+        this.client.subscribe(topic, this.config.subscribeOptions);
+        this.client.on("message", callback);
+    }
+    private connect() {
+        this.client = mqtt.connect(this.config.clientOptions);
+    }
+    private ensureClient() {
+        if (!this.client) {
+            this.connect();
+        }
+    }
+}
+
 export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
     private options: ICruxNetClientFactoryOptions;
     private defaultSubscribeOptions: { qos: number };
@@ -73,7 +99,7 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
     }
     public getSelfClient = (idClaim: ICruxIdClaim): IPubSubClient => {
         const overrideOpts = this.getDomainLevelClientOptions(idClaim.cruxId);
-        return new StrongPubSubClient({
+        return new MqttJsClient({
             clientOptions: {
                 host: overrideOpts ? overrideOpts.host : this.options.defaultLinkServer.host,
                 port: overrideOpts ? overrideOpts.port : this.options.defaultLinkServer.port,
@@ -85,7 +111,7 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
     }
     public getRecipientClient = (recipientCruxId: CruxId, selfCruxId?: CruxId): IPubSubClient => {
         const overrideOpts = this.getDomainLevelClientOptions(recipientCruxId);
-        return new StrongPubSubClient({
+        return new MqttJsClient({
             clientOptions: {
                 host: overrideOpts ? overrideOpts.host : this.options.defaultLinkServer.host,
                 port: overrideOpts ? overrideOpts.port : this.options.defaultLinkServer.port,

@@ -95,6 +95,7 @@
     "typescript": "^3.6.3"
   },
   "dependencies": {
+    "@hapi/joi": "17.1.1",
     "@mojotech/json-type-validation": "^3.1.0",
     "bip39": "^3.0.2",
     "bitcoinjs-lib": "^5.1.4",
@@ -104,13 +105,13 @@
     "elliptic": "^6.5.2",
     "js-logger": "^1.6.0",
     "jsontokens": "^2.0.2",
+    "mqtt": "^4.0.1",
+    "nanoevents": "5.1.5",
     "regenerator-runtime": "^0.13.3",
-    "url-parse": "^1.4.7",
     "strong-pubsub": "^0.2.0",
-    "strong-pubsub-mqtt": "^0.1.0",
     "strong-pubsub-bridge": "git+https://github.com/cruxprotocol/strong-pubsub-bridge.git",
     "strong-pubsub-connection-mqtt": "^0.1.2",
-    "@hapi/joi": "17.1.1",
-    "nanoevents": "5.1.5"
+    "strong-pubsub-mqtt": "^0.1.0",
+    "url-parse": "^1.4.7"
   }
 }
