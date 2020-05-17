@@ -2,6 +2,7 @@
 import * as Joi from "@hapi/joi";
 import {makeUUID4} from "blockstack/lib";
 import mqtt from "mqtt";
+import {createNanoEvents, DefaultEvents, Emitter} from "nanoevents";
 // @ts-ignore
 import * as paho from "paho-mqtt";
 // @ts-ignore
@@ -76,6 +77,7 @@ export class StrongPubSubClient implements IPubSubClient {
 export class PahoClient implements IPubSubClient {
     private client: any;
     private config: IPahoPubSubProviderConfig;
+    private emitter: Emitter<DefaultEvents>;
     constructor(config: IPahoPubSubProviderConfig) {
         this.config = config;
         // @ts-ignore
@@ -83,7 +85,13 @@ export class PahoClient implements IPubSubClient {
             // @ts-ignore
             global.WebSocket = ws.default;
         }
+        this.emitter = createNanoEvents()
         this.client = new paho.Client(this.config.clientOptions.host, this.config.clientOptions.port, this.config.clientOptions.path, this.config.clientOptions.clientId);
+
+        this.client.onMessageArrived = (msg: any) => {
+            this.onMessageArrived(msg);
+        };
+
     }
     public async publish(topic: string, data: any): Promise<void> {
         await this.connect();
@@ -95,10 +103,7 @@ export class PahoClient implements IPubSubClient {
         await this.connect();
         // @ts-ignore
         this.client.subscribe(topic, this.config.subscribeOptions);
-        this.client.onMessageArrived = (msg: any) => {
-            // console.log("onMessageArrived:" + msg.payloadString);
-            callback(topic, msg.payloadString);
-        };
+        this.emitter.on(topic, callback);
     }
     private async connect() {
         const isConnected = this.client.isConnected();
@@ -120,6 +125,11 @@ export class PahoClient implements IPubSubClient {
                 cleanSession: false,
             });
         });
+    }
+
+    private onMessageArrived = (msg: any) => {
+        console.log("PahoClient onMessageArrived:" + msg);
+        this.emitter.emit(msg.destinationName, msg.destinationName, msg.payloadString);
     }
 //     private async ensureClient() {
 //         console.log("+++++++++", this.client);

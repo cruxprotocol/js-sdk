@@ -56,13 +56,13 @@ describe('Basic Auth PubSub Client Tests- Paho', function() {
 
         // Initiate clients
         return new Promise(async (res,rej)=>{
-            this.subscriber.subscribe("release020@cruxdev.crux", function(topic, msg: any) {
+            await this.subscriber.subscribe("release020@cruxdev.crux", function(topic, msg: any) {
                 expect(msg).to.equals(testMsg);
                 console.log("subscriber3: " + topic + "----" +  msg.toString());
                 res(msg);
             });
 
-            this.publisher.publish("release020@cruxdev.crux", testMsg);
+            await this.publisher.publish("release020@cruxdev.crux", testMsg);
         });
     });
 });
