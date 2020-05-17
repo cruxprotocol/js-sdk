@@ -1,4 +1,15 @@
-import { CruxWalletClient, IAddressMapping, LocalStorage, ICruxWalletClientOptions, CruxClientError, ICruxIDState, IAssetMatcher, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../index";
+import {
+    CruxWalletClient,
+    IAddressMapping,
+    LocalStorage,
+    ICruxWalletClientOptions,
+    CruxClientError,
+    ICruxIDState,
+    IAssetMatcher,
+    SubdomainRegistrationStatus,
+    SubdomainRegistrationStatusDetail,
+    CruxId
+} from "../index";
 // TODO: add optional import statement to use the build
 
 const doc = (document as {
@@ -362,6 +373,7 @@ getCruxIDState()
 // Declaring global variables to be accessible for (button clicks or debugging purposes)
 declare global {
     interface Window {
+        cruxClient: CruxWalletClient;
         wallet: CruxWalletClient;
         isCruxIDAvailable: Function;
         registerCruxID: Function;
@@ -391,3 +403,6 @@ window.getEnabledAssetGroups = getEnabledAssetGroups;
 window.putEnabledAssetGroups = putEnabledAssetGroups;
 window.getCruxIDState = getCruxIDState;
 window.addToBlacklist = addToBlacklist;
+window.addToBlacklist = addToBlacklist;
+window.cruxClient = cruxClient;
+window.CruxId = CruxId;

@@ -102,6 +102,9 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
 export class CruxWalletClient {
     public e = Encryption;
     public walletClientName: string;
+    // TODO: make private
+    public paymentProtocolMessenger?: CruxConnectProtocolMessenger;
+    public secureCruxMessenger?: SecureCruxIdMessenger;
     private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
     private initPromise: Promise<void>;
     private cruxDomainRepo: ICruxDomainRepository;
@@ -113,7 +116,6 @@ export class CruxWalletClient {
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
     private cacheStorage?: StorageService;
     private selfCruxUser?: CruxUser;
-    private paymentProtocolMessenger?: CruxConnectProtocolMessenger;
 
     constructor(options: ICruxWalletClientOptions) {
         getLogger(cruxWalletClientDebugLoggerName).setLevel(options.debugLogging ? Logger.DEBUG : Logger.OFF);
@@ -402,7 +404,7 @@ export class CruxWalletClient {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
         this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping, this.cruxDomain.config.assetList);
-        // await this.setupCruxMessenger();
+        await this.setupCruxMessenger();
     }
 
     private getSelfClaim = async (): Promise<ICruxIdClaim | undefined> => {
@@ -431,8 +433,8 @@ export class CruxWalletClient {
                 path: "/mqtt",
                 port: 8000,
             }});
-        const secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
-        this.paymentProtocolMessenger = new CruxConnectProtocolMessenger(secureCruxMessenger, cruxPaymentProtocol);
+        this.secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
+        this.paymentProtocolMessenger = new CruxConnectProtocolMessenger(this.secureCruxMessenger, cruxPaymentProtocol);
     }
 
 }
