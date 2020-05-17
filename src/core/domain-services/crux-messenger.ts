@@ -152,7 +152,7 @@ export class SecureCruxIdMessenger {
         const encryptedSecurePacket = await EncryptionManager.encrypt(serializedSecurePacket, recipientCruxUser.publicKey!);
         const pubSubClient = this.pubsubClientFactory.getRecipientClient(recipientCruxId, this.selfIdClaim ? this.selfIdClaim.cruxId : undefined);
         const messenger = new CruxIdMessenger(pubSubClient, this.selfIdClaim ? this.selfIdClaim.cruxId : undefined);
-        messenger.send(encryptedSecurePacket, recipientCruxId);
+        await messenger.send(encryptedSecurePacket, recipientCruxId);
     }
 
     public listen = (newMessageCallback: (msg: any, senderId: CruxId | undefined) => any, errorCallback: (err: any) => any): void => {
@@ -193,12 +193,13 @@ export class CruxIdMessenger {
     public selfId?: CruxId;
     private registeredCallbacks: any;
     private pubsubClient: IPubSubClient;
+    private subscribePromise: any;
 
     constructor(pubsubClient: IPubSubClient, selfId?: CruxId) {
         this.registeredCallbacks = {};
         this.pubsubClient = pubsubClient;
         const selfTopic = "topic_" + (selfId ? selfId!.toString() : makeUUID4());
-        pubsubClient.subscribe(selfTopic, new MessengerEventProxy(this, EventBusEventNames.newMessage).redirect, new MessengerEventProxy(this, EventBusEventNames.error).redirect);
+        this.subscribePromise = pubsubClient.subscribe(selfTopic, new MessengerEventProxy(this, EventBusEventNames.newMessage).redirect, new MessengerEventProxy(this, EventBusEventNames.error).redirect);
         this.selfId = selfId;
     }
 
@@ -206,9 +207,13 @@ export class CruxIdMessenger {
         this.registeredCallbacks[eventName] = callback;
     }
 
-    public send(data: string, recipientId: CruxId): void {
-        const recipientTopic = "topic_" + recipientId.toString();
-        this.pubsubClient.publish(recipientTopic, data);
+    public async send(data: string, recipientId: CruxId): Promise<void> {
+        await this.subscribePromise;
+        return new Promise(async (resolve, reject) => {
+            const recipientTopic = "topic_" + recipientId.toString();
+            await this.pubsubClient.publish(recipientTopic, data);
+            resolve();
+        });
     }
 
     public getRegisteredCallback(eventName: string) {

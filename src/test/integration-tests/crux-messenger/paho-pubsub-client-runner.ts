@@ -1,4 +1,4 @@
-import { MqttJsClient, PahoClient} from "../../../infrastructure/implementations/crux-messenger";
+import {PahoClient} from "../../../infrastructure/implementations/crux-messenger";
 import 'mocha';
 import chaiAsPromised from "chai-as-promised";
 import * as chai from "chai";
@@ -13,21 +13,34 @@ chai.should();
 const expect = require('chai').expect;
 const BROKER_HOST = "broker.hivemq.com";
 const BROKER_PORT = 8000;
+const path = '/mqtt'
 
 // Subscriber config
 const subscriberUserName = "release020@cruxdev.crux";
 const subscriberConfig = {
+    clientOptions: {
         host: BROKER_HOST,
         port: BROKER_PORT,
+        path: path,
         clientId: subscriberUserName
+    },
+    subscribeOptions: {
+        qos: 2
+    }
 };
 
 // Publisher config
 const publisherUserName = "mascot6699@cruxdev.crux";
 const publisherConfig = {
-    host: BROKER_HOST,
-    port: BROKER_PORT,
-    clientId: publisherUserName
+    clientOptions: {
+        host: BROKER_HOST,
+        port: BROKER_PORT,
+        path: path,
+        clientId: publisherUserName
+    },
+    subscribeOptions: {
+        qos: 2
+    }
 };
 
 
@@ -43,10 +56,9 @@ describe('Basic Auth PubSub Client Tests- Paho', function() {
 
         // Initiate clients
         return new Promise(async (res,rej)=>{
-            await this.subscriber.subscribe("release020@cruxdev.crux", function(topic: string, msg: { toString: () => string; }) {
-                expect(topic).to.equals(subscriberUserName);
-                expect(msg.toString()).to.equals(testMsg);
-                console.log("subscriber3: " + topic + " " +  msg.toString());
+            this.subscriber.subscribe("release020@cruxdev.crux", function(topic, msg: any) {
+                expect(msg).to.equals(testMsg);
+                console.log("subscriber3: " + topic + "----" +  msg.toString());
                 res(msg);
             });
 

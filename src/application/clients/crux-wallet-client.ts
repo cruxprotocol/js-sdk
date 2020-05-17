@@ -427,8 +427,9 @@ export class CruxWalletClient {
             throw Error("Self ID Claim is required to setup messenger");
         }
         const pubsubClientFactory = new CruxNetPubSubClientFactory({defaultLinkServer: {
-                host: "localhost",
-                port: 4005,
+                host: "broker.hivemq.com",
+                path: "/mqtt",
+                port: 8000,
             }});
         const secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
         this.paymentProtocolMessenger = new CruxConnectProtocolMessenger(secureCruxMessenger, cruxPaymentProtocol);

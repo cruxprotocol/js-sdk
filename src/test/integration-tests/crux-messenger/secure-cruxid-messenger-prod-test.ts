@@ -20,8 +20,9 @@ const user2PvtKey = "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37
 
 describe('Test Secure Crux Messenger - PROD', function() {
     beforeEach(async function() {
-        const HOST = "127.0.0.1";
-        const PORT = 4005;
+        const HOST = "broker.hivemq.com";
+        const PORT = 8000;
+        const path = '/mqtt';
         this.user1KeyManager = new BasicKeyManager(user1PvtKey);
         this.user2KeyManager = new BasicKeyManager(user2PvtKey);
         this.userRepo = getCruxUserRepository({
@@ -33,6 +34,7 @@ describe('Test Secure Crux Messenger - PROD', function() {
         this.pubsubClientFactory = new CruxNetPubSubClientFactory({
             defaultLinkServer: {
                 host: HOST,
+                path: path,
                 port: PORT,
             }
         });
