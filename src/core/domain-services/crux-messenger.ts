@@ -1,5 +1,6 @@
 import {makeUUID4} from "blockstack/lib";
 import {decodeToken, TokenVerifier} from "jsontokens";
+import {createNanoEvents, Emitter} from "nanoevents";
 import {BufferJSONSerializer, CruxId} from "../../packages";
 import { ECIESEncryption } from "../../packages/encryption";
 import {CruxUser} from "../entities";
@@ -189,22 +190,31 @@ export class SecureCruxIdMessenger {
     }
 }
 
+interface CruxMessengerEvents {
+    newMessage: (data: string) => void;
+    error: (err: any) => void;
+}
+
 export class CruxIdMessenger {
     public selfId?: CruxId;
-    private registeredCallbacks: any;
     private pubsubClient: IPubSubClient;
     private subscribePromise: any;
+    private emitter: Emitter<CruxMessengerEvents>;
 
     constructor(pubsubClient: IPubSubClient, selfId?: CruxId) {
-        this.registeredCallbacks = {};
         this.pubsubClient = pubsubClient;
+        this.emitter = createNanoEvents();
         const selfTopic = "topic_" + (selfId ? selfId!.toString() : makeUUID4());
-        this.subscribePromise = pubsubClient.subscribe(selfTopic, new MessengerEventProxy(this, EventBusEventNames.newMessage).redirect, new MessengerEventProxy(this, EventBusEventNames.error).redirect);
+        this.subscribePromise = pubsubClient.subscribe(selfTopic, (topic: any, data: any) => {
+            this.emitter.emit("newMessage", data);
+        }, (err: any) => {
+            this.emitter.emit("error", err);
+        });
         this.selfId = selfId;
     }
 
     public on(eventName: EventBusEventNames, callback: (msg: string) => void): void {
-        this.registeredCallbacks[eventName] = callback;
+        this.emitter.on(eventName, callback);
     }
 
     public async send(data: string, recipientId: CruxId): Promise<void> {
@@ -216,26 +226,4 @@ export class CruxIdMessenger {
         });
     }
 
-    public getRegisteredCallback(eventName: string) {
-        return this.registeredCallbacks[eventName];
-    }
-}
-
-export class MessengerEventProxy {
-    private eventName: EventBusEventNames;
-    private messenger: CruxIdMessenger;
-
-    constructor(eventBus: CruxIdMessenger, eventName: EventBusEventNames) {
-        this.eventName = eventName;
-        this.messenger = eventBus;
-    }
-
-    public redirect = (topic: string, msg: string) => {
-        const callbackForEventName = this.messenger.getRegisteredCallback(this.eventName);
-        if (!callbackForEventName) {
-            console.log("No Registered callback. Event wasted");
-        } else {
-            callbackForEventName(msg);
-        }
-    }
 }
