@@ -434,7 +434,7 @@ export class CruxWalletClient {
                 port: 8000,
             }});
         this.secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
-        this.paymentProtocolMessenger = new CruxConnectProtocolMessenger(this.secureCruxMessenger, cruxPaymentProtocol);
+        // this.paymentProtocolMessenger = new CruxConnectProtocolMessenger(this.secureCruxMessenger, cruxPaymentProtocol);
     }
 
 }

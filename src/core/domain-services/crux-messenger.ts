@@ -205,6 +205,7 @@ export class CruxIdMessenger {
         this.pubsubClient = pubsubClient;
         this.emitter = createNanoEvents();
         const selfTopic = "topic_" + (selfId ? selfId!.toString() : makeUUID4());
+        console.log("Inside CruxIdMessenger.constructor");
         this.subscribePromise = pubsubClient.subscribe(selfTopic, (topic: any, data: any) => {
             this.emitter.emit("newMessage", data);
         }, (err: any) => {
@@ -214,10 +215,15 @@ export class CruxIdMessenger {
     }
 
     public on(eventName: EventBusEventNames, callback: (msg: string) => void): void {
-        this.emitter.on(eventName, callback);
+        console.log("Adding event handler ", eventName);
+        this.emitter.on(eventName, (msg: string) => {
+            console.log("Inside CruxIdMessenger.on", eventName);
+            callback(msg);
+        });
     }
 
     public async send(data: string, recipientId: CruxId): Promise<void> {
+        console.log("Inside CruxIdMessenger.send");
         await this.subscribePromise;
         return new Promise(async (resolve, reject) => {
             const recipientTopic = "topic_" + recipientId.toString();
