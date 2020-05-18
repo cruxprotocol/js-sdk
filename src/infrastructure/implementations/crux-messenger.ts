@@ -86,12 +86,6 @@ export class PahoClient implements IPubSubClient {
             global.WebSocket = ws.default;
         }
         this.emitter = createNanoEvents()
-        this.client = new paho.Client(this.config.clientOptions.host, this.config.clientOptions.port, this.config.clientOptions.path, this.config.clientOptions.clientId);
-
-        this.client.onMessageArrived = (msg: any) => {
-            this.onMessageArrived(msg);
-        };
-
     }
     public async publish(topic: string, data: any): Promise<void> {
         console.log("PahoClient.publish", topic)
@@ -104,19 +98,25 @@ export class PahoClient implements IPubSubClient {
         console.log("PahoClient.subscribe", topic)
         await this.connect();
         // @ts-ignore
+        this.client.onMessageArrived = (msg: any) => {
+            this.onMessageArrived(msg);
+        };
         this.client.subscribe(topic, this.config.subscribeOptions);
         this.emitter.on(topic, (tpc: any, data: any) => {
-            console.log("PahoClient.emitter.on", tpc)
+            console.log("recd message from PahoClient.emitter", tpc, data);
             callback(tpc, data);
         });
     }
     private async connect() {
-        const isConnected = this.client.isConnected();
-        if (isConnected) {
-            // console.log("Connected: ", isConnected);
+        console.log("PahoClient trying to connect");
+        if (this.client && this.client.isConnected()) {
+            console.log("Already Connected, returning");
             return;
         }
         return new Promise((res, rej) => {
+            if (!this.client) {
+                this.client = new paho.Client(this.config.clientOptions.host, this.config.clientOptions.port, this.config.clientOptions.path, this.config.clientOptions.clientId);
+            }
             this.client.connect({
                 onSuccess: (onSuccessData: any) => {
                     console.log("Success: ", onSuccessData);
@@ -133,7 +133,7 @@ export class PahoClient implements IPubSubClient {
     }
 
     private onMessageArrived = (msg: any) => {
-        console.log("PahoClient onMessageArrived:" + msg);
+        console.log("recd message from paho library: " + msg);
         this.emitter.emit(msg.destinationName, msg.destinationName, msg.payloadString);
     }
 //     private async ensureClient() {
@@ -149,6 +149,7 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
     private options: ICruxNetClientFactoryOptions;
     private defaultSubscribeOptions: { qos: number };
     private defaultClientMqttOptions: { clean: boolean };
+    private bufferPahoClient?: PahoClient;
     constructor(options: ICruxNetClientFactoryOptions) {
         this.options = options;
         this.defaultSubscribeOptions = {
@@ -159,8 +160,9 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
         };
     }
     public getSelfClient = (idClaim: ICruxIdClaim): IPubSubClient => {
+        if (this.bufferPahoClient) { return this.bufferPahoClient; }
         const overrideOpts = this.getDomainLevelClientOptions(idClaim.cruxId);
-        return new PahoClient({
+        this.bufferPahoClient = new PahoClient({
             clientOptions: {
                 clientId: idClaim.cruxId.toString(),
                 host: overrideOpts ? overrideOpts.host : this.options.defaultLinkServer.host,
@@ -170,10 +172,12 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
             },
             subscribeOptions: this.defaultSubscribeOptions,
         });
+        return this.bufferPahoClient;
     }
     public getRecipientClient = (recipientCruxId: CruxId, selfCruxId?: CruxId): IPubSubClient => {
+        if (this.bufferPahoClient) { return this.bufferPahoClient; }
         const overrideOpts = this.getDomainLevelClientOptions(recipientCruxId);
-        return new PahoClient({
+        this.bufferPahoClient = new PahoClient({
             clientOptions: {
                 // @ts-ignore
                 clientId: selfCruxId.toString(),
@@ -184,6 +188,7 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
             },
             subscribeOptions: this.defaultSubscribeOptions,
         });
+        return this.bufferPahoClient;
 
     }
     private getDomainLevelClientOptions = (cruxId: CruxId): {host: string, port: number, path: string} | undefined => {
