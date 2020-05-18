@@ -83,7 +83,6 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         let addressMap = {};
         let cruxUserData: ICruxUserData = {
             configuration: {
-                // blacklistedCruxUsers: [],
                 enabledAssetGroups: [],
             },
             privateAddresses: {},
@@ -112,13 +111,15 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
             return;
         }
         let addressMap = {};
+        const privateInfo = {
+            blacklistedCruxUsers: [],
+        };
         let cruxUserData: ICruxUserData = {
             configuration: {
-                // blacklistedCruxUsers: [],
                 enabledAssetGroups: [],
             },
             privateAddresses: {},
-            privateInformation: "",
+            privateInformation: await keyManager.symmetricEncrypt!(privateInfo),
         };
         let cruxpayPubKey = await keyManager.getPubKey();
         if ([SubdomainRegistrationStatus.DONE, SubdomainRegistrationStatus.PENDING].includes(cruxUserInformation.registrationStatus.status)) {
@@ -128,7 +129,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
             const dereferencedCruxpayObject = this.dereferenceCruxpayObject(cruxpayObject);
             addressMap = dereferencedCruxpayObject.addressMap;
             if (dereferencedCruxpayObject.cruxUserData) {
-                cruxUserData = dereferencedCruxpayObject.cruxUserData;
+                cruxUserData = Object.assign(cruxUserData, dereferencedCruxpayObject.cruxUserData);
             }
         }
         return new CruxUser(cruxID.components.subdomain, this.getCruxDomain(), addressMap, cruxUserInformation, cruxUserData, cruxpayPubKey);
