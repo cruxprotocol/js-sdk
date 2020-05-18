@@ -38,7 +38,7 @@ export interface ICruxUserConfiguration {
     // blacklistedCruxUsers: string[];
 }
 
-export interface ICruxPrivateInformation {
+export interface ICruxDecryptedPrivateInformation {
     blacklistedCruxUsers: string[];
 }
 
@@ -68,7 +68,7 @@ export class CruxUser {
     private cruxUserConfig!: ICruxUserConfiguration;
     private cruxUserPrivateAddresses!: ICruxUserPrivateAddresses;
     private cruxDomain!: CruxDomain;
-    private cruxPrivateInformation!: ICruxPrivateInformation;
+    private cruxPrivateInformation!: string;
 
     constructor(cruxUserSubdomain: string, cruxDomain: CruxDomain, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation, cruxUserData: ICruxUserData, publicKey?: string) {
         this.setCruxDomain(cruxDomain);
@@ -122,14 +122,9 @@ export class CruxUser {
             throw new BaseError(null, "Not supported by the keyManager in use");
         }
     }
-    public setBlacklistedCruxIDs = (blacklistedCruxIDs: string[]) => {
-        this.cruxPrivateInformation.blacklistedCruxUsers = blacklistedCruxIDs;
-    }
-    public setCruxUserPrivateInformation = async (encryptedPrivateInfo: string) => {
-        const encryptedPrivateInfoObj = JSON.parse(encryptedPrivateInfo);
-        // TODO: Use keyManager or some derivative of privateKey to encrypt here?
-        const decryptedPrivateInfo: ICruxPrivateInformation = await Encryption.decryptJSON(encryptedPrivateInfoObj.encBuffer, encryptedPrivateInfoObj.iv, keyManager);
-        this.cruxPrivateInformation = decryptedPrivateInfo;
+    public setPrivateInformation = async (decryptedPrivateInfo: ICruxDecryptedPrivateInformation, keyManager: IKeyManager) => {
+        const encryptedPrivateInfo: string = await keyManager.symmetricEncrypt!(decryptedPrivateInfo);
+        this.cruxPrivateInformation = encryptedPrivateInfo;
     }
     public getAddressFromAsset = async (asset: IGlobalAsset, keyManager?: IKeyManager): Promise<IAddress|undefined> => {
         let address: IAddress|undefined;
@@ -209,6 +204,9 @@ export class CruxUser {
         } else {
             this.cruxUserPrivateAddresses = cruxUserPrivateAddresses;
         }
+    }
+    private setCruxUserPrivateInformation = async (privateInfo: string) => {
+        this.cruxPrivateInformation = privateInfo;
     }
 }
 

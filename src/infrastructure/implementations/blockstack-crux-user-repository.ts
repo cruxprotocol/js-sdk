@@ -2,7 +2,7 @@ import { publicKeyToAddress } from "blockstack";
 import { Encryption } from "src/packages/encryption";
 import {CruxDomain} from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
-import { CruxUser, IAddressMapping, ICruxPrivateInformation, ICruxUserConfiguration, ICruxUserData, ICruxUserInformation, ICruxUserPrivateAddresses, SubdomainRegistrationStatus } from "../../core/entities/crux-user";
+import { CruxUser, IAddressMapping, ICruxDecryptedPrivateInformation, ICruxUserConfiguration, ICruxUserData, ICruxUserInformation, ICruxUserPrivateAddresses, SubdomainRegistrationStatus } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxUserRepository, ICruxUserRepositoryOptions} from "../../core/interfaces/crux-user-repository";
 import { IKeyManager } from "../../core/interfaces/key-manager";
@@ -63,12 +63,10 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         };
         const cruxUserData: ICruxUserData = {
             configuration: {
-                // blacklistedCruxUsers: [],
                 enabledAssetGroups: [],
             },
             privateAddresses: {},
-            // TODO: Use keyManager or some derivative of privateKey to encrypt here?
-            privateInformation: JSON.stringify(await Encryption.encryptJSON(privateInfo, keyManager)),
+            privateInformation: await keyManager.symmetricEncrypt!(privateInfo),
         };
         await this.putCruxpayObject(this.getCruxDomain().id, {}, keyManager);
         const cruxUserInformation = await this.blockstackService.registerCruxId(this.getCruxIdFromSubdomain(cruxIdSubdomain), this.infrastructure.gaiaHub, keyManager);
@@ -136,9 +134,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         return new CruxUser(cruxID.components.subdomain, this.getCruxDomain(), addressMap, cruxUserInformation, cruxUserData, cruxpayPubKey);
     }
     public save = async (cruxUser: CruxUser, keyManager: IKeyManager): Promise<CruxUser> => {
-        // TODO: Use keyManager or some derivative of privateKey to encrypt here?
-        const encryptedPrivateInfo = JSON.stringify(await Encryption.encryptJSON(cruxUser.privateInformation, keyManager));
-        const cruxpayObject = this.constructCruxpayObject(cruxUser.getAddressMap(), cruxUser.info, cruxUser.config, cruxUser.privateAddresses, encryptedPrivateInfo);
+        const cruxpayObject = this.constructCruxpayObject(cruxUser.getAddressMap(), cruxUser.info, cruxUser.config, cruxUser.privateAddresses, cruxUser.privateInformation);
         await this.putCruxpayObject(cruxUser.domain.id, cruxpayObject, keyManager);
         return cruxUser;
     }

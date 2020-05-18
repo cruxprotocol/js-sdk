@@ -43,6 +43,15 @@ export class BasicKeyManager implements IKeyManager {
         const decrypted = await ECIESEncryption.decrypt(toDecrypt, privateKey);
         return decrypted.toString();
     }
+    public symmetricEncrypt = async (content: object): Promise<string> => {
+        const encrypted = Encryption.encryptJSON(content, await this.getDecryptedPrivateKey());
+        return JSON.stringify(encrypted);
+    }
+    public symmetricDecrypt = async (encryptedContent: string): Promise<object> => {
+        const encryptedContentObj = JSON.parse(encryptedContent);
+        const decrypted = Encryption.decryptJSON(encryptedContentObj.encBuffer, encryptedContentObj.iv, await this.getDecryptedPrivateKey());
+        return decrypted;
+    }
     private init = async (privateKey: string, getEncryptionKey?: () => Promise<string>): Promise<void> => {
         let encryptionConstant: string;
         if (getEncryptionKey) {
