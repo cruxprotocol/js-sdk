@@ -4,6 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import 'mocha';
 import {SecureCruxIdMessenger} from "../../../core/domain-services";
 import {BasicKeyManager, CruxNetPubSubClientFactory} from "../../../infrastructure/implementations";
+import {InMemStorage} from "../../../packages";
 import {patchMissingDependencies, getCruxdevCruxDomain} from "../../test-utils";
 import {getCruxUserRepository} from "../../../application/clients";
 import {CruxSpec} from "../../../core/entities";
@@ -27,7 +28,8 @@ describe('Test Secure Crux Messenger - PROD', function() {
         this.user2KeyManager = new BasicKeyManager(user2PvtKey);
         this.userRepo = getCruxUserRepository({
             blockstackInfrastructure: CruxSpec.blockstack.infrastructure,
-            cruxDomain: getCruxdevCruxDomain()
+            cruxDomain: getCruxdevCruxDomain(),
+            cacheStorage: new InMemStorage()
         });
         this.user1Data = await this.userRepo.getWithKey(this.user1KeyManager);
         this.user2Data = await this.userRepo.getWithKey(this.user2KeyManager);
