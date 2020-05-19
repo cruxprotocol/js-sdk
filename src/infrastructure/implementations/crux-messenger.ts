@@ -31,6 +31,10 @@ export interface IStrongPubSubProviderConfig {
     clientOptions: {
         host: string,
         port: number,
+        mqtt: {
+            clean: boolean,
+            clientId: string,
+        },
     };
     subscribeOptions: {
         qos: number,
