@@ -163,7 +163,7 @@ export class SecureCruxIdMessenger {
         if (!this.selfMessenger) {
             throw new Error("Cannot listen with no selfMessenger");
         }
-        console.log("securecruxidmessenger attaching listener to selfMessenger")
+        console.log("securecruxidmessenger attaching listener to selfMessenger");
         this.selfMessenger.listen(
             async (encryptedString: string) => {
                 console.log("SecureCruxIdMessenger recd message from selfMessenger", encryptedString);

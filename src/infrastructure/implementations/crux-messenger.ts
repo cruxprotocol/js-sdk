@@ -85,17 +85,18 @@ export class PahoClient implements IPubSubClient {
             // @ts-ignore
             global.WebSocket = ws.default;
         }
-        this.emitter = createNanoEvents()
+        this.emitter = createNanoEvents();
     }
     public async publish(topic: string, data: any): Promise<void> {
-        console.log("PahoClient.publish", topic)
+        console.log("PahoClient.publish", topic);
         await this.connect();
         const message = new paho.Message(data);
         message.destinationName = topic;
+        message.qos = 2;
         this.client.send(message);
     }
     public async subscribe(topic: string, callback: any): Promise<void> {
-        console.log("PahoClient.subscribe", topic)
+        console.log("PahoClient.subscribe", topic);
         await this.connect();
         // @ts-ignore
         this.client.onMessageArrived = (msg: any) => {
