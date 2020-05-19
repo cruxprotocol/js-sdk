@@ -1,7 +1,7 @@
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import 'mocha';
-import {cruxConenctProtocol} from "../../infrastructure/implementations";
+import {cruxConnectProtocol} from "../../infrastructure/implementations";
 import {patchMissingDependencies} from "../test-utils";
 
 patchMissingDependencies();
@@ -11,7 +11,7 @@ chai.should();
 const expect = require('chai').expect;
 
 
-const connectMessageSchemaByType: any = cruxConenctProtocol.reduce((newObj, x) => Object.assign(newObj, {[x.messageType]: x.schema}), {});
+const connectMessageSchemaByType: any = cruxConnectProtocol.reduce((newObj, x) => Object.assign(newObj, {[x.messageType]: x.schema}), {});
 
 describe('Test Connect Protocol', function() {
 

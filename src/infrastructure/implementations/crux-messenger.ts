@@ -118,7 +118,7 @@ export const cruxPaymentProtocol: IMessageSchema[] = [{
     }),
 }];
 
-export const cruxConenctProtocol: IMessageSchema[] = [{
+export const cruxConnectProtocol: IMessageSchema[] = [{
     messageType: "CONNECT_REQUEST",
     schema: Joi.object({
         publicKey: Joi.string()
