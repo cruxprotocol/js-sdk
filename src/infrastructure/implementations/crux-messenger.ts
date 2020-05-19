@@ -117,3 +117,14 @@ export const cruxPaymentProtocol: IMessageSchema[] = [{
             .required().min(36).max(36),
     }),
 }];
+
+export const cruxConenctProtocol: IMessageSchema[] = [{
+    messageType: "CONNECT_REQUEST",
+    schema: Joi.object({
+        publicKey: Joi.string()
+            .required(),
+
+        cruxId: Joi.string()
+            .required(),
+    }),
+}];
