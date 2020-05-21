@@ -6,10 +6,10 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build-and-start-saas-server": "./node_modules/.bin/parcel build ./src/application/clients/crux-saas-server/node-app.ts -d dist --out-file crux-saas-server.js --no-minify --no-cache --detailed-report --target node --bundle-node-modules && node dist/crux-saas-server.js",
     "test": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha  --exit --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 5000 src/test/*.ts src/test/crux-messenger/*.ts",
     "start-bridge-server": "node dist/crux-gateway-bridge-without-auth.js &",
     "stop-bridge-server": "pkill -- signal SIGINT crux-gateway-bridge-server-without-auth",
+    "saas-server": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/ts-node src/application/clients/crux-saas-server/node-app.ts",
     "integration-test": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha --exit --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 50000  src/test/integration-tests/crux-messenger/*.ts",
     "integration": "npm run build-crux-bridge-server-without-auth && npm run start-bridge-server && npm run integration-test && npm run stop-bridge-server",
     "copy-latest-docs": "cp -a docs/$npm_package_version/. docs/",
