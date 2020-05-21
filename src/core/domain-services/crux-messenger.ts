@@ -131,10 +131,14 @@ export class SecureCruxIdMessenger {
     private cruxUserRepo: ICruxUserRepository;
     private pubsubClientFactory: IPubSubClientFactory;
     private selfMessenger?: CruxIdMessenger;
+    private emitter: Emitter<DefaultEvents>;
     constructor(cruxUserRepo: ICruxUserRepository, pubsubClientFactory: IPubSubClientFactory, selfIdClaim?: ICruxIdClaim) {
         this.cruxUserRepo = cruxUserRepo;
         this.selfIdClaim = selfIdClaim;
         this.pubsubClientFactory = pubsubClientFactory;
+        this.emitter = createNanoEvents();
+        this.emitter.on("newMessage", (msg ) => { console.log("Debugging newMessage in SecureCruxIDMessenger", msg); });
+        this.emitter.on("error", (msg ) => { console.log("Debugging error in SecureCruxIDMessenger", msg); });
         // TODO: Do we need to validate selfIdClaim?
     }
     public send = async (data: any, recipientCruxId: CruxId): Promise<void> => {
@@ -158,6 +162,11 @@ export class SecureCruxIdMessenger {
         if (!this.selfIdClaim) {
             throw new Error("Cannot listen with selfIdClaim");
         }
+        this.emitter.on("newMessage", newMessageCallback);
+        this.emitter.on("error", errorCallback);
+    }
+
+    private addListener = () => {
         const pubSubClient = this.selfIdClaim ? this.pubsubClientFactory.getSelfClient(this.selfIdClaim) : undefined;
         this.selfMessenger = this.selfIdClaim && pubSubClient ? new CruxIdMessenger(pubSubClient, this.selfIdClaim.cruxId) : undefined;
         if (!this.selfMessenger) {
@@ -174,24 +183,24 @@ export class SecureCruxIdMessenger {
                     if (securePacket.certificate) {
                         senderUser = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
                         if (!senderUser) {
-                            errorCallback(new Error("Claimed sender user in certificate does not exist"));
+                            this.emitter.emit("error", new Error("Claimed sender user in certificate does not exist"));
                             return;
                         }
                         const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
                         if (!isVerified) {
-                            errorCallback(new Error("Could not validate identity"));
+                            this.emitter.emit("error", new Error("Could not validate identity"));
                             return;
                         }
                     }
-                    newMessageCallback(securePacket.data, senderUser ? senderUser.cruxID : undefined);
+                    this.emitter.emit("newMessage", securePacket.data, senderUser ? senderUser.cruxID : undefined);
                 } catch (error) {
                     console.log("SecureCruxIdMessenger selfMessenger.on error");
-                    errorCallback(error);
+                    this.emitter.emit("error", error);
                     return;
                 }
             },
             async () => {
-                errorCallback(new Error("Error Received while processing event"));
+                this.emitter.emit("error", new Error("Error Received while processing event"));
                 return;
             },
         );
