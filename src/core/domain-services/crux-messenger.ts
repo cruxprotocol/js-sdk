@@ -1,6 +1,6 @@
 import {makeUUID4} from "blockstack/lib";
 import {decodeToken, TokenVerifier} from "jsontokens";
-import {createNanoEvents, Emitter} from "nanoevents";
+import {createNanoEvents, DefaultEvents, Emitter} from "nanoevents";
 import {BufferJSONSerializer, CruxId} from "../../packages";
 import { ECIESEncryption } from "../../packages/encryption";
 import {CruxUser} from "../entities";
@@ -135,8 +135,6 @@ export class SecureCruxIdMessenger {
         this.cruxUserRepo = cruxUserRepo;
         this.selfIdClaim = selfIdClaim;
         this.pubsubClientFactory = pubsubClientFactory;
-        const pubSubClient = selfIdClaim ? this.pubsubClientFactory.getSelfClient(selfIdClaim) : undefined;
-        this.selfMessenger = selfIdClaim && pubSubClient ? new CruxIdMessenger(pubSubClient, selfIdClaim.cruxId) : undefined;
         // TODO: Do we need to validate selfIdClaim?
     }
     public send = async (data: any, recipientCruxId: CruxId): Promise<void> => {
@@ -157,36 +155,46 @@ export class SecureCruxIdMessenger {
     }
 
     public listen = (newMessageCallback: (msg: any, senderId: CruxId | undefined) => any, errorCallback: (err: any) => any): void => {
-        if (!this.selfMessenger) {
-            throw Error("Cannot listen with no selfMessenger");
+        if (!this.selfIdClaim) {
+            throw new Error("Cannot listen with selfIdClaim");
         }
-        this.selfMessenger.on(EventBusEventNames.newMessage, async (encryptedString: string) => {
-            try {
-                const serializedSecurePacket: string = await EncryptionManager.decrypt(encryptedString, this.selfIdClaim!.keyManager);
-                const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
-                let senderUser: CruxUser | undefined;
-                if (securePacket.certificate) {
-                    senderUser = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
-                    if (!senderUser) {
-                        errorCallback(new Error("Claimed sender user in certificate does not exist"));
-                        return;
+        const pubSubClient = this.selfIdClaim ? this.pubsubClientFactory.getSelfClient(this.selfIdClaim) : undefined;
+        this.selfMessenger = this.selfIdClaim && pubSubClient ? new CruxIdMessenger(pubSubClient, this.selfIdClaim.cruxId) : undefined;
+        if (!this.selfMessenger) {
+            throw new Error("Cannot listen with no selfMessenger");
+        }
+        console.log("securecruxidmessenger attaching listener to selfMessenger");
+        this.selfMessenger.listen(
+            async (encryptedString: string) => {
+                console.log("SecureCruxIdMessenger recd message from selfMessenger", encryptedString);
+                try {
+                    const serializedSecurePacket: string = await EncryptionManager.decrypt(encryptedString, this.selfIdClaim!.keyManager);
+                    const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
+                    let senderUser: CruxUser | undefined;
+                    if (securePacket.certificate) {
+                        senderUser = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
+                        if (!senderUser) {
+                            errorCallback(new Error("Claimed sender user in certificate does not exist"));
+                            return;
+                        }
+                        const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
+                        if (!isVerified) {
+                            errorCallback(new Error("Could not validate identity"));
+                            return;
+                        }
                     }
-                    const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
-                    if (!isVerified) {
-                        errorCallback(new Error("Could not validate identity"));
-                        return;
-                    }
+                    newMessageCallback(securePacket.data, senderUser ? senderUser.cruxID : undefined);
+                } catch (error) {
+                    console.log("SecureCruxIdMessenger selfMessenger.on error");
+                    errorCallback(error);
+                    return;
                 }
-                newMessageCallback(securePacket.data, senderUser ? senderUser.cruxID : undefined);
-            } catch (error) {
-                errorCallback(error);
+            },
+            async () => {
+                errorCallback(new Error("Error Received while processing event"));
                 return;
-            }
-        });
-        this.selfMessenger.on(EventBusEventNames.error, async () => {
-            errorCallback(new Error("Error Received while processing event"));
-            return;
-        });
+            },
+        );
     }
 }
 
@@ -204,20 +212,25 @@ export class CruxIdMessenger {
     constructor(pubsubClient: IPubSubClient, selfId?: CruxId) {
         this.pubsubClient = pubsubClient;
         this.emitter = createNanoEvents();
-        const selfTopic = "topic_" + (selfId ? selfId!.toString() : makeUUID4());
-        this.subscribePromise = pubsubClient.subscribe(selfTopic, (topic: any, data: any) => {
-            this.emitter.emit("newMessage", data);
-        }, (err: any) => {
-            this.emitter.emit("error", err);
-        });
         this.selfId = selfId;
     }
 
-    public on(eventName: EventBusEventNames, callback: (msg: string) => void): void {
-        this.emitter.on(eventName, callback);
+    public listen = (callback: (msg: string) => void, errorCallback: (err: any) => void) => {
+        if (!this.selfId) {
+            throw Error("Cannot listen to events");
+        }
+        const selfTopic = "topic_" + this.selfId;
+        console.log("Inside CruxIdMessenger.listen");
+        this.subscribePromise = this.pubsubClient.subscribe(selfTopic, (topic: any, data: any) => {
+            console.log("CruxIdMessenger recd msg from pubsubClient", topic, data);
+            callback(data);
+        }, (err: any) => {
+            errorCallback(err);
+        });
     }
 
     public async send(data: string, recipientId: CruxId): Promise<void> {
+        console.log("Inside CruxIdMessenger.send");
         await this.subscribePromise;
         return new Promise(async (resolve, reject) => {
             const recipientTopic = "topic_" + recipientId.toString();
@@ -225,4 +238,5 @@ export class CruxIdMessenger {
             resolve();
         });
     }
+
 }

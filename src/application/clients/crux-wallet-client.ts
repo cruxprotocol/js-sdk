@@ -102,6 +102,9 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
 export class CruxWalletClient {
     public e = Encryption;
     public walletClientName: string;
+    // TODO: make private
+    public paymentProtocolMessenger?: CruxConnectProtocolMessenger;
+    public secureCruxMessenger?: SecureCruxIdMessenger;
     private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
     private initPromise: Promise<void>;
     private cruxDomainRepo: ICruxDomainRepository;
@@ -113,7 +116,6 @@ export class CruxWalletClient {
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
     private cacheStorage?: StorageService;
     private selfCruxUser?: CruxUser;
-    private paymentProtocolMessenger?: CruxConnectProtocolMessenger;
 
     constructor(options: ICruxWalletClientOptions) {
         getLogger(cruxWalletClientDebugLoggerName).setLevel(options.debugLogging ? Logger.DEBUG : Logger.OFF);
@@ -207,15 +209,32 @@ export class CruxWalletClient {
     }
 
     @throwCruxClientError
-    public sendPaymentRequest = async (walletSymbol: string, recipientCruxId: string, amount: string, toAddress: IAddress): Promise<void> => {
+     public sendPaymentRequest = async (data: string, recipientCruxId: string): Promise<void> => {
+    // public sendPaymentRequest = async (walletSymbol: string, recipientCruxId: string, amount: string, toAddress: IAddress): Promise<void> => {
         await this.initPromise;
-        if (!this.paymentProtocolMessenger) {
+        if (!this.secureCruxMessenger) {
             throw Error("Cannot use this method");
         }
-        await this.paymentProtocolMessenger.send({
-            content: {currency: walletSymbol, toAddress, amount },
-            type: "PAYMENT_REQUEST",
+        await this.secureCruxMessenger.send({
+            content: data,
+            // content: { toAddress, amount , assetId : "7c3baa3c-f5e8-490a-88a1-e0a052b7caa4"}, // update this after discussion
+            type: "PAYMENT_REQUEST", // kept it for later reference removed in UI
         }, CruxId.fromString(recipientCruxId));
+    }
+    @throwCruxClientError
+    public recievePaymentRequests = async (callback: any): Promise<void> => {
+        await this.initPromise;
+        if (!this.secureCruxMessenger) {
+            throw Error("Cannot use this method");
+        }
+        this.secureCruxMessenger.listen((msg: any, senderId?: CruxId) => {
+            if (msg) {
+                console.log(msg, senderId);
+                callback(msg, senderId);
+            }
+        }, (err) => {
+            console.log(err);
+        });
     }
 
     @throwCruxClientError
@@ -402,7 +421,10 @@ export class CruxWalletClient {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
         this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping, this.cruxDomain.config.assetList);
-        // await this.setupCruxMessenger();
+        const selfIdClaim = await this.getSelfClaim();
+        if (selfIdClaim) {
+            await this.setupCruxMessenger(selfIdClaim);
+        }
     }
 
     private getSelfClaim = async (): Promise<ICruxIdClaim | undefined> => {
@@ -421,17 +443,17 @@ export class CruxWalletClient {
         }
         return selfClaim;
     }
-    private setupCruxMessenger = async () => {
-        const selfIdClaim = await this.getSelfClaim();
+    private setupCruxMessenger = async (selfIdClaim: ICruxIdClaim | undefined) => {
         if (!selfIdClaim) {
             throw Error("Self ID Claim is required to setup messenger");
         }
         const pubsubClientFactory = new CruxNetPubSubClientFactory({defaultLinkServer: {
-                host: "localhost",
-                port: 4005,
+                host: "broker.hivemq.com",
+                path: "/mqtt",
+                port: 8000,
             }});
-        const secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
-        this.paymentProtocolMessenger = new CruxConnectProtocolMessenger(secureCruxMessenger, cruxPaymentProtocol);
+        this.secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
+        // this.paymentProtocolMessenger = new CruxConnectProtocolMessenger(this.secureCruxMessenger, cruxPaymentProtocol);
     }
 
 }

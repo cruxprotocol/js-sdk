@@ -4,6 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import 'mocha';
 import {SecureCruxIdMessenger} from "../../../core/domain-services";
 import {BasicKeyManager, CruxNetPubSubClientFactory} from "../../../infrastructure/implementations";
+import {InMemStorage} from "../../../packages";
 import {patchMissingDependencies, getCruxdevCruxDomain} from "../../test-utils";
 import {getCruxUserRepository} from "../../../application/clients";
 import {CruxSpec} from "../../../core/entities";
@@ -20,19 +21,22 @@ const user2PvtKey = "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37
 
 describe('Test Secure Crux Messenger - PROD', function() {
     beforeEach(async function() {
-        const HOST = "127.0.0.1";
-        const PORT = 4005;
+        const HOST = "broker.hivemq.com";
+        const PORT = 8000;
+        const path = '/mqtt';
         this.user1KeyManager = new BasicKeyManager(user1PvtKey);
         this.user2KeyManager = new BasicKeyManager(user2PvtKey);
         this.userRepo = getCruxUserRepository({
             blockstackInfrastructure: CruxSpec.blockstack.infrastructure,
-            cruxDomain: getCruxdevCruxDomain()
+            cruxDomain: getCruxdevCruxDomain(),
+            cacheStorage: new InMemStorage()
         });
         this.user1Data = await this.userRepo.getWithKey(this.user1KeyManager);
         this.user2Data = await this.userRepo.getWithKey(this.user2KeyManager);
         this.pubsubClientFactory = new CruxNetPubSubClientFactory({
             defaultLinkServer: {
                 host: HOST,
+                path: path,
                 port: PORT,
             }
         });
