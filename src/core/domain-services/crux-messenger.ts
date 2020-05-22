@@ -167,21 +167,21 @@ export class SecureReceiveSocket extends BaseSecureSocket {
 
 export class SecureCruxNetwork {
     private cruxNetwork: CruxNetwork;
-    private secureSocketWrapper: SecureSocketWrapper;
+    private secureSocketFactory: SecureSocketFactory;
     private selfIdClaim: ICruxIdClaim;
     constructor(cruxUserRepo: ICruxUserRepository, pubsubClientFactory: IPubSubClientFactory, selfIdClaim: ICruxIdClaim) {
         this.selfIdClaim = selfIdClaim;
         this.cruxNetwork = new CruxNetwork(pubsubClientFactory);
-        this.secureSocketWrapper = new SecureSocketWrapper(cruxUserRepo, pubsubClientFactory, selfIdClaim);
+        this.secureSocketFactory = new SecureSocketFactory(cruxUserRepo, pubsubClientFactory, selfIdClaim);
     }
 
     public getReceiveSocket = (): SecureReceiveSocket => {
         const receiveSocket: ReceiveSocket = this.cruxNetwork.getReceiveSocket(this.selfIdClaim.cruxId, this.selfIdClaim.keyManager);
-        return this.secureSocketWrapper.wrapReceiveSocket(receiveSocket);
+        return this.secureSocketFactory.wrapReceiveSocket(receiveSocket);
     }
     public getSendSocket = (recipientCruxId: CruxId): SecureSendSocket => {
         const sendSocket: SendSocket = this.cruxNetwork.getSendSocket(recipientCruxId, this.selfIdClaim.cruxId, this.selfIdClaim.keyManager);
-        return this.secureSocketWrapper.wrapSendSocket(sendSocket);
+        return this.secureSocketFactory.wrapSendSocket(sendSocket);
     }
 }
 
@@ -239,7 +239,7 @@ class SecureContext {
     }
 }
 
-export class SecureSocketWrapper {
+export class SecureSocketFactory {
     private selfIdClaim: ICruxIdClaim;
     private cruxUserRepo: ICruxUserRepository;
     private storage: StorageService;
