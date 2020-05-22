@@ -243,20 +243,20 @@ export class SecureSocketFactory {
     private selfIdClaim: ICruxIdClaim;
     private cruxUserRepo: ICruxUserRepository;
     private storage: StorageService;
+    private secureContext: SecureContext;
     constructor(cruxUserRepo: ICruxUserRepository, pubsubClientFactory: IPubSubClientFactory, selfIdClaim: ICruxIdClaim, storage?: StorageService) {
         this.storage = storage ? storage : new InMemStorage();
         this.cruxUserRepo = cruxUserRepo;
         this.selfIdClaim = selfIdClaim;
+        this.secureContext = new SecureContext(this.storage, this.selfIdClaim, this.cruxUserRepo);
     }
     public wrapSendSocket = (sendSocket: SendSocket) => {
-        return new SecureSendSocket(sendSocket, this.getSecureContext());
+        return new SecureSendSocket(sendSocket, this.secureContext);
     }
     public wrapReceiveSocket = (receiveSocket: ReceiveSocket) => {
-        return new SecureReceiveSocket(receiveSocket, this.getSecureContext());
+        return new SecureReceiveSocket(receiveSocket, this.secureContext);
     }
-    private getSecureContext() {
-        return new SecureContext(this.storage, this.selfIdClaim, this.cruxUserRepo);
-    }
+
 }
 
 // ---------
