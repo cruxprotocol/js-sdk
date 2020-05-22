@@ -2,7 +2,7 @@ import * as chai from "chai";
 import sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import 'mocha';
-import {SecureCruxNetworkMessenger, CertificateManager, SecureCruxIdMessenger} from "../../core/domain-services";
+import {SecureCruxNetworkMessenger, CertificateManager} from "../../core/domain-services";
 import {BasicKeyManager} from "../../infrastructure/implementations";
 import {CruxId} from "../../packages";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../test-utils";
@@ -83,20 +83,20 @@ describe('Test Secure Crux Messenger', function() {
     });
     it('Basic Send Receive Test - Without idClaim', async function() {
         throw Error("Fix this test case!")
-        const testmsg = 'HelloWorld';
-        return new Promise(async (resolve, reject) => {
-            const user1Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory);
-
-            const user2Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
-                cruxId: this.user2Data.cruxUser.cruxID,
-                keyManager: new BasicKeyManager(this.user2Data.pvtKey)
-            });
-            user2Messenger.receive((msg) => {
-                expect(msg).equals(testmsg);
-                resolve(msg)
-            });
-            await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
-        })
+        // const testmsg = 'HelloWorld';
+        // return new Promise(async (resolve, reject) => {
+        //     const user1Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory);
+        //
+        //     const user2Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+        //         cruxId: this.user2Data.cruxUser.cruxID,
+        //         keyManager: new BasicKeyManager(this.user2Data.pvtKey)
+        //     });
+        //     user2Messenger.receive((msg) => {
+        //         expect(msg).equals(testmsg);
+        //         resolve(msg)
+        //     });
+        //     await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
+        // })
 
     });
     describe('Certificate Tests', function() {
@@ -115,12 +115,14 @@ describe('Test Secure Crux Messenger', function() {
                     keyManager: new BasicKeyManager(this.user2Data.pvtKey)
                 });
                 user2Messenger.receive((msg) => {
-                    resolve(msg)
+                    reject(msg)
                 });
+                user2Messenger.onError((err) => {
+                    expect(err).to.be.an('error')
+                    resolve(err)
+                })
                 await user1Messenger.send(this.user2Data.cruxUser.cruxID, testmsg);
-            }).catch(
-                err => expect(err).to.be.an('error')
-            );
+            })
 
         });
     });
@@ -150,12 +152,14 @@ describe('Test Secure Crux Messenger', function() {
                     keyManager: new BasicKeyManager(this.user2Data.pvtKey)
                 });
                 user2Messenger.receive((msg) => {
-                    resolve(msg)
+                    reject(msg)
                 });
+                user2Messenger.onError((err) => {
+                    expect(err).to.be.an('error')
+                    resolve(err)
+                })
                 await user1Messenger.send(this.user2Data.cruxUser.cruxID, testmsg);
-            }).catch(
-                err => expect(err).to.be.an('error')
-            );
+            })
 
         });
     });
