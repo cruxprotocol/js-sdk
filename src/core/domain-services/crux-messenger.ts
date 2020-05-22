@@ -1,7 +1,7 @@
 import {makeUUID4} from "blockstack/lib";
 import {decodeToken, TokenVerifier} from "jsontokens";
 import {createNanoEvents, DefaultEvents, Emitter} from "nanoevents";
-import {BufferJSONSerializer, CruxId} from "../../packages";
+import {BufferJSONSerializer, CruxId, InMemStorage, StorageService} from "../../packages";
 import { ECIESEncryption } from "../../packages/encryption";
 import {CruxUser} from "../entities";
 
@@ -123,34 +123,21 @@ export class CruxNetwork {
 // -------
 
 class BaseSecureSocket extends BaseSocket {
-    public userRepository: ICruxUserRepository;
-    public selfIdClaim: ICruxIdClaim;
-    constructor(type: string, client: IPubSubClient, userRepository: ICruxUserRepository, selfIdClaim: ICruxIdClaim) {
-        super(type, client, selfIdClaim.cruxId);
-        this.userRepository = userRepository;
-        this.selfIdClaim = selfIdClaim;
+    public secureContext: SecureContext;
+    constructor(type: string, client: IPubSubClient, secureContext: SecureContext) {
+        super(type, client, secureContext.selfIdClaim.cruxId);
+        this.secureContext = secureContext;
     }
 }
 
 export class SecureSendSocket extends BaseSecureSocket {
     private sendSocket: SendSocket;
-    constructor(sendSocket: SendSocket, userRepository: ICruxUserRepository, selfIdClaim: ICruxIdClaim) {
-        super("send", sendSocket.client, userRepository, selfIdClaim);
+    constructor(sendSocket: SendSocket, secureContext: SecureContext) {
+        super("send", sendSocket.client, secureContext);
         this.sendSocket = sendSocket;
     }
     public send = async (data: any) => {
-        console.log("yo");
-        const recipientCruxUser: CruxUser | undefined = await this.userRepository.getByCruxId(this.sendSocket.recipientId);
-        if (!recipientCruxUser) {
-            throw Error("No Such CRUX User Found");
-        }
-        const certificate = this.selfIdClaim ? await CertificateManager.make(this.selfIdClaim) : undefined;
-        const securePacket: ISecurePacket = {
-            certificate,
-            data,
-        };
-        const serializedSecurePacket = JSON.stringify(securePacket);
-        const encryptedSecurePacket = await EncryptionManager.encrypt(serializedSecurePacket, recipientCruxUser.publicKey!);
+        const encryptedSecurePacket = await this.secureContext.processOutgoing(data, this.sendSocket.recipientId);
         this.sendSocket.send(encryptedSecurePacket);
     }
 }
@@ -158,35 +145,19 @@ export class SecureSendSocket extends BaseSecureSocket {
 export class SecureReceiveSocket extends BaseSecureSocket {
     private receiveSocket: ReceiveSocket;
     private emitter: Emitter<DefaultEvents>;
-    constructor(receiveSocket: ReceiveSocket, userRepository: ICruxUserRepository, selfIdClaim: ICruxIdClaim) {
-        super("receive", receiveSocket.client, userRepository, selfIdClaim);
+    constructor(receiveSocket: ReceiveSocket, secureContext: SecureContext) {
+        super("receive", receiveSocket.client, secureContext);
         this.receiveSocket = receiveSocket;
         this.emitter = createNanoEvents();
     }
     public receive = (listener: Listener) => {
         this.receiveSocket.receive(async (dataReceived: any) => {
-            let serializedSecurePacket: string;
             try {
-                serializedSecurePacket = await EncryptionManager.decrypt(dataReceived, this.selfIdClaim!.keyManager);
+                const securePacket = await this.secureContext.processIncoming(dataReceived);
+                listener(securePacket.data);
             } catch (e) {
                 this.emitter.emit("error", e);
-                return;
             }
-            const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
-            let senderUser: CruxUser | undefined;
-            if (securePacket.certificate) {
-                senderUser = await this.userRepository.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
-                if (!senderUser) {
-                    this.emitter.emit("error", new Error("Claimed sender user in certificate does not exist"));
-                    return;
-                }
-                const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
-                if (!isVerified) {
-                    this.emitter.emit("error", new Error("Could not validate identity"));
-                    return;
-                }
-            }
-            listener(securePacket.data);
         });
     }
     public onError = (handler: any) => {
@@ -214,18 +185,77 @@ export class SecureCruxNetwork {
     }
 }
 
+class SessionStore {
+    private storage: StorageService;
+    constructor(storage: StorageService) {
+        this.storage = storage;
+    }
+}
+
+class SecureContext {
+    public selfIdClaim: ICruxIdClaim;
+    private sessionStore: SessionStore;
+    private cruxUserRepo: ICruxUserRepository;
+    // Has access to storage and PKI
+    constructor(storage: StorageService, selfIdClaim: ICruxIdClaim, cruxUserRepo: ICruxUserRepository) {
+        this.selfIdClaim = selfIdClaim;
+        this.sessionStore = new SessionStore(storage);
+        this.cruxUserRepo = cruxUserRepo;
+    }
+    public processOutgoing = async (data: any, recipientId: CruxId) => {
+        const certificate = this.selfIdClaim ? await CertificateManager.make(this.selfIdClaim) : undefined;
+        const securePacket: ISecurePacket = {
+            certificate,
+            data,
+        };
+        const serializedSecurePacket = JSON.stringify(securePacket);
+
+        const recipientCruxUser: CruxUser | undefined = await this.cruxUserRepo.getByCruxId(recipientId);
+        if (!recipientCruxUser) {
+            throw Error("No Such CRUX User Found");
+        }
+        return await EncryptionManager.encrypt(serializedSecurePacket, recipientCruxUser.publicKey!);
+    }
+    public processIncoming = async (dataReceived: any) => {
+        let serializedSecurePacket: string;
+        try {
+            serializedSecurePacket = await EncryptionManager.decrypt(dataReceived, this.selfIdClaim!.keyManager);
+        } catch (e) {
+            throw e;
+        }
+        const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
+        let senderUser: CruxUser | undefined;
+        if (securePacket.certificate) {
+            senderUser = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
+            if (!senderUser) {
+                throw new Error("Claimed sender user in certificate does not exist");
+            }
+            const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
+            if (!isVerified) {
+                throw new Error("Could not validate identity");
+            }
+        }
+        return securePacket;
+    }
+}
+
 export class SecureSocketWrapper {
     private selfIdClaim: ICruxIdClaim;
     private cruxUserRepo: ICruxUserRepository;
-    constructor(cruxUserRepo: ICruxUserRepository, pubsubClientFactory: IPubSubClientFactory, selfIdClaim: ICruxIdClaim) {
+    private storage: StorageService;
+    constructor(cruxUserRepo: ICruxUserRepository, pubsubClientFactory: IPubSubClientFactory, selfIdClaim: ICruxIdClaim, storage?: StorageService) {
+        this.storage = storage ? storage : new InMemStorage();
         this.cruxUserRepo = cruxUserRepo;
         this.selfIdClaim = selfIdClaim;
     }
     public wrapSendSocket = (sendSocket: SendSocket) => {
-        return new SecureSendSocket(sendSocket, this.cruxUserRepo, this.selfIdClaim);
+        return new SecureSendSocket(sendSocket, this.getSecureContext());
     }
     public wrapReceiveSocket = (receiveSocket: ReceiveSocket) => {
-        return new SecureReceiveSocket(receiveSocket, this.cruxUserRepo, this.selfIdClaim);
+        return new SecureReceiveSocket(receiveSocket, this.getSecureContext());
+    }
+    private getSecureContext() {
+        return new SecureContext(this.storage, this.selfIdClaim, this.cruxUserRepo);
     }
 }
 
