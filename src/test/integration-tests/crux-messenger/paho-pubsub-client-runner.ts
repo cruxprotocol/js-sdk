@@ -52,7 +52,7 @@ describe('Basic Auth PubSub Client Tests- Paho', function() {
     });
     it('Direct PubSub Client Test', async function() {
 
-        const testMsg = "Hello Brother!!!"
+        const testMsg = "Hello Brother!!!";
 
         // Initiate clients
         return new Promise(async (res,rej)=>{
