@@ -167,21 +167,23 @@ export class SecureReceiveSocket extends BaseSecureSocket {
 
 export class SecureCruxNetwork {
     private cruxNetwork: CruxNetwork;
-    private secureSocketFactory: SecureSocketFactory;
     private selfIdClaim: ICruxIdClaim;
+    private storage: StorageService;
+    private cruxUserRepo: ICruxUserRepository;
     constructor(cruxUserRepo: ICruxUserRepository, pubsubClientFactory: IPubSubClientFactory, selfIdClaim: ICruxIdClaim) {
         this.selfIdClaim = selfIdClaim;
         this.cruxNetwork = new CruxNetwork(pubsubClientFactory);
-        this.secureSocketFactory = new SecureSocketFactory(cruxUserRepo, pubsubClientFactory, selfIdClaim);
+        this.storage = new InMemStorage();
+        this.cruxUserRepo = cruxUserRepo;
     }
 
     public getReceiveSocket = (): SecureReceiveSocket => {
         const receiveSocket: ReceiveSocket = this.cruxNetwork.getReceiveSocket(this.selfIdClaim.cruxId, this.selfIdClaim.keyManager);
-        return this.secureSocketFactory.wrapReceiveSocket(receiveSocket);
+        return new SecureReceiveSocket(receiveSocket, new SecureContext(this.storage, this.selfIdClaim, this.cruxUserRepo));
     }
     public getSendSocket = (recipientCruxId: CruxId): SecureSendSocket => {
         const sendSocket: SendSocket = this.cruxNetwork.getSendSocket(recipientCruxId, this.selfIdClaim.cruxId, this.selfIdClaim.keyManager);
-        return this.secureSocketFactory.wrapSendSocket(sendSocket);
+        return new SecureSendSocket(sendSocket, new SecureContext(this.storage, this.selfIdClaim, this.cruxUserRepo));
     }
 }
 
@@ -203,6 +205,8 @@ class SecureContext {
         this.cruxUserRepo = cruxUserRepo;
     }
     public processOutgoing = async (data: any, recipientId: CruxId) => {
+        // const secureSessionState = this.sessionStore.getSessionState(recipientId);
+        // secureSession.writeMessage(data);
         const certificate = this.selfIdClaim ? await CertificateManager.make(this.selfIdClaim) : undefined;
         const securePacket: ISecurePacket = {
             certificate,
@@ -237,26 +241,6 @@ class SecureContext {
         }
         return securePacket;
     }
-}
-
-export class SecureSocketFactory {
-    private selfIdClaim: ICruxIdClaim;
-    private cruxUserRepo: ICruxUserRepository;
-    private storage: StorageService;
-    private secureContext: SecureContext;
-    constructor(cruxUserRepo: ICruxUserRepository, pubsubClientFactory: IPubSubClientFactory, selfIdClaim: ICruxIdClaim, storage?: StorageService) {
-        this.storage = storage ? storage : new InMemStorage();
-        this.cruxUserRepo = cruxUserRepo;
-        this.selfIdClaim = selfIdClaim;
-        this.secureContext = new SecureContext(this.storage, this.selfIdClaim, this.cruxUserRepo);
-    }
-    public wrapSendSocket = (sendSocket: SendSocket) => {
-        return new SecureSendSocket(sendSocket, this.secureContext);
-    }
-    public wrapReceiveSocket = (receiveSocket: ReceiveSocket) => {
-        return new SecureReceiveSocket(receiveSocket, this.secureContext);
-    }
-
 }
 
 // ---------
