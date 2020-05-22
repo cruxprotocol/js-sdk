@@ -2,7 +2,7 @@ import * as chai from "chai";
 import sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import 'mocha';
-import {SecureCruxIdMessenger, CertificateManager} from "../../core/domain-services";
+import {SecureCruxNetworkMessenger, CertificateManager, SecureCruxIdMessenger} from "../../core/domain-services";
 import {BasicKeyManager} from "../../infrastructure/implementations";
 import {CruxId} from "../../packages";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../test-utils";
@@ -34,22 +34,20 @@ describe('Test Secure Crux Messenger', function() {
     it('Basic Send Receive Test', async function() {
         const testmsg = 'HelloWorld';
         return new Promise(async (resolve, reject) => {
-            const user1Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+            const user1Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
                 cruxId: this.user1Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user1Data.pvtKey)
             });
 
-            const user2Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+            const user2Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
                 cruxId: this.user2Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user2Data.pvtKey)
             });
-            user2Messenger.listen((msg, senderId) => {
+            user2Messenger.receive((msg) => {
                 expect(msg).equals(testmsg);
                 resolve(msg)
-            },(err) => {
-                reject(err)
             });
-            await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
+            await user1Messenger.send(this.user2Data.cruxUser.cruxID, testmsg);
         })
 
     });
@@ -58,53 +56,68 @@ describe('Test Secure Crux Messenger', function() {
         return new Promise(async (resolve, reject) => {
             const maliciousUser = this.user3Data.cruxUser.cruxID;
             const maliciousPubSubClientFactory = new InMemoryMaliciousPubSubClientFactory(maliciousUser);
-            const user1Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
+            const user1Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
                 cruxId: this.user1Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user1Data.pvtKey)
             });
 
-            const user2Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
+            const user2Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
                 cruxId: this.user2Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user2Data.pvtKey)
             });
-            const user3Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
+            const user3Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
                 cruxId: this.user3Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user3Data.pvtKey)
             });
             const testmsg = 'HelloWorld';
-            user3Messenger.listen((msg: any, senderId?: CruxId) => {
+            user3Messenger.receive((msg: any, senderId?: CruxId) => {
                 reject()
-            },
-            (err: any) => {
-                expect(err.message).equals("Decryption failed")
-                resolve()
             });
-            await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
+            user3Messenger.onError((err: any) => {
+                    expect(err.message).equals("Decryption failed")
+                    resolve()
+                })
+            await user1Messenger.send(this.user2Data.cruxUser.cruxID, testmsg);
         });
 
     });
+    it('Basic Send Receive Test - Without idClaim', async function() {
+        throw Error("Fix this test case!")
+        const testmsg = 'HelloWorld';
+        return new Promise(async (resolve, reject) => {
+            const user1Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory);
 
+            const user2Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                cruxId: this.user2Data.cruxUser.cruxID,
+                keyManager: new BasicKeyManager(this.user2Data.pvtKey)
+            });
+            user2Messenger.receive((msg) => {
+                expect(msg).equals(testmsg);
+                resolve(msg)
+            });
+            await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
+        })
+
+    });
     describe('Certificate Tests', function() {
 
         it('Invalid Certificate Send Receive Test with Wrong Private Key', async function() {
 
             const testmsg = "HelloWorld"
             return new Promise(async (resolve, reject) => {
-                const user1Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                const user1Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
                     cruxId: this.user1Data.cruxUser.cruxID,
                     keyManager: new BasicKeyManager(this.user2Data.pvtKey)
                 });
 
-                const user2Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                const user2Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
                     cruxId: this.user2Data.cruxUser.cruxID,
                     keyManager: new BasicKeyManager(this.user2Data.pvtKey)
                 });
-                user2Messenger.listen((msg) => {
+                user2Messenger.receive((msg) => {
                     resolve(msg)
-                },(err) => {
-                    reject(err)
                 });
-                await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
+                await user1Messenger.send(this.user2Data.cruxUser.cruxID, testmsg);
             }).catch(
                 err => expect(err).to.be.an('error')
             );
@@ -127,21 +140,19 @@ describe('Test Secure Crux Messenger', function() {
 
             const testmsg = "HelloWorld"
             return new Promise(async (resolve, reject) => {
-                const user1Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                const user1Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
                     cruxId: this.user1Data.cruxUser.cruxID,
                     keyManager: new BasicKeyManager(this.user1Data.pvtKey)
                 });
 
-                const user2Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                const user2Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
                     cruxId: this.user2Data.cruxUser.cruxID,
                     keyManager: new BasicKeyManager(this.user2Data.pvtKey)
                 });
-                user2Messenger.listen((msg) => {
+                user2Messenger.receive((msg) => {
                     resolve(msg)
-                },(err) => {
-                    reject(err)
                 });
-                await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
+                await user1Messenger.send(this.user2Data.cruxUser.cruxID, testmsg);
             }).catch(
                 err => expect(err).to.be.an('error')
             );

@@ -165,7 +165,13 @@ export class SecureReceiveSocket extends BaseSecureSocket {
     }
     public receive = (listener: Listener) => {
         this.receiveSocket.receive(async (dataReceived: any) => {
-            const serializedSecurePacket: string = await EncryptionManager.decrypt(dataReceived, this.selfIdClaim!.keyManager);
+            let serializedSecurePacket: string;
+            try {
+                serializedSecurePacket = await EncryptionManager.decrypt(dataReceived, this.selfIdClaim!.keyManager);
+            } catch (e) {
+                this.emitter.emit("error", e);
+                return;
+            }
             const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
             let senderUser: CruxUser | undefined;
             if (securePacket.certificate) {
@@ -227,8 +233,10 @@ export class SecureSocketWrapper {
 
 export class SecureCruxNetworkMessenger {
     private secureCruxNetwork: SecureCruxNetwork;
+    private emitter: Emitter<DefaultEvents>;
     constructor(cruxUserRepo: ICruxUserRepository, pubsubClientFactory: IPubSubClientFactory, selfIdClaim: ICruxIdClaim) {
         this.secureCruxNetwork = new SecureCruxNetwork(cruxUserRepo, pubsubClientFactory, selfIdClaim);
+        this.emitter = createNanoEvents();
     }
     public send = async (recipientId: CruxId, data: any) => {
         const sendSocket: SecureSendSocket = this.secureCruxNetwork.getSendSocket(recipientId);
@@ -237,6 +245,12 @@ export class SecureCruxNetworkMessenger {
     public receive = (listener: Listener) => {
         const receiveSocket: SecureReceiveSocket = this.secureCruxNetwork.getReceiveSocket();
         receiveSocket.receive(listener);
+        receiveSocket.onError((err: any) => {
+            this.emitter.emit("error", err);
+        });
+    }
+    public onError = (listener: Listener) => {
+        this.emitter.on("error", listener);
     }
 }
 
