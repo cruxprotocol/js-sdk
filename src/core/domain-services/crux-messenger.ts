@@ -131,7 +131,7 @@ class BaseSecureSocket extends BaseSocket {
 }
 
 export class SecureSendSocket extends BaseSecureSocket {
-    private sendSocket: SendSocket;
+    public sendSocket: SendSocket;
     constructor(sendSocket: SendSocket, secureContext: SecureContext) {
         super("send", sendSocket.client, secureContext);
         this.sendSocket = sendSocket;
@@ -143,7 +143,7 @@ export class SecureSendSocket extends BaseSecureSocket {
 }
 
 export class SecureReceiveSocket extends BaseSecureSocket {
-    private receiveSocket: ReceiveSocket;
+    public receiveSocket: ReceiveSocket;
     private emitter: Emitter<DefaultEvents>;
     constructor(receiveSocket: ReceiveSocket, secureContext: SecureContext) {
         super("receive", receiveSocket.client, secureContext);
