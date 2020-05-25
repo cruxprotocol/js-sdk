@@ -149,16 +149,17 @@ export class SecureReceiveSocket extends BaseSecureSocket {
         super("receive", receiveSocket.client, secureContext);
         this.receiveSocket = receiveSocket;
         this.emitter = createNanoEvents();
-    }
-    public receive = (listener: Listener) => {
         this.receiveSocket.receive(async (dataReceived: any) => {
             try {
                 const securePacket = await this.secureContext.processIncoming(dataReceived);
-                listener(securePacket.data);
+                this.emitter.emit("newMessage", securePacket.data);
             } catch (e) {
                 this.emitter.emit("error", e);
             }
         });
+    }
+    public receive = (listener: Listener) => {
+        this.emitter.on("newMessage", listener);
     }
     public onError = (handler: any) => {
         this.emitter.on("error", handler);
@@ -194,7 +195,7 @@ class SessionStore {
     }
 }
 
-class SecureContext {
+export class SecureContext {
     public selfIdClaim: ICruxIdClaim;
     private sessionStore: SessionStore;
     private cruxUserRepo: ICruxUserRepository;
@@ -220,7 +221,7 @@ class SecureContext {
         }
         return await EncryptionManager.encrypt(serializedSecurePacket, recipientCruxUser.publicKey!);
     }
-    public processIncoming = async (dataReceived: any) => {
+    public processIncoming = async (dataReceived: string) => {
         let serializedSecurePacket: string;
         try {
             serializedSecurePacket = await EncryptionManager.decrypt(dataReceived, this.selfIdClaim!.keyManager);
