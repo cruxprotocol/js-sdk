@@ -135,7 +135,7 @@ export class PahoClient implements IPubSubClient {
     }
     private onMessageArrived = (msg: any) => {
         console.log("recd message from paho library: " + msg);
-        this.emitter.emit(msg.destinationName, msg.payloadString);
+        this.emitter.emit(msg.destinationName, msg.destinationName, msg.payloadString);
     }
 }
 
