@@ -2,7 +2,7 @@ import * as chai from "chai";
 import sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import 'mocha';
-import {SecureCruxIdMessenger, RemoteKeyClient, RemoteKeyHost} from "../../core/domain-services";
+import {SecureCruxIdMessenger, RemoteKeyClient, RemoteKeyHost, RemoteKeyManager} from "../../core/domain-services";
 import {BasicKeyManager} from "../../infrastructure/implementations";
 import {CruxId} from "../../packages";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../test-utils";
@@ -53,16 +53,74 @@ describe('Test RemoteKeyClient', function() {
                 reject(err)
             });
             remoteKeyHost.invocationListener((msg, senderId) => {
-                if(msg.method === "getPubKey"){
-                    new Promise(async (resolve, reject) => {
-                        const data = await remoteKeyHost.handleMessage(msg);
-                        remoteKeyHost.sendInvocationResult(data, senderId);
-                        resolve();
-                    });
-                }
+                new Promise(async (resolve, reject) => {
+                    const data = await remoteKeyHost.handleMessage(msg);
+                    remoteKeyHost.sendInvocationResult(data, senderId);
+                    resolve();
+                });
             },(err) => {
             });
             await remoteKeyClient.invoke("getPubKey", []);
+        });
+    });
+
+    it('Invalid Basic Key Manager Send Receive ()', async function() {
+        const testErrorMsg = 'Invalid key manager method';
+        return new Promise(async (resolve, reject) => {
+            const remoteKeyClient = new RemoteKeyClient(new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                cruxId: this.user1Data.cruxUser.cruxID,
+                keyManager: this.user1KeyManager
+            }), this.user2Data.cruxUser.cruxID);
+
+            const remoteKeyHost = new RemoteKeyHost(new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                cruxId: this.user2Data.cruxUser.cruxID,
+                keyManager: this.user2KeyManager
+            }), this.user2KeyManager);
+
+            remoteKeyHost.invocationListener(async (msg, senderId) => {
+                await expect(remoteKeyHost.handleMessage(msg)).to.be.rejectedWith(Error);
+                resolve();
+            },(err) => {
+            });
+            await remoteKeyClient.invoke("getPublicKey", []);
+        });
+    });
+
+    it('Basic Key Manager Send Receive - RemoteKeyManager', async function() {
+        const testPubKey = "03e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318";
+        return new Promise(async (resolve, reject) => {
+            const remoteKeyManager = new RemoteKeyManager(new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                cruxId: this.user1Data.cruxUser.cruxID,
+                keyManager: this.user1KeyManager
+            }), this.user2Data.cruxUser.cruxID);
+
+            const remoteKeyHost = new RemoteKeyHost(new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                cruxId: this.user2Data.cruxUser.cruxID,
+                keyManager: this.user2KeyManager
+            }), this.user2KeyManager);
+
+            remoteKeyHost.invocationListener((msg, senderId) => {
+                new Promise(async (resolve, reject) => {
+                    console.log(msg);
+                    const data = await remoteKeyHost.handleMessage(msg);
+                    remoteKeyHost.sendInvocationResult(data, senderId);
+                    resolve();
+                });
+            },(err) => {
+            });
+            const signedWebToken = await remoteKeyManager.signWebToken("1234567")
+            // console.log(signedWebToken);
+            expect(signedWebToken).to.have.length(138);
+            const publicKey = await remoteKeyManager.getPubKey();
+            // console.log(publicKey);
+            expect(publicKey).to.equals(testPubKey);
+            const sharedSecret = await remoteKeyManager.deriveSharedSecret(testPubKey)
+            // console.log(sharedSecret);
+            expect(sharedSecret).to.equals("3380b4752c9cebf96bc55491ef0ee67ae1d564c0bb931a0c6e8875be6e3bee5");
+            // const decryptedMessage = await remoteKeyManager.decryptMessage("4b4f34746f434c30354349312b41314b554f644542773d3d");
+            // console.log(decryptedMessage);
+            // expect(decryptedMessage).to.equals("");
+            resolve();
         });
     });
 })

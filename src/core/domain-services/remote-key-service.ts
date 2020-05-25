@@ -27,9 +27,7 @@ export class RemoteKeyClient {
         if (!this.secureCruxIdMessenger) {
             throw Error("RemoteKeyClient cannot listen with no selfMessenger");
         }
-        console.log("hello");
         this.secureCruxIdMessenger.listen((msg: any, senderId: CruxId | undefined) => {
-            console.log("hello dope");
             resultCallback(msg, senderId);
         }, (err: any) => {
             errorCallback(err);
@@ -69,7 +67,7 @@ export class RemoteKeyHost {
             throw Error("RemoteKeyClient cannot listen with no selfMessenger");
         }
         this.secureCruxIdMessenger.listen((msg: any, senderId: CruxId | undefined) => {
-            this.handleMessage(msg);
+            // this.handleMessage(msg);
             resultCallback(msg, senderId);
         }, (err: any) => {
             errorCallback(err);
@@ -79,6 +77,7 @@ export class RemoteKeyHost {
 
     public async handleMessage(message: any) {
         if (!VALID_METHODS.includes(message.method)) {
+            // console.log("yolo");
             throw new Error("Invalid key manager method");
         }
         if (!this.keyManager) {
@@ -86,9 +85,15 @@ export class RemoteKeyHost {
         }
         let data;
         if (message.method === "signWebToken") {
-            data = await this.keyManager.signWebToken(message.agrs[0]);
+            data = await this.keyManager.signWebToken(message.args[0]);
         } else if (message.method === "getPubKey") {
             data = await this.keyManager.getPubKey();
+        } else if (message.method === "deriveSharedSecret") {
+            // @ts-ignore
+            data = await this.keyManager.deriveSharedSecret(message.args[0]);
+        } else if (message.method === "decryptMessage") {
+            // @ts-ignore
+            data = await this.keyManager.decryptMessage(message.args[0]);
         }
         return {
             data,
@@ -101,5 +106,64 @@ export class RemoteKeyHost {
             invocationId: result.invocationId,
             result,
         };
+    }
+}
+
+export class RemoteKeyManager implements IKeyManager {
+    private remoteKeyClient: RemoteKeyClient;
+    private remoteUserId: CruxId;
+
+    constructor(secureCruxIdMessenger: SecureCruxIdMessenger, remoteUserId: CruxId) {
+        this.remoteKeyClient = new RemoteKeyClient(secureCruxIdMessenger, remoteUserId);
+        this.remoteUserId = remoteUserId;
+    }
+    // @ts-ignore
+    public async signWebToken(token: any) {
+        const temp = [token];
+        return new Promise(async (resolve, reject) => {
+            this.remoteKeyClient.invokeResult((msg, senderId) => {
+                console.log("sign+++====", msg);
+                resolve(msg.result.data);
+            }, (err) => {
+                reject(err);
+            });
+            await this.remoteKeyClient.invoke("signWebToken", [token]);
+        });
+    }
+    // @ts-ignore
+    public async getPubKey() {
+        return new Promise(async (resolve, reject) => {
+            this.remoteKeyClient.invokeResult((msg, senderId) => {
+                console.log("pub+++====", msg);
+                resolve(msg.result.data);
+            }, (err) => {
+                reject(err);
+            });
+            await this.remoteKeyClient.invoke("getPubKey", []);
+        });
+    }
+    // @ts-ignore
+    public async deriveSharedSecret(publicKey: string) {
+        return new Promise(async (resolve, reject) => {
+            this.remoteKeyClient.invokeResult((msg, senderId) => {
+                console.log("secret+++====", msg);
+                resolve(msg.result.data);
+            }, (err) => {
+                reject(err);
+            });
+            await this.remoteKeyClient.invoke("deriveSharedSecret", [publicKey]);
+        });
+    }
+    // @ts-ignore
+    public async decryptMessage(encryptedMessage: string) {
+        return new Promise(async (resolve, reject) => {
+            this.remoteKeyClient.invokeResult((msg, senderId) => {
+                console.log("decrypt+++====", msg);
+                resolve(msg.result.data);
+            }, (err) => {
+                reject(err);
+            });
+            await this.remoteKeyClient.invoke("decryptMessage", [encryptedMessage]);
+        });
     }
 }
