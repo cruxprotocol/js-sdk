@@ -117,3 +117,29 @@ export const cruxPaymentProtocol: IMessageSchema[] = [{
             .required().min(36).max(36),
     }),
 }];
+
+export const keyManagementProtocol: IMessageSchema[] = [
+    {
+        messageType: "KEY_MANAGER_REQUEST",
+        schema: Joi.object({
+            args: Joi.array()
+                .required(),
+
+            invocationId: Joi.string()
+                .required().min(36).max(36),
+
+            method: Joi.string().valid("signWebToken", "getPubKey", "deriveSharedSecret", "decryptMessage")
+                .required(),
+        }),
+    },
+    {
+        messageType: "KEY_MANAGER_RESPONSE",
+        schema: Joi.object({
+            data: Joi.any()
+                        .required(),
+
+            invocationId: Joi.string()
+                .required().min(36).max(36),
+        }),
+    },
+];

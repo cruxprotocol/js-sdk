@@ -64,7 +64,7 @@ describe('Test RemoteKeyClient', function() {
         });
     });
 
-    it('Invalid Basic Key Manager Send Receive ()', async function() {
+    it('Invalid Basic Key Manager Send Receive (wrong method)', async function() {
         const testErrorMsg = 'Invalid key manager method';
         return new Promise(async (resolve, reject) => {
             const remoteKeyClient = new RemoteKeyClient(new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
