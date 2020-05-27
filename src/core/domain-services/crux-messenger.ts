@@ -1,4 +1,3 @@
-import {makeUUID4} from "blockstack/lib";
 import {decodeToken, TokenVerifier} from "jsontokens";
 import {createNanoEvents, DefaultEvents, Emitter} from "nanoevents";
 import {BufferJSONSerializer, CruxId} from "../../packages";
@@ -62,11 +61,12 @@ export enum EventBusEventNames {
     error = "error",
 }
 
-export class CruxConnectProtocolMessenger {
+export class CruxProtocolMessenger {
     private secureMessenger: SecureCruxIdMessenger;
     private schemaByMessageType: any;
     private errorHandler: (error: any) => void;
     private messageHandlerByType: {[type: string]: (data: any, senderId?: CruxId) => void};
+    private emitter: Emitter<DefaultEvents>;
 
     constructor(secureMessenger: SecureCruxIdMessenger, protocol: IMessageSchema[]) {
         this.secureMessenger = secureMessenger;
@@ -74,6 +74,7 @@ export class CruxConnectProtocolMessenger {
         // tslint:disable-next-line:no-empty
         this.errorHandler = (error) => {};
         this.messageHandlerByType = {};
+        this.emitter = createNanoEvents()
         this.secureMessenger.listen((msg: IProtocolMessage, senderId?: CruxId) => {
             this.handleNewMessage(msg, senderId);
         }, (e: Error) => {
@@ -86,7 +87,7 @@ export class CruxConnectProtocolMessenger {
     }
     public on = (messageType: string, callback: (data: any, senderId?: CruxId) => void) => {
         this.getSchema(messageType);
-        this.messageHandlerByType[messageType] = callback;
+        this.emitter.on(messageType, callback);
     }
     public validateMessage = (message: IProtocolMessage): void => {
         const schema = this.getSchema(message.type);
@@ -100,11 +101,7 @@ export class CruxConnectProtocolMessenger {
             this.handleNewError(e);
             return;
         }
-        const callback = this.messageHandlerByType[message.type];
-        if (callback) {
-            callback(message.content, senderId);
-        }
-
+        this.emitter.emit(message.type, message.content, senderId);
     }
     private handleNewError = (error: any) => {
         this.errorHandler(error);

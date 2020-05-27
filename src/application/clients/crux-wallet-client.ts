@@ -1,6 +1,6 @@
 // Importing packages
 import Logger from "js-logger";
-import {CruxConnectProtocolMessenger, SecureCruxIdMessenger} from "../../core/domain-services";
+import {CruxProtocolMessenger, SecureCruxIdMessenger} from "../../core/domain-services";
 import {
     CruxDomain,
     CruxSpec,
@@ -86,10 +86,6 @@ export interface ICruxIDState {
     status: ICruxUserRegistrationStatus;
 }
 
-export interface IPaymentRequestMessage {
-    amount: string;
-    assetId: string;
-}
 
 export const getCruxDomainRepository = (options: IBlockstackCruxDomainRepositoryOptions): ICruxDomainRepository => {
     return new BlockstackCruxDomainRepository(options);
@@ -103,7 +99,7 @@ export class CruxWalletClient {
     public e = Encryption;
     public walletClientName: string;
     // TODO: make private
-    public paymentProtocolMessenger?: CruxConnectProtocolMessenger;
+    public paymentProtocolMessenger?: CruxProtocolMessenger;
     public secureCruxMessenger?: SecureCruxIdMessenger;
     private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
     private initPromise: Promise<void>;
@@ -209,32 +205,32 @@ export class CruxWalletClient {
     }
 
     @throwCruxClientError
-     public sendPaymentRequest = async (data: string, recipientCruxId: string): Promise<void> => {
-    // public sendPaymentRequest = async (walletSymbol: string, recipientCruxId: string, amount: string, toAddress: IAddress): Promise<void> => {
-        await this.initPromise;
-        if (!this.secureCruxMessenger) {
-            throw Error("Cannot use this method");
+     public sendPaymentRequest = async (amount: string, walletCurrencySymbol: string, toAddress: IAddress, recipientCruxId: string): Promise<void> => {
+        if (!this.paymentProtocolMessenger) {
+            throw Error("paymentProtocolMessenger is not defined");
         }
-        await this.secureCruxMessenger.send({
-            content: data,
-            // content: { toAddress, amount , assetId : "7c3baa3c-f5e8-490a-88a1-e0a052b7caa4"}, // update this after discussion
-            type: "PAYMENT_REQUEST", // kept it for later reference removed in UI
+
+        const asset = this.cruxAssetTranslator.symbolToAsset(walletCurrencySymbol);
+        if (!asset) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.AssetIDNotAvailable);
+        }
+        await this.initPromise;
+        this.paymentProtocolMessenger.send({
+            content: {
+                amount,
+                assetId: asset,
+                toAddress,
+            },
+            type: "PAYMENT_REQUEST",
         }, CruxId.fromString(recipientCruxId));
     }
     @throwCruxClientError
-    public recievePaymentRequests = async (callback: any): Promise<void> => {
+    public recievePaymentRequest = async (callback: (paymentRequest: any, senderId?: CruxId) => void): Promise<void> => {
         await this.initPromise;
-        if (!this.secureCruxMessenger) {
+        if (!this.paymentProtocolMessenger) {
             throw Error("Cannot use this method");
         }
-        this.secureCruxMessenger.listen((msg: any, senderId?: CruxId) => {
-            if (msg) {
-                console.log(msg, senderId);
-                callback(msg, senderId);
-            }
-        }, (err) => {
-            console.log(err);
-        });
+        this.paymentProtocolMessenger.on("PAYMENT_REQUEST", callback);
     }
 
     @throwCruxClientError
@@ -453,7 +449,7 @@ export class CruxWalletClient {
                 port: 8000,
             }});
         this.secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
-        // this.paymentProtocolMessenger = new CruxConnectProtocolMessenger(this.secureCruxMessenger, cruxPaymentProtocol);
+        this.paymentProtocolMessenger = new CruxProtocolMessenger(this.secureCruxMessenger, cruxPaymentProtocol);
     }
 
 }
