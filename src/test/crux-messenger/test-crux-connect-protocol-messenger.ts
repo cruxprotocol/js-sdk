@@ -1,7 +1,7 @@
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import 'mocha';
-import {CruxProtocolMessenger, SecureCruxNetworkMessenger} from "../../core/domain-services";
+import {CruxProtocolMessenger, SecureCruxNetwork} from "../../core/domain-services";
 import {IProtocolMessage} from "../../core/interfaces";
 import {BasicKeyManager, cruxPaymentProtocol} from "../../infrastructure/implementations";
 import {CruxId} from "../../packages";
@@ -32,11 +32,11 @@ describe('Test Crux Connect Protocol Messenger - Payment Request', function() {
         userStore.store(user2Data.cruxUser);
         const inmemUserRepo = new InMemoryCruxUserRepository(userStore);
         const pubsubClientFactory = new InMemoryPubSubClientFactory();
-        const user1Messenger = new SecureCruxNetworkMessenger(inmemUserRepo, pubsubClientFactory, {
+        const user1Messenger = new SecureCruxNetwork(inmemUserRepo, pubsubClientFactory, {
             cruxId: this.user1Data.cruxUser.cruxID,
             keyManager: new BasicKeyManager(this.user1Data.pvtKey)
         });
-        const user2Messenger = new SecureCruxNetworkMessenger(inmemUserRepo, pubsubClientFactory, {
+        const user2Messenger = new SecureCruxNetwork(inmemUserRepo, pubsubClientFactory, {
             cruxId: this.user2Data.cruxUser.cruxID,
             keyManager: new BasicKeyManager(this.user2Data.pvtKey)
         });

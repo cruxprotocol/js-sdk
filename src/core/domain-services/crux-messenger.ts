@@ -1,4 +1,5 @@
 import {makeUUID4} from "blockstack/lib";
+import {create} from "domain";
 import {decodeToken, TokenVerifier} from "jsontokens";
 import {createNanoEvents, DefaultEvents, Emitter} from "nanoevents";
 import {BufferJSONSerializer, CruxId, InMemStorage, StorageService} from "../../packages";
@@ -60,7 +61,7 @@ export enum EventBusEventNames {
     error = "error",
 }
 
-export type Listener = ((dataReceived: any) => void);
+export type Listener = ((dataReceived: any, senderId?: CruxId) => void);
 
 export class BaseSocket {
     public socketId: string;
@@ -91,15 +92,18 @@ export class SendSocket extends BaseSocket {
 }
 
 export class ReceiveSocket extends BaseSocket {
+    private emitter: Emitter<DefaultEvents>;
     constructor(selfId: CruxId, client: IPubSubClient) {
         super("receive", client, selfId);
-    }
-    public receive = (listener: Listener) => {
+        this.emitter = createNanoEvents()
         const selfTopic = "topic_" + this.selfId;
         this.client.subscribe(selfTopic, (topic: any, data: any) => {
             console.log("CruxIdMessenger recd msg from pubsubClient", topic, data);
-            listener(data);
+            this.emitter.emit("message", data);
         });
+    }
+    public receive = (listener: any) => {
+        this.emitter.on("message", listener);
     }
 }
 
@@ -151,7 +155,9 @@ export class SecureReceiveSocket extends BaseSecureSocket {
         this.emitter = createNanoEvents();
         this.receiveSocket.receive(async (dataReceived: any) => {
             try {
+                console.log("SecureReceiveSocket.receiveSocket.receive", dataReceived);
                 const securePacket = await this.secureContext.processIncoming(dataReceived);
+                console.log("securePacket made", dataReceived);
                 this.emitter.emit("newMessage", securePacket.data, securePacket.certificate ? securePacket.certificate.claim : undefined);
             } catch (e) {
                 this.emitter.emit("error", e);
@@ -159,6 +165,7 @@ export class SecureReceiveSocket extends BaseSecureSocket {
         });
     }
     public receive = (listener: Listener) => {
+        console.log("SecureReceiveSocket.receive - adding listener")
         this.emitter.on("newMessage", listener);
     }
     public onError = (handler: any) => {
@@ -168,23 +175,33 @@ export class SecureReceiveSocket extends BaseSecureSocket {
 
 export class SecureCruxNetwork {
     private cruxNetwork: CruxNetwork;
-    private selfIdClaim: ICruxIdClaim;
-    private storage: StorageService;
-    private cruxUserRepo: ICruxUserRepository;
+    private secureReceiveSocket: SecureReceiveSocket;
+    private secureContext: SecureContext;
+    private emitter: Emitter<DefaultEvents>;
     constructor(cruxUserRepo: ICruxUserRepository, pubsubClientFactory: IPubSubClientFactory, selfIdClaim: ICruxIdClaim) {
-        this.selfIdClaim = selfIdClaim;
         this.cruxNetwork = new CruxNetwork(pubsubClientFactory);
-        this.storage = new InMemStorage();
-        this.cruxUserRepo = cruxUserRepo;
+        const storage = new InMemStorage();
+        this.emitter = createNanoEvents()
+        const receiveSocket = this.cruxNetwork.getReceiveSocket(selfIdClaim.cruxId, selfIdClaim.keyManager);
+        this.secureContext = new SecureContext(storage, selfIdClaim, cruxUserRepo)
+        this.secureReceiveSocket = new SecureReceiveSocket(receiveSocket, this.secureContext);
+        this.secureReceiveSocket.receive((msg, senderId) => {
+            this.emitter.emit("newMessage", msg, senderId);
+        });
+        this.secureReceiveSocket.onError((e: any) => {
+            this.emitter.emit("error", e);
+        });
     }
-
-    public getReceiveSocket = (): SecureReceiveSocket => {
-        const receiveSocket: ReceiveSocket = this.cruxNetwork.getReceiveSocket(this.selfIdClaim.cruxId, this.selfIdClaim.keyManager);
-        return new SecureReceiveSocket(receiveSocket, new SecureContext(this.storage, this.selfIdClaim, this.cruxUserRepo));
+    public send = async (recipientId: CruxId, data: any) => {
+        const sendSocket: SendSocket = this.cruxNetwork.getSendSocket(recipientId, this.secureContext.selfIdClaim.cruxId, this.secureContext.selfIdClaim.keyManager);
+        const secureSendSocket: SecureSendSocket = new SecureSendSocket(sendSocket, this.secureContext);
+        await secureSendSocket.send(data);
     }
-    public getSendSocket = (recipientCruxId: CruxId): SecureSendSocket => {
-        const sendSocket: SendSocket = this.cruxNetwork.getSendSocket(recipientCruxId, this.selfIdClaim.cruxId, this.selfIdClaim.keyManager);
-        return new SecureSendSocket(sendSocket, new SecureContext(this.storage, this.selfIdClaim, this.cruxUserRepo));
+    public receive = (listener: Listener) => {
+        this.emitter.on("newMessage", listener);
+    }
+    public onError = (listener: Listener) => {
+        this.emitter.on("error", listener);
     }
 }
 
@@ -246,35 +263,12 @@ export class SecureContext {
 
 // ---------
 
-export class SecureCruxNetworkMessenger {
-    private secureCruxNetwork: SecureCruxNetwork;
-    private emitter: Emitter<DefaultEvents>;
-    constructor(cruxUserRepo: ICruxUserRepository, pubsubClientFactory: IPubSubClientFactory, selfIdClaim: ICruxIdClaim) {
-        this.secureCruxNetwork = new SecureCruxNetwork(cruxUserRepo, pubsubClientFactory, selfIdClaim);
-        this.emitter = createNanoEvents();
-    }
-    public send = async (recipientId: CruxId, data: any) => {
-        const sendSocket: SecureSendSocket = this.secureCruxNetwork.getSendSocket(recipientId);
-        await sendSocket.send(data);
-    }
-    public receive = (listener: Listener) => {
-        const receiveSocket: SecureReceiveSocket = this.secureCruxNetwork.getReceiveSocket();
-        receiveSocket.receive(listener);
-        receiveSocket.onError((err: any) => {
-            this.emitter.emit("error", err);
-        });
-    }
-    public onError = (listener: Listener) => {
-        this.emitter.on("error", listener);
-    }
-}
-
 export class CruxProtocolMessenger {
-    private secureMessenger: SecureCruxNetworkMessenger;
+    private secureMessenger: SecureCruxNetwork;
     private schemaByMessageType: any;
     private emitter: Emitter<DefaultEvents>;
 
-    constructor(secureMessenger: SecureCruxNetworkMessenger, protocol: IMessageSchema[]) {
+    constructor(secureMessenger: SecureCruxNetwork, protocol: IMessageSchema[]) {
         this.secureMessenger = secureMessenger;
         this.schemaByMessageType = protocol.reduce((newObj, x) => Object.assign(newObj, {[x.messageType]: x.schema}), {});
         // tslint:disable-next-line:no-empty
