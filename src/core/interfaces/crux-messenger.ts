@@ -35,8 +35,3 @@ export interface IMessageSchema {
 export interface IPubSubClientFactory {
     getClient: (from: CruxId, keyManager: IKeyManager, to?: CruxId) => IPubSubClient;
 }
-
-
-export interface ICruxMessengerFactory {
-    get: (from: CruxId, keyManager: IKeyManager, to?: CruxId) => IPubSubClient;
-}
