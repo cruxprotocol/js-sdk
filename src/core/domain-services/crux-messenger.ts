@@ -20,6 +20,8 @@ import {
 export class CertificateManager {
     public static make = async (idClaim: ICruxIdClaim): Promise<ICruxIdCertificate> => {
         const payload = idClaim.cruxId.toString();
+        console.log("%&%&%&%&%", idClaim.keyManager);
+        console.log(payload);
         const signedProof = await idClaim.keyManager.signWebToken(payload);
         return {
                 claim: idClaim.cruxId.toString(),
@@ -28,7 +30,9 @@ export class CertificateManager {
     }
     public static verify = (certificate: ICruxIdCertificate, senderPubKey: any) => {
         const proof: any = decodeToken(certificate.proof).payload;
+        console.log(":::::::::;", certificate.claim, proof, senderPubKey);
         const verified = new TokenVerifier("ES256K", senderPubKey).verify(certificate.proof);
+        console.log("&*&**&*&", verified, certificate.claim, proof);
         if (proof && proof === certificate.claim && verified) {
             return true;
         }
@@ -140,7 +144,9 @@ export class SecureCruxIdMessenger {
         // TODO: Do we need to validate selfIdClaim?
     }
     public send = async (data: any, recipientCruxId: CruxId): Promise<void> => {
+        console.log("inside send: ", recipientCruxId.toString());
         const recipientCruxUser: CruxUser | undefined = await this.cruxUserRepo.getByCruxId(recipientCruxId);
+        console.log("~~~~~~~", recipientCruxUser);
         if (!recipientCruxUser) {
             throw Error("No Such CRUX User Found");
         }
@@ -162,6 +168,7 @@ export class SecureCruxIdMessenger {
         }
         this.selfMessenger.on(EventBusEventNames.newMessage, async (encryptedString: string) => {
             try {
+                console.log("inside listen and on :::::");
                 const serializedSecurePacket: string = await EncryptionManager.decrypt(encryptedString, this.selfIdClaim!.keyManager);
                 const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
                 let senderUser: CruxUser | undefined;
@@ -172,6 +179,8 @@ export class SecureCruxIdMessenger {
                         return;
                     }
                     const isVerified = CertificateManager.verify(securePacket.certificate, senderUser.publicKey!);
+                    console.log("********", securePacket.certificate);
+                    console.log("??????????", senderUser.publicKey);
                     if (!isVerified) {
                         errorCallback(new Error("Could not validate identity"));
                         return;
@@ -179,6 +188,7 @@ export class SecureCruxIdMessenger {
                 }
                 newMessageCallback(securePacket.data, senderUser ? senderUser.cruxID : undefined);
             } catch (error) {
+                console.log("listen on error", error);
                 errorCallback(error);
                 return;
             }

@@ -41,10 +41,12 @@ export class StrongPubSubClient implements IPubSubClient {
     }
     public publish(topic: string, data: any): void {
         this.ensureClient();
+        console.log("Message Published: ", topic, data);
         this.client.publish(topic, data);
     }
     public subscribe(topic: string, callback: any): void {
         this.ensureClient();
+        console.log("SUBSCRIBED", topic);
         this.client.subscribe(topic, this.config.subscribeOptions);
         this.client.on("message", callback);
     }
@@ -65,7 +67,7 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
     constructor(options: ICruxNetClientFactoryOptions) {
         this.options = options;
         this.defaultSubscribeOptions = {
-            qos: 0,
+            qos: 2,
         };
         this.defaultClientMqttOptions = {
             clean: false,

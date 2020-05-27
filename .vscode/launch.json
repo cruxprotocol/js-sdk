@@ -22,7 +22,7 @@
                 "jsdom-global/register",
                 "--allow-uncaught",
                 "--colors",
-                "--timeout 5000",
+                "--timeout 50000",
                 // "--reporter",
                 // "mocha-reporter",
                 "${workspaceFolder}/src/test/*.ts"

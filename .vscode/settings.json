@@ -6,7 +6,7 @@
     },
     "mochaExplorer.files": ["src/test/*.ts", "src/test/crux-messenger/*.ts"],
     "mochaExplorer.require": ["ts-node/register", "mock-local-storage", "jsdom-global/register"],
-    "mochaExplorer.timeout": 5000,
+    "mochaExplorer.timeout": 80000,
     "testExplorer.codeLens": true,
     "testExplorer.gutterDecoration": true,
     "testExplorer.onStart": "reset",

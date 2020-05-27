@@ -72,6 +72,7 @@ export class CruxUser {
         this.setCruxUserConfig(cruxUserData.configuration);
         this.setPublicKey(publicKey);
         this.setCruxUserPrivateAddresses(cruxUserData.privateAddresses);
+        console.log("CruxUser initialised");
         log.debug("CruxUser initialised");
     }
     get cruxID() {

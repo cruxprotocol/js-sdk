@@ -20,11 +20,13 @@ export class BasicKeyManager implements IKeyManager {
     public signWebToken = async (payload: any): Promise<string> => {
         await this.initPromise;
         let privateKey = await this.getDecryptedPrivateKey();
+        console.log("privateKey: ", privateKey);
         const signedMsg = new TokenSigner("ES256K", privateKey).sign(payload);
         privateKey = "0".repeat(privateKey.length);
         return signedMsg;
     }
     public getPubKey = async (): Promise<string> => {
+        console.log("*()");
         await this.initPromise;
         return this.publicKey;
     }
@@ -52,6 +54,7 @@ export class BasicKeyManager implements IKeyManager {
             encryptionConstant = getRandomHexString();
             this.ephemeralEncryptionConstant = encryptionConstant;
         }
+        console.log("&&*&*&", privateKey);
         const keyPair = getKeyPairFromPrivKey(privateKey);
         this.publicKey = keyPair.pubKey;
         this.encryptedPrivateKey = JSON.stringify(await Encryption.encryptText(keyPair.privKey, encryptionConstant));

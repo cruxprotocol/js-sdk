@@ -109,13 +109,13 @@ describe('Test RemoteKeyClient', function() {
             },(err) => {
             });
             const signedWebToken = await remoteKeyManager.signWebToken("1234567")
-            // console.log(signedWebToken);
+            console.log(signedWebToken);
             expect(signedWebToken).to.have.length(138);
             const publicKey = await remoteKeyManager.getPubKey();
-            // console.log(publicKey);
+            console.log(publicKey);
             expect(publicKey).to.equals(testPubKey);
             const sharedSecret = await remoteKeyManager.deriveSharedSecret(testPubKey)
-            // console.log(sharedSecret);
+            console.log(sharedSecret);
             expect(sharedSecret).to.equals("3380b4752c9cebf96bc55491ef0ee67ae1d564c0bb931a0c6e8875be6e3bee5");
             // const decryptedMessage = await remoteKeyManager.decryptMessage("4b4f34746f434c30354349312b41314b554f644542773d3d");
             // console.log(decryptedMessage);

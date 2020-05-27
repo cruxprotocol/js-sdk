@@ -1,4 +1,5 @@
 import {makeUUID4} from "blockstack/lib";
+import { createNanoEvents, DefaultEvents, Emitter } from "nanoevents";
 import { CruxId } from "src/packages";
 import { IKeyManager } from "../interfaces";
 import { SecureCruxIdMessenger } from "./crux-messenger";
@@ -8,19 +9,30 @@ const VALID_METHODS = ["signWebToken", "getPubKey", "deriveSharedSecret", "decry
 export class RemoteKeyClient {
     private secureCruxIdMessenger: SecureCruxIdMessenger;
     private remoteUserId: CruxId;
+    private emitter: Emitter<DefaultEvents>;
 
     constructor(secureCruxIdMessenger: SecureCruxIdMessenger, remoteUserId: CruxId) {
         this.secureCruxIdMessenger = secureCruxIdMessenger;
         this.remoteUserId = remoteUserId;
+        this.emitter = createNanoEvents();
+        this.secureCruxIdMessenger.listen((msg: any, senderId: CruxId | undefined) => {
+            console.log("inside invokeresult::::::", msg, senderId);
+            this.emitter.emit(msg.invocationId, msg, senderId);
+        }, (err: any) => {
+            this.emitter.emit("error", err);
+            return;
+        });
     }
 
     public async invoke(method: string, args: any[]) {
+        console.log("inside Invoke::::::");
         if (!this.secureCruxIdMessenger) {
             throw Error("RemoteKeyClient cannot send with no selfMessenger");
         }
         const methodData = this.generateMethodData(method, args);
-
+        console.log("^^^^^^", this.remoteUserId, methodData);
         await this.secureCruxIdMessenger.send(methodData, this.remoteUserId);
+        return methodData.invocationId;
     }
 
     public invokeResult = (resultCallback: (msg: any, senderId: CruxId | undefined) => any, errorCallback: (err: any) => any): void => {
@@ -28,11 +40,20 @@ export class RemoteKeyClient {
             throw Error("RemoteKeyClient cannot listen with no selfMessenger");
         }
         this.secureCruxIdMessenger.listen((msg: any, senderId: CruxId | undefined) => {
+            console.log("inside invokeresult::::::", msg, senderId);
             resultCallback(msg, senderId);
         }, (err: any) => {
             errorCallback(err);
             return;
         });
+    }
+
+    public listenToInvocation = (invocationId: string, resultCallback: (msg: any, senderId: CruxId | undefined) => any, errorCallback: (err: any) => any): void => {
+        if (!this.secureCruxIdMessenger) {
+            throw Error("RemoteKeyClient cannot listen with no selfMessenger");
+        }
+        this.emitter.on(invocationId, resultCallback);
+        this.emitter.on("error", errorCallback);
     }
 
     private generateMethodData(method: string, args: any[]) {
@@ -68,8 +89,10 @@ export class RemoteKeyHost {
         }
         this.secureCruxIdMessenger.listen((msg: any, senderId: CruxId | undefined) => {
             // this.handleMessage(msg);
+            console.log("#####", msg, senderId);
             resultCallback(msg, senderId);
         }, (err: any) => {
+            console.log("errorinvocationListener", err);
             errorCallback(err);
             return;
         });
@@ -119,27 +142,30 @@ export class RemoteKeyManager implements IKeyManager {
     }
     // @ts-ignore
     public async signWebToken(token: any) {
+        console.log("Boli");
         const temp = [token];
         return new Promise(async (resolve, reject) => {
-            this.remoteKeyClient.invokeResult((msg, senderId) => {
+            const invocationId = await this.remoteKeyClient.invoke("signWebToken", [token]);
+            this.remoteKeyClient.listenToInvocation(invocationId, (msg, senderId) => {
                 console.log("sign+++====", msg);
                 resolve(msg.result.data);
             }, (err) => {
                 reject(err);
             });
-            await this.remoteKeyClient.invoke("signWebToken", [token]);
         });
     }
     // @ts-ignore
     public async getPubKey() {
+        console.log("Holi");
         return new Promise(async (resolve, reject) => {
-            this.remoteKeyClient.invokeResult((msg, senderId) => {
+            const invocationId = await this.remoteKeyClient.invoke("getPubKey", []);
+            this.remoteKeyClient.listenToInvocation(invocationId, (msg, senderId) => {
                 console.log("pub+++====", msg);
                 resolve(msg.result.data);
             }, (err) => {
                 reject(err);
             });
-            await this.remoteKeyClient.invoke("getPubKey", []);
+            console.log("getPubKey:Method");
         });
     }
     // @ts-ignore
@@ -151,7 +177,6 @@ export class RemoteKeyManager implements IKeyManager {
             }, (err) => {
                 reject(err);
             });
-            await this.remoteKeyClient.invoke("deriveSharedSecret", [publicKey]);
         });
     }
     // @ts-ignore
@@ -163,7 +188,6 @@ export class RemoteKeyManager implements IKeyManager {
             }, (err) => {
                 reject(err);
             });
-            await this.remoteKeyClient.invoke("decryptMessage", [encryptedMessage]);
         });
     }
 }

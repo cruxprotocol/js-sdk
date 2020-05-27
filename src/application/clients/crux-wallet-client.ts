@@ -1,6 +1,6 @@
 // Importing packages
 import Logger from "js-logger";
-import {CruxConnectProtocolMessenger, SecureCruxIdMessenger} from "../../core/domain-services";
+import {CruxConnectProtocolMessenger, SecureCruxIdMessenger, RemoteKeyHost} from "../../core/domain-services";
 import {
     CruxDomain,
     CruxSpec,
@@ -79,6 +79,7 @@ export interface ICruxWalletClientOptions {
     cacheStorage?: StorageService;
     walletClientName: string;
     debugLogging?: boolean;
+    isHost?: boolean;
 }
 
 export interface ICruxIDState {
@@ -114,6 +115,7 @@ export class CruxWalletClient {
     private cacheStorage?: StorageService;
     private selfCruxUser?: CruxUser;
     private paymentProtocolMessenger?: CruxConnectProtocolMessenger;
+    private remoteKeyHost?: RemoteKeyHost;
 
     constructor(options: ICruxWalletClientOptions) {
         getLogger(cruxWalletClientDebugLoggerName).setLevel(options.debugLogging ? Logger.DEBUG : Logger.OFF);
@@ -122,6 +124,7 @@ export class CruxWalletClient {
         this.walletClientName = options.walletClientName;
         if (options.privateKey) {
             if (typeof options.privateKey === "string") {
+                console.log("================", options.privateKey);
                 this.keyManager = new BasicKeyManager(options.privateKey);
             } else if (isInstanceOfKeyManager(options.privateKey)) {
                 this.keyManager = options.privateKey;
@@ -131,7 +134,7 @@ export class CruxWalletClient {
         }
         this.cruxDomainRepo = getCruxDomainRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure});
         this.cruxDomainId = new CruxDomainId(this.walletClientName);
-        this.initPromise = this.asyncInit();
+        this.initPromise = this.asyncInit(options);
     }
 
     @throwCruxClientError
@@ -197,9 +200,16 @@ export class CruxWalletClient {
 
     @throwCruxClientError
     public getAddressMap = async (): Promise<IAddressMapping> => {
-        await this.initPromise;
+        console.log("LMAO");
+        console.log("Hieeee", this.getKeyManager());
+        // await this.initPromise;
+        console.log("after promise");
+        console.log("Hoilaaaaaa", await this.getKeyManager().getPubKey());
+        console.log("Aloha");
         const cruxUser = await this.cruxUserRepository.getWithKey(this.getKeyManager());
+        console.log("&&&&&&{}{}", cruxUser);
         if (cruxUser) {
+            console.log("dude");
             const assetIdAddressMap = cruxUser.getAddressMap();
             return this.cruxAssetTranslator.assetIdAddressMapToSymbolAddressMap(assetIdAddressMap);
         }
@@ -392,17 +402,19 @@ export class CruxWalletClient {
         return this.cruxDomain;
     }
 
-    private asyncInit = async (): Promise<void> => {
+    private asyncInit = async (options: ICruxWalletClientOptions): Promise<void> => {
         this.cruxDomain = await this.cruxDomainRepo.get(this.cruxDomainId);
         if (!this.cruxDomain) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.InvalidWalletClientName);
         }
+        console.log("YOLO");
         this.cruxUserRepository = getCruxUserRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure, cruxDomain: this.cruxDomain});
         if (!this.cruxDomain.config) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
+        console.log("Bol");
         this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping, this.cruxDomain.config.assetList);
-        // await this.setupCruxMessenger();
+        await this.setupCruxMessenger(options);
     }
 
     private getSelfClaim = async (): Promise<ICruxIdClaim | undefined> => {
@@ -421,17 +433,30 @@ export class CruxWalletClient {
         }
         return selfClaim;
     }
-    private setupCruxMessenger = async () => {
+    private setupCruxMessenger = async (options: ICruxWalletClientOptions) => {
         const selfIdClaim = await this.getSelfClaim();
         if (!selfIdClaim) {
             throw Error("Self ID Claim is required to setup messenger");
         }
         const pubsubClientFactory = new CruxNetPubSubClientFactory({defaultLinkServer: {
-                host: "localhost",
-                port: 4005,
+                host: "127.0.0.1",
+                port: 1883,
             }});
         const secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
         this.paymentProtocolMessenger = new CruxConnectProtocolMessenger(secureCruxMessenger, cruxPaymentProtocol);
+        if (options.isHost) {
+            const remoteKeyHost = new RemoteKeyHost(secureCruxMessenger, this.keyManager!);
+            this.remoteKeyHost = remoteKeyHost;
+            console.log("setupRemoteKeyHost__________", selfIdClaim.cruxId.toString());
+            remoteKeyHost.invocationListener(async (msg, senderId) => {
+                console.log("%%%%%%%%%%%%%", msg, senderId);
+                const data = await remoteKeyHost.handleMessage(msg);
+                remoteKeyHost.sendInvocationResult(data, senderId);
+            }, (err) => {
+                console.log("[][][][", err);
+                remoteKeyHost.sendInvocationResult(err, senderId);
+            });
+        }
     }
 
 }
