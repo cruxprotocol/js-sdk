@@ -21,7 +21,7 @@ export class CertificateManager {
     public static make = async (idClaim: ICruxIdClaim): Promise<ICruxIdCertificate> => {
         const payload = idClaim.cruxId.toString();
         console.log("%&%&%&%&%", idClaim.keyManager);
-        console.log(payload);
+        console.log("@@#@#@#@", idClaim.keyManager.getPubKey(), payload);
         const signedProof = await idClaim.keyManager.signWebToken(payload);
         return {
                 claim: idClaim.cruxId.toString(),
@@ -173,7 +173,9 @@ export class SecureCruxIdMessenger {
                 const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
                 let senderUser: CruxUser | undefined;
                 if (securePacket.certificate) {
+                    console.log("~~!!!!!~~~", securePacket.certificate.claim);
                     senderUser = await this.cruxUserRepo.getByCruxId(CruxId.fromString(securePacket.certificate.claim));
+                    console.log(senderUser);
                     if (!senderUser) {
                         errorCallback(new Error("Claimed sender user in certificate does not exist"));
                         return;

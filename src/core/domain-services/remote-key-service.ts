@@ -52,6 +52,7 @@ export class RemoteKeyClient {
         if (!this.secureCruxIdMessenger) {
             throw Error("RemoteKeyClient cannot listen with no selfMessenger");
         }
+        console.log("%$%$%^%$%^%", invocationId);
         this.emitter.on(invocationId, resultCallback);
         this.emitter.on("error", errorCallback);
     }
