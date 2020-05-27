@@ -2,7 +2,7 @@ import * as chai from "chai";
 import sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import 'mocha';
-import {SecureCruxNetworkMessenger, CertificateManager} from "../../core/domain-services";
+import {SecureCruxNetwork, CertificateManager} from "../../core/domain-services";
 import {BasicKeyManager} from "../../infrastructure/implementations";
 import {CruxId} from "../../packages";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../test-utils";
@@ -34,12 +34,12 @@ describe('Test Secure Crux Messenger', function() {
     it('Basic Send Receive Test', async function() {
         const testmsg = 'HelloWorld';
         return new Promise(async (resolve, reject) => {
-            const user1Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+            const user1Messenger = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory, {
                 cruxId: this.user1Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user1Data.pvtKey)
             });
 
-            const user2Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+            const user2Messenger = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory, {
                 cruxId: this.user2Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user2Data.pvtKey)
             });
@@ -56,16 +56,16 @@ describe('Test Secure Crux Messenger', function() {
         return new Promise(async (resolve, reject) => {
             const maliciousUser = this.user3Data.cruxUser.cruxID;
             const maliciousPubSubClientFactory = new InMemoryMaliciousPubSubClientFactory(maliciousUser);
-            const user1Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
+            const user1Messenger = new SecureCruxNetwork(this.inmemUserRepo, maliciousPubSubClientFactory, {
                 cruxId: this.user1Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user1Data.pvtKey)
             });
 
-            const user2Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
+            const user2Messenger = new SecureCruxNetwork(this.inmemUserRepo, maliciousPubSubClientFactory, {
                 cruxId: this.user2Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user2Data.pvtKey)
             });
-            const user3Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, maliciousPubSubClientFactory, {
+            const user3Messenger = new SecureCruxNetwork(this.inmemUserRepo, maliciousPubSubClientFactory, {
                 cruxId: this.user3Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user3Data.pvtKey)
             });
@@ -85,9 +85,9 @@ describe('Test Secure Crux Messenger', function() {
         throw Error("Fix this test case!")
         // const testmsg = 'HelloWorld';
         // return new Promise(async (resolve, reject) => {
-        //     const user1Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory);
+        //     const user1Messenger = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory);
         //
-        //     const user2Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+        //     const user2Messenger = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory, {
         //         cruxId: this.user2Data.cruxUser.cruxID,
         //         keyManager: new BasicKeyManager(this.user2Data.pvtKey)
         //     });
@@ -105,12 +105,12 @@ describe('Test Secure Crux Messenger', function() {
 
             const testmsg = "HelloWorld"
             return new Promise(async (resolve, reject) => {
-                const user1Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                const user1Messenger = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory, {
                     cruxId: this.user1Data.cruxUser.cruxID,
                     keyManager: new BasicKeyManager(this.user2Data.pvtKey)
                 });
 
-                const user2Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                const user2Messenger = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory, {
                     cruxId: this.user2Data.cruxUser.cruxID,
                     keyManager: new BasicKeyManager(this.user2Data.pvtKey)
                 });
@@ -142,12 +142,12 @@ describe('Test Secure Crux Messenger', function() {
 
             const testmsg = "HelloWorld"
             return new Promise(async (resolve, reject) => {
-                const user1Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                const user1Messenger = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory, {
                     cruxId: this.user1Data.cruxUser.cruxID,
                     keyManager: new BasicKeyManager(this.user1Data.pvtKey)
                 });
 
-                const user2Messenger = new SecureCruxNetworkMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+                const user2Messenger = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory, {
                     cruxId: this.user2Data.cruxUser.cruxID,
                     keyManager: new BasicKeyManager(this.user2Data.pvtKey)
                 });

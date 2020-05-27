@@ -1,6 +1,6 @@
 // Importing packages
 import Logger from "js-logger";
-import {CruxProtocolMessenger, SecureCruxNetworkMessenger} from "../../core/domain-services";
+import {CruxProtocolMessenger, SecureCruxNetwork} from "../../core/domain-services";
 import {
     CruxDomain,
     CruxSpec,
@@ -100,7 +100,7 @@ export class CruxWalletClient {
     public walletClientName: string;
     // TODO: make private
     public paymentProtocolMessenger?: CruxProtocolMessenger;
-    public secureCruxMessenger?: SecureCruxNetworkMessenger;
+    public secureCruxNetwork?: SecureCruxNetwork;
     private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
     private initPromise: Promise<void>;
     private cruxDomainRepo: ICruxDomainRepository;
@@ -448,8 +448,8 @@ export class CruxWalletClient {
                 path: "/mqtt",
                 port: 8000,
             }});
-        this.secureCruxMessenger = new SecureCruxNetworkMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
-        this.paymentProtocolMessenger = new CruxProtocolMessenger(this.secureCruxMessenger, cruxPaymentProtocol);
+        this.secureCruxNetwork = new SecureCruxNetwork(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
+        this.paymentProtocolMessenger = new CruxProtocolMessenger(this.secureCruxNetwork, cruxPaymentProtocol);
     }
 
 }
