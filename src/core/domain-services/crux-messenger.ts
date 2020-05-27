@@ -152,7 +152,7 @@ export class SecureReceiveSocket extends BaseSecureSocket {
         this.receiveSocket.receive(async (dataReceived: any) => {
             try {
                 const securePacket = await this.secureContext.processIncoming(dataReceived);
-                this.emitter.emit("newMessage", securePacket.data, securePacket.certificate ? securePacket.certificate.claim: undefined);
+                this.emitter.emit("newMessage", securePacket.data, securePacket.certificate ? securePacket.certificate.claim : undefined);
             } catch (e) {
                 this.emitter.emit("error", e);
             }
@@ -278,12 +278,12 @@ export class CruxProtocolMessenger {
         this.secureMessenger = secureMessenger;
         this.schemaByMessageType = protocol.reduce((newObj, x) => Object.assign(newObj, {[x.messageType]: x.schema}), {});
         // tslint:disable-next-line:no-empty
-        this.emitter = createNanoEvents()
+        this.emitter = createNanoEvents();
         this.secureMessenger.receive((msg: IProtocolMessage, senderId?: CruxId) => {
             this.handleNewMessage(msg, senderId);
-        })
+        });
         this.secureMessenger.onError((e: Error) => {
-            console.log("this.secureMessenger.onError inside CruxProtocolMessenger", e)
+            console.log("this.secureMessenger.onError inside CruxProtocolMessenger", e);
             this.emitter.emit("error", e);
         });
     }
