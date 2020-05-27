@@ -418,6 +418,7 @@ export class CruxWalletClient {
         }
         this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping, this.cruxDomain.config.assetList);
         const selfIdClaim = await this.getSelfClaim();
+        console.log("cwc selfidclaim ", selfIdClaim);
         if (selfIdClaim) {
             await this.setupCruxMessenger(selfIdClaim);
         }
@@ -448,6 +449,7 @@ export class CruxWalletClient {
                 path: "/mqtt",
                 port: 8000,
             }});
+        console.log("making crux messenger");
         this.secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
         this.paymentProtocolMessenger = new CruxProtocolMessenger(this.secureCruxMessenger, cruxPaymentProtocol);
     }
