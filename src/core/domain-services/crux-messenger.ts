@@ -9,7 +9,7 @@ import {
     ICruxIdCertificate,
     ICruxIdClaim,
     ICruxUserRepository,
-    IKeyManager, IProtocolMessage,
+    IKeyManager, IMessageSchema, IProtocolMessage,
     IPubSubClient,
     IPubSubClientFactory,
     ISecurePacket,
@@ -152,7 +152,7 @@ export class SecureReceiveSocket extends BaseSecureSocket {
         this.receiveSocket.receive(async (dataReceived: any) => {
             try {
                 const securePacket = await this.secureContext.processIncoming(dataReceived);
-                this.emitter.emit("newMessage", securePacket.data);
+                this.emitter.emit("newMessage", securePacket.data, securePacket.certificate ? securePacket.certificate.claim: undefined);
             } catch (e) {
                 this.emitter.emit("error", e);
             }
@@ -272,26 +272,24 @@ export class SecureCruxNetworkMessenger {
 export class CruxProtocolMessenger {
     private secureMessenger: SecureCruxNetworkMessenger;
     private schemaByMessageType: any;
-    private errorHandler: (error: any) => void;
-    private messageHandlerByType: {[type: string]: (data: any, senderId?: CruxId) => void};
     private emitter: Emitter<DefaultEvents>;
 
     constructor(secureMessenger: SecureCruxNetworkMessenger, protocol: IMessageSchema[]) {
         this.secureMessenger = secureMessenger;
         this.schemaByMessageType = protocol.reduce((newObj, x) => Object.assign(newObj, {[x.messageType]: x.schema}), {});
         // tslint:disable-next-line:no-empty
-        this.errorHandler = (error) => {};
-        this.messageHandlerByType = {};
         this.emitter = createNanoEvents()
-        this.secureMessenger.listen((msg: IProtocolMessage, senderId?: CruxId) => {
+        this.secureMessenger.receive((msg: IProtocolMessage, senderId?: CruxId) => {
             this.handleNewMessage(msg, senderId);
-        }, (e: Error) => {
-            this.handleNewError(e);
+        })
+        this.secureMessenger.onError((e: Error) => {
+            console.log("this.secureMessenger.onError inside CruxProtocolMessenger", e)
+            this.emitter.emit("error", e);
         });
     }
     public send = async (message: IProtocolMessage, recipientCruxId: CruxId): Promise<void> => {
         this.validateMessage(message);
-        this.secureMessenger.send(message, recipientCruxId);
+        await this.secureMessenger.send(recipientCruxId, message);
     }
     public on = (messageType: string, callback: (data: any, senderId?: CruxId) => void) => {
         this.getSchema(messageType);
@@ -306,13 +304,10 @@ export class CruxProtocolMessenger {
         try {
             this.validateMessage(message);
         } catch (e) {
-            this.handleNewError(e);
+            this.emitter.emit("error", e);
             return;
         }
         this.emitter.emit(message.type, message.content, senderId);
-    }
-    private handleNewError = (error: any) => {
-        this.errorHandler(error);
     }
 
     private getSchema = (messageType: string): any => {

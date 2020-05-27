@@ -1,13 +1,12 @@
 import * as chai from "chai";
-import sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import 'mocha';
-import {SecureCruxIdMessenger, CertificateManager, CruxProtocolMessenger} from "../../core/domain-services";
-import {ICruxUserRepository, IProtocolMessage, IPubSubClientFactory} from "../../core/interfaces";
+import {CruxProtocolMessenger, SecureCruxNetworkMessenger} from "../../core/domain-services";
+import {IProtocolMessage} from "../../core/interfaces";
 import {BasicKeyManager, cruxPaymentProtocol} from "../../infrastructure/implementations";
 import {CruxId} from "../../packages";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../test-utils";
-import {InMemoryPubSubClientFactory, InMemoryMaliciousPubSubClientFactory} from "./inmemory-implementations";
+import {InMemoryPubSubClientFactory} from "./inmemory-implementations";
 import {getMockUserBar123CSTestWallet, getMockUserFoo123CSTestWallet, getMockUserFooBar123CSTestWallet} from "./utils";
 
 patchMissingDependencies();
@@ -33,11 +32,11 @@ describe('Test Crux Connect Protocol Messenger - Payment Request', function() {
         userStore.store(user2Data.cruxUser);
         const inmemUserRepo = new InMemoryCruxUserRepository(userStore);
         const pubsubClientFactory = new InMemoryPubSubClientFactory();
-        const user1Messenger = new SecureCruxIdMessenger(inmemUserRepo, pubsubClientFactory, {
+        const user1Messenger = new SecureCruxNetworkMessenger(inmemUserRepo, pubsubClientFactory, {
             cruxId: this.user1Data.cruxUser.cruxID,
             keyManager: new BasicKeyManager(this.user1Data.pvtKey)
         });
-        const user2Messenger = new SecureCruxIdMessenger(inmemUserRepo, pubsubClientFactory, {
+        const user2Messenger = new SecureCruxNetworkMessenger(inmemUserRepo, pubsubClientFactory, {
             cruxId: this.user2Data.cruxUser.cruxID,
             keyManager: new BasicKeyManager(this.user2Data.pvtKey)
         });
