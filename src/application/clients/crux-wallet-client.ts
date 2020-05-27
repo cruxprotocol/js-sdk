@@ -1,6 +1,6 @@
 // Importing packages
 import Logger from "js-logger";
-import {CruxProtocolMessenger, SecureCruxIdMessenger} from "../../core/domain-services";
+import {CruxProtocolMessenger, SecureCruxNetworkMessenger} from "../../core/domain-services";
 import {
     CruxDomain,
     CruxSpec,
@@ -100,7 +100,7 @@ export class CruxWalletClient {
     public walletClientName: string;
     // TODO: make private
     public paymentProtocolMessenger?: CruxProtocolMessenger;
-    public secureCruxMessenger?: SecureCruxIdMessenger;
+    public secureCruxMessenger?: SecureCruxNetworkMessenger;
     private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
     private initPromise: Promise<void>;
     private cruxDomainRepo: ICruxDomainRepository;
@@ -418,7 +418,6 @@ export class CruxWalletClient {
         }
         this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping, this.cruxDomain.config.assetList);
         const selfIdClaim = await this.getSelfClaim();
-        console.log("cwc selfidclaim ", selfIdClaim);
         if (selfIdClaim) {
             await this.setupCruxMessenger(selfIdClaim);
         }
@@ -449,8 +448,7 @@ export class CruxWalletClient {
                 path: "/mqtt",
                 port: 8000,
             }});
-        console.log("making crux messenger");
-        this.secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
+        this.secureCruxMessenger = new SecureCruxNetworkMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
         this.paymentProtocolMessenger = new CruxProtocolMessenger(this.secureCruxMessenger, cruxPaymentProtocol);
     }
 

@@ -16,7 +16,9 @@ chai.use(chaiAsPromised);
 chai.should();
 const expect = require('chai').expect;
 
-
+it('TODO FIX', async function() {
+    throw Error("FIX")
+});
 
 describe('Test Crux Connect Protocol Messenger - Payment Request', function() {
     beforeEach(async function() {

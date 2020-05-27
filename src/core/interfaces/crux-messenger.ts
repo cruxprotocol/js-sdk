@@ -8,7 +8,8 @@ export interface ICruxIdClaim {
 }
 
 export interface IPubSubClient {
-    subscribe: (topic: string, callback: any, errorCallback: any) => void;
+    subscribe: (topic: string, callback: any) => void;
+    onError: (callback: any) => void;
     publish: (topic: string, data: any) => void;
 }
 
@@ -32,6 +33,10 @@ export interface IMessageSchema {
 }
 
 export interface IPubSubClientFactory {
-    getRecipientClient: (recipientCruxId: CruxId, selfCruxId?: CruxId) => IPubSubClient;
-    getSelfClient: (idClaim: ICruxIdClaim) => IPubSubClient;
+    getClient: (from: CruxId, keyManager: IKeyManager, to?: CruxId) => IPubSubClient;
+}
+
+
+export interface ICruxMessengerFactory {
+    get: (from: CruxId, keyManager: IKeyManager, to?: CruxId) => IPubSubClient;
 }
