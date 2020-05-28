@@ -215,10 +215,10 @@ export class CruxWalletClient {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.AssetIDNotAvailable);
         }
         await this.initPromise;
-        this.paymentProtocolMessenger.send({
+        return this.paymentProtocolMessenger.send({
             content: {
                 amount,
-                assetId: asset,
+                assetId: asset.assetId,
                 toAddress,
             },
             type: "PAYMENT_REQUEST",
@@ -230,8 +230,18 @@ export class CruxWalletClient {
         if (!this.paymentProtocolMessenger) {
             throw Error("Cannot use this method");
         }
-        this.paymentProtocolMessenger.on("PAYMENT_REQUEST", callback);
+        this.paymentProtocolMessenger.on("PAYMENT_REQUEST", (paymentRequest: any, senderId?: CruxId) => {
+            const walletSymbol = this.cruxAssetTranslator.assetIdToSymbol(paymentRequest.assetId);
+            if (!walletSymbol) {
+                throw Error("Cannot find asset ID IN payment request:" + paymentRequest);
+            }
+            callback({
+                ...paymentRequest,
+                walletSymbol,
+            }, senderId);
+        });
     }
+
 
     @throwCruxClientError
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {
