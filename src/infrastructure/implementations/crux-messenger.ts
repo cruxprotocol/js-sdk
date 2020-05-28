@@ -1,18 +1,16 @@
 // @ts-ignore
 import * as Joi from "@hapi/joi";
 import {makeUUID4} from "blockstack/lib";
-import mqtt from "mqtt";
 import {createNanoEvents, DefaultEvents, Emitter} from "nanoevents";
 // @ts-ignore
 import * as paho from "paho-mqtt";
 // @ts-ignore
-import Client from "strong-pubsub";
 // @ts-ignore
-import MqttAdapter from "strong-pubsub-mqtt";
 // @ts-ignore
 import * as ws from "ws";
 import {
-    ICruxIdClaim, IMessageSchema,
+    IKeyManager,
+    IMessageSchema,
     IPubSubClient,
     IPubSubClientFactory,
 } from "../../core/interfaces";
@@ -53,82 +51,102 @@ export interface IPahoPubSubProviderConfig {
     };
 }
 
-export class StrongPubSubClient implements IPubSubClient {
-    private client: Client;
-    private config: IStrongPubSubProviderConfig;
-    constructor(config: IStrongPubSubProviderConfig) {
-        this.config = config;
-    }
-    public publish(topic: string, data: any): void {
-        this.ensureClient();
-        this.client.publish(topic, data);
-    }
-    public subscribe(topic: string, callback: any): void {
-        this.ensureClient();
-        this.client.subscribe(topic, this.config.subscribeOptions);
-        this.client.on("message", callback);
-    }
-    private connect() {
-        this.client = new Client(this.config.clientOptions, MqttAdapter);
-    }
-    private ensureClient() {
-        if (!this.client) {
-            this.connect();
-        }
-    }
-}
+// export class StrongPubSubClient implements IPubSubClient {
+//     private client: Client;
+//     private config: IStrongPubSubProviderConfig;
+//     constructor(config: IStrongPubSubProviderConfig) {
+//         this.config = config;
+//     }
+//     public publish(topic: string, data: any): void {
+//         this.ensureClient();
+//         this.client.publish(topic, data);
+//     }
+//     public subscribe(topic: string, callback: any): void {
+//         this.ensureClient();
+//         this.client.subscribe(topic, this.config.subscribeOptions);
+//         this.client.on("message", callback);
+//     }
+//     private connect() {
+//         this.client = new Client(this.config.clientOptions, MqttAdapter);
+//     }
+//     private ensureClient() {
+//         if (!this.client) {
+//             this.connect();
+//         }
+//     }
+// }
 
 export class PahoClient implements IPubSubClient {
-    private client: any;
     private config: IPahoPubSubProviderConfig;
     private emitter: Emitter<DefaultEvents>;
+    private client: any;
     constructor(config: IPahoPubSubProviderConfig) {
         this.config = config;
-        // @ts-ignore
-        if (!global.WebSocket) {
-            // @ts-ignore
-            global.WebSocket = ws.default;
-        }
         this.emitter = createNanoEvents();
+        this.setupEnvironment();
     }
-    public async publish(topic: string, data: any): Promise<void> {
-        console.log("PahoClient.publish", topic);
-        await this.connect();
-        const message = new paho.Message(data);
-        message.destinationName = topic;
-        message.qos = 2;
-        this.client.send(message);
+    public onError = (callback: any) => {
+        this.emitter.on("error", callback);
     }
-    public async subscribe(topic: string, callback: any): Promise<void> {
-        console.log("PahoClient.subscribe", topic);
-        await this.connect();
-        // @ts-ignore
-        this.client.onMessageArrived = (msg: any) => {
-            this.onMessageArrived(msg);
-        };
-        this.client.subscribe(topic, this.config.subscribeOptions);
-        this.emitter.on(topic, (tpc: any, data: any) => {
-            console.log("recd message from PahoClient.emitter", tpc, data);
-            callback(tpc, data);
+    public publish = async (topic: string, data: any) => {
+        // await this.connect();
+        return new Promise(async (resolve, reject) => {
+            const message: any = new paho.Message(data);
+            message.destinationName = topic;
+            message.qos = 2;
+            message.uniqueId = makeUUID4();
+            console.log("PahoClient - sending msg with id:", message.uniqueId);
+            this.client.send(message);
+            this.emitter.on("msgdelivered_" + message.uniqueId, (msg) => {
+                console.log("PahoClient - send successful!:", msg.uniqueId);
+                resolve(data);
+            });
         });
     }
-    private async connect() {
+    public subscribe = async (topic: string, callback: any) => {
+        console.log("PahoClient - subscribing to topic:", topic);
+        // await this.connect();
+        return new Promise(async (resolve, reject) => {
+            this.client.subscribe(topic, {
+                ...this.config.subscribeOptions,
+                onSuccess: () => {
+                    console.log("PahoClient - subscribe success:", topic);
+                    resolve();
+                },
+                // tslint:disable-next-line:object-literal-sort-keys
+                onFailure: (err: any) => {
+                    console.log("PahoClient - subscribe failure:", topic);
+                    reject(err);
+                },
+            });
+            this.emitter.on(topic, callback);
+        });
+    }
+
+    public connect = () => {
         console.log("PahoClient trying to connect");
         if (this.client && this.client.isConnected()) {
             console.log("Already Connected, returning");
             return;
         }
+        console.log("Not Connected, Reconnecting");
         return new Promise((res, rej) => {
             if (!this.client) {
                 this.client = new paho.Client(this.config.clientOptions.host, this.config.clientOptions.port, this.config.clientOptions.path, this.config.clientOptions.clientId);
             }
+            this.client.onMessageArrived = this.onMessageArrived;
+            this.client.onMessageDelivered = this.onMessageDelivered;
+            // TODO: There's one more event to handle
+            console.log("PahoClient - trying to connect");
             this.client.connect({
                 onSuccess: (onSuccessData: any) => {
-                    console.log("Success: ", onSuccessData);
+                    console.log("PahoClient - connect success!");
+                    this.emitter.emit("connectSuccess", onSuccessData);
                     res(onSuccessData);
                 },
                 // tslint:disable-next-line: object-literal-sort-keys
                 onFailure: (onFailureData: any) => {
+                    console.log("PahoClient - connect failure!");
                     console.log("Failure: ", onFailureData);
                     rej(onFailureData);
                 },
@@ -136,18 +154,21 @@ export class PahoClient implements IPubSubClient {
             });
         });
     }
-
+    private setupEnvironment = () => {
+        // @ts-ignore
+        if (!global.WebSocket) {
+            // @ts-ignore
+            global.WebSocket = ws.default;
+        }
+    }
     private onMessageArrived = (msg: any) => {
-        console.log("recd message from paho library: " + msg);
+        console.log("recd message from paho library: ", msg.uniqueId, msg);
         this.emitter.emit(msg.destinationName, msg.destinationName, msg.payloadString);
     }
-//     private async ensureClient() {
-//         console.log("+++++++++", this.client);
-//         if (!this.client) {
-//             console.log("===========");
-//             await this.connect();
-//         }
-//     }
+    private onMessageDelivered = (msg: any) => {
+        // console.log("PahoClient - onMessageDelivered", msg.uniqueId);
+        this.emitter.emit("msgdelivered_" + msg.uniqueId, msg);
+    }
 }
 
 export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
@@ -164,12 +185,12 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
             clean: false,
         };
     }
-    public getSelfClient = (idClaim: ICruxIdClaim): IPubSubClient => {
+    public getClient = (from: CruxId, keyManager: IKeyManager, to?: CruxId): IPubSubClient => {
         if (this.bufferPahoClient) { return this.bufferPahoClient; }
-        const overrideOpts = this.getDomainLevelClientOptions(idClaim.cruxId);
+        const overrideOpts = this.getDomainLevelClientOptions(to ? to : from);
         this.bufferPahoClient = new PahoClient({
             clientOptions: {
-                clientId: idClaim.cruxId.toString(),
+                clientId: from.toString(),
                 host: overrideOpts ? overrideOpts.host : this.options.defaultLinkServer.host,
                 path: overrideOpts ? overrideOpts.path : this.options.defaultLinkServer.path,
                 port: overrideOpts ? overrideOpts.port : this.options.defaultLinkServer.port,
@@ -178,23 +199,6 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
             subscribeOptions: this.defaultSubscribeOptions,
         });
         return this.bufferPahoClient;
-    }
-    public getRecipientClient = (recipientCruxId: CruxId, selfCruxId?: CruxId): IPubSubClient => {
-        if (this.bufferPahoClient) { return this.bufferPahoClient; }
-        const overrideOpts = this.getDomainLevelClientOptions(recipientCruxId);
-        this.bufferPahoClient = new PahoClient({
-            clientOptions: {
-                // @ts-ignore
-                clientId: selfCruxId.toString(),
-                host: overrideOpts ? overrideOpts.host : this.options.defaultLinkServer.host,
-                path: overrideOpts ? overrideOpts.path : this.options.defaultLinkServer.path,
-                port: overrideOpts ? overrideOpts.port : this.options.defaultLinkServer.port,
-                // tslint:disable-next-line: object-literal-sort-keys
-            },
-            subscribeOptions: this.defaultSubscribeOptions,
-        });
-        return this.bufferPahoClient;
-
     }
     private getDomainLevelClientOptions = (cruxId: CruxId): {host: string, port: number, path: string} | undefined => {
         // TODO Implement

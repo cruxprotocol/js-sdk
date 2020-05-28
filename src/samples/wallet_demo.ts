@@ -177,7 +177,7 @@ const sendPaymentRequest = async (walletSymbol: string, recipientCruxId: string,
     try {
         UIResponse = 'Trying Sending Message...'
         try {
-            await cruxClient.secureCruxMessenger!.send(data, CruxId.fromString(recipientCruxId));
+            await cruxClient.secureCruxNetwork!.send(CruxId.fromString(recipientCruxId), data);
             // await cruxClient.sendPaymentRequest(walletSymbol, recipientCruxId, amount, toAddress);
             UIResponse += `\n Payment request sent successfully`;
         } catch (e_1) {
@@ -203,10 +203,11 @@ const recievePaymentRequests = async () => {
     doc.getElementById('paymentRequestAcknowledgment').textContent = UIResponse;
     try {
         try {
-            cruxClient.secureCruxMessenger!.listen((msg: any, senderId: any) => {
-                UIResponse += `\n${senderId} sent a message : ${msg.content}`;
+            cruxClient.secureCruxNetwork!.receive((msg: any, senderId: any) => {
+                UIResponse += `\n${senderId} sent a message : ${msg}`;
                 doc.getElementById('paymentRequestAcknowledgment').textContent = UIResponse
-            }, (err)=>{console.log("ERROR in secureCruxMessenger.listen", err)});
+            });
+            cruxClient.secureCruxNetwork!.onError((err)=>{console.log("ERROR in secureCruxNetwork.listen", err)});
         } catch (e_1) {
             if (e_1 instanceof CruxClientError) {
                 UIResponse += `\n${e_1.errorCode}: ${e_1}`
