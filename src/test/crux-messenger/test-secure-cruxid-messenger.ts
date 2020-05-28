@@ -83,24 +83,6 @@ describe('Test Secure Crux Messenger', function() {
         });
 
     });
-    it('Basic Send Receive Test - Without idClaim', async function() {
-        throw Error("Fix this test case!")
-        // const testmsg = 'HelloWorld';
-        // return new Promise(async (resolve, reject) => {
-        //     const user1Messenger = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory);
-        //
-        //     const user2Messenger = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory, {
-        //         cruxId: this.user2Data.cruxUser.cruxID,
-        //         keyManager: new BasicKeyManager(this.user2Data.pvtKey)
-        //     });
-        //     user2Messenger.receive((msg) => {
-        //         expect(msg).equals(testmsg);
-        //         resolve(msg)
-        //     });
-        //     await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
-        // })
-
-    });
     describe('Certificate Tests', function() {
 
         it('Invalid Certificate Send Receive Test with Wrong Private Key', async function() {
