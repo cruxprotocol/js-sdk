@@ -85,6 +85,9 @@ export class SendSocket extends BaseSocket {
         super("send", client, selfId);
         this.recipientId = recipientId;
     }
+    public connect = async () => {
+        await this.client.connect();
+    }
     public send = (data: any) => {
         const recipientTopic = "topic_" + this.recipientId.toString();
         this.client.publish(recipientTopic, data);
@@ -92,12 +95,18 @@ export class SendSocket extends BaseSocket {
 }
 
 export class ReceiveSocket extends BaseSocket {
+    public isConnected: boolean;
     private emitter: Emitter<DefaultEvents>;
     constructor(selfId: CruxId, client: IPubSubClient) {
         super("receive", client, selfId);
-        this.emitter = createNanoEvents()
+        this.emitter = createNanoEvents();
+        this.isConnected = false;
+    }
+    public connect = async () => {
         const selfTopic = "topic_" + this.selfId;
-        this.client.subscribe(selfTopic, (topic: any, data: any) => {
+        await this.client.connect();
+        this.isConnected = true;
+        return this.client.subscribe(selfTopic, (topic: any, data: any) => {
             console.log("CruxIdMessenger recd msg from pubsubClient", topic, data);
             this.emitter.emit("message", data);
         });
@@ -142,6 +151,7 @@ export class SecureSendSocket extends BaseSecureSocket {
     }
     public send = async (data: any) => {
         const encryptedSecurePacket = await this.secureContext.processOutgoing(data, this.sendSocket.recipientId);
+        await this.sendSocket.connect();
         this.sendSocket.send(encryptedSecurePacket);
     }
 }
@@ -149,11 +159,12 @@ export class SecureSendSocket extends BaseSecureSocket {
 export class SecureReceiveSocket extends BaseSecureSocket {
     public receiveSocket: ReceiveSocket;
     private emitter: Emitter<DefaultEvents>;
+    private processor: (dataReceived: any) => Promise<void>;
     constructor(receiveSocket: ReceiveSocket, secureContext: SecureContext) {
         super("receive", receiveSocket.client, secureContext);
         this.receiveSocket = receiveSocket;
         this.emitter = createNanoEvents();
-        this.receiveSocket.receive(async (dataReceived: any) => {
+        this.processor = async (dataReceived: any) => {
             try {
                 console.log("SecureReceiveSocket.receiveSocket.receive", dataReceived);
                 const securePacket = await this.secureContext.processIncoming(dataReceived);
@@ -162,7 +173,8 @@ export class SecureReceiveSocket extends BaseSecureSocket {
             } catch (e) {
                 this.emitter.emit("error", e);
             }
-        });
+        };
+        this.receiveSocket.receive(this.processor);
     }
     public receive = (listener: Listener) => {
         console.log("SecureReceiveSocket.receive - adding listener")
@@ -175,15 +187,21 @@ export class SecureReceiveSocket extends BaseSecureSocket {
 
 export class SecureCruxNetwork {
     private cruxNetwork: CruxNetwork;
-    private secureReceiveSocket: SecureReceiveSocket;
+    private secureReceiveSocket?: SecureReceiveSocket;
     private secureContext: SecureContext;
     private emitter: Emitter<DefaultEvents>;
+    private selfIdClaim: ICruxIdClaim;
     constructor(cruxUserRepo: ICruxUserRepository, pubsubClientFactory: IPubSubClientFactory, selfIdClaim: ICruxIdClaim) {
+        console.log("SecureCruxNetwork Being Constructed for:", selfIdClaim.cruxId);
         this.cruxNetwork = new CruxNetwork(pubsubClientFactory);
         const storage = new InMemStorage();
-        this.emitter = createNanoEvents()
-        const receiveSocket = this.cruxNetwork.getReceiveSocket(selfIdClaim.cruxId, selfIdClaim.keyManager);
-        this.secureContext = new SecureContext(storage, selfIdClaim, cruxUserRepo)
+        this.emitter = createNanoEvents();
+        this.secureContext = new SecureContext(storage, selfIdClaim, cruxUserRepo);
+        this.selfIdClaim = selfIdClaim;
+    }
+    public initialize = async () => {
+        const receiveSocket = this.cruxNetwork.getReceiveSocket(this.selfIdClaim.cruxId, this.selfIdClaim.keyManager);
+        await receiveSocket.connect();
         this.secureReceiveSocket = new SecureReceiveSocket(receiveSocket, this.secureContext);
         this.secureReceiveSocket.receive((msg, senderId) => {
             this.emitter.emit("newMessage", msg, senderId);
@@ -280,6 +298,9 @@ export class CruxProtocolMessenger {
             console.log("this.secureMessenger.onError inside CruxProtocolMessenger", e);
             this.emitter.emit("error", e);
         });
+    }
+    public initialize = async () => {
+        return this.secureMessenger.initialize();
     }
     public send = async (message: IProtocolMessage, recipientCruxId: CruxId): Promise<void> => {
         this.validateMessage(message);

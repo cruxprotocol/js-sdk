@@ -38,11 +38,12 @@ describe('Test Secure Crux Messenger', function() {
                 cruxId: this.user1Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user1Data.pvtKey)
             });
-
+            await user1Messenger.initialize()
             const user2Messenger = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory, {
                 cruxId: this.user2Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user2Data.pvtKey)
             });
+            await user2Messenger.initialize()
             user2Messenger.receive((msg) => {
                 expect(msg).equals(testmsg);
                 resolve(msg)

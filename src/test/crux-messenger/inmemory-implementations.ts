@@ -28,6 +28,8 @@ export class InMemoryPubSubClient implements IPubSubClient {
         }
         return topicEmitter;
     }
+
+    public connect = async () => undefined
 }
 
 export class InMemoryMaliciousPubSubClient implements IPubSubClient {
@@ -56,6 +58,7 @@ export class InMemoryMaliciousPubSubClient implements IPubSubClient {
         }
         return topicEmitter
     }
+    public connect = async () => undefined
 
 }
 

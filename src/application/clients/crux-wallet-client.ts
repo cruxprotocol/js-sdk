@@ -449,6 +449,7 @@ export class CruxWalletClient {
                 port: 8000,
             }});
         this.secureCruxNetwork = new SecureCruxNetwork(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
+        await this.secureCruxNetwork.initialize();
         this.paymentProtocolMessenger = new CruxProtocolMessenger(this.secureCruxNetwork, cruxPaymentProtocol);
     }
 
