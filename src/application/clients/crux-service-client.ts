@@ -3,11 +3,18 @@ import { CruxId, InMemStorage } from "../../packages/";
 import { CruxWalletClient } from "./crux-wallet-client";
 
 export class CruxServiceClient {
+    private selfIdClaim: any;
+    private secureCruxIdMessenger: SecureCruxIdMessenger;
 
-    public getWalletClientForUser(secureCruxIdMessenger: SecureCruxIdMessenger, remoteUserId: CruxId) {
+    constructor(selfIdClaim: any, userRepo: any, pubsubClientFactory: any) {
+        this.selfIdClaim = selfIdClaim;
+        this.secureCruxIdMessenger = new SecureCruxIdMessenger(userRepo, pubsubClientFactory, selfIdClaim);
+    }
+
+    public getWalletClientForUser(remoteUserId: CruxId) {
         return new CruxWalletClient({
             cacheStorage: new InMemStorage(),
-            privateKey: new RemoteKeyManager(secureCruxIdMessenger, remoteUserId),
+            privateKey: new RemoteKeyManager(this.secureCruxIdMessenger, remoteUserId),
             walletClientName: remoteUserId.components.domain,
         });
     }

@@ -183,6 +183,7 @@ export class RemoteKeyManager implements IKeyManager {
     }
     // @ts-ignore
     public async decryptMessage(encryptedMessage: string) {
+        console.log("RemoteKeyManager::decryptMessage::entry: encryptedMessage: ", encryptedMessage);
         const invocationId = await this.remoteKeyClient.invoke("decryptMessage", [encryptedMessage]);
         console.log("RemoteKeyManager::decryptMessage::invokationId: ", invocationId);
         return new Promise(async (resolve, reject) => {

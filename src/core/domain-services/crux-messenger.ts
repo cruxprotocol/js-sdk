@@ -48,6 +48,7 @@ export class EncryptionManager {
     }
     public static decrypt = async (encryptedContent: string, keyManager: IKeyManager): Promise<string> => {
         try {
+            console.log("EncryptionManager::decrypt::keymanager, encryptionContent: ", keyManager, encryptedContent);
             const decryptedContent = await keyManager.decryptMessage!(encryptedContent);
             return decryptedContent;
         } catch (e) {
@@ -167,7 +168,8 @@ export class SecureCruxIdMessenger {
         console.log("SecureCruxIdMessenger::listen::entry");
         this.selfMessenger.on(EventBusEventNames.newMessage, async (encryptedString: string) => {
             try {
-                console.log("SecureCruxIdMessenger::listen::onblock::entry");
+                console.log("SecureCruxIdMessenger::listen::onblock::entry: ", this.selfIdClaim!);
+                console.log("encryptedString::Detail::type and buffer",encryptedString, encryptedString);
                 const serializedSecurePacket: string = await EncryptionManager.decrypt(encryptedString, this.selfIdClaim!.keyManager);
                 const securePacket: ISecurePacket = JSON.parse(serializedSecurePacket);
                 let senderUser: CruxUser | undefined;

@@ -52,37 +52,7 @@ describe('Test RemoteKeyClient', function() {
             },(err) => {
                 reject(err)
             });
-            remoteKeyHost.invocationListener((msg, senderId) => {
-                new Promise(async (resolve, reject) => {
-                    const data = await remoteKeyHost.handleMessage(msg);
-                    remoteKeyHost.sendInvocationResult(data, senderId);
-                    resolve();
-                });
-            },(err) => {
-            });
             await remoteKeyClient.invoke("getPubKey", []);
-        });
-    });
-
-    it('Invalid Basic Key Manager Send Receive (wrong method)', async function() {
-        const testErrorMsg = 'Invalid key manager method';
-        return new Promise(async (resolve, reject) => {
-            const remoteKeyClient = new RemoteKeyClient(new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
-                cruxId: this.user1Data.cruxUser.cruxID,
-                keyManager: this.user1KeyManager
-            }), this.user2Data.cruxUser.cruxID);
-
-            const remoteKeyHost = new RemoteKeyHost(new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
-                cruxId: this.user2Data.cruxUser.cruxID,
-                keyManager: this.user2KeyManager
-            }), this.user2KeyManager);
-
-            remoteKeyHost.invocationListener(async (msg, senderId) => {
-                await expect(remoteKeyHost.handleMessage(msg)).to.be.rejectedWith(Error);
-                resolve();
-            },(err) => {
-            });
-            await remoteKeyClient.invoke("getPublicKey", []);
         });
     });
 
@@ -99,15 +69,6 @@ describe('Test RemoteKeyClient', function() {
                 keyManager: this.user2KeyManager
             }), this.user2KeyManager);
 
-            remoteKeyHost.invocationListener((msg, senderId) => {
-                new Promise(async (resolve, reject) => {
-                    console.log(msg);
-                    const data = await remoteKeyHost.handleMessage(msg);
-                    remoteKeyHost.sendInvocationResult(data, senderId);
-                    resolve();
-                });
-            },(err) => {
-            });
             const signedWebToken = await remoteKeyManager.signWebToken("1234567")
             console.log(signedWebToken);
             expect(signedWebToken).to.have.length(138);

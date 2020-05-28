@@ -5,12 +5,13 @@ import 'mocha';
 import * as blockstack from "blockstack";
 import {SecureCruxIdMessenger, RemoteKeyClient, RemoteKeyHost, RemoteKeyManager} from "../../core/domain-services";
 import {BasicKeyManager, CruxNetPubSubClientFactory} from "../../infrastructure/implementations";
-import {CruxId} from "../../packages";
+import {CruxId, InMemStorage, BufferJSONSerializer} from "../../packages";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies, getCruxdevCruxDomain} from "../test-utils";
 import { bip32 } from "bitcoinjs-lib";
 import * as bip39 from "bip39";
 import { getCruxUserRepository } from "../../application/clients";
 import { CruxSpec } from "../../core/entities";
+import { ECIESEncryption } from "../../packages/encryption";
 
 patchMissingDependencies();
 
@@ -30,7 +31,8 @@ describe('Test RemoteKeyClient - PROD', function() {
         this.user2KeyManager = new BasicKeyManager(user2PvtKey);
         this.userRepo = getCruxUserRepository({
             blockstackInfrastructure: CruxSpec.blockstack.infrastructure,
-            cruxDomain: getCruxdevCruxDomain()
+            cruxDomain: getCruxdevCruxDomain(),
+            cacheStorage: new InMemStorage(),
         });
         this.user1Data = await this.userRepo.getWithKey(this.user1KeyManager);
         this.user2Data = await this.userRepo.getWithKey(this.user2KeyManager);
@@ -40,6 +42,10 @@ describe('Test RemoteKeyClient - PROD', function() {
                 port: PORT,
             }
         });
+        const toEncrypt = Buffer.from("content", "utf8");
+        const encrypted = await ECIESEncryption.encrypt(toEncrypt, "0362f171a40ab5e6ad22275ec166f15a232b83a571bab9c30622ed2963f1da4c08");
+        this.testEncryptedData = BufferJSONSerializer.bufferObjectToJSONString(encrypted);
+        console.log("TEST testEncryptedData: ", this.testEncryptedData);
     });
 
     it('Basic Key Manager Send Receive - RemoteKeyManager - Prod', async function() {
@@ -61,12 +67,12 @@ describe('Test RemoteKeyClient - PROD', function() {
             const publicKey = await remoteKeyManager.getPubKey();
             console.log("TESTCASE::publicKey", publicKey);
             expect(publicKey).equals(testPubKey);
-            // const sharedSecret = await remoteKeyManager.deriveSharedSecret(testPubKey)
-            // console.log("TESTCASE::sharedSecret", sharedSecret);
-            // expect(sharedSecret).equals("d2744fdfa47538b816623e75cc783469cbe3d71da02965edd662ae3f45fbac3");
-            // const decryptedMessage = await remoteKeyManager.decryptMessage("4b4f34746f434c30354349312b41314b554f644542773d3d");
-            // console.log(decryptedMessage);
-            // expect(decryptedMessage).equals("");
+            const sharedSecret = await remoteKeyManager.deriveSharedSecret(testPubKey)
+            console.log("TESTCASE::sharedSecret", sharedSecret);
+            expect(sharedSecret).equals("d2744fdfa47538b816623e75cc783469cbe3d71da02965edd662ae3f45fbac3");
+            const decryptedMessage = await remoteKeyManager.decryptMessage(this.testEncryptedData);
+            console.log("TESTCASE::decryptedMessage", decryptedMessage);
+            expect(decryptedMessage).equals("content");
             resolve();
         });
     });
