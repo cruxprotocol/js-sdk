@@ -57,6 +57,7 @@ describe('Test Crux Connect Protocol Messenger - Payment Request', function() {
                 content: validPaymentRequest
             }
             const that = this;
+            this.user2PaymentProtocolMessenger.initialize();
             this.user2PaymentProtocolMessenger.on('PAYMENT_REQUEST', async (msg: any, senderId?: CruxId)=>{
                 try {
                     expect(msg).to.deep.equal(validPaymentRequest);

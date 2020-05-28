@@ -1,5 +1,6 @@
 import 'mocha';
 import sinon from "sinon";
+import {getPubsubClientFactory} from "../application/clients/crux-wallet-client";
 import * as cwc from "../application/clients/crux-wallet-client";
 import chaiAsPromised from "chai-as-promised";
 import * as chai from "chai";
@@ -7,6 +8,7 @@ import * as chai from "chai";
 import {CruxWalletClient, ICruxIDState} from "../application/clients/crux-wallet-client";
 import {SubdomainRegistrationStatus} from "../core/entities/crux-user";
 import {PackageErrorCode, ERROR_STRINGS} from "../packages/error";
+import {InMemoryPubSubClientFactory} from "./crux-messenger/inmemory-implementations";
 import {
     addDomainToRepo,
     addUserToRepo,
@@ -44,10 +46,12 @@ describe('CruxWalletClient Tests', function() {
         this.inmemDomainRepo = await addDomainToRepo(testCruxDomain, this.inmemDomainRepo);
         this.stubGetCruxDomainRepository = sinon.stub(cwc, 'getCruxDomainRepository').callsFake(() => this.inmemDomainRepo as any);
         this.stubGetCruxUserRepository = sinon.stub(cwc, 'getCruxUserRepository').callsFake(() => this.inmemUserRepo as any);
+        this.stubGetPubsubClientFactory = sinon.stub(cwc, 'getPubsubClientFactory').callsFake(() => new InMemoryPubSubClientFactory());
     });
     afterEach(function() {
         this.stubGetCruxUserRepository.restore();
         this.stubGetCruxDomainRepository.restore();
+        this.stubGetPubsubClientFactory.restore();
     });
     it('Nonexistent wallet name raises error', async function() {
         let cc = new CruxWalletClient({

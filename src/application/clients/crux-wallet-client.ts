@@ -15,7 +15,7 @@ import {
 import {
     ICruxBlockstackInfrastructure,
     ICruxDomainRepository, ICruxUserRepository,
-    IKeyManager,
+    IKeyManager, IPubSubClientFactory,
     isInstanceOfKeyManager,
 } from "../../core/interfaces";
 import {ICruxIdClaim} from "../../core/interfaces";
@@ -93,6 +93,14 @@ export const getCruxDomainRepository = (options: IBlockstackCruxDomainRepository
 
 export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOptions): ICruxUserRepository => {
     return new BlockstackCruxUserRepository(options);
+};
+
+export const getPubsubClientFactory = (): IPubSubClientFactory => {
+    return new CruxNetPubSubClientFactory({defaultLinkServer: {
+        host: "broker.hivemq.com",
+        path: "/mqtt",
+        port: 8000,
+    }});
 };
 
 export class CruxWalletClient {
@@ -453,11 +461,7 @@ export class CruxWalletClient {
         if (!selfIdClaim) {
             throw Error("Self ID Claim is required to setup messenger");
         }
-        const pubsubClientFactory = new CruxNetPubSubClientFactory({defaultLinkServer: {
-                host: "broker.hivemq.com",
-                path: "/mqtt",
-                port: 8000,
-            }});
+        const pubsubClientFactory = getPubsubClientFactory();
         this.secureCruxNetwork = new SecureCruxNetwork(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
         await this.secureCruxNetwork.initialize();
         this.paymentProtocolMessenger = new CruxProtocolMessenger(this.secureCruxNetwork, cruxPaymentProtocol);
