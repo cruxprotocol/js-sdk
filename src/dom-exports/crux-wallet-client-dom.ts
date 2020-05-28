@@ -1,5 +1,5 @@
 import "regenerator-runtime";
-import {CruxClientError, CruxSpec, CruxWalletClient, InMemStorage} from "../index";
+import { CruxClientError, CruxSpec, CruxWalletClient, InMemStorage} from "../index";
 
 declare global {
     interface Window {
