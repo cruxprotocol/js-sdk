@@ -1,6 +1,6 @@
 // Importing packages
 import Logger from "js-logger";
-import {CruxConnectProtocolMessenger, SecureCruxIdMessenger, RemoteKeyHost} from "../../core/domain-services";
+import {CruxConnectProtocolMessenger, RemoteKeyHost, SecureCruxIdMessenger} from "../../core/domain-services";
 import {
     CruxDomain,
     CruxSpec,
@@ -124,7 +124,6 @@ export class CruxWalletClient {
         this.walletClientName = options.walletClientName;
         if (options.privateKey) {
             if (typeof options.privateKey === "string") {
-                console.log("================", options.privateKey);
                 this.keyManager = new BasicKeyManager(options.privateKey);
             } else if (isInstanceOfKeyManager(options.privateKey)) {
                 this.keyManager = options.privateKey;
@@ -200,17 +199,14 @@ export class CruxWalletClient {
 
     @throwCruxClientError
     public getAddressMap = async (): Promise<IAddressMapping> => {
-        console.log("LMAO");
-        console.log("Hieeee", this.getKeyManager());
-        // await this.initPromise;
-        console.log("after promise");
-        console.log("Hoilaaaaaa", await this.getKeyManager().getPubKey());
-        console.log("Aloha");
+        console.log("CruxWalletClient::getAddressMap::keyManager: ", this.getKeyManager());
+        await this.initPromise;
+        console.log("CruxWalletClient::getAddressMap::publickKey: ", await this.getKeyManager().getPubKey());
         const cruxUser = await this.cruxUserRepository.getWithKey(this.getKeyManager());
-        console.log("&&&&&&{}{}", cruxUser);
+        console.log("CruxWalletClient::getAddressMap::cruxUser: ", cruxUser);
         if (cruxUser) {
-            console.log("dude");
             const assetIdAddressMap = cruxUser.getAddressMap();
+            console.log("CruxWalletClient::getAddressMap::assetIdAddressMap");
             return this.cruxAssetTranslator.assetIdAddressMapToSymbolAddressMap(assetIdAddressMap);
         }
         return {};
@@ -407,12 +403,10 @@ export class CruxWalletClient {
         if (!this.cruxDomain) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.InvalidWalletClientName);
         }
-        console.log("YOLO");
         this.cruxUserRepository = getCruxUserRepository({cacheStorage: this.cacheStorage, blockstackInfrastructure: this.cruxBlockstackInfrastructure, cruxDomain: this.cruxDomain});
         if (!this.cruxDomain.config) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
-        console.log("Bol");
         this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping, this.cruxDomain.config.assetList);
         await this.setupCruxMessenger(options);
     }
@@ -441,21 +435,13 @@ export class CruxWalletClient {
         const pubsubClientFactory = new CruxNetPubSubClientFactory({defaultLinkServer: {
                 host: "127.0.0.1",
                 port: 1883,
-            }});
+        }});
         const secureCruxMessenger = new SecureCruxIdMessenger(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
         this.paymentProtocolMessenger = new CruxConnectProtocolMessenger(secureCruxMessenger, cruxPaymentProtocol);
         if (options.isHost) {
             const remoteKeyHost = new RemoteKeyHost(secureCruxMessenger, this.keyManager!);
             this.remoteKeyHost = remoteKeyHost;
-            console.log("setupRemoteKeyHost__________", selfIdClaim.cruxId.toString());
-            remoteKeyHost.invocationListener(async (msg, senderId) => {
-                console.log("%%%%%%%%%%%%%", msg, senderId);
-                const data = await remoteKeyHost.handleMessage(msg);
-                remoteKeyHost.sendInvocationResult(data, senderId);
-            }, (err) => {
-                console.log("[][][][", err);
-                remoteKeyHost.sendInvocationResult(err, senderId);
-            });
+            console.log("setupCruxMessenger::remoteKeyHostSetup::hostCruxId", selfIdClaim.cruxId.toString());
         }
     }
 

@@ -1,12 +1,12 @@
-import { CruxId } from "src/packages";
 import { RemoteKeyManager, SecureCruxIdMessenger } from "../../core/domain-services";
+import { CruxId, InMemStorage } from "../../packages/";
 import { CruxWalletClient } from "./crux-wallet-client";
 
 export class CruxServiceClient {
 
     public getWalletClientForUser(secureCruxIdMessenger: SecureCruxIdMessenger, remoteUserId: CruxId) {
-        console.log("Hd");
         return new CruxWalletClient({
+            cacheStorage: new InMemStorage(),
             privateKey: new RemoteKeyManager(secureCruxIdMessenger, remoteUserId),
             walletClientName: remoteUserId.components.domain,
         });
