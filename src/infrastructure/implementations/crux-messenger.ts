@@ -94,8 +94,8 @@ export class PahoClient implements IPubSubClient {
             const message: any = new paho.Message(data);
             message.destinationName = topic;
             message.qos = 2;
-            message.uniqueId = makeUUID4()
-            console.log("PahoClient - sending msg with id:", message.uniqueId)
+            message.uniqueId = makeUUID4();
+            console.log("PahoClient - sending msg with id:", message.uniqueId);
             this.client.send(message);
             this.emitter.on("msgdelivered_" + message.uniqueId, (msg) => {
                 console.log("PahoClient - send successful!:", msg.uniqueId);
@@ -104,21 +104,21 @@ export class PahoClient implements IPubSubClient {
         });
     }
     public subscribe = async (topic: string, callback: any) => {
-        console.log("PahoClient - subscribing to topic:", topic)
+        console.log("PahoClient - subscribing to topic:", topic);
         // await this.connect();
         return new Promise(async (resolve, reject) => {
             this.client.subscribe(topic, {
                 ...this.config.subscribeOptions,
                 onSuccess: () => {
-                    console.log("PahoClient - subscribe success:", topic)
+                    console.log("PahoClient - subscribe success:", topic);
                     resolve();
                 },
                 // tslint:disable-next-line:object-literal-sort-keys
                 onFailure: (err: any) => {
-                    console.log("PahoClient - subscribe failure:", topic)
+                    console.log("PahoClient - subscribe failure:", topic);
                     reject(err);
                 },
-            })
+            });
             this.emitter.on(topic, callback);
         });
     }
@@ -141,7 +141,7 @@ export class PahoClient implements IPubSubClient {
             this.client.connect({
                 onSuccess: (onSuccessData: any) => {
                     console.log("PahoClient - connect success!");
-                    this.emitter.emit("connectSuccess", onSuccessData)
+                    this.emitter.emit("connectSuccess", onSuccessData);
                     res(onSuccessData);
                 },
                 // tslint:disable-next-line: object-literal-sort-keys

@@ -86,7 +86,6 @@ export interface ICruxIDState {
     status: ICruxUserRegistrationStatus;
 }
 
-
 export const getCruxDomainRepository = (options: IBlockstackCruxDomainRepositoryOptions): ICruxDomainRepository => {
     return new BlockstackCruxDomainRepository(options);
 };
@@ -249,7 +248,6 @@ export class CruxWalletClient {
             }, senderId);
         });
     }
-
 
     @throwCruxClientError
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {

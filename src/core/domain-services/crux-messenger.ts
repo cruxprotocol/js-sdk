@@ -177,7 +177,7 @@ export class SecureReceiveSocket extends BaseSecureSocket {
         this.receiveSocket.receive(this.processor);
     }
     public receive = (listener: Listener) => {
-        console.log("SecureReceiveSocket.receive - adding listener")
+        console.log("SecureReceiveSocket.receive - adding listener");
         this.emitter.on("newMessage", listener);
     }
     public onError = (handler: any) => {
