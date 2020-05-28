@@ -49,18 +49,20 @@ describe('Test Secure Crux Messenger - PROD', function() {
                 cruxId: this.user1Data.cruxID,
                 keyManager: this.user1KeyManager
             });
-            setTimeout(async ()=>{
+            await user1Messenger.initialize();
+            // setTimeout(async ()=>{
                 console.log("Initializing Network 2");
                 const user2Messenger = new SecureCruxNetwork(this.userRepo, this.pubsubClientFactory, {
                     cruxId: this.user2Data.cruxID,
                     keyManager: this.user2KeyManager
                 });
+            await user2Messenger.initialize();
                 user2Messenger.receive((msg, senderId) => {
                     expect(msg).equals(testmsg)
                     resolve(msg)
                 });
                 await user1Messenger.send(this.user2Data.cruxID, testmsg);
-            }, 1)
+            // }, 5000)
         });
 
     });
