@@ -49,6 +49,8 @@ describe('Basic Auth PubSub Client Tests- Paho', function() {
     beforeEach(async function() {
         this.subscriber = new PahoClient(subscriberConfig);
         this.publisher = new PahoClient(publisherConfig);
+        await this.subscriber.connect()
+        await this.publisher.connect()
     });
     it('Direct PubSub Client Test', async function() {
 
