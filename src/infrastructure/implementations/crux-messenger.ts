@@ -1,5 +1,6 @@
 // @ts-ignore
 import * as Joi from "@hapi/joi";
+import {makeUUID4} from "blockstack/lib";
 import {createNanoEvents, DefaultEvents, Emitter} from "nanoevents";
 // @ts-ignore
 import * as paho from "paho-mqtt";
@@ -84,41 +85,68 @@ export class PahoClient implements IPubSubClient {
         this.emitter = createNanoEvents();
         this.setupEnvironment();
     }
-
     public onError = (callback: any) => {
         this.emitter.on("error", callback);
     }
     public publish = async (topic: string, data: any) => {
         await this.connect();
-        const message: any = new paho.Message(data);
-        message.destinationName = topic;
-        message.qos = 2;
-        this.client.send(message);
+        return new Promise(async (resolve, reject) => {
+            const message: any = new paho.Message(data);
+            message.destinationName = topic;
+            message.qos = 2;
+            message.uniqueId = makeUUID4()
+            console.log("PahoClient - sending msg with id:", message.uniqueId)
+            this.client.send(message);
+            this.emitter.on("msgdelivered_" + message.uniqueId, (msg) => {
+                console.log("PahoClient - send successful!:", msg.uniqueId);
+                resolve(data);
+            });
+        });
     }
     public subscribe = async (topic: string, callback: any) => {
+        console.log("PahoClient - subscribing to topic:", topic)
         await this.connect();
-        this.client.subscribe(topic, this.config.subscribeOptions);
-        this.emitter.on(topic, callback);
+        return new Promise(async (resolve, reject) => {
+            this.client.subscribe(topic, {
+                ...this.config.subscribeOptions,
+                onSuccess: () => {
+                    console.log("PahoClient - subscribe success:", topic)
+                    resolve();
+                },
+                // tslint:disable-next-line:object-literal-sort-keys
+                onFailure: (err: any) => {
+                    console.log("PahoClient - subscribe failure:", topic)
+                    reject(err);
+                },
+            })
+            this.emitter.on(topic, callback);
+        });
     }
 
-    private connect = () => {
+    public connect = () => {
         console.log("PahoClient trying to connect");
         if (this.client && this.client.isConnected()) {
             console.log("Already Connected, returning");
             return;
         }
+        console.log("Not Connected, Reconnecting");
         return new Promise((res, rej) => {
             if (!this.client) {
                 this.client = new paho.Client(this.config.clientOptions.host, this.config.clientOptions.port, this.config.clientOptions.path, this.config.clientOptions.clientId);
             }
             this.client.onMessageArrived = this.onMessageArrived;
+            this.client.onMessageDelivered = this.onMessageDelivered;
+            // TODO: There's one more event to handle
+            console.log("PahoClient - trying to connect");
             this.client.connect({
                 onSuccess: (onSuccessData: any) => {
-                    console.log("Success: ", onSuccessData);
+                    console.log("PahoClient - connect success!");
+                    this.emitter.emit("connectSuccess", onSuccessData)
                     res(onSuccessData);
                 },
                 // tslint:disable-next-line: object-literal-sort-keys
                 onFailure: (onFailureData: any) => {
+                    console.log("PahoClient - connect failure!");
                     console.log("Failure: ", onFailureData);
                     rej(onFailureData);
                 },
@@ -136,6 +164,10 @@ export class PahoClient implements IPubSubClient {
     private onMessageArrived = (msg: any) => {
         console.log("recd message from paho library: " + msg);
         this.emitter.emit(msg.destinationName, msg.destinationName, msg.payloadString);
+    }
+    private onMessageDelivered = (msg: any) => {
+        // console.log("PahoClient - onMessageDelivered", msg.uniqueId);
+        this.emitter.emit("msgdelivered_" + msg.uniqueId, msg);
     }
 }
 

@@ -10,6 +10,7 @@ export interface ICruxIdClaim {
 export interface IPubSubClient {
     subscribe: (topic: string, callback: any) => void;
     onError: (callback: any) => void;
+    connect: () => void;
     publish: (topic: string, data: any) => void;
 }
 
