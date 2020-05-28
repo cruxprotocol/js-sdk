@@ -89,7 +89,7 @@ export class PahoClient implements IPubSubClient {
         this.emitter.on("error", callback);
     }
     public publish = async (topic: string, data: any) => {
-        await this.connect();
+        // await this.connect();
         return new Promise(async (resolve, reject) => {
             const message: any = new paho.Message(data);
             message.destinationName = topic;
@@ -105,7 +105,7 @@ export class PahoClient implements IPubSubClient {
     }
     public subscribe = async (topic: string, callback: any) => {
         console.log("PahoClient - subscribing to topic:", topic)
-        await this.connect();
+        // await this.connect();
         return new Promise(async (resolve, reject) => {
             this.client.subscribe(topic, {
                 ...this.config.subscribeOptions,
@@ -162,7 +162,7 @@ export class PahoClient implements IPubSubClient {
         }
     }
     private onMessageArrived = (msg: any) => {
-        console.log("recd message from paho library: " + msg);
+        console.log("recd message from paho library: ", msg.uniqueId, msg);
         this.emitter.emit(msg.destinationName, msg.destinationName, msg.payloadString);
     }
     private onMessageDelivered = (msg: any) => {
