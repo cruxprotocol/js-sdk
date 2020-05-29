@@ -108,6 +108,7 @@ export class CruxWalletClient {
     // TODO: make private
     public paymentProtocolMessenger?: CruxProtocolMessenger;
     public secureCruxNetwork?: SecureCruxNetwork;
+    public isInitializing?: boolean;
     private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
     private initPromise: Promise<void>;
     private cruxDomainRepo: ICruxDomainRepository;
@@ -424,6 +425,7 @@ export class CruxWalletClient {
     }
 
     private asyncInit = async (): Promise<void> => {
+        this.isInitializing = true;
         this.cruxDomain = await this.cruxDomainRepo.get(this.cruxDomainId);
         if (!this.cruxDomain) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.InvalidWalletClientName);
@@ -437,6 +439,7 @@ export class CruxWalletClient {
         if (selfIdClaim) {
             await this.setupCruxMessenger(selfIdClaim);
         }
+        this.isInitializing = false;
     }
 
     private getSelfClaim = async (): Promise<ICruxIdClaim | undefined> => {
