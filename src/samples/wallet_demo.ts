@@ -1,4 +1,16 @@
-import { CruxWalletClient, IAddressMapping, LocalStorage, ICruxWalletClientOptions, CruxClientError, ICruxIDState, IAssetMatcher, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../index";
+import {
+    CruxWalletClient,
+    IAddressMapping,
+    LocalStorage,
+    ICruxWalletClientOptions,
+    CruxClientError,
+    ICruxIDState,
+    IAssetMatcher,
+    SubdomainRegistrationStatus,
+    SubdomainRegistrationStatusDetail,
+    CruxId,
+    IAddress
+} from "../index";
 // TODO: add optional import statement to use the build
 
 const doc = (document as {
@@ -152,6 +164,69 @@ const registerCruxID = async () => {
         doc.getElementById('registrationAcknowledgement').textContent = UIResponse
     }
 }
+
+const sendPaymentRequest = async (walletSymbol: string, recipientCruxId: string, amount: string, toAddress: IAddress) => {
+    let UIResponse: string = "Send Message..."
+    // walletSymbol = doc.getElementById('walletSymbol').value ? doc.getElementById('walletSymbol').value : walletSymbol;
+    // recipientCruxId = doc.getElementById('recipientCruxId').value ? doc.getElementById('recipientCruxId').value : recipientCruxId;
+    // amount = doc.getElementById('amount').value ? doc.getElementById('amount').value : amount;
+    // toAddress = doc.getElementById('toAddress').value ? doc.getElementById('toAddress').value : toAddress;
+    let data = doc.getElementById('data').value;
+    recipientCruxId = doc.getElementById('recipientCruxId').value ? doc.getElementById('recipientCruxId').value : recipientCruxId;
+    doc.getElementById('sendPaymentRequestAcknowledgment').textContent = UIResponse;
+    try {
+        UIResponse = 'Trying Sending Message...'
+        try {
+            await cruxClient.secureCruxNetwork!.send(CruxId.fromString(recipientCruxId), data);
+            // await cruxClient.sendPaymentRequest(walletSymbol, recipientCruxId, amount, toAddress);
+            UIResponse += `\n Payment request sent successfully`;
+        } catch (e_1) {
+            if (e_1 instanceof CruxClientError) {
+                UIResponse += `\n${e_1.errorCode}: ${e_1}`
+            } else {
+                UIResponse += '\n' + e_1
+            }
+        }
+    } catch (e) {
+        if (e instanceof CruxClientError) {
+            UIResponse = `${e.errorCode}: ${e}`
+        } else {
+            UIResponse = e
+        }
+    } finally {
+        doc.getElementById('sendPaymentRequestAcknowledgment').textContent = UIResponse
+    }
+}
+const recievePaymentRequests = async () => {
+    await cruxClient.init();
+    let UIResponse: string = "Waiting for messages..."
+    doc.getElementById('paymentRequestAcknowledgment').textContent = UIResponse;
+    try {
+        try {
+            cruxClient.secureCruxNetwork!.receive((msg: any, senderId: any) => {
+                UIResponse += `\n${senderId} sent a message : ${msg}`;
+                doc.getElementById('paymentRequestAcknowledgment').textContent = UIResponse
+            });
+            cruxClient.secureCruxNetwork!.onError((err)=>{console.log("ERROR in secureCruxNetwork.listen", err)});
+        } catch (e_1) {
+            if (e_1 instanceof CruxClientError) {
+                UIResponse += `\n${e_1.errorCode}: ${e_1}`
+            } else {
+                UIResponse += '\n' + e_1
+            }
+        }
+    } catch (e) {
+        if (e instanceof CruxClientError) {
+            UIResponse = `${e.errorCode}: ${e}`
+        } else {
+            UIResponse = e
+        }
+    } finally {
+        doc.getElementById('paymentRequestAcknowledgment').textContent = UIResponse
+    }
+}
+
+
 const resolveCurrencyAddressForCruxID = async () => {
     let cruxID = doc.getElementById('receiverVirtualAddress').value
     let walletCurrencySymbol = doc.getElementById('currency').value
@@ -358,10 +433,12 @@ getCruxIDState()
     }).catch((error) => {
         initError(error)
     })
+recievePaymentRequests();
 
 // Declaring global variables to be accessible for (button clicks or debugging purposes)
 declare global {
     interface Window {
+        cruxClient: CruxWalletClient;
         wallet: CruxWalletClient;
         isCruxIDAvailable: Function;
         registerCruxID: Function;
@@ -375,6 +452,8 @@ declare global {
         putEnabledAssetGroups: Function;
         getCruxIDState: Function;
         addToBlacklist: Function;
+        sendPaymentRequest: Function;
+        recievePaymentRequests: Function;
     }
 }
 
@@ -391,3 +470,8 @@ window.getEnabledAssetGroups = getEnabledAssetGroups;
 window.putEnabledAssetGroups = putEnabledAssetGroups;
 window.getCruxIDState = getCruxIDState;
 window.addToBlacklist = addToBlacklist;
+window.addToBlacklist = addToBlacklist;
+window.cruxClient = cruxClient;
+window.sendPaymentRequest = sendPaymentRequest;
+window.recievePaymentRequests = recievePaymentRequests;
+window.CruxId = CruxId;

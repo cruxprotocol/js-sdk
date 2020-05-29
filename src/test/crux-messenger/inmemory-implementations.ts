@@ -1,5 +1,5 @@
 import {createNanoEvents} from "nanoevents";
-import {ICruxIdClaim, IPubSubClient, IPubSubClientFactory} from "../../core/interfaces";
+import {ICruxIdClaim, IKeyManager, IPubSubClient, IPubSubClientFactory} from "../../core/interfaces";
 import {CruxId} from "../../packages";
 
 
@@ -19,6 +19,7 @@ export class InMemoryPubSubClient implements IPubSubClient {
             callback(topic, msg)
         });
     };
+    public onError = (callback: any) => undefined;
     private getEmitter(topic: string) {
         let topicEmitter = this.emitterByTopic[topic];
         if (!topicEmitter) {
@@ -27,6 +28,8 @@ export class InMemoryPubSubClient implements IPubSubClient {
         }
         return topicEmitter;
     }
+
+    public connect = async () => undefined
 }
 
 export class InMemoryMaliciousPubSubClient implements IPubSubClient {
@@ -46,6 +49,7 @@ export class InMemoryMaliciousPubSubClient implements IPubSubClient {
             callback(topic, msg)
         });
     };
+    public onError = (callback: any) => undefined;
     private getEmitter(topic: string) {
         let topicEmitter = this.emitterByTopic[topic];
         if (!topicEmitter) {
@@ -54,34 +58,26 @@ export class InMemoryMaliciousPubSubClient implements IPubSubClient {
         }
         return topicEmitter
     }
+    public connect = async () => undefined
+
 }
 
 export class InMemoryPubSubClientFactory implements IPubSubClientFactory {
     private pubsubClient: InMemoryPubSubClient;
-    constructor() {
+    constructor(mitmId?: CruxId) {
         this.pubsubClient = new InMemoryPubSubClient()
     }
-    public getRecipientClient =  (recipientCruxId: CruxId, selfCruxId?: CruxId): IPubSubClient => {
+    public getClient =  (from: CruxId, keyManager: IKeyManager, to?: CruxId): IPubSubClient => {
         return this.pubsubClient
     };
-    public getSelfClient = (idClaim: ICruxIdClaim): IPubSubClient => {
-        return this.pubsubClient
-    }
-
 }
 
 export class InMemoryMaliciousPubSubClientFactory implements IPubSubClientFactory {
-    // private pubsubClient: InMemoryPubSubClient;
     private maliciousPubsubClient: InMemoryMaliciousPubSubClient;
     constructor(mitmCruxId: CruxId) {
         this.maliciousPubsubClient = new InMemoryMaliciousPubSubClient(mitmCruxId);
-        // this.pubsubClient = new InMemoryPubSubClient()
     }
-    public getRecipientClient =  (recipientCruxId: CruxId, selfCruxId?: CruxId): IPubSubClient => {
+    public getClient =  (from: CruxId, keyManager: IKeyManager, to?: CruxId): IPubSubClient => {
         return this.maliciousPubsubClient
     };
-    public getSelfClient = (idClaim: ICruxIdClaim): IPubSubClient => {
-        return this.maliciousPubsubClient
-    }
-
 }
