@@ -32,12 +32,14 @@ export class BasicKeyManager implements IKeyManager {
         let privateKey = await this.getDecryptedPrivateKey();
         const curve = new ec("secp256k1");
         const selfKey = curve.keyFromPrivate(privateKey, "hex");
+        console.log("Inside DeriveSharedSecret: pubKey, pvtKey", publicKey, privateKey);
         const userKey = curve.keyFromPublic(publicKey, "hex");
         privateKey = "0".repeat(privateKey.length);
         return selfKey.derive(userKey.getPublic()).toString(16);
     }
 
     public decryptMessage = async (encryptedMessage: string): Promise<string> => {
+        console.log("Inside DecryptMessage: type, value", typeof encryptedMessage, encryptedMessage);
         const toDecrypt = BufferJSONSerializer.JSONStringToBufferObject(encryptedMessage);
         const privateKey = await this.getDecryptedPrivateKey();
         const decrypted = await ECIESEncryption.decrypt(toDecrypt, privateKey);

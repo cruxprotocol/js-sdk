@@ -13,6 +13,7 @@ import { cloneValue } from "../../packages/utils";
 import { BlockstackService } from "../services/blockstack-service";
 import { GaiaService } from "../services/gaia-service";
 import { BlockstackCruxDomainRepository } from "./blockstack-crux-domain-repository";
+import { keyManagementProtocol } from "./crux-messenger";
 const log = getLogger(__filename);
 
 export interface ICruxpayObject {
@@ -97,7 +98,7 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         }
         return new CruxUser(cruxID.components.subdomain, await this.getUserCruxDomain(cruxID) as CruxDomain, addressMap, cruxUserInformation, cruxUserData, cruxpayPubKey);
     }
-    public getWithKey = async (keyManager: IKeyManager): Promise<CruxUser|undefined> => {
+    public  getWithKey = async (keyManager: IKeyManager): Promise<CruxUser|undefined> => {
         const cruxID = await this.blockstackService.getCruxIdWithKeyManager(keyManager, this.getCruxDomain().id);
         if (!cruxID) {
             return;

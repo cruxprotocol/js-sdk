@@ -19,6 +19,7 @@ import {
 export class CertificateManager {
     public static make = async (idClaim: ICruxIdClaim): Promise<ICruxIdCertificate> => {
         const payload = idClaim.cruxId.toString();
+        console.log("CertificateManager::make:claim: ", payload);
         const signedProof = await idClaim.keyManager.signWebToken(payload);
         return {
                 claim: idClaim.cruxId.toString(),
@@ -28,6 +29,7 @@ export class CertificateManager {
     public static verify = (certificate: ICruxIdCertificate, senderPubKey: any) => {
         const proof: any = decodeToken(certificate.proof).payload;
         const verified = new TokenVerifier("ES256K", senderPubKey).verify(certificate.proof);
+        console.log("CertificateManager::verify:: verified, claim, proof", verified, certificate.claim, proof);
         if (proof && proof === certificate.claim && verified) {
             return true;
         }
@@ -45,6 +47,7 @@ export class EncryptionManager {
     }
     public static decrypt = async (encryptedContent: string, keyManager: IKeyManager): Promise<string> => {
         try {
+            console.log("EncryptionManager::decrypt::keymanager, encryptionContent: ", keyManager, encryptedContent);
             const decryptedContent = await keyManager.decryptMessage!(encryptedContent);
             return decryptedContent;
         } catch (e) {
