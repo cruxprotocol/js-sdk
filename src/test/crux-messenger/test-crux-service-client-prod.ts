@@ -43,7 +43,7 @@ describe('Test CruxServiceClient', function() {
             }
         });
     });
-    it('Basic Key Manager Send Receive - CruxServiceClient', async function() {
+    it('Basic Key Manager Send Receive - CruxServiceClient - getAddressMap', async function() {
         const cruxWalletClient = new CruxWalletClient({
             privateKey: user1PvtKey,
             walletClientName: "cruxdev",
@@ -56,6 +56,26 @@ describe('Test CruxServiceClient', function() {
         }, this.userRepo, this.pubsubClientFactory);
         const remoteWalletClient = cruxServiceClient.getWalletClientForUser(this.user1Data.cruxID);
         const addressMap = await remoteWalletClient.getAddressMap();
-        console.log("TESTCASE::Address Map: ", addressMap);
+        console.log("TESTCASE::AddressMap: ", addressMap);
+    });
+
+    it('Basic Key Manager Send Receive - CruxServiceClient - putAddressMap', async function() {
+        const cruxWalletClient = new CruxWalletClient({
+            privateKey: user1PvtKey,
+            walletClientName: "cruxdev",
+            isHost: true,
+            cacheStorage: new InMemStorage(),
+        });
+        const cruxServiceClient = new CruxServiceClient({
+            cruxId: CruxId.fromString(this.user2CruxId),
+            keyManager: this.user2KeyManager
+        }, this.userRepo, this.pubsubClientFactory);
+        const remoteWalletClient = cruxServiceClient.getWalletClientForUser(this.user1Data.cruxID);
+        const addressMapResult = await remoteWalletClient.putAddressMap({
+            "ltc": {
+                addressHash: "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG12345"
+            }
+        });
+        console.log("TESTCASE::Address Map: ", addressMapResult);
     });
 });
