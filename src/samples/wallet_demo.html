@@ -62,6 +62,22 @@
     </div>
 
     <div class="registered unregistered">
+        <br><span class="helper">Sending Message:</span><br>
+        <!-- <input id="walletSymbol" placeholder="BTC"><br> -->
+        Message: <input id="data" placeholder="Hello Brother!!!"><br>
+        Recipient Crux Id: <input id="recipientCruxId" placeholder="ankit@scatter_dev.crux"><br>
+        <!-- <input id="amount" placeholder="0.5"><br>
+        <input id="toAddress" placeholder="ankit@scatter_dev.crux"><br> -->
+        <button onclick="sendPaymentRequest()">Send Payment Request</button><br>
+        <pre id='sendPaymentRequestAcknowledgment'></pre>
+    </div>
+
+    <div class="registered unregistered">
+        <br><span class="helper">Received Messages:</span><br>
+        <pre id='paymentRequestAcknowledgment'></pre>
+    </div>
+
+    <div class="registered unregistered">
         <br><span class="helper">resolving public addresses:</span><br>
         <input id="receiverVirtualAddress" placeholder="ankit@scatter_dev.crux"><br>
         <!-- resolving with mapped currency symbols -->

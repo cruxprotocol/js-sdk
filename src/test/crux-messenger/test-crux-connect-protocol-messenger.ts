@@ -1,13 +1,12 @@
 import * as chai from "chai";
-import sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import 'mocha';
-import {SecureCruxIdMessenger, CertificateManager, CruxConnectProtocolMessenger} from "../../core/domain-services";
-import {ICruxUserRepository, IProtocolMessage, IPubSubClientFactory} from "../../core/interfaces";
+import {CruxProtocolMessenger, SecureCruxNetwork} from "../../core/domain-services";
+import {IProtocolMessage} from "../../core/interfaces";
 import {BasicKeyManager, cruxPaymentProtocol} from "../../infrastructure/implementations";
 import {CruxId} from "../../packages";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../test-utils";
-import {InMemoryPubSubClientFactory, InMemoryMaliciousPubSubClientFactory} from "./inmemory-implementations";
+import {InMemoryPubSubClientFactory} from "./inmemory-implementations";
 import {getMockUserBar123CSTestWallet, getMockUserFoo123CSTestWallet, getMockUserFooBar123CSTestWallet} from "./utils";
 
 patchMissingDependencies();
@@ -15,7 +14,6 @@ patchMissingDependencies();
 chai.use(chaiAsPromised);
 chai.should();
 const expect = require('chai').expect;
-
 
 
 describe('Test Crux Connect Protocol Messenger - Payment Request', function() {
@@ -31,16 +29,16 @@ describe('Test Crux Connect Protocol Messenger - Payment Request', function() {
         userStore.store(user2Data.cruxUser);
         const inmemUserRepo = new InMemoryCruxUserRepository(userStore);
         const pubsubClientFactory = new InMemoryPubSubClientFactory();
-        const user1Messenger = new SecureCruxIdMessenger(inmemUserRepo, pubsubClientFactory, {
+        const user1Messenger = new SecureCruxNetwork(inmemUserRepo, pubsubClientFactory, {
             cruxId: this.user1Data.cruxUser.cruxID,
             keyManager: new BasicKeyManager(this.user1Data.pvtKey)
         });
-        const user2Messenger = new SecureCruxIdMessenger(inmemUserRepo, pubsubClientFactory, {
+        const user2Messenger = new SecureCruxNetwork(inmemUserRepo, pubsubClientFactory, {
             cruxId: this.user2Data.cruxUser.cruxID,
             keyManager: new BasicKeyManager(this.user2Data.pvtKey)
         });
-        this.user1PaymentProtocolMessenger = new CruxConnectProtocolMessenger(user1Messenger, cruxPaymentProtocol);
-        this.user2PaymentProtocolMessenger = new CruxConnectProtocolMessenger(user2Messenger, cruxPaymentProtocol);
+        this.user1PaymentProtocolMessenger = new CruxProtocolMessenger(user1Messenger, cruxPaymentProtocol);
+        this.user2PaymentProtocolMessenger = new CruxProtocolMessenger(user2Messenger, cruxPaymentProtocol);
 
     });
 
@@ -56,6 +54,7 @@ describe('Test Crux Connect Protocol Messenger - Payment Request', function() {
                 content: validPaymentRequest
             }
             const that = this;
+            this.user2PaymentProtocolMessenger.initialize();
             this.user2PaymentProtocolMessenger.on('PAYMENT_REQUEST', async (msg: any, senderId?: CruxId)=>{
                 try {
                     expect(msg).to.deep.equal(validPaymentRequest);
