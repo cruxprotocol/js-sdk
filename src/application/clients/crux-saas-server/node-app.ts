@@ -22,12 +22,14 @@ const executeFunction = async (fnName: string, params: string[], keyManager: IKe
         walletClientName: "cruxdev",
     };
     const cruxWalletClient = new CruxWalletClient(walletOptions);
-    const whitelistedFunctions = ["getCruxIDState", "isCruxIDAvailable"];
+    const whitelistedFunctions = ["getCruxIDState", "isCruxIDAvailable", "sendPaymentRequest"];
     let response: any = {};
     if (whitelistedFunctions.includes(fnName)) {
         // @ts-ignore
         const fn = cruxWalletClient[fnName];
-        if (typeof fn === "function") { response = await fn.apply(null, params); }
+        if (typeof fn === "function") {
+            response = await fn.apply(null, params);
+        }
     }
     return response;
 };
