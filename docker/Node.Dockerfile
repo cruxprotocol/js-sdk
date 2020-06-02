@@ -23,4 +23,7 @@ COPY --chown=node:node ./docker ./docker
 # COPY --chown=node:node lib ./lib/
 
 # CMD [ "node", "./dist/crux-gateway-bridge-without-auth.js"]
+
+RUN chmod +x docker-boot.sh
+
 ENTRYPOINT ["./docker/docker-boot.sh"]
