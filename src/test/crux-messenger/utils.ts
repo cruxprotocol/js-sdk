@@ -9,7 +9,7 @@ import {
 } from "../../core/entities";
 import {CruxDomainId, CruxId, getKeyPairFromPrivKey} from "../../packages";
 
-const getCstestwalletCruxDomain = () => {
+export const getCstestwalletCruxDomain = () => {
     const testCruxDomainId = CruxDomainId.fromString('cstestwallet.crux');
     const domainStatus: DomainRegistrationStatus = DomainRegistrationStatus.REGISTERED;
     const testValidDomainAssetMapping = {
