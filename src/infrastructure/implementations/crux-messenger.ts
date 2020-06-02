@@ -239,7 +239,7 @@ export const keyManagementProtocol: IMessageSchema[] = [
     {
         messageType: "KEY_MANAGER_RESPONSE",
         schema: Joi.object({
-            data: Joi.any()
+            result: Joi.any()
                         .required(),
 
             invocationId: Joi.string()

@@ -26,6 +26,7 @@ import {
     CruxNetPubSubClientFactory, cruxPaymentProtocol,
     IBlockstackCruxDomainRepositoryOptions,
     IBlockstackCruxUserRepositoryOptions,
+    keyManagementProtocol,
 } from "../../infrastructure/implementations";
 import {CruxDomainId, CruxId, getLogger, InMemStorage, StorageService} from "../../packages";
 import {Encryption} from "../../packages/encryption";
@@ -108,6 +109,7 @@ export class CruxWalletClient {
     public walletClientName: string;
     // TODO: make private
     public paymentProtocolMessenger?: CruxProtocolMessenger;
+    public keyManagerProtocolMessenger?: CruxProtocolMessenger;
     public secureCruxNetwork?: SecureCruxNetwork;
     private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
     private initPromise: Promise<void>;
@@ -468,9 +470,10 @@ export class CruxWalletClient {
         if (options.isHost) {
             const pubsubClientFactory = getPubsubClientFactory();
             this.secureCruxNetwork = new SecureCruxNetwork(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
-            await this.secureCruxNetwork.initialize();
             this.paymentProtocolMessenger = new CruxProtocolMessenger(this.secureCruxNetwork, cruxPaymentProtocol);
-            const remoteKeyHost = new RemoteKeyHost(this.secureCruxNetwork, this.keyManager!);
+            this.keyManagerProtocolMessenger = new CruxProtocolMessenger(this.secureCruxNetwork, keyManagementProtocol);
+            await this.keyManagerProtocolMessenger.initialize();
+            const remoteKeyHost = new RemoteKeyHost(this.keyManagerProtocolMessenger, this.keyManager!);
             this.remoteKeyHost = remoteKeyHost;
             await this.remoteKeyHost.initialize();
         }

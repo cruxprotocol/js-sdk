@@ -172,7 +172,7 @@ describe('Test Key Management Protocol', function() {
         it('Valid Key Manager Response - String output', async function() {
             return new Promise(async (res, rej) => {
                 const validKeyManagerResponse = {
-                    data: "03e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318",
+                    result: "03e6bbc79879d37473836771441a79d3d9dddfabacdac22ed315e5636ff819a318",
                     invocationId: '7c3baa3c-f5e8-490a-88a1-e0a052b7caa4',
                 }
                 const testMessage: IProtocolMessage = {
@@ -197,7 +197,7 @@ describe('Test Key Management Protocol', function() {
         it('Valid Key Manager Response - Object Output', async function() {
             return new Promise(async (res, rej) => {
                 const validKeyManagerResponse = {
-                    data: [{
+                    result: [{
                         'webtoken': "hello"
                     }],
                     invocationId: '7c3baa3c-f5e8-490a-88a1-e0a052b7caa4'
@@ -224,7 +224,7 @@ describe('Test Key Management Protocol', function() {
         it('Valid Key Manager Response - Array Output', async function() {
             return new Promise(async (res, rej) => {
                 const validKeyManagerResponse = {
-                    data: ['webtoken'],
+                    result: ['webtoken'],
                     invocationId: '7c3baa3c-f5e8-490a-88a1-e0a052b7caa4'
                 }
                 const testMessage: IProtocolMessage = {
@@ -260,7 +260,7 @@ describe('Test Key Management Protocol', function() {
         });
         it('Invalid Key Manager Response - invocationId wrong length', async function() {
             const validKeyManagerResponse = {
-                data: ['webtoken'],
+                result: ['webtoken'],
                 invocationId: '7c3baa3c-f5e8-490a-88a1-e0a02b7caa4'
             }
             const testMessage: IProtocolMessage = {

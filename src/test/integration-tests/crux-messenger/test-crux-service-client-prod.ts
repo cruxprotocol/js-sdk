@@ -5,7 +5,7 @@ import chaiAsPromised from "chai-as-promised";
 import 'mocha';
 import {SecureCruxNetwork} from "../../../core/domain-services";
 import {CruxServiceClient, getCruxUserRepository, CruxWalletClient} from "../../../application/clients"
-import {BasicKeyManager, CruxNetPubSubClientFactory} from "../../../infrastructure/implementations";
+import {BasicKeyManager, CruxNetPubSubClientFactory, keyManagementProtocol} from "../../../infrastructure/implementations";
 import {patchMissingDependencies, getCruxdevCruxDomain} from "../../test-utils";
 import { CruxSpec, IAddress } from "../../../core/entities";
 import { CruxId, InMemStorage } from "../../../packages";
@@ -43,6 +43,10 @@ describe('Test CruxServiceClient - Prod', function() {
                 path: "/mqtt"
             }
         });
+        this.secureCruxNetwork2 = new SecureCruxNetwork(this.userRepo, this.pubsubClientFactory, {
+            cruxId: this.user2Data.cruxID,
+            keyManager: new BasicKeyManager(user2PvtKey)
+        });
     });
     it('Send Receive - CruxWalletClient<->CruxServiceClient - getAddressMap', async function() {
         const cruxWalletClient = new CruxWalletClient({
@@ -54,11 +58,11 @@ describe('Test CruxServiceClient - Prod', function() {
         const cruxServiceClient = new CruxServiceClient({
             cruxId: CruxId.fromString(this.user2CruxId),
             keyManager: this.user2KeyManager
-        }, this.userRepo, this.pubsubClientFactory);
+        }, this.secureCruxNetwork2, keyManagementProtocol);
 
         const remoteWalletClient = await cruxServiceClient.getWalletClientForUser(this.user1Data.cruxID);
         const addressMap = await remoteWalletClient.getAddressMap();
-        console.log("TESTCASE::AddressMap: ", addressMap);
+        console.log("TESTCASE::Get Address Map: ", addressMap);
     });
 
     it('Send Receive - CruxWalletClient<->CruxServiceClient - putAddressMap', async function() {
@@ -71,13 +75,13 @@ describe('Test CruxServiceClient - Prod', function() {
         const cruxServiceClient = new CruxServiceClient({
             cruxId: CruxId.fromString(this.user2CruxId),
             keyManager: this.user2KeyManager
-        }, this.userRepo, this.pubsubClientFactory);
+        }, this.secureCruxNetwork2, keyManagementProtocol);
         const remoteWalletClient = await cruxServiceClient.getWalletClientForUser(this.user1Data.cruxID);
         const addressMapResult = await remoteWalletClient.putAddressMap({
             "ltc": {
                 addressHash: "1HX4KvtPdg9QUYwQE1kNqTAjmNaDG12346"
             }
         });
-        console.log("TESTCASE::Address Map: ", addressMapResult);
+        console.log("TESTCASE::Put Address Map: ", addressMapResult);
     });
 });

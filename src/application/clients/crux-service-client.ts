@@ -1,19 +1,21 @@
-import { RemoteKeyManager, SecureCruxNetwork } from "../../core/domain-services";
+import { CruxProtocolMessenger, RemoteKeyManager} from "../../core/domain-services";
+import { keyManagementProtocol } from "../../infrastructure";
 import { CruxId, InMemStorage } from "../../packages/";
 import { CruxWalletClient } from "./crux-wallet-client";
 
 export class CruxServiceClient {
     private selfIdClaim: any;
-    private secureCruxNetwork: SecureCruxNetwork;
+    private cruxProtocolMessenger: any;
 
-    constructor(selfIdClaim: any, userRepo: any, pubsubClientFactory: any) {
+    constructor(selfIdClaim: any, secureCruxNetwork: any, protocolSchema?: any) {
         this.selfIdClaim = selfIdClaim;
-        this.secureCruxNetwork = new SecureCruxNetwork(userRepo, pubsubClientFactory, selfIdClaim);
+        this.cruxProtocolMessenger = new CruxProtocolMessenger(secureCruxNetwork, protocolSchema ? protocolSchema : keyManagementProtocol);
     }
 
     public async getWalletClientForUser(remoteUserId: CruxId) {
-        await this.secureCruxNetwork.initialize();
-        const remoteKeyManager = new RemoteKeyManager(this.secureCruxNetwork, remoteUserId);
+        await this.cruxProtocolMessenger.initialize();
+        const remoteKeyManager = new RemoteKeyManager(this.cruxProtocolMessenger, remoteUserId);
+
         await remoteKeyManager.initialize();
         return new CruxWalletClient({
             cacheStorage: new InMemStorage(),

@@ -4,7 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import 'mocha';
 import * as cwc from "../../application/clients/crux-wallet-client";
 import {SecureCruxNetwork, RemoteKeyClient, RemoteKeyHost, RemoteKeyManager} from "../../core/domain-services";
-import {BasicKeyManager} from "../../infrastructure/implementations";
+import {BasicKeyManager, keyManagementProtocol} from "../../infrastructure/implementations";
 import {CruxId, BufferJSONSerializer, InMemStorage} from "../../packages";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies, InMemoryCruxDomainRepository, getSomewalletDomain, addUserToRepo, addDomainToRepo} from "../test-utils";
 import {InMemoryPubSubClientFactory, InMemoryMaliciousPubSubClientFactory} from "./inmemory-implementations";
@@ -40,6 +40,10 @@ describe('Test CruxServiceClient - InMemory', function() {
         this.stubGetCruxDomainRepository = sinon.stub(cwc, 'getCruxDomainRepository').callsFake(() => this.inmemDomainRepo as any);
         this.stubGetCruxUserRepository = sinon.stub(cwc, 'getCruxUserRepository').callsFake(() => this.inmemUserRepo as any);
         this.stubGetPubsubClientFactory = sinon.stub(cwc, 'getPubsubClientFactory').callsFake(() => this.pubsubClientFactory as any);
+        this.secureCruxNetwork2 = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory, {
+            cruxId: this.user2Data.cruxUser.cruxID,
+            keyManager: new BasicKeyManager(this.user2Data.pvtKey)
+        });
     });
 
     afterEach(function() {
@@ -58,7 +62,7 @@ describe('Test CruxServiceClient - InMemory', function() {
         const cruxServiceClient = new CruxServiceClient({
             cruxId: this.user2Data.cruxUser.cruxID,
             keyManager: this.user2KeyManager
-        }, this.inmemUserRepo, this.pubsubClientFactory);
+        }, this.secureCruxNetwork2, keyManagementProtocol);
 
         const remoteWalletClient = await cruxServiceClient.getWalletClientForUser(this.user1Data.cruxUser.cruxID);
         const addressMap = await remoteWalletClient.getAddressMap();
@@ -75,7 +79,7 @@ describe('Test CruxServiceClient - InMemory', function() {
         const cruxServiceClient = new CruxServiceClient({
             cruxId: this.user2Data.cruxUser.cruxID,
             keyManager: this.user2KeyManager
-        }, this.inmemUserRepo, this.pubsubClientFactory);
+        }, this.secureCruxNetwork2, keyManagementProtocol);
         const remoteWalletClient = await cruxServiceClient.getWalletClientForUser(this.user1Data.cruxUser.cruxID);
         const addressMapResult = await remoteWalletClient.putAddressMap({
             "bitcoin": {

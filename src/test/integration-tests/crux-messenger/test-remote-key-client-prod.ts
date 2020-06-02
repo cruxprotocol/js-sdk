@@ -3,8 +3,8 @@ import sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import 'mocha';
 import * as blockstack from "blockstack";
-import {RemoteKeyClient, RemoteKeyHost, RemoteKeyManager, SecureCruxNetwork} from "../../../core/domain-services";
-import {BasicKeyManager, CruxNetPubSubClientFactory} from "../../../infrastructure/implementations";
+import {RemoteKeyClient, RemoteKeyHost, RemoteKeyManager, SecureCruxNetwork, CruxProtocolMessenger} from "../../../core/domain-services";
+import {BasicKeyManager, CruxNetPubSubClientFactory, keyManagementProtocol} from "../../../infrastructure/implementations";
 import {CruxId, InMemStorage, BufferJSONSerializer} from "../../../packages";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies, getCruxdevCruxDomain} from "../../test-utils";
 import { bip32 } from "bitcoinjs-lib";
@@ -54,19 +54,22 @@ describe('Test RemoteKeyClient - PROD', function() {
             cruxId: this.user2Data.cruxID,
             keyManager: this.user2KeyManager
         });
-        await this.secureCruxNetwork1.initialize();
-        await this.secureCruxNetwork2.initialize();
+        this.cruxProtocolMessenger1 = new CruxProtocolMessenger(this.secureCruxNetwork1, keyManagementProtocol);
+        this.cruxProtocolMessenger2 = new CruxProtocolMessenger(this.secureCruxNetwork2, keyManagementProtocol);
+        await this.cruxProtocolMessenger1.initialize();
+        await this.cruxProtocolMessenger2.initialize();
     });
 
     it('Send Receive RemoteKeyClient<->RemoteKeyHost - Prod', async function() {
         const testPublicKey = '0239d9d97d5b8973fba462b1a014bcbb84d056061234fd375442a7ef0620ea88c3';
         return new Promise(async (resolve, reject) => {
-            const remoteKeyClient = new RemoteKeyClient(this.secureCruxNetwork1, this.user2Data.cruxID);
+            const remoteKeyClient = new RemoteKeyClient(this.cruxProtocolMessenger1, this.user2Data.cruxID);
             await remoteKeyClient.initialize();
-            const remoteKeyHost = new RemoteKeyHost(this.secureCruxNetwork2, this.user2KeyManager);
+            const remoteKeyHost = new RemoteKeyHost(this.cruxProtocolMessenger2, this.user2KeyManager);
             await remoteKeyHost.initialize()
             const invocationId = await remoteKeyClient.invoke("getPubKey", []);
             remoteKeyClient.listenToInvocation(invocationId, (msg, senderId) => {
+                console.log("TESTCASE::msg.result.data", msg.result.data);
                 expect(msg.result.data).equals(testPublicKey);
                 resolve(msg)
             },(err) => {
@@ -78,9 +81,9 @@ describe('Test RemoteKeyClient - PROD', function() {
     it('Send Receive RemoteKeyManager<->RemoteKeyHost - RemoteKeyManager - Prod', async function() {
         const testPubKey = "0362f171a40ab5e6ad22275ec166f15a232b83a571bab9c30622ed2963f1da4c08";
         return new Promise(async (resolve, reject) => {
-            const remoteKeyManager = new RemoteKeyManager(this.secureCruxNetwork2, this.user1Data.cruxID);
+            const remoteKeyManager = new RemoteKeyManager(this.cruxProtocolMessenger2, this.user1Data.cruxID);
             await remoteKeyManager.initialize();
-            const remoteKeyHost = new RemoteKeyHost(this.secureCruxNetwork1, this.user1KeyManager);
+            const remoteKeyHost = new RemoteKeyHost(this.cruxProtocolMessenger1, this.user1KeyManager);
             await remoteKeyHost.initialize();
             const signedWebToken = await remoteKeyManager.signWebToken("1234567")
             console.log("TESTCASE::signWebToken:",  signedWebToken);
