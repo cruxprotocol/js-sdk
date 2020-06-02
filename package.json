@@ -9,7 +9,7 @@
     "test": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha  --exit --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 50000 src/test/*.ts src/test/crux-messenger/*.ts",
     "start-bridge-server": "node dist/crux-gateway-bridge-without-auth.js &",
     "stop-bridge-server": "pkill -- signal SIGINT crux-gateway-bridge-server-without-auth",
-    "integration-test": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha --exit --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 50000  src/test/integration-tests/crux-messenger/*.ts",
+    "integration-test": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha --exit --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 80000  src/test/integration-tests/crux-messenger/*.ts",
     "integration": "npm run build-crux-bridge-server-without-auth && npm run start-bridge-server && npm run integration-test && npm run stop-bridge-server",
     "copy-latest-docs": "cp -a docs/$npm_package_version/. docs/",
     "version-docs": "./node_modules/.bin/typedoc --out docs/$npm_package_version src/index.ts",

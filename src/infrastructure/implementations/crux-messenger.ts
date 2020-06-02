@@ -124,7 +124,7 @@ export class PahoClient implements IPubSubClient {
     }
 
     public connect = () => {
-        console.log("PahoClient trying to connect");
+        console.log("PahoClient trying to connect: ", this.config);
         if (this.client && this.client.isConnected()) {
             console.log("Already Connected, returning");
             return;
@@ -140,7 +140,7 @@ export class PahoClient implements IPubSubClient {
             console.log("PahoClient - trying to connect");
             this.client.connect({
                 onSuccess: (onSuccessData: any) => {
-                    console.log("PahoClient - connect success!");
+                    console.log("PahoClient - connect success!", this.config);
                     this.emitter.emit("connectSuccess", onSuccessData);
                     res(onSuccessData);
                 },
@@ -162,7 +162,7 @@ export class PahoClient implements IPubSubClient {
         }
     }
     private onMessageArrived = (msg: any) => {
-        console.log("recd message from paho library: ", msg.uniqueId, msg);
+        console.log("recd message from paho library: ", msg.uniqueId, msg, msg.payloadString, msg.destinationName);
         this.emitter.emit(msg.destinationName, msg.destinationName, msg.payloadString);
     }
     private onMessageDelivered = (msg: any) => {
@@ -175,7 +175,7 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
     private options: ICruxNetClientFactoryOptions;
     private defaultSubscribeOptions: { qos: number };
     private defaultClientMqttOptions: { clean: boolean };
-    private bufferPahoClient?: PahoClient;
+    private bufferPahoClient: any = {};
     constructor(options: ICruxNetClientFactoryOptions) {
         this.options = options;
         this.defaultSubscribeOptions = {
@@ -186,9 +186,9 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
         };
     }
     public getClient = (from: CruxId, keyManager: IKeyManager, to?: CruxId): IPubSubClient => {
-        if (this.bufferPahoClient) { return this.bufferPahoClient; }
+        if (this.bufferPahoClient[from.toString()]) { return this.bufferPahoClient[from.toString()]; }
         const overrideOpts = this.getDomainLevelClientOptions(to ? to : from);
-        this.bufferPahoClient = new PahoClient({
+        this.bufferPahoClient[from.toString()] = new PahoClient({
             clientOptions: {
                 clientId: from.toString(),
                 host: overrideOpts ? overrideOpts.host : this.options.defaultLinkServer.host,
@@ -198,7 +198,7 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
             },
             subscribeOptions: this.defaultSubscribeOptions,
         });
-        return this.bufferPahoClient;
+        return this.bufferPahoClient[from.toString()];
     }
     private getDomainLevelClientOptions = (cruxId: CruxId): {host: string, port: number, path: string} | undefined => {
         // TODO Implement

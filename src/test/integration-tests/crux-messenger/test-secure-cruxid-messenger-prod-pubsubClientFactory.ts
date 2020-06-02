@@ -2,7 +2,7 @@ import * as chai from "chai";
 import sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import 'mocha';
-import {SecureCruxIdMessenger, CertificateManager} from "../../../core/domain-services";
+import {SecureCruxNetwork, CertificateManager} from "../../../core/domain-services";
 import {BasicKeyManager, CruxNetPubSubClientFactory} from "../../../infrastructure/implementations";
 import {InMemoryCruxUserRepository, MockUserStore, patchMissingDependencies} from "../../test-utils";
 import {getMockUserBar123CSTestWallet, getMockUserFoo123CSTestWallet} from "../../crux-messenger/utils";
@@ -36,25 +36,25 @@ describe('Test Secure Crux Messenger - Prod pubsubClientFactory', function() {
         });
     });
 
-    it('Basic Send Receive Test - Prod pubsubClientFactory', function() {
+    it('Basic Send Receive Test - Prod PubsubClientFactory', function() {
         const testmsg = 'HelloWorld';
         return new Promise(async (resolve, reject) => {
-            const user1Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+            const user1Messenger = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory, {
                 cruxId: this.user1Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user1Data.pvtKey)
             });
 
-            const user2Messenger = new SecureCruxIdMessenger(this.inmemUserRepo, this.pubsubClientFactory, {
+            const user2Messenger = new SecureCruxNetwork(this.inmemUserRepo, this.pubsubClientFactory, {
                 cruxId: this.user2Data.cruxUser.cruxID,
                 keyManager: new BasicKeyManager(this.user2Data.pvtKey)
             });
-            user2Messenger.listen((msg) => {
+            await user1Messenger.initialize();
+            await user2Messenger.initialize();
+            user2Messenger.receive((msg) => {
                 expect(msg).equals(testmsg)
                 resolve(msg)
-            },(err) => {
-                reject(err)
             });
-            await user1Messenger.send(testmsg, this.user2Data.cruxUser.cruxID);
+            await user1Messenger.send(this.user2Data.cruxUser.cruxID, testmsg);
         });
 
     });

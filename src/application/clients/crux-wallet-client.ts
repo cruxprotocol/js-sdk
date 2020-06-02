@@ -472,6 +472,7 @@ export class CruxWalletClient {
             this.paymentProtocolMessenger = new CruxProtocolMessenger(this.secureCruxNetwork, cruxPaymentProtocol);
             const remoteKeyHost = new RemoteKeyHost(this.secureCruxNetwork, this.keyManager!);
             this.remoteKeyHost = remoteKeyHost;
+            await this.remoteKeyHost.initialize();
         }
     }
 

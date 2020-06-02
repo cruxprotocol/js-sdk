@@ -2,7 +2,7 @@ import * as chai from "chai";
 import sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 import 'mocha';
-import {SecureCruxIdMessenger, CertificateManager, CruxConnectProtocolMessenger} from "../../core/domain-services";
+import {SecureCruxNetwork, CertificateManager, CruxProtocolMessenger} from "../../core/domain-services";
 import {ICruxUserRepository, IProtocolMessage, IPubSubClientFactory} from "../../core/interfaces";
 import {BasicKeyManager, cruxPaymentProtocol, keyManagementProtocol} from "../../infrastructure/implementations";
 import {CruxId} from "../../packages";
@@ -31,16 +31,18 @@ describe('Test Key Management Protocol', function() {
         userStore.store(user2Data.cruxUser);
         const inmemUserRepo = new InMemoryCruxUserRepository(userStore);
         const pubsubClientFactory = new InMemoryPubSubClientFactory();
-        const user1Messenger = new SecureCruxIdMessenger(inmemUserRepo, pubsubClientFactory, {
+        const user1Messenger = new SecureCruxNetwork(inmemUserRepo, pubsubClientFactory, {
             cruxId: this.user1Data.cruxUser.cruxID,
             keyManager: new BasicKeyManager(this.user1Data.pvtKey)
         });
-        const user2Messenger = new SecureCruxIdMessenger(inmemUserRepo, pubsubClientFactory, {
+        const user2Messenger = new SecureCruxNetwork(inmemUserRepo, pubsubClientFactory, {
             cruxId: this.user2Data.cruxUser.cruxID,
             keyManager: new BasicKeyManager(this.user2Data.pvtKey)
         });
-        this.user1KeyManagerProtocolMessenger = new CruxConnectProtocolMessenger(user1Messenger, keyManagementProtocol);
-        this.user2KeyManagerProtocolMessenger = new CruxConnectProtocolMessenger(user2Messenger, keyManagementProtocol);
+        await user1Messenger.initialize();
+        await user2Messenger.initialize();
+        this.user1KeyManagerProtocolMessenger = new CruxProtocolMessenger(user1Messenger, keyManagementProtocol);
+        this.user2KeyManagerProtocolMessenger = new CruxProtocolMessenger(user2Messenger, keyManagementProtocol);
 
     });
 

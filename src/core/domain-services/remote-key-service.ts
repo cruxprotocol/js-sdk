@@ -2,23 +2,28 @@ import {makeUUID4} from "blockstack/lib";
 import { createNanoEvents, DefaultEvents, Emitter } from "nanoevents";
 import { CruxId } from "src/packages";
 import { IKeyManager } from "../interfaces";
-import { SecureCruxIdMessenger } from "./crux-messenger";
+import { SecureCruxNetwork } from "./crux-messenger";
 
 const VALID_METHODS = ["signWebToken", "getPubKey", "deriveSharedSecret", "decryptMessage"];
 
 export class RemoteKeyClient {
-    private secureCruxIdMessenger: SecureCruxIdMessenger;
+    private secureCruxNetwork: SecureCruxNetwork;
     private remoteUserId: CruxId;
     private emitter: Emitter<DefaultEvents>;
 
-    constructor(secureCruxIdMessenger: SecureCruxIdMessenger, remoteUserId: CruxId) {
-        this.secureCruxIdMessenger = secureCruxIdMessenger;
+    constructor(secureCruxNetwork: SecureCruxNetwork, remoteUserId: CruxId) {
+        this.secureCruxNetwork = secureCruxNetwork;
         this.remoteUserId = remoteUserId;
         this.emitter = createNanoEvents();
-        this.secureCruxIdMessenger.listen((msg: any, senderId: CruxId | undefined) => {
-            console.log("Inside RemoteKeyClient Constructor:: ", msg, senderId);
+    }
+
+    public async initialize() {
+        this.secureCruxNetwork.receive(async (msg: any, senderId: CruxId | undefined) => {
+            console.log("Inside RemoteKeyClient::initialize::Msg, senderId: ", msg, senderId);
             this.emitter.emit(msg.invocationId, msg, senderId);
-        }, (err: any) => {
+        });
+        this.secureCruxNetwork.onError((err: any) => {
+            console.log("errorinvocationListener", err);
             this.emitter.emit("error", err);
             return;
         });
@@ -26,31 +31,18 @@ export class RemoteKeyClient {
 
     public async invoke(method: string, args: any[]) {
         console.log("RemoteKeyClient::Inside Invoke");
-        if (!this.secureCruxIdMessenger) {
-            throw Error("RemoteKeyClient cannot send with no selfMessenger");
+        if (!this.secureCruxNetwork) {
+            throw Error("RemoteKeyClient cannot send with no secureCruxNetwork");
         }
         const methodData = this.generateMethodData(method, args);
         console.log("RemoteKeyClient::Inside Invoke, RemoteUserId, MethodData", this.remoteUserId, methodData);
-        await this.secureCruxIdMessenger.send(methodData, this.remoteUserId);
+        await this.secureCruxNetwork.send(this.remoteUserId, methodData);
         return methodData.invocationId;
     }
 
-    public invokeResult = (resultCallback: (msg: any, senderId: CruxId | undefined) => any, errorCallback: (err: any) => any): void => {
-        if (!this.secureCruxIdMessenger) {
-            throw Error("RemoteKeyClient cannot listen with no selfMessenger");
-        }
-        this.secureCruxIdMessenger.listen((msg: any, senderId: CruxId | undefined) => {
-            console.log("RemoteKeyClient::Inside invokeresult", msg, senderId);
-            resultCallback(msg, senderId);
-        }, (err: any) => {
-            errorCallback(err);
-            return;
-        });
-    }
-
     public listenToInvocation = (invocationId: string, resultCallback: (msg: any, senderId: CruxId | undefined) => any, errorCallback: (err: any) => any): void => {
-        if (!this.secureCruxIdMessenger) {
-            throw Error("RemoteKeyClient cannot listen with no selfMessenger");
+        if (!this.secureCruxNetwork) {
+            throw Error("RemoteKeyClient cannot listen with no secureCruxNetwork");
         }
         console.log("RemoteKeyClient::ListenToInvocation::invocationId", invocationId);
         this.emitter.on(invocationId, resultCallback);
@@ -67,30 +59,33 @@ export class RemoteKeyClient {
 }
 
 export class RemoteKeyHost {
-    private secureCruxIdMessenger: SecureCruxIdMessenger;
+    private secureCruxNetwork: SecureCruxNetwork;
     private keyManager: IKeyManager;
 
-    constructor(secureCruxIdMessenger: SecureCruxIdMessenger, keyManager: IKeyManager) {
+    constructor(secureCruxNetwork: SecureCruxNetwork, keyManager: IKeyManager) {
         this.keyManager = keyManager;
-        this.secureCruxIdMessenger = secureCruxIdMessenger;
-        this.secureCruxIdMessenger.listen(async (msg: any, senderId: CruxId | undefined) => {
-            console.log("Inside RemoteKeyHost::Constructor::Msg, senderId: ", msg, senderId);
+        this.secureCruxNetwork = secureCruxNetwork;
+    }
+
+    public async initialize() {
+        this.secureCruxNetwork.receive(async (msg: any, senderId: CruxId | undefined) => {
+            console.log("Inside RemoteKeyHost::in::Msg, senderId: ", msg, senderId);
             const data = await this.handleMessage(msg);
-            console.log("Inside RemoteKeyHost::Constructor::Data(handleMessage): ", data);
-            this.sendInvocationResult(data, senderId);
-        }, (err: any) => {
+            console.log("Inside RemoteKeyHost::initialize::Data(handleMessage): ", data);
+            this.sendInvocationResult(data, senderId!);
+        });
+        this.secureCruxNetwork.onError((err: any) => {
             console.log("errorinvocationListener", err);
             return;
         });
     }
-
     private async sendInvocationResult(result: any, receiverId: CruxId) {
-        if (!this.secureCruxIdMessenger) {
+        if (!this.secureCruxNetwork) {
             throw Error("RemoteKeyClient cannot send with no selfMessenger");
         }
         const resultData = this.generateInvocationResponse(result);
         console.log("RemoteKeyHost::Inside sendInvocationResult::resultData: ", resultData);
-        await this.secureCruxIdMessenger.send(resultData, receiverId);
+        await this.secureCruxNetwork.send(receiverId, resultData);
     }
 
     private async handleMessage(message: any) {
@@ -138,12 +133,16 @@ export class RemoteKeyManager implements IKeyManager {
     private remoteKeyClient: RemoteKeyClient;
     private remoteUserId: CruxId;
 
-    constructor(secureCruxIdMessenger: SecureCruxIdMessenger, remoteUserId: CruxId) {
-        this.remoteKeyClient = new RemoteKeyClient(secureCruxIdMessenger, remoteUserId);
+    constructor(secureCruxNetwork: SecureCruxNetwork, remoteUserId: CruxId) {
+        this.remoteKeyClient = new RemoteKeyClient(secureCruxNetwork, remoteUserId);
         this.remoteUserId = remoteUserId;
     }
+
+    public async initialize() {
+        await this.remoteKeyClient.initialize();
+    }
     // @ts-ignore
-    public async signWebToken(token: any) {
+    public signWebToken = async (token: any) => {
         return new Promise(async (resolve, reject) => {
             const invocationId = await this.remoteKeyClient.invoke("signWebToken", [token]);
             console.log("RemoteKeyManager::signWebToken::invokationId: ", invocationId);
@@ -156,7 +155,7 @@ export class RemoteKeyManager implements IKeyManager {
         });
     }
     // @ts-ignore
-    public async getPubKey() {
+    public getPubKey = async () => {
         return new Promise(async (resolve, reject) => {
             const invocationId = await this.remoteKeyClient.invoke("getPubKey", []);
             console.log("RemoteKeyManager::getPubKey::invokationId: ", invocationId);
@@ -169,7 +168,7 @@ export class RemoteKeyManager implements IKeyManager {
         });
     }
     // @ts-ignore
-    public async deriveSharedSecret(publicKey: string) {
+    public deriveSharedSecret = async (publicKey: string) => {
         const invocationId = await this.remoteKeyClient.invoke("deriveSharedSecret", [publicKey]);
         console.log("RemoteKeyManager::deriveSharedSecret::invokationId: ", invocationId);
         return new Promise(async (resolve, reject) => {
@@ -182,7 +181,7 @@ export class RemoteKeyManager implements IKeyManager {
         });
     }
     // @ts-ignore
-    public async decryptMessage(encryptedMessage: string) {
+    public decryptMessage = async (encryptedMessage: string) => {
         console.log("RemoteKeyManager::decryptMessage::entry: encryptedMessage: ", encryptedMessage);
         const invocationId = await this.remoteKeyClient.invoke("decryptMessage", [encryptedMessage]);
         console.log("RemoteKeyManager::decryptMessage::invokationId: ", invocationId);

@@ -22,7 +22,7 @@
                 "jsdom-global/register",
                 "--allow-uncaught",
                 "--colors",
-                "--timeout 50000",
+                "--timeout 100000",
                 // "--reporter",
                 // "mocha-reporter",
                 "${workspaceFolder}/src/test/*.ts"
@@ -35,7 +35,7 @@
             "request": "attach",
             "port": 9229,
             "protocol": "inspector",
-            "timeout": 30000,
+            "timeout": 100000,
             "stopOnEntry": false
         }
     ]
