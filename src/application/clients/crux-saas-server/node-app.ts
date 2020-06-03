@@ -46,7 +46,7 @@ const app = express();
 app.use(express.json());
 const port = 3000;
 app.get("/", (req, res) => {
-    return res.status(400).send("OK");
+    return res.json("OK");
 });
 app.post("/v1/execute", async (req, res) => {
     const apiKey = req.get("api_key");
