@@ -9,7 +9,7 @@ patchMissingDependencies();
 
 // KeyStore seeder
 const seedKeyStore = (keyStore: IKeyStore): void => {
-    keyStore.addToKeyStore("testapikey1", "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37f7c6f");
+    keyStore.addToKeyStore(process.env.API_KEY || "testapikey1", process.env.MERCHANT_ACCOUNT_PRIVATE_KEY || "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37f7c6f");
 };
 
 // Inmemory Keystore Init
