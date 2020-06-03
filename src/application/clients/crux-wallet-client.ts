@@ -467,10 +467,10 @@ export class CruxWalletClient {
         if (!selfIdClaim) {
             throw Error("Self ID Claim is required to setup messenger");
         }
+        const pubsubClientFactory = getPubsubClientFactory();
+        this.secureCruxNetwork = new SecureCruxNetwork(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
+        this.paymentProtocolMessenger = new CruxProtocolMessenger(this.secureCruxNetwork, cruxPaymentProtocol);
         if (options.isHost) {
-            const pubsubClientFactory = getPubsubClientFactory();
-            this.secureCruxNetwork = new SecureCruxNetwork(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
-            this.paymentProtocolMessenger = new CruxProtocolMessenger(this.secureCruxNetwork, cruxPaymentProtocol);
             this.keyManagerProtocolMessenger = new CruxProtocolMessenger(this.secureCruxNetwork, keyManagementProtocol);
             await this.keyManagerProtocolMessenger.initialize();
             const remoteKeyHost = new RemoteKeyHost(this.keyManagerProtocolMessenger, this.keyManager!);
