@@ -7,10 +7,12 @@ RUN mkdir /home/node/app/ && chown -R node:node /home/node/app
 WORKDIR /home/node/app
 
 COPY --chown=node:node ./package*.json ./
+COPY --chown=node:node ./tsconfig*.json ./
 
 USER node
 
 EXPOSE 4005
+EXPOSE 3000
 
 RUN npm install && npm cache clean --force --loglevel=error
 
