@@ -11,7 +11,7 @@ patchMissingDependencies()
 chai.use(chaiAsPromised);
 chai.should();
 const expect = require('chai').expect;
-const BROKER_HOST = "broker.hivemq.com";
+const BROKER_HOST = "127.0.0.1";
 const BROKER_PORT = 8000;
 const path = '/mqtt'
 

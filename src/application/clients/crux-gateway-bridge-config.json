@@ -1,6 +1,6 @@
 {
     "HOST_URL": {
-        "BROKER_HOST": "broker.hivemq.com"
+        "BROKER_HOST": "127.0.0.1"
     },
     "PORTS": {
         "BROKER_PORT": 8000,

@@ -21,7 +21,7 @@ const user2PvtKey = "cdf2d276caf0c9c34258ed6ebd0e60e0e8b3d9a7b8a9a717f2e19ed9b37
 
 describe('Test Secure Crux Messenger - PROD', function() {
     beforeEach(async function() {
-        const HOST = "broker.hivemq.com";
+        const HOST = "127.0.0.1";
         const PORT = 8000;
         const path = '/mqtt';
         this.user1KeyManager = new BasicKeyManager(user1PvtKey);

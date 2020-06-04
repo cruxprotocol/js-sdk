@@ -16,7 +16,7 @@ const expect = require('chai').expect;
 
 describe('Test Secure Crux Messenger - Prod pubsubClientFactory', function() {
     beforeEach(async function() {
-        const HOST = "broker.hivemq.com";
+        const HOST = "127.0.0.1";
         const PORT = 8000;
         const path = '/mqtt';
         const userStore = new MockUserStore();

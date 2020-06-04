@@ -24,7 +24,7 @@ const user2PvtKey = "KyBuSe1MMV6NjJgZfyWuvgmxUeAYswLC2HrfYLUri9aP3AS5FBfr"; // r
 
 describe('Test CruxServiceClient - Prod', function() {
     beforeEach(async function() {
-        const HOST = "broker.hivemq.com";
+        const HOST = "127.0.0.1";
         const PORT = 8000;
         this.user2CruxId = "release020@cruxdev.crux";
         this.user1KeyManager = new BasicKeyManager(user1PvtKey);

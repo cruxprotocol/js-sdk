@@ -98,7 +98,7 @@ export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOpti
 
 export const getPubsubClientFactory = (): IPubSubClientFactory => {
     return new CruxNetPubSubClientFactory({defaultLinkServer: {
-        host: "broker.hivemq.com",
+        host: "127.0.0.1",
         path: "/mqtt",
         port: 8000,
     }});
