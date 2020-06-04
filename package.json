@@ -6,7 +6,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "test": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha  --exit --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 50000 src/test/*.ts src/test/crux-messenger/*.ts",
+    "test": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha  --exit --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 5000 src/test/*.ts src/test/crux-messenger/*.ts",
     "start-bridge-server": "node dist/crux-gateway-bridge-without-auth.js &",
     "stop-bridge-server": "pkill -- signal SIGINT crux-gateway-bridge-server-without-auth",
     "integration-test": "TS_NODE_PROJECT='./src/test/tsconfig.commonjs.json' TS_NODE_TRANSPILE_ONLY=true ./node_modules/.bin/mocha --exit --require ts-node/register --require mock-local-storage --require jsdom-global/register --allow-uncaught --colors --reporter mocha-reporter --timeout 80000  src/test/integration-tests/crux-messenger/*.ts",

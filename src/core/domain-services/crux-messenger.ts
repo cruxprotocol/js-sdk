@@ -252,9 +252,6 @@ export class SecureContext {
             data,
         };
         const serializedSecurePacket = JSON.stringify(securePacket);
-        if (typeof recipientId === "string") {
-            recipientId = CruxId.fromString(recipientId);
-        }
         const recipientCruxUser: CruxUser | undefined = await this.cruxUserRepo.getByCruxId(recipientId);
         if (!recipientCruxUser) {
             throw Error("No Such CRUX User Found");

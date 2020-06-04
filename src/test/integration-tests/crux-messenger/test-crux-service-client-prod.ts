@@ -52,7 +52,6 @@ describe('Test CruxServiceClient - Prod', function() {
         const cruxWalletClient = new CruxWalletClient({
             privateKey: user1PvtKey,
             walletClientName: "cruxdev",
-            isHost: true,
             cacheStorage: new InMemStorage(),
         });
         const cruxServiceClient = new CruxServiceClient({
@@ -69,7 +68,6 @@ describe('Test CruxServiceClient - Prod', function() {
         const cruxWalletClient = new CruxWalletClient({
             privateKey: user1PvtKey,
             walletClientName: "cruxdev",
-            isHost: true,
             cacheStorage: new InMemStorage(),
         });
         const cruxServiceClient = new CruxServiceClient({

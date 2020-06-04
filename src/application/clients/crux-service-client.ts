@@ -7,9 +7,9 @@ export class CruxServiceClient {
     private selfIdClaim: any;
     private cruxProtocolMessenger: any;
 
-    constructor(selfIdClaim: any, secureCruxNetwork: any, protocolSchema?: any) {
+    constructor(selfIdClaim: any, secureCruxNetwork: any, protocolSchema: any) {
         this.selfIdClaim = selfIdClaim;
-        this.cruxProtocolMessenger = new CruxProtocolMessenger(secureCruxNetwork, protocolSchema ? protocolSchema : keyManagementProtocol);
+        this.cruxProtocolMessenger = new CruxProtocolMessenger(secureCruxNetwork, protocolSchema);
     }
 
     public async getWalletClientForUser(remoteUserId: CruxId) {

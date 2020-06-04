@@ -206,14 +206,10 @@ export class CruxWalletClient {
 
     @throwCruxClientError
     public getAddressMap = async (): Promise<IAddressMapping> => {
-        console.log("CruxWalletClient::getAddressMap::keyManager: ", this.getKeyManager());
         await this.initPromise;
-        console.log("CruxWalletClient::getAddressMap::publickKey: ", await this.getKeyManager().getPubKey());
         const cruxUser = await this.cruxUserRepository.getWithKey(this.getKeyManager());
-        console.log("CruxWalletClient::getAddressMap::cruxUser: ", cruxUser);
         if (cruxUser) {
             const assetIdAddressMap = cruxUser.getAddressMap();
-            console.log("CruxWalletClient::getAddressMap::assetIdAddressMap");
             return this.cruxAssetTranslator.assetIdAddressMapToSymbolAddressMap(assetIdAddressMap);
         }
         return {};
@@ -259,7 +255,6 @@ export class CruxWalletClient {
 
     @throwCruxClientError
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {
-        console.log("+++==", newAddressMap);
         await this.initPromise;
         const cruxUser = await this.getCruxUserByKey();
         if (!cruxUser) {
@@ -448,7 +443,7 @@ export class CruxWalletClient {
         const selfIdClaim = await this.getSelfClaim();
         if (selfIdClaim) {
             try {
-                await this.setupCruxMessenger(selfIdClaim, options);
+                await this.setupCruxMessenger(selfIdClaim);
             } catch (err) {
                 console.log(err);
             }
@@ -471,12 +466,9 @@ export class CruxWalletClient {
         }
         return selfClaim;
     }
-    private setupCruxMessenger = async (selfIdClaim: ICruxIdClaim | undefined, options: ICruxWalletClientOptions) => {
+    private setupCruxMessenger = async (selfIdClaim: ICruxIdClaim | undefined) => {
         if (!selfIdClaim) {
             throw Error("Self ID Claim is required to setup messenger");
-        }
-        if (options && options.disableCruxMessenger) {
-            throw Error("Secure Crux Network hasn't been initiated for Wallet");
         }
         const pubsubClientFactory = getPubsubClientFactory();
         this.secureCruxNetwork = new SecureCruxNetwork(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);

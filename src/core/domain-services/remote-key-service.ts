@@ -1,6 +1,6 @@
 import {makeUUID4} from "blockstack/lib";
 import { createNanoEvents, DefaultEvents, Emitter } from "nanoevents";
-import { CruxId } from "src/packages";
+import { CruxId } from "../../packages";
 import { IKeyManager } from "../interfaces";
 import { CruxProtocolMessenger, SecureCruxNetwork } from "./crux-messenger";
 
@@ -71,7 +71,7 @@ export class RemoteKeyHost {
             console.log("Inside RemoteKeyHost::in::Msg, senderId: ", msg, senderId);
             const data = await this.handleMessage(msg);
             console.log("Inside RemoteKeyHost::initialize::Data(handleMessage): ", data);
-            this.sendInvocationResult(data, senderId!);
+            await this.sendInvocationResult(data, CruxId.fromString(senderId!));
         });
     }
     private async sendInvocationResult(result: any, receiverId: CruxId) {
@@ -80,7 +80,6 @@ export class RemoteKeyHost {
         }
         const resultData = this.generateInvocationResponse(result);
         console.log("RemoteKeyHost::Inside sendInvocationResult::resultData: ", resultData);
-        // @ts-ignore
         await this.cruxProtocolMessenger.send({
             content: resultData,
             type: "KEY_MANAGER_RESPONSE",
@@ -88,32 +87,12 @@ export class RemoteKeyHost {
     }
 
     private async handleMessage(message: any) {
-        if (!VALID_METHODS.includes(message.method)) {
-            throw new Error("Invalid key manager method");
-        }
         if (!this.keyManager) {
             throw new Error("Key Manager not available");
         }
         let data;
-        if (message.method === "signWebToken") {
-            console.log("HandleMessage entrance:signWebToken");
-            data = await this.keyManager.signWebToken(message.args[0]);
-            console.log("HandleMessage exit:signWebToken", data);
-        } else if (message.method === "getPubKey") {
-            console.log("HandleMessage entrance:getPubKey");
-            data = await this.keyManager.getPubKey();
-            console.log("HandleMessage exit:getPubKey", data);
-        } else if (message.method === "deriveSharedSecret") {
-            console.log("HandleMessage entrance:deriveSharedSecret");
-            // @ts-ignore
-            data = await this.keyManager.deriveSharedSecret(message.args[0]);
-            console.log("HandleMessage exit:deriveSharedSecret", data);
-        } else if (message.method === "decryptMessage") {
-            console.log("HandleMessage entrance:decryptMessage");
-            // @ts-ignore
-            data = await this.keyManager.decryptMessage(message.args[0]);
-            console.log("HandleMessage exit:decryptMessage", data);
-        }
+        // @ts-ignore
+        data = await this.keyManager[message.method](message.args[0]);
         return {
             data,
             invocationId: message.invocationId,
@@ -141,52 +120,29 @@ export class RemoteKeyManager implements IKeyManager {
         await this.remoteKeyClient.initialize();
     }
     // @ts-ignore
-    public signWebToken = async (token: any) => {
-        return new Promise(async (resolve, reject) => {
-            const invocationId = await this.remoteKeyClient.invoke("signWebToken", [token]);
-            console.log("RemoteKeyManager::signWebToken::invokationId: ", invocationId);
-            this.remoteKeyClient.listenToInvocation(invocationId, (msg, senderId) => {
-                console.log("RemoteKeyManager::signWebToken::msg: ", msg);
-                resolve(msg.result.data);
-            }, (err) => {
-                reject(err);
-            });
-        });
+    public signWebToken = async (args: any) => {
+        return this.makeRemoteMessageCall("signWebToken", [args]);
     }
     // @ts-ignore
     public getPubKey = async () => {
-        return new Promise(async (resolve, reject) => {
-            const invocationId = await this.remoteKeyClient.invoke("getPubKey", []);
-            console.log("RemoteKeyManager::getPubKey::invokationId: ", invocationId);
-            this.remoteKeyClient.listenToInvocation(invocationId, (msg, senderId) => {
-                console.log("RemoteKeyManager::getPubKey::msg: ", msg);
-                resolve(msg.result.data);
-            }, (err) => {
-                reject(err);
-            });
-        });
+        return this.makeRemoteMessageCall("getPubKey");
     }
     // @ts-ignore
-    public deriveSharedSecret = async (publicKey: string) => {
-        const invocationId = await this.remoteKeyClient.invoke("deriveSharedSecret", [publicKey]);
-        console.log("RemoteKeyManager::deriveSharedSecret::invokationId: ", invocationId);
+    public deriveSharedSecret = async (args: string) => {
+        return this.makeRemoteMessageCall("deriveSharedSecret", [args]);
+    }
+    // @ts-ignore
+    public decryptMessage = async (args: string) => {
+        return this.makeRemoteMessageCall("decryptMessage", [args]);
+    }
+
+    private makeRemoteMessageCall = async (method: string, args: any = []) => {
+        console.log("makeRemoteMessageCall::", method, args);
+        const invocationId = await this.remoteKeyClient.invoke(method, args);
+        console.log("RemoteKeyManager::makeRemoteMessageCall::invokationId: ", invocationId);
         return new Promise(async (resolve, reject) => {
             this.remoteKeyClient.listenToInvocation(invocationId, (msg, senderId) => {
                 console.log("RemoteKeyManager::deriveSharedSecret::msg: ", msg);
-                resolve(msg.result.data);
-            }, (err) => {
-                reject(err);
-            });
-        });
-    }
-    // @ts-ignore
-    public decryptMessage = async (encryptedMessage: string) => {
-        console.log("RemoteKeyManager::decryptMessage::entry: encryptedMessage: ", encryptedMessage);
-        const invocationId = await this.remoteKeyClient.invoke("decryptMessage", [encryptedMessage]);
-        console.log("RemoteKeyManager::decryptMessage::invokationId: ", invocationId);
-        return new Promise(async (resolve, reject) => {
-            this.remoteKeyClient.listenToInvocation(invocationId, (msg, senderId) => {
-                console.log("RemoteKeyManager::decryptMessage::msg: ", msg);
                 resolve(msg.result.data);
             }, (err) => {
                 reject(err);

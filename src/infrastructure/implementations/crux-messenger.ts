@@ -186,11 +186,12 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
         };
     }
     public getClient = (from: CruxId, keyManager: IKeyManager, to?: CruxId): IPubSubClient => {
-        if (this.bufferPahoClient[from.toString()]) { return this.bufferPahoClient[from.toString()]; }
+        const fromCruxIdString = from.toString();
+        if (this.bufferPahoClient[fromCruxIdString]) { return this.bufferPahoClient[fromCruxIdString]; }
         const overrideOpts = this.getDomainLevelClientOptions(to ? to : from);
-        this.bufferPahoClient[from.toString()] = new PahoClient({
+        this.bufferPahoClient[fromCruxIdString] = new PahoClient({
             clientOptions: {
-                clientId: from.toString(),
+                clientId: fromCruxIdString,
                 host: overrideOpts ? overrideOpts.host : this.options.defaultLinkServer.host,
                 path: overrideOpts ? overrideOpts.path : this.options.defaultLinkServer.path,
                 port: overrideOpts ? overrideOpts.port : this.options.defaultLinkServer.port,
@@ -198,7 +199,7 @@ export class CruxNetPubSubClientFactory implements IPubSubClientFactory {
             },
             subscribeOptions: this.defaultSubscribeOptions,
         });
-        return this.bufferPahoClient[from.toString()];
+        return this.bufferPahoClient[fromCruxIdString];
     }
     private getDomainLevelClientOptions = (cruxId: CruxId): {host: string, port: number, path: string} | undefined => {
         // TODO Implement
