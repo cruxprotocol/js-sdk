@@ -1,9 +1,11 @@
 import * as bitcoin from "bitcoinjs-lib";
 import * as cloner from "cloner";
+import WebCrypto from "node-webcrypto-ossl";
 import request from "request";
 import URL from "url-parse";
 import { BaseError, ErrorHelper, PackageErrorCode } from "./error";
 import { getLogger } from "./logger";
+
 import { StorageService } from "./storage";
 
 const log = getLogger(__filename);
@@ -179,6 +181,17 @@ export class BufferJSONSerializer {
         return bufferObj;
     }
 }
+
+export const patchMissingDependencies = () => {
+    const crypto = new WebCrypto();
+    const util = require("util");
+    // @ts-ignore
+    global.crypto = crypto;
+    // @ts-ignore
+    global.TextEncoder = util.TextEncoder;
+    // @ts-ignore
+    global.TextDecoder = util.TextDecoder;
+};
 
 export {
     httpJSONRequest,

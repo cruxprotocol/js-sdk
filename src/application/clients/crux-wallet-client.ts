@@ -214,6 +214,7 @@ export class CruxWalletClient {
 
     @throwCruxClientError
      public sendPaymentRequest = async (amount: string, walletCurrencySymbol: string, toAddress: IAddress, recipientCruxId: string): Promise<void> => {
+        await this.initPromise;
         if (!this.paymentProtocolMessenger) {
             throw Error("paymentProtocolMessenger is not defined");
         }
@@ -222,7 +223,6 @@ export class CruxWalletClient {
         if (!asset) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.AssetIDNotAvailable);
         }
-        await this.initPromise;
         return this.paymentProtocolMessenger.send({
             content: {
                 amount,
