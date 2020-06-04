@@ -71,7 +71,8 @@ export class RemoteKeyHost {
             console.log("Inside RemoteKeyHost::in::Msg, senderId: ", msg, senderId);
             const data = await this.handleMessage(msg);
             console.log("Inside RemoteKeyHost::initialize::Data(handleMessage): ", data);
-            await this.sendInvocationResult(data, CruxId.fromString(senderId!));
+            // @ts-ignore
+            await this.sendInvocationResult(data, CruxId.fromString(senderId!)); // getting senderId as string
         });
     }
     private async sendInvocationResult(result: any, receiverId: CruxId) {
