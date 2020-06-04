@@ -19,6 +19,7 @@ export class CruxServiceClient {
         await remoteKeyManager.initialize();
         return new CruxWalletClient({
             cacheStorage: new InMemStorage(),
+            disableCruxMessenger: true,
             // @ts-ignore
             privateKey: remoteKeyManager,
             walletClientName: remoteUserId.components.domain,

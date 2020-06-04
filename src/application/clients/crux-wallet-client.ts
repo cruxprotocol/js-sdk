@@ -80,7 +80,7 @@ export interface ICruxWalletClientOptions {
     cacheStorage?: StorageService;
     walletClientName: string;
     debugLogging?: boolean;
-    isHost?: boolean;
+    disableCruxMessenger?: boolean;
 }
 
 export interface ICruxIDState {
@@ -259,6 +259,7 @@ export class CruxWalletClient {
 
     @throwCruxClientError
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {
+        console.log("+++==", newAddressMap);
         await this.initPromise;
         const cruxUser = await this.getCruxUserByKey();
         if (!cruxUser) {
@@ -441,9 +442,16 @@ export class CruxWalletClient {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
         this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping, this.cruxDomain.config.assetList);
+        if (options.disableCruxMessenger) {
+            return;
+        }
         const selfIdClaim = await this.getSelfClaim();
         if (selfIdClaim) {
-            await this.setupCruxMessenger(selfIdClaim, options);
+            try {
+                await this.setupCruxMessenger(selfIdClaim, options);
+            } catch (err) {
+                console.log(err);
+            }
         }
     }
 
@@ -467,16 +475,17 @@ export class CruxWalletClient {
         if (!selfIdClaim) {
             throw Error("Self ID Claim is required to setup messenger");
         }
+        if (options && options.disableCruxMessenger) {
+            throw Error("Secure Crux Network hasn't been initiated for Wallet");
+        }
         const pubsubClientFactory = getPubsubClientFactory();
         this.secureCruxNetwork = new SecureCruxNetwork(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
         this.paymentProtocolMessenger = new CruxProtocolMessenger(this.secureCruxNetwork, cruxPaymentProtocol);
-        if (options.isHost) {
-            this.keyManagerProtocolMessenger = new CruxProtocolMessenger(this.secureCruxNetwork, keyManagementProtocol);
-            await this.keyManagerProtocolMessenger.initialize();
-            const remoteKeyHost = new RemoteKeyHost(this.keyManagerProtocolMessenger, this.keyManager!);
-            this.remoteKeyHost = remoteKeyHost;
-            await this.remoteKeyHost.initialize();
-        }
+        this.keyManagerProtocolMessenger = new CruxProtocolMessenger(this.secureCruxNetwork, keyManagementProtocol);
+        await this.keyManagerProtocolMessenger.initialize();
+        const remoteKeyHost = new RemoteKeyHost(this.keyManagerProtocolMessenger, this.keyManager!);
+        this.remoteKeyHost = remoteKeyHost;
+        await this.remoteKeyHost.initialize();
     }
 
 }
