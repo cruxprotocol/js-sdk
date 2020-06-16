@@ -32,7 +32,6 @@ import {Encryption} from "../../packages/encryption";
 import {CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode} from "../../packages/error";
 import {CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap} from "../services";
 
-
 const cruxWalletClientDebugLoggerName = "CruxWalletClient:DEBUGGING";
 
 export interface IPutPrivateAddressMapResult {
@@ -323,7 +322,7 @@ export class CruxWalletClient {
         await this.cruxUserRepository.save(cruxUserWithKey, this.getKeyManager());
         return {success: registeredCruxUsers, failures};
     }
-    
+
     /**
      * ```ts
      *  const sampleCruxIDs = ["alice@cruxdev.crux", "bob123@cruxdev.crux"];
