@@ -1,9 +1,11 @@
 import * as bitcoin from "bitcoinjs-lib";
 import * as cloner from "cloner";
+import WebCrypto from "node-webcrypto-ossl";
 import request from "request";
 import URL from "url-parse";
 import { BaseError, ErrorHelper, PackageErrorCode } from "./error";
 import { getLogger } from "./logger";
+
 import { StorageService } from "./storage";
 
 const log = getLogger(__filename);
@@ -160,6 +162,35 @@ const getKeyPairFromPrivKey = (privKey: string): {
         privKey: privateKey,
         pubKey: publicKey,
     };
+};
+
+export class BufferJSONSerializer {
+    public static bufferObjectToJSONString = (payload: { [key: string]: any }): string => {
+        const objWithStringValues: { [key: string]: string } = {};
+        for (const key of Object.keys(payload)) {
+            objWithStringValues[key] = payload[key].toString("hex");
+        }
+        return JSON.stringify(objWithStringValues);
+    }
+    public static JSONStringToBufferObject = (stringifiedObj: string): { [key: string]: any } => {
+        const objWithStringValues = JSON.parse(stringifiedObj);
+        const bufferObj: { [key: string]: any } = {};
+        for (const key of Object.keys(objWithStringValues)) {
+            bufferObj[key] = Buffer.from(objWithStringValues[key], "hex");
+        }
+        return bufferObj;
+    }
+}
+
+export const patchMissingDependencies = () => {
+    const crypto = new WebCrypto();
+    const util = require("util");
+    // @ts-ignore
+    global.crypto = crypto;
+    // @ts-ignore
+    global.TextEncoder = util.TextEncoder;
+    // @ts-ignore
+    global.TextDecoder = util.TextDecoder;
 };
 
 export {

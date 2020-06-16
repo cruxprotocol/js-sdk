@@ -1,27 +1,36 @@
 // Importing packages
 import Logger from "js-logger";
-import { CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap } from "../../application/services/crux-asset-translator";
-import { CruxDomain } from "../../core/entities/crux-domain";
-import { CruxSpec } from "../../core/entities/crux-spec";
-import { CruxUser, IAddress, IAddressMapping, IAssetMatcher, ICruxUserRegistrationStatus, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from "../../core/entities/crux-user";
-import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
-import {ICruxDomainRepository} from "../../core/interfaces/crux-domain-repository";
-import { ICruxUserRepository } from "../../core/interfaces/crux-user-repository";
-import { IKeyManager, isInstanceOfKeyManager } from "../../core/interfaces/key-manager";
-import { BasicKeyManager } from "../../infrastructure/implementations/basic-key-manager";
+import {CruxProtocolMessenger, SecureCruxNetwork} from "../../core/domain-services";
 import {
+    CruxDomain,
+    CruxSpec,
+    CruxUser,
+    IAddress,
+    IAddressMapping,
+    IAssetMatcher,
+    ICruxUserRegistrationStatus,
+    SubdomainRegistrationStatus,
+    SubdomainRegistrationStatusDetail,
+} from "../../core/entities";
+import {
+    ICruxBlockstackInfrastructure,
+    ICruxDomainRepository, ICruxUserRepository,
+    IKeyManager, IPubSubClientFactory,
+    isInstanceOfKeyManager,
+} from "../../core/interfaces";
+import {ICruxIdClaim} from "../../core/interfaces";
+import {
+    BasicKeyManager,
     BlockstackCruxDomainRepository,
-    IBlockstackCruxDomainRepositoryOptions,
-} from "../../infrastructure/implementations/blockstack-crux-domain-repository";
-import {
     BlockstackCruxUserRepository,
+    CruxNetPubSubClientFactory, cruxPaymentProtocol,
+    IBlockstackCruxDomainRepositoryOptions,
     IBlockstackCruxUserRepositoryOptions,
-} from "../../infrastructure/implementations/blockstack-crux-user-repository";
-import { CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode } from "../../packages/error";
-import { CruxDomainId, CruxId } from "../../packages/identity-utils";
-import { InMemStorage } from "../../packages/inmem-storage";
-import { getLogger } from "../../packages/logger";
-import { StorageService } from "../../packages/storage";
+} from "../../infrastructure/implementations";
+import {CruxDomainId, CruxId, getLogger, InMemStorage, StorageService} from "../../packages";
+import {Encryption} from "../../packages/encryption";
+import {CruxClientError, ERROR_STRINGS, ErrorHelper, PackageErrorCode} from "../../packages/error";
+import {CruxAssetTranslator, IPutAddressMapFailures, IPutAddressMapSuccess, IResolvedClientAssetMap} from "../services";
 
 const cruxWalletClientDebugLoggerName = "CruxWalletClient:DEBUGGING";
 
@@ -84,8 +93,21 @@ export const getCruxDomainRepository = (options: IBlockstackCruxDomainRepository
 export const getCruxUserRepository = (options: IBlockstackCruxUserRepositoryOptions): ICruxUserRepository => {
     return new BlockstackCruxUserRepository(options);
 };
+
+export const getPubsubClientFactory = (): IPubSubClientFactory => {
+    return new CruxNetPubSubClientFactory({defaultLinkServer: {
+        host: "broker.hivemq.com",
+        path: "/mqtt",
+        port: 8000,
+    }});
+};
+
 export class CruxWalletClient {
     public walletClientName: string;
+    // TODO: make private
+    public paymentProtocolMessenger?: CruxProtocolMessenger;
+    public secureCruxNetwork?: SecureCruxNetwork;
+    public isInitializing?: boolean;
     private cruxBlockstackInfrastructure: ICruxBlockstackInfrastructure;
     private initPromise: Promise<void>;
     private cruxDomainRepo: ICruxDomainRepository;
@@ -96,6 +118,7 @@ export class CruxWalletClient {
     private keyManager?: IKeyManager;
     private resolvedClientAssetMapping?: IResolvedClientAssetMap;
     private cacheStorage?: StorageService;
+    private selfCruxUser?: CruxUser;
 
     constructor(options: ICruxWalletClientOptions) {
         getLogger(cruxWalletClientDebugLoggerName).setLevel(options.debugLogging ? Logger.DEBUG : Logger.OFF);
@@ -227,6 +250,44 @@ export class CruxWalletClient {
      * ```
      */
     @throwCruxClientError
+     public sendPaymentRequest = async (amount: string, walletCurrencySymbol: string, toAddress: IAddress, recipientCruxId: string): Promise<void> => {
+        await this.initPromise;
+        if (!this.paymentProtocolMessenger) {
+            throw Error("paymentProtocolMessenger is not defined");
+        }
+
+        const asset = this.cruxAssetTranslator.symbolToAsset(walletCurrencySymbol);
+        if (!asset) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.AssetIDNotAvailable);
+        }
+        return this.paymentProtocolMessenger.send({
+            content: {
+                amount,
+                assetId: asset.assetId,
+                toAddress,
+            },
+            type: "PAYMENT_REQUEST",
+        }, CruxId.fromString(recipientCruxId));
+    }
+    @throwCruxClientError
+    public recievePaymentRequest = async (callback: (paymentRequest: any, senderId?: CruxId) => void): Promise<void> => {
+        await this.initPromise;
+        if (!this.paymentProtocolMessenger) {
+            throw Error("Cannot use this method");
+        }
+        this.paymentProtocolMessenger.on("PAYMENT_REQUEST", (paymentRequest: any, senderId?: CruxId) => {
+            const walletSymbol = this.cruxAssetTranslator.assetIdToSymbol(paymentRequest.assetId);
+            if (!walletSymbol) {
+                throw Error("Cannot find asset ID IN payment request:" + paymentRequest);
+            }
+            callback({
+                ...paymentRequest,
+                walletSymbol,
+            }, senderId);
+        });
+    }
+
+    @throwCruxClientError
     public putAddressMap = async (newAddressMap: IAddressMapping): Promise<{success: IPutAddressMapSuccess, failures: IPutAddressMapFailures}> => {
         await this.initPromise;
         const cruxUser = await this.getCruxUserByKey();
@@ -238,6 +299,28 @@ export class CruxWalletClient {
         await this.cruxUserRepository.save(cruxUser, this.getKeyManager());
         const enabledAssetGroups = await this.putEnabledAssetGroups();
         return {success, failures};
+    }
+
+    @throwCruxClientError
+    public blacklistUsers = async (fullCruxIDs: string[]): Promise<{success: string[], failures: string[]}> => {
+        await this.initPromise;
+        const cruxUserWithKey = await this.getCruxUserByKey();
+        if (!cruxUserWithKey) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
+        }
+        const failures: string[] = [];
+        const registeredCruxUsers: string[] = [];
+        for (const fullCruxID of fullCruxIDs) {
+            const cruxUser = await this.getCruxUserByID(fullCruxID);
+            if (!cruxUser) {
+                failures.push(fullCruxID);
+            } else {
+                registeredCruxUsers.push(fullCruxID);
+            }
+        }
+        cruxUserWithKey.setBlacklistedCruxIDs(registeredCruxUsers);
+        await this.cruxUserRepository.save(cruxUserWithKey, this.getKeyManager());
+        return {success: registeredCruxUsers, failures};
     }
 
     /**
@@ -277,7 +360,7 @@ export class CruxWalletClient {
                 };
                 putFailures.push(userFailure);
             } else {
-                cruxUserWithKey.setPrivateAddressMap(cruxUser, assetAddressMap, this.getKeyManager());
+                await cruxUserWithKey.setPrivateAddressMap(cruxUser, assetAddressMap, this.getKeyManager());
             }
         }
         await this.cruxUserRepository.save(cruxUserWithKey, this.getKeyManager());
@@ -371,8 +454,11 @@ export class CruxWalletClient {
     }
 
     private getCruxUserByKey = async (): Promise<CruxUser|undefined> => {
-        const cruxUser = await this.cruxUserRepository.getWithKey(this.getKeyManager());
-        return cruxUser;
+        if (this.selfCruxUser) {
+            return this.selfCruxUser;
+        }
+        this.selfCruxUser = await this.cruxUserRepository.getWithKey(this.getKeyManager());
+        return this.selfCruxUser;
     }
 
     private getKeyManager = (): IKeyManager => {
@@ -390,6 +476,7 @@ export class CruxWalletClient {
     }
 
     private asyncInit = async (): Promise<void> => {
+        this.isInitializing = true;
         this.cruxDomain = await this.cruxDomainRepo.get(this.cruxDomainId);
         if (!this.cruxDomain) {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.InvalidWalletClientName);
@@ -399,5 +486,37 @@ export class CruxWalletClient {
             throw ErrorHelper.getPackageError(null, PackageErrorCode.CouldNotFindBlockstackConfigurationServiceClientConfig);
         }
         this.cruxAssetTranslator = new CruxAssetTranslator(this.cruxDomain.config.assetMapping, this.cruxDomain.config.assetList);
+        const selfIdClaim = await this.getSelfClaim();
+        if (selfIdClaim) {
+            await this.setupCruxMessenger(selfIdClaim);
+        }
+        this.isInitializing = false;
     }
+
+    private getSelfClaim = async (): Promise<ICruxIdClaim | undefined> => {
+        let selfClaim: ICruxIdClaim | undefined;
+
+        if (this.keyManager) {
+            const selfUser = await this.getCruxUserByKey();
+            if (selfUser) {
+                selfClaim = {
+                    cruxId: selfUser.cruxID,
+                    keyManager: this.keyManager,
+                };
+            }
+        } else {
+            selfClaim = undefined;
+        }
+        return selfClaim;
+    }
+    private setupCruxMessenger = async (selfIdClaim: ICruxIdClaim | undefined) => {
+        if (!selfIdClaim) {
+            throw Error("Self ID Claim is required to setup messenger");
+        }
+        const pubsubClientFactory = getPubsubClientFactory();
+        this.secureCruxNetwork = new SecureCruxNetwork(this.cruxUserRepository, pubsubClientFactory, selfIdClaim);
+        await this.secureCruxNetwork.initialize();
+        this.paymentProtocolMessenger = new CruxProtocolMessenger(this.secureCruxNetwork, cruxPaymentProtocol);
+    }
+
 }

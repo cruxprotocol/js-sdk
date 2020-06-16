@@ -11,19 +11,9 @@ import * as blkStkService from "../infrastructure/services/blockstack-service";
 import * as gs from "../infrastructure/services/gaia-service";
 import { CruxUser, SubdomainRegistrationStatus, SubdomainRegistrationStatusDetail } from '../core/entities/crux-user';
 import WebCrypto from "node-webcrypto-ossl";
-import { getCruxdevCruxDomain, CustomMatcher } from './test-utils';
-interface Global {
-    crypto: any;
-    TextEncoder: any;
-    TextDecoder: any;
-}
-declare const global: Global;
+import {getCruxdevCruxDomain, CustomMatcher, patchMissingDependencies} from './test-utils';
 
-const crypto = new WebCrypto();
-let util = require('util')
-global.crypto = crypto
-global.TextEncoder = util.TextEncoder
-global.TextDecoder = util.TextDecoder
+patchMissingDependencies()
 
 describe('Infrastructure Repositories Test', () => {
     let sandbox: sinon.SinonSandbox;

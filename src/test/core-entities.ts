@@ -1,6 +1,6 @@
 import {CruxDomain, DomainRegistrationStatus, IClientConfig} from "../core/entities/crux-domain";
 import {CruxSpec} from "../core/entities/crux-spec";
-import { getValidCruxDomain } from "./test-utils";
+import { getSomewalletDomain } from "./test-utils";
 import {
     CruxUser, IAddress, IAddressMapping,
     ICruxUserRegistrationStatus,
@@ -17,7 +17,7 @@ describe('Core Entities Tests', () => {
     describe('Testing Entity CruxUser', () => {
 
         const testCruxUserSubdomain = "foobar";
-        const testUserCruxDomain = getValidCruxDomain();
+        const testUserCruxDomain = getSomewalletDomain();
         const testCruxId = CruxId.fromString('foobar@somewallet.crux');
         const testAddress: IAddress = {
             'addressHash': 'foobtcaddress'
@@ -95,5 +95,4 @@ describe('Core Entities Tests', () => {
         });
 
     });
-
 });
