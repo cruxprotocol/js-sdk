@@ -1,7 +1,8 @@
 import { publicKeyToAddress } from "blockstack";
+import { Encryption } from "src/packages/encryption";
 import {CruxDomain} from "../../core/entities/crux-domain";
 import { CruxSpec } from "../../core/entities/crux-spec";
-import { CruxUser, IAddressMapping, ICruxUserConfiguration, ICruxUserData, ICruxUserInformation, ICruxUserPrivateAddresses, SubdomainRegistrationStatus } from "../../core/entities/crux-user";
+import { CruxUser, IAddressMapping, ICruxDecryptedPrivateInformation, ICruxUserConfiguration, ICruxUserData, ICruxUserInformation, ICruxUserPrivateAddresses, SubdomainRegistrationStatus } from "../../core/entities/crux-user";
 import { ICruxBlockstackInfrastructure } from "../../core/interfaces";
 import {ICruxUserRepository, ICruxUserRepositoryOptions} from "../../core/interfaces/crux-user-repository";
 import { IKeyManager } from "../../core/interfaces/key-manager";
@@ -57,12 +58,15 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
     }
     public create = async (cruxIdSubdomain: string, keyManager: IKeyManager): Promise<CruxUser> => {
         // Publishing an empty addressMap while registering the name to be fail safe
+        const privateInfo = {
+            blacklistedCruxUsers: [],
+        };
         const cruxUserData: ICruxUserData = {
             configuration: {
-                blacklistedCruxUsers: [],
                 enabledAssetGroups: [],
             },
             privateAddresses: {},
+            privateInformation: await keyManager.symmetricEncrypt!(privateInfo),
         };
         await this.putCruxpayObject(this.getCruxDomain().id, {}, keyManager);
         const cruxUserInformation = await this.blockstackService.registerCruxId(this.getCruxIdFromSubdomain(cruxIdSubdomain), this.infrastructure.gaiaHub, keyManager);
@@ -79,10 +83,10 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         let addressMap = {};
         let cruxUserData: ICruxUserData = {
             configuration: {
-                blacklistedCruxUsers: [],
                 enabledAssetGroups: [],
             },
             privateAddresses: {},
+            privateInformation: "",
         };
         let cruxpayPubKey;
         if (cruxUserInformation.registrationStatus.status === SubdomainRegistrationStatus.DONE) {
@@ -107,12 +111,15 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
             return;
         }
         let addressMap = {};
+        const privateInfo = {
+            blacklistedCruxUsers: [],
+        };
         let cruxUserData: ICruxUserData = {
             configuration: {
-                blacklistedCruxUsers: [],
                 enabledAssetGroups: [],
             },
             privateAddresses: {},
+            privateInformation: await keyManager.symmetricEncrypt!(privateInfo),
         };
         let cruxpayPubKey = await keyManager.getPubKey();
         if ([SubdomainRegistrationStatus.DONE, SubdomainRegistrationStatus.PENDING].includes(cruxUserInformation.registrationStatus.status)) {
@@ -122,13 +129,13 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
             const dereferencedCruxpayObject = this.dereferenceCruxpayObject(cruxpayObject);
             addressMap = dereferencedCruxpayObject.addressMap;
             if (dereferencedCruxpayObject.cruxUserData) {
-                cruxUserData = dereferencedCruxpayObject.cruxUserData;
+                cruxUserData = Object.assign(cruxUserData, dereferencedCruxpayObject.cruxUserData);
             }
         }
         return new CruxUser(cruxID.components.subdomain, this.getCruxDomain(), addressMap, cruxUserInformation, cruxUserData, cruxpayPubKey);
     }
     public save = async (cruxUser: CruxUser, keyManager: IKeyManager): Promise<CruxUser> => {
-        const cruxpayObject = this.constructCruxpayObject(cruxUser.getAddressMap(), cruxUser.info, cruxUser.config, cruxUser.privateAddresses);
+        const cruxpayObject = this.constructCruxpayObject(cruxUser.getAddressMap(), cruxUser.info, cruxUser.config, cruxUser.privateAddresses, cruxUser.privateInformation);
         await this.putCruxpayObject(cruxUser.domain.id, cruxpayObject, keyManager);
         return cruxUser;
     }
@@ -217,11 +224,12 @@ export class BlockstackCruxUserRepository implements ICruxUserRepository {
         const finalURL = await new GaiaService(gaiaHub, this.cacheStorage).uploadContentToGaiaHub(filename, content, keyManager);
         return finalURL;
     }
-    private constructCruxpayObject = (addressMap: IAddressMapping, userInformation: ICruxUserInformation, userConfiguration: ICruxUserConfiguration, privateAddresses: ICruxUserPrivateAddresses): ICruxpayObject => {
+    private constructCruxpayObject = (addressMap: IAddressMapping, userInformation: ICruxUserInformation, userConfiguration: ICruxUserConfiguration, privateAddresses: ICruxUserPrivateAddresses, privateInformation: string): ICruxpayObject => {
         const cruxpayObject: ICruxpayObject = cloneValue(addressMap);
         cruxpayObject.__userData__ = {
             configuration: userConfiguration,
             privateAddresses,
+            privateInformation,
         };
         return cruxpayObject;
     }

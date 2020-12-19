@@ -3,6 +3,8 @@ export interface IKeyManager {
     getPubKey: () => Promise<string>;
     deriveSharedSecret?: (publicKey: string) => Promise<string>;
     decryptMessage?: (encryptedMessage: string) => Promise<string>;
+    symmetricEncrypt?: (content: object) => Promise<string>;
+    symmetricDecrypt?: (encryptedContent: string) => Promise<object>;
 }
 
 export const isInstanceOfKeyManager = (object: any) => {

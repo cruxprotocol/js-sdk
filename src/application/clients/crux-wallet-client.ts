@@ -8,6 +8,7 @@ import {
     IAddress,
     IAddressMapping,
     IAssetMatcher,
+    ICruxDecryptedPrivateInformation,
     ICruxUserRegistrationStatus,
     SubdomainRegistrationStatus,
     SubdomainRegistrationStatusDetail,
@@ -265,7 +266,7 @@ export class CruxWalletClient {
     }
 
     @throwCruxClientError
-    public blacklistUsers = async (fullCruxIDs: string[]): Promise<{success: string[], failures: string[]}> => {
+    public putBlacklistedUsers = async (fullCruxIDs: string[]): Promise<{success: string[], failures: string[]}> => {
         await this.initPromise;
         const cruxUserWithKey = await this.getCruxUserByKey();
         if (!cruxUserWithKey) {
@@ -281,9 +282,22 @@ export class CruxWalletClient {
                 registeredCruxUsers.push(fullCruxID);
             }
         }
-        cruxUserWithKey.setBlacklistedCruxIDs(registeredCruxUsers);
+        const decryptedPrivateInfo: ICruxDecryptedPrivateInformation = (await this.keyManager!.symmetricDecrypt!(cruxUserWithKey.privateInformation)) as ICruxDecryptedPrivateInformation;
+        decryptedPrivateInfo.blacklistedCruxUsers = registeredCruxUsers;
+        cruxUserWithKey.setPrivateInformation(decryptedPrivateInfo, this.keyManager!);
         await this.cruxUserRepository.save(cruxUserWithKey, this.getKeyManager());
         return {success: registeredCruxUsers, failures};
+    }
+
+    @throwCruxClientError
+    public getBlacklistedUsers = async (): Promise<string[]> => {
+        await this.initPromise;
+        const cruxUserWithKey = await this.getCruxUserByKey();
+        if (!cruxUserWithKey) {
+            throw ErrorHelper.getPackageError(null, PackageErrorCode.UserDoesNotExist);
+        }
+        const decryptedPrivateInfo: ICruxDecryptedPrivateInformation = (await this.keyManager!.symmetricDecrypt!(cruxUserWithKey.privateInformation)) as ICruxDecryptedPrivateInformation;
+        return decryptedPrivateInfo.blacklistedCruxUsers;
     }
 
     // @throwCruxClientError

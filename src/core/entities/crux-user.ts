@@ -30,10 +30,15 @@ export interface ICruxUserInformation {
 export interface ICruxUserData {
     configuration: ICruxUserConfiguration;
     privateAddresses: ICruxUserPrivateAddresses;
+    privateInformation: string;
 }
 
 export interface ICruxUserConfiguration {
     enabledAssetGroups: string[];
+    // blacklistedCruxUsers: string[];
+}
+
+export interface ICruxDecryptedPrivateInformation {
     blacklistedCruxUsers: string[];
 }
 
@@ -63,6 +68,7 @@ export class CruxUser {
     private cruxUserConfig!: ICruxUserConfiguration;
     private cruxUserPrivateAddresses!: ICruxUserPrivateAddresses;
     private cruxDomain!: CruxDomain;
+    private cruxPrivateInformation!: string;
 
     constructor(cruxUserSubdomain: string, cruxDomain: CruxDomain, addressMap: IAddressMapping, cruxUserInformation: ICruxUserInformation, cruxUserData: ICruxUserData, publicKey?: string) {
         this.setCruxDomain(cruxDomain);
@@ -72,6 +78,7 @@ export class CruxUser {
         this.setCruxUserConfig(cruxUserData.configuration);
         this.setPublicKey(publicKey);
         this.setCruxUserPrivateAddresses(cruxUserData.privateAddresses);
+        this.setCruxUserPrivateInformation(cruxUserData.privateInformation);
         log.debug("CruxUser initialised");
     }
     get cruxID() {
@@ -91,6 +98,9 @@ export class CruxUser {
     }
     get privateAddresses() {
         return this.cruxUserPrivateAddresses;
+    }
+    get privateInformation() {
+        return this.cruxPrivateInformation;
     }
     public setSupportedAssetGroups = () => {
         this.cruxUserConfig.enabledAssetGroups = this.cruxDomain.config.supportedAssetGroups;
@@ -112,8 +122,9 @@ export class CruxUser {
             throw new BaseError(null, "Not supported by the keyManager in use");
         }
     }
-    public setBlacklistedCruxIDs = (blacklistedCruxIDs: string[]) => {
-        this.cruxUserConfig.blacklistedCruxUsers = blacklistedCruxIDs;
+    public setPrivateInformation = async (decryptedPrivateInfo: ICruxDecryptedPrivateInformation, keyManager: IKeyManager) => {
+        const encryptedPrivateInfo: string = await keyManager.symmetricEncrypt!(decryptedPrivateInfo);
+        this.cruxPrivateInformation = encryptedPrivateInfo;
     }
     public getAddressFromAsset = async (asset: IGlobalAsset, keyManager?: IKeyManager): Promise<IAddress|undefined> => {
         let address: IAddress|undefined;
@@ -178,7 +189,7 @@ export class CruxUser {
     private setCruxUserConfig = (cruxUserConfiguration: ICruxUserConfiguration) => {
         // TODO: validation of the configurations
         this.cruxUserConfig = {
-            blacklistedCruxUsers: cruxUserConfiguration.blacklistedCruxUsers,
+            // blacklistedCruxUsers: cruxUserConfiguration.blacklistedCruxUsers,
             enabledAssetGroups: cruxUserConfiguration.enabledAssetGroups || [],
         };
     }
@@ -193,6 +204,9 @@ export class CruxUser {
         } else {
             this.cruxUserPrivateAddresses = cruxUserPrivateAddresses;
         }
+    }
+    private setCruxUserPrivateInformation = async (privateInfo: string) => {
+        this.cruxPrivateInformation = privateInfo;
     }
 }
 
