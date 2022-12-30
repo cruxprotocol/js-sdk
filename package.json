@@ -82,7 +82,7 @@
     "jsdom": "15.1.1",
     "jsdom-global": "3.0.2",
     "lockfile-lint": "^3.0.18",
-    "mocha": "^6.2.3",
+    "mocha": "^10.2.0",
     "mocha-reporter": "^0.1.1",
     "mock-local-storage": "^1.1.12",
     "node-webcrypto-ossl": "^1.0.49",
